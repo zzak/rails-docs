@@ -1,0 +1,48 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>11 Autoloading and Engines</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v7.0.4.2/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="autoloading-and-engines"><a class="anchorlink" href="#autoloading-and-engines">11 Autoloading and Engines</a></h3>
+<p>Engines run in the context of a parent application, and their code is autoloaded, reloaded, and eager loaded by the parent application. If the application runs in <code>zeitwerk</code> mode, the engine code is loaded by <code>zeitwerk</code> mode. If the application runs in <code>classic</code> mode, the engine code is loaded by <code>classic</code> mode.</p>
+
+<p>When Rails boots, engine directories are added to the autoload paths, and from the point of view of the autoloader, there's no difference. Autoloaders' main inputs are the autoload paths, and whether they belong to the application source tree or to some engine source tree is irrelevant.</p>
+
+<p>For example, this application uses <a href="https://github.com/heartcombo/devise">Devise</a>:</p>
+
+<div class="code_container">
+<pre><code class="highlight plaintext">% bin/rails runner 'pp ActiveSupport::Dependencies.autoload_paths'
+[".../app/controllers",
+ ".../app/controllers/concerns",
+ ".../app/helpers",
+ ".../app/models",
+ ".../app/models/concerns",
+ ".../gems/devise-4.8.0/app/controllers",
+ ".../gems/devise-4.8.0/app/helpers",
+ ".../gems/devise-4.8.0/app/mailers"]
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="% bin/rails runner 'pp ActiveSupport::Dependencies.autoload_paths'
+[&quot;.../app/controllers&quot;,
+ &quot;.../app/controllers/concerns&quot;,
+ &quot;.../app/helpers&quot;,
+ &quot;.../app/models&quot;,
+ &quot;.../app/models/concerns&quot;,
+ &quot;.../gems/devise-4.8.0/app/controllers&quot;,
+ &quot;.../gems/devise-4.8.0/app/helpers&quot;,
+ &quot;.../gems/devise-4.8.0/app/mailers&quot;]
+">Copy</button>
+</div>
+<p>If the engine controls the autoloading mode of its parent application, the engine can be written as usual.</p>
+
+<p>However, if an engine supports Rails 6 or Rails 6.1 and does not control its parent applications, it has to be ready to run under either <code>classic</code> or <code>zeitwerk</code> mode. Things to take into account:</p>
+<ol>
+<li>If <code>classic</code> mode would need a <code>require_dependency</code> call to ensure some constant is loaded at some point, write it. While <code>zeitwerk</code> would not need it, it won't hurt, it will work in <code>zeitwerk</code> mode too.</li>
+<li>
+<code>classic</code> mode underscores constant names ("User" -&gt; "user.rb"), and <code>zeitwerk</code> mode camelizes file names ("user.rb" -&gt; "User"). They coincide in most cases, but they don't if there are series of consecutive uppercase letters as in "HTMLParser". The easiest way to be compatible is to avoid such names. In this case, pick "HtmlParser".</li>
+<li>In <code>classic</code> mode, the file <code>app/model/concerns/foo.rb</code> is allowed to define both <code>Foo</code> and <code>Concerns::Foo</code>. In <code>zeitwerk</code> mode, there's only one option: it has to define <code>Foo</code>. In order to be compatible, define <code>Foo</code>.</li>
+</ol>
+</body>
+</html>

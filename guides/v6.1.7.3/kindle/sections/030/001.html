@@ -1,0 +1,317 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>2 Loading Rails</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v6.1.7.3/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="loading-rails"><a class="anchorlink" href="#loading-rails">2 Loading Rails</a></h3>
+<p>The next line in <code>config/application.rb</code> is:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="nb">require</span> <span class="s2">"rails/all"</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-d9fb57577e0e0a4a711294c3625333f0">require "rails/all"
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-d9fb57577e0e0a4a711294c3625333f0">Copy</button>
+</div>
+<h4 id="railties-lib-rails-all-rb"><a class="anchorlink" href="#railties-lib-rails-all-rb">2.1 <code>railties/lib/rails/all.rb</code></a></h4>
+
+<p>This file is responsible for requiring all the individual frameworks of Rails:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="nb">require</span> <span class="s2">"rails"</span>
+
+<span class="sx">%w(
+  active_record/railtie
+  active_storage/engine
+  action_controller/railtie
+  action_view/railtie
+  action_mailer/railtie
+  active_job/railtie
+  action_cable/engine
+  action_mailbox/engine
+  action_text/engine
+  rails/test_unit/railtie
+  sprockets/railtie
+)</span><span class="p">.</span><span class="nf">each</span> <span class="k">do</span> <span class="o">|</span><span class="n">railtie</span><span class="o">|</span>
+  <span class="k">begin</span>
+    <span class="nb">require</span> <span class="n">railtie</span>
+  <span class="k">rescue</span> <span class="no">LoadError</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-93fa3c44b5300709ad431f464dc9cc50">require "rails"
+
+%w(
+  active_record/railtie
+  active_storage/engine
+  action_controller/railtie
+  action_view/railtie
+  action_mailer/railtie
+  active_job/railtie
+  action_cable/engine
+  action_mailbox/engine
+  action_text/engine
+  rails/test_unit/railtie
+  sprockets/railtie
+).each do |railtie|
+  begin
+    require railtie
+  rescue LoadError
+  end
+end
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-93fa3c44b5300709ad431f464dc9cc50">Copy</button>
+</div>
+<p>This is where all the Rails frameworks are loaded and thus made
+available to the application. We won't go into detail of what happens
+inside each of those frameworks, but you're encouraged to try and
+explore them on your own.</p>
+
+<p>For now, just keep in mind that common functionality like Rails engines,
+I18n and Rails configuration are all being defined here.</p>
+
+<h4 id="back-to-config-environment-rb"><a class="anchorlink" href="#back-to-config-environment-rb">2.2 Back to <code>config/environment.rb</code></a></h4>
+
+<p>The rest of <code>config/application.rb</code> defines the configuration for the
+<code>Rails::Application</code> which will be used once the application is fully
+initialized. When <code>config/application.rb</code> has finished loading Rails and defined
+the application namespace, we go back to <code>config/environment.rb</code>. Here, the
+application is initialized with <code>Rails.application.initialize!</code>, which is
+defined in <code>rails/application.rb</code>.</p>
+
+<h4 id="railties-lib-rails-application-rb"><a class="anchorlink" href="#railties-lib-rails-application-rb">2.3 <code>railties/lib/rails/application.rb</code></a></h4>
+
+<p>The <code>initialize!</code> method looks like this:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">def</span> <span class="nf">initialize!</span><span class="p">(</span><span class="n">group</span> <span class="o">=</span> <span class="ss">:default</span><span class="p">)</span> <span class="c1">#:nodoc:</span>
+  <span class="k">raise</span> <span class="s2">"Application has been already initialized."</span> <span class="k">if</span> <span class="vi">@initialized</span>
+  <span class="n">run_initializers</span><span class="p">(</span><span class="n">group</span><span class="p">,</span> <span class="nb">self</span><span class="p">)</span>
+  <span class="vi">@initialized</span> <span class="o">=</span> <span class="kp">true</span>
+  <span class="nb">self</span>
+<span class="k">end</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-ac3d970e1d95e2938c5ab45659465f6d">def initialize!(group = :default) #:nodoc:
+  raise "Application has been already initialized." if @initialized
+  run_initializers(group, self)
+  @initialized = true
+  self
+end
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-ac3d970e1d95e2938c5ab45659465f6d">Copy</button>
+</div>
+<p>You can only initialize an app once. The Railtie <a href="configuring.html#initializers">initializers</a>
+are run through the <code>run_initializers</code> method which is defined in
+<code>railties/lib/rails/initializable.rb</code>:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">def</span> <span class="nf">run_initializers</span><span class="p">(</span><span class="n">group</span> <span class="o">=</span> <span class="ss">:default</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">)</span>
+  <span class="k">return</span> <span class="k">if</span> <span class="n">instance_variable_defined?</span><span class="p">(</span><span class="ss">:@ran</span><span class="p">)</span>
+  <span class="n">initializers</span><span class="p">.</span><span class="nf">tsort_each</span> <span class="k">do</span> <span class="o">|</span><span class="n">initializer</span><span class="o">|</span>
+    <span class="n">initializer</span><span class="p">.</span><span class="nf">run</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">)</span> <span class="k">if</span> <span class="n">initializer</span><span class="p">.</span><span class="nf">belongs_to?</span><span class="p">(</span><span class="n">group</span><span class="p">)</span>
+  <span class="k">end</span>
+  <span class="vi">@ran</span> <span class="o">=</span> <span class="kp">true</span>
+<span class="k">end</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-aa6dda16a0291792f0e78ac11c9d6a6c">def run_initializers(group = :default, *args)
+  return if instance_variable_defined?(:@ran)
+  initializers.tsort_each do |initializer|
+    initializer.run(*args) if initializer.belongs_to?(group)
+  end
+  @ran = true
+end
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-aa6dda16a0291792f0e78ac11c9d6a6c">Copy</button>
+</div>
+<p>The <code>run_initializers</code> code itself is tricky. What Rails is doing here is
+traversing all the class ancestors looking for those that respond to an
+<code>initializers</code> method. It then sorts the ancestors by name, and runs them.
+For example, the <code>Engine</code> class will make all the engines available by
+providing an <code>initializers</code> method on them.</p>
+
+<p>The <code>Rails::Application</code> class, as defined in <code>railties/lib/rails/application.rb</code>
+defines <code>bootstrap</code>, <code>railtie</code>, and <code>finisher</code> initializers. The <code>bootstrap</code> initializers
+prepare the application (like initializing the logger) while the <code>finisher</code>
+initializers (like building the middleware stack) are run last. The <code>railtie</code>
+initializers are the initializers which have been defined on the <code>Rails::Application</code>
+itself and are run between the <code>bootstrap</code> and <code>finishers</code>.</p>
+
+<p><em>Note:</em> Do not confuse Railtie initializers overall with the <a href="configuring.html#using-initializer-files">load_config_initializers</a>
+initializer instance or its associated config initializers in <code>config/initializers</code>.</p>
+
+<p>After this is done we go back to <code>Rack::Server</code>.</p>
+
+<h4 id="loading-rails-rack-lib-rack-server-rb"><a class="anchorlink" href="#loading-rails-rack-lib-rack-server-rb">2.4 Rack: lib/rack/server.rb</a></h4>
+
+<p>Last time we left when the <code>app</code> method was being defined:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">module</span> <span class="nn">Rack</span>
+  <span class="k">class</span> <span class="nc">Server</span>
+    <span class="k">def</span> <span class="nf">app</span>
+      <span class="vi">@app</span> <span class="o">||=</span> <span class="n">options</span><span class="p">[</span><span class="ss">:builder</span><span class="p">]</span> <span class="p">?</span> <span class="n">build_app_from_string</span> <span class="p">:</span> <span class="n">build_app_and_options_from_config</span>
+    <span class="k">end</span>
+
+    <span class="c1"># ...</span>
+
+    <span class="kp">private</span>
+      <span class="k">def</span> <span class="nf">build_app_and_options_from_config</span>
+        <span class="k">if</span> <span class="o">!::</span><span class="no">File</span><span class="p">.</span><span class="nf">exist?</span> <span class="n">options</span><span class="p">[</span><span class="ss">:config</span><span class="p">]</span>
+          <span class="nb">abort</span> <span class="s2">"configuration </span><span class="si">#{</span><span class="n">options</span><span class="p">[</span><span class="ss">:config</span><span class="p">]</span><span class="si">}</span><span class="s2"> not found"</span>
+        <span class="k">end</span>
+
+        <span class="n">app</span><span class="p">,</span> <span class="n">options</span> <span class="o">=</span> <span class="no">Rack</span><span class="o">::</span><span class="no">Builder</span><span class="p">.</span><span class="nf">parse_file</span><span class="p">(</span><span class="nb">self</span><span class="p">.</span><span class="nf">options</span><span class="p">[</span><span class="ss">:config</span><span class="p">],</span> <span class="n">opt_parser</span><span class="p">)</span>
+        <span class="vi">@options</span><span class="p">.</span><span class="nf">merge!</span><span class="p">(</span><span class="n">options</span><span class="p">)</span> <span class="p">{</span> <span class="o">|</span><span class="n">key</span><span class="p">,</span> <span class="n">old</span><span class="p">,</span> <span class="n">new</span><span class="o">|</span> <span class="n">old</span> <span class="p">}</span>
+        <span class="n">app</span>
+      <span class="k">end</span>
+
+      <span class="k">def</span> <span class="nf">build_app_from_string</span>
+        <span class="no">Rack</span><span class="o">::</span><span class="no">Builder</span><span class="p">.</span><span class="nf">new_from_string</span><span class="p">(</span><span class="nb">self</span><span class="p">.</span><span class="nf">options</span><span class="p">[</span><span class="ss">:builder</span><span class="p">])</span>
+      <span class="k">end</span>
+
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-002bc6485cb9b661e89dce364f10128f">module Rack
+  class Server
+    def app
+      @app ||= options[:builder] ? build_app_from_string : build_app_and_options_from_config
+    end
+
+    # ...
+
+    private
+      def build_app_and_options_from_config
+        if !::File.exist? options[:config]
+          abort "configuration #{options[:config]} not found"
+        end
+
+        app, options = Rack::Builder.parse_file(self.options[:config], opt_parser)
+        @options.merge!(options) { |key, old, new| old }
+        app
+      end
+
+      def build_app_from_string
+        Rack::Builder.new_from_string(self.options[:builder])
+      end
+
+  end
+end
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-002bc6485cb9b661e89dce364f10128f">Copy</button>
+</div>
+<p>At this point <code>app</code> is the Rails app itself (a middleware), and what
+happens next is Rack will call all the provided middlewares:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">module</span> <span class="nn">Rack</span>
+  <span class="k">class</span> <span class="nc">Server</span>
+    <span class="kp">private</span>
+      <span class="k">def</span> <span class="nf">build_app</span><span class="p">(</span><span class="n">app</span><span class="p">)</span>
+        <span class="n">middleware</span><span class="p">[</span><span class="n">options</span><span class="p">[</span><span class="ss">:environment</span><span class="p">]].</span><span class="nf">reverse_each</span> <span class="k">do</span> <span class="o">|</span><span class="n">middleware</span><span class="o">|</span>
+          <span class="n">middleware</span> <span class="o">=</span> <span class="n">middleware</span><span class="p">.</span><span class="nf">call</span><span class="p">(</span><span class="nb">self</span><span class="p">)</span> <span class="k">if</span> <span class="n">middleware</span><span class="p">.</span><span class="nf">respond_to?</span><span class="p">(</span><span class="ss">:call</span><span class="p">)</span>
+          <span class="k">next</span> <span class="k">unless</span> <span class="n">middleware</span>
+          <span class="n">klass</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span> <span class="o">=</span> <span class="n">middleware</span>
+          <span class="n">app</span> <span class="o">=</span> <span class="n">klass</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="n">app</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">)</span>
+        <span class="k">end</span>
+        <span class="n">app</span>
+      <span class="k">end</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-93bf1ec849abc6173a31032ca1cd6e3d">module Rack
+  class Server
+    private
+      def build_app(app)
+        middleware[options[:environment]].reverse_each do |middleware|
+          middleware = middleware.call(self) if middleware.respond_to?(:call)
+          next unless middleware
+          klass, *args = middleware
+          app = klass.new(app, *args)
+        end
+        app
+      end
+  end
+end
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-93bf1ec849abc6173a31032ca1cd6e3d">Copy</button>
+</div>
+<p>Remember, <code>build_app</code> was called (by <code>wrapped_app</code>) in the last line of <code>Rack::Server#start</code>.
+Here's how it looked like when we left:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">server</span><span class="p">.</span><span class="nf">run</span> <span class="n">wrapped_app</span><span class="p">,</span> <span class="n">options</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">blk</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-225e998b0821e32885b1a4cf3248af47">server.run wrapped_app, options, &amp;blk
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-225e998b0821e32885b1a4cf3248af47">Copy</button>
+</div>
+<p>At this point, the implementation of <code>server.run</code> will depend on the
+server you're using. For example, if you were using Puma, here's what
+the <code>run</code> method would look like:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">module</span> <span class="nn">Rack</span>
+  <span class="k">module</span> <span class="nn">Handler</span>
+    <span class="k">module</span> <span class="nn">Puma</span>
+      <span class="c1"># ...</span>
+      <span class="k">def</span> <span class="nc">self</span><span class="o">.</span><span class="nf">run</span><span class="p">(</span><span class="n">app</span><span class="p">,</span> <span class="n">options</span> <span class="o">=</span> <span class="p">{})</span>
+        <span class="n">conf</span>   <span class="o">=</span> <span class="nb">self</span><span class="p">.</span><span class="nf">config</span><span class="p">(</span><span class="n">app</span><span class="p">,</span> <span class="n">options</span><span class="p">)</span>
+
+        <span class="n">events</span> <span class="o">=</span> <span class="n">options</span><span class="p">.</span><span class="nf">delete</span><span class="p">(</span><span class="ss">:Silent</span><span class="p">)</span> <span class="p">?</span> <span class="o">::</span><span class="no">Puma</span><span class="o">::</span><span class="no">Events</span><span class="p">.</span><span class="nf">strings</span> <span class="p">:</span> <span class="o">::</span><span class="no">Puma</span><span class="o">::</span><span class="no">Events</span><span class="p">.</span><span class="nf">stdio</span>
+
+        <span class="n">launcher</span> <span class="o">=</span> <span class="o">::</span><span class="no">Puma</span><span class="o">::</span><span class="no">Launcher</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="n">conf</span><span class="p">,</span> <span class="ss">:events</span> <span class="o">=&gt;</span> <span class="n">events</span><span class="p">)</span>
+
+        <span class="k">yield</span> <span class="n">launcher</span> <span class="k">if</span> <span class="nb">block_given?</span>
+        <span class="k">begin</span>
+          <span class="n">launcher</span><span class="p">.</span><span class="nf">run</span>
+        <span class="k">rescue</span> <span class="no">Interrupt</span>
+          <span class="nb">puts</span> <span class="s2">"* Gracefully stopping, waiting for requests to finish"</span>
+          <span class="n">launcher</span><span class="p">.</span><span class="nf">stop</span>
+          <span class="nb">puts</span> <span class="s2">"* Goodbye!"</span>
+        <span class="k">end</span>
+      <span class="k">end</span>
+      <span class="c1"># ...</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-b55285b55302469db3c7eb994c8d693b">module Rack
+  module Handler
+    module Puma
+      # ...
+      def self.run(app, options = {})
+        conf   = self.config(app, options)
+
+        events = options.delete(:Silent) ? ::Puma::Events.strings : ::Puma::Events.stdio
+
+        launcher = ::Puma::Launcher.new(conf, :events =&gt; events)
+
+        yield launcher if block_given?
+        begin
+          launcher.run
+        rescue Interrupt
+          puts "* Gracefully stopping, waiting for requests to finish"
+          launcher.stop
+          puts "* Goodbye!"
+        end
+      end
+      # ...
+    end
+  end
+end
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-b55285b55302469db3c7eb994c8d693b">Copy</button>
+</div>
+<p>We won't dig into the server configuration itself, but this is
+the last piece of our journey in the Rails initialization process.</p>
+
+<p>This high level overview will help you understand when your code is
+executed and how, and overall become a better Rails developer. If you
+still want to know more, the Rails source code itself is probably the
+best place to go next.</p>
+</body>
+</html>

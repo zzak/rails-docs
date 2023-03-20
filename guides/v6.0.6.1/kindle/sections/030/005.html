@@ -1,0 +1,82 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>6 Reloading</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v6.0.6.1/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="reloading"><a class="anchorlink" href="#reloading">6 Reloading</a></h3>
+<p>Rails automatically reloads classes and modules if application files change.</p>
+
+<p>More precisely, if the web server is running and application files have been modified, Rails unloads all autoloaded constants just before the next request is processed. That way, application classes or modules used during that request are going to be autoloaded, thus picking up their current implementation in the file system.</p>
+
+<p>Reloading can be enabled or disabled. The setting that controls this behavior is <code>config.cache_classes</code>, which is false by default in <code>development</code> mode (reloading enabled), and true by default in <code>production</code> mode (reloading disabled).</p>
+
+<p>Rails detects files have changed using an evented file monitor (default), or walking the autoload paths, depending on <code>config.file_watcher</code>.</p>
+
+<p>In a Rails console there is no file watcher active regardless of the value of <code>config.cache_classes</code>. This is so because, normally, it would be confusing to have code reloaded in the middle of a console session, the same way you generally want an individual request to be served by a consistent, non-changing set of application classes and modules.</p>
+
+<p>However, you can force a reload in the console executing <code>reload!</code>:</p>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+$ bin/rails c
+Loading development environment (Rails 6.0.0)
+irb(main):001:0&gt; User.object_id
+=&gt; 70136277390120
+irb(main):002:0&gt; reload!
+Reloading...
+=&gt; true
+irb(main):003:0&gt; User.object_id
+=&gt; 70136284426020
+
+</pre>
+</div>
+<p>as you can see, the class object stored in the <code>User</code> constant is different after reloading.</p>
+
+<h4 id="reloading-and-stale-objects"><a class="anchorlink" href="#reloading-and-stale-objects">6.1 Reloading and Stale Objects</a></h4>
+
+<p>It is very important to understand that Ruby does not have a way to truly reload classes and modules in memory, and have that reflected everywhere they are already used. Technically, "unloading" the <code>User</code> class means removing the <code>User</code> constant via <code>Object.send(:remove_const, "User")</code>.</p>
+
+<p>Therefore, if you store a reloadable class or module object in a place that is not reloaded, that value is going to become stale.</p>
+
+<p>For example, if an initializer stores and caches a certain class object</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+# config/initializers/configure_payment_gateway.rb
+# DO NOT DO THIS.
+$PAYMENT_GATEWAY = Rails.env.production? ? RealGateway : MockedGateway
+# DO NOT DO THIS.
+
+</pre>
+</div>
+<p>and <code>MockedGateway</code> gets reloaded, <code>$PAYMENT_GATEWAY</code> still stores the class object <code>MockedGateway</code> evaluated to when the initializer ran. Reloading does not change the class object stored in <code>$PAYMENT_GATEWAY</code>.</p>
+
+<p>Similarly, in the Rails console, if you have a user instance and reload:</p>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+&gt; user = User.new
+&gt; reload!
+
+</pre>
+</div>
+<p>the <code>user</code> object is instance of a stale class object. Ruby gives you a new class if you evaluate <code>User</code> again, but does not update the class <code>user</code> is instance of.</p>
+
+<p>Another use case of this gotcha is subclassing reloadable classes in a place that is not reloaded:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+# lib/vip_user.rb
+class VipUser &lt; User
+end
+
+</pre>
+</div>
+<p>if <code>User</code> is reloaded, since <code>VipUser</code> is not, the superclass of <code>VipUser</code> is the original stale class object.</p>
+
+<p>Bottom line: <strong>do not cache reloadable classes or modules</strong>.</p>
+</body>
+</html>

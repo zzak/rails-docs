@@ -1,0 +1,324 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>5 Session</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v7.0.4.2/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="session"><a class="anchorlink" href="#session">5 Session</a></h3>
+<p>Your application has a session for each user in which you can store small amounts of data that will be persisted between requests. The session is only available in the controller and the view and can use one of several of different storage mechanisms:</p>
+<ul>
+<li>
+<a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActionDispatch/Session/CookieStore.html"><code>ActionDispatch::Session::CookieStore</code></a> - Stores everything on the client.</li>
+<li>
+<a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActionDispatch/Session/CacheStore.html"><code>ActionDispatch::Session::CacheStore</code></a> - Stores the data in the Rails cache.</li>
+<li>
+<code>ActionDispatch::Session::ActiveRecordStore</code> - Stores the data in a database using Active Record (requires the <code>activerecord-session_store</code> gem).</li>
+<li>
+<a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActionDispatch/Session/MemCacheStore.html"><code>ActionDispatch::Session::MemCacheStore</code></a> - Stores the data in a memcached cluster (this is a legacy implementation; consider using <code>CacheStore</code> instead).</li>
+</ul>
+<p>All session stores use a cookie to store a unique ID for each session (you must use a cookie, Rails will not allow you to pass the session ID in the URL as this is less secure).</p>
+
+<p>For most stores, this ID is used to look up the session data on the server, e.g. in a database table. There is one exception, and that is the default and recommended session store - the CookieStore - which stores all session data in the cookie itself (the ID is still available to you if you need it). This has the advantage of being very lightweight, and it requires zero setup in a new application to use the session. The cookie data is cryptographically signed to make it tamper-proof. And it is also encrypted so anyone with access to it can't read its contents. (Rails will not accept it if it has been edited).</p>
+
+<p>The CookieStore can store around 4 kB of data - much less than the others - but this is usually enough. Storing large amounts of data in the session is discouraged no matter which session store your application uses. You should especially avoid storing complex objects (such as model instances) in the session, as the server might not be able to reassemble them between requests, which will result in an error.</p>
+
+<p>If your user sessions don't store critical data or don't need to be around for long periods (for instance if you just use the flash for messaging), you can consider using <code>ActionDispatch::Session::CacheStore</code>. This will store sessions using the cache implementation you have configured for your application. The advantage of this is that you can use your existing cache infrastructure for storing sessions without requiring any additional setup or administration. The downside, of course, is that the sessions will be ephemeral and could disappear at any time.</p>
+
+<p>Read more about session storage in the <a href="security.html">Security Guide</a>.</p>
+
+<p>If you need a different session storage mechanism, you can change it in an initializer:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="c1"># Use the database for sessions instead of the cookie-based default,</span>
+<span class="c1"># which shouldn't be used to store highly confidential information</span>
+<span class="c1"># (create the session table with "rails g active_record:session_migration")</span>
+<span class="c1"># Rails.application.config.session_store :active_record_store</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="# Use the database for sessions instead of the cookie-based default,
+# which shouldn't be used to store highly confidential information
+# (create the session table with &quot;rails g active_record:session_migration&quot;)
+# Rails.application.config.session_store :active_record_store
+">Copy</button>
+</div>
+<p>Rails sets up a session key (the name of the cookie) when signing the session data. These can also be changed in an initializer:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="c1"># Be sure to restart your server when you modify this file.</span>
+<span class="no">Rails</span><span class="p">.</span><span class="nf">application</span><span class="p">.</span><span class="nf">config</span><span class="p">.</span><span class="nf">session_store</span> <span class="ss">:cookie_store</span><span class="p">,</span> <span class="ss">key: </span><span class="s1">'_your_app_session'</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="# Be sure to restart your server when you modify this file.
+Rails.application.config.session_store :cookie_store, key: '_your_app_session'
+">Copy</button>
+</div>
+<p>You can also pass a <code>:domain</code> key and specify the domain name for the cookie:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="c1"># Be sure to restart your server when you modify this file.</span>
+<span class="no">Rails</span><span class="p">.</span><span class="nf">application</span><span class="p">.</span><span class="nf">config</span><span class="p">.</span><span class="nf">session_store</span> <span class="ss">:cookie_store</span><span class="p">,</span> <span class="ss">key: </span><span class="s1">'_your_app_session'</span><span class="p">,</span> <span class="ss">domain: </span><span class="s2">".example.com"</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="# Be sure to restart your server when you modify this file.
+Rails.application.config.session_store :cookie_store, key: '_your_app_session', domain: &quot;.example.com&quot;
+">Copy</button>
+</div>
+<p>Rails sets up (for the CookieStore) a secret key used for signing the session data in <code>config/credentials.yml.enc</code>. This can be changed with <code>bin/rails credentials:edit</code>.</p>
+
+<div class="code_container">
+<pre><code class="highlight yaml"><span class="c1"># aws:</span>
+<span class="c1">#   access_key_id: 123</span>
+<span class="c1">#   secret_access_key: 345</span>
+
+<span class="c1"># Used as the base secret for all MessageVerifiers in Rails, including the one protecting cookies.</span>
+<span class="na">secret_key_base</span><span class="pi">:</span> <span class="s">492f...</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="# aws:
+#   access_key_id: 123
+#   secret_access_key: 345
+
+# Used as the base secret for all MessageVerifiers in Rails, including the one protecting cookies.
+secret_key_base: 492f...
+">Copy</button>
+</div>
+<div class="note"><p>Changing the secret_key_base when using the <code>CookieStore</code> will invalidate all existing sessions.</p></div>
+
+<h4 id="accessing-the-session"><a class="anchorlink" href="#accessing-the-session">5.1 Accessing the Session</a></h4>
+
+<p>In your controller, you can access the session through the <code>session</code> instance method.</p>
+
+<div class="note"><p>Sessions are lazily loaded. If you don't access sessions in your action's code, they will not be loaded. Hence, you will never need to disable sessions, just not accessing them will do the job.</p></div>
+
+<p>Session values are stored using key/value pairs like a hash:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">ApplicationController</span> <span class="o">&lt;</span> <span class="no">ActionController</span><span class="o">::</span><span class="no">Base</span>
+
+  <span class="kp">private</span>
+
+  <span class="c1"># Finds the User with the ID stored in the session with the key</span>
+  <span class="c1"># :current_user_id This is a common way to handle user login in</span>
+  <span class="c1"># a Rails application; logging in sets the session value and</span>
+  <span class="c1"># logging out removes it.</span>
+  <span class="k">def</span> <span class="nf">current_user</span>
+    <span class="vi">@_current_user</span> <span class="o">||=</span> <span class="n">session</span><span class="p">[</span><span class="ss">:current_user_id</span><span class="p">]</span> <span class="o">&amp;&amp;</span>
+      <span class="no">User</span><span class="p">.</span><span class="nf">find_by</span><span class="p">(</span><span class="ss">id: </span><span class="n">session</span><span class="p">[</span><span class="ss">:current_user_id</span><span class="p">])</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="class ApplicationController &lt; ActionController::Base
+
+  private
+
+  # Finds the User with the ID stored in the session with the key
+  # :current_user_id This is a common way to handle user login in
+  # a Rails application; logging in sets the session value and
+  # logging out removes it.
+  def current_user
+    @_current_user ||= session[:current_user_id] &amp;&amp;
+      User.find_by(id: session[:current_user_id])
+  end
+end
+">Copy</button>
+</div>
+<p>To store something in the session, just assign it to the key like a hash:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">LoginsController</span> <span class="o">&lt;</span> <span class="no">ApplicationController</span>
+  <span class="c1"># "Create" a login, aka "log the user in"</span>
+  <span class="k">def</span> <span class="nf">create</span>
+    <span class="k">if</span> <span class="n">user</span> <span class="o">=</span> <span class="no">User</span><span class="p">.</span><span class="nf">authenticate</span><span class="p">(</span><span class="n">params</span><span class="p">[</span><span class="ss">:username</span><span class="p">],</span> <span class="n">params</span><span class="p">[</span><span class="ss">:password</span><span class="p">])</span>
+      <span class="c1"># Save the user ID in the session so it can be used in</span>
+      <span class="c1"># subsequent requests</span>
+      <span class="n">session</span><span class="p">[</span><span class="ss">:current_user_id</span><span class="p">]</span> <span class="o">=</span> <span class="n">user</span><span class="p">.</span><span class="nf">id</span>
+      <span class="n">redirect_to</span> <span class="n">root_url</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='class LoginsController &lt; ApplicationController
+  # "Create" a login, aka "log the user in"
+  def create
+    if user = User.authenticate(params[:username], params[:password])
+      # Save the user ID in the session so it can be used in
+      # subsequent requests
+      session[:current_user_id] = user.id
+      redirect_to root_url
+    end
+  end
+end
+'>Copy</button>
+</div>
+<p>To remove something from the session, delete the key/value pair:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">LoginsController</span> <span class="o">&lt;</span> <span class="no">ApplicationController</span>
+  <span class="c1"># "Delete" a login, aka "log the user out"</span>
+  <span class="k">def</span> <span class="nf">destroy</span>
+    <span class="c1"># Remove the user id from the session</span>
+    <span class="n">session</span><span class="p">.</span><span class="nf">delete</span><span class="p">(</span><span class="ss">:current_user_id</span><span class="p">)</span>
+    <span class="c1"># Clear the memoized current user</span>
+    <span class="vi">@_current_user</span> <span class="o">=</span> <span class="kp">nil</span>
+    <span class="n">redirect_to</span> <span class="n">root_url</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='class LoginsController &lt; ApplicationController
+  # "Delete" a login, aka "log the user out"
+  def destroy
+    # Remove the user id from the session
+    session.delete(:current_user_id)
+    # Clear the memoized current user
+    @_current_user = nil
+    redirect_to root_url
+  end
+end
+'>Copy</button>
+</div>
+<p>To reset the entire session, use <a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActionController/Metal.html#method-i-reset_session"><code>reset_session</code></a>.</p>
+
+<h4 id="the-flash"><a class="anchorlink" href="#the-flash">5.2 The Flash</a></h4>
+
+<p>The flash is a special part of the session which is cleared with each request. This means that values stored there will only be available in the next request, which is useful for passing error messages, etc.</p>
+
+<p>The flash is accessed via the <a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActionDispatch/Flash/RequestMethods.html#method-i-flash"><code>flash</code></a> method. Like the session, the flash is represented as a hash.</p>
+
+<p>Let's use the act of logging out as an example. The controller can send a message which will be displayed to the user on the next request:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">LoginsController</span> <span class="o">&lt;</span> <span class="no">ApplicationController</span>
+  <span class="k">def</span> <span class="nf">destroy</span>
+    <span class="n">session</span><span class="p">.</span><span class="nf">delete</span><span class="p">(</span><span class="ss">:current_user_id</span><span class="p">)</span>
+    <span class="n">flash</span><span class="p">[</span><span class="ss">:notice</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"You have successfully logged out."</span>
+    <span class="n">redirect_to</span> <span class="n">root_url</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='class LoginsController &lt; ApplicationController
+  def destroy
+    session.delete(:current_user_id)
+    flash[:notice] = "You have successfully logged out."
+    redirect_to root_url
+  end
+end
+'>Copy</button>
+</div>
+<p>Note that it is also possible to assign a flash message as part of the redirection. You can assign <code>:notice</code>, <code>:alert</code> or the general-purpose <code>:flash</code>:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">redirect_to</span> <span class="n">root_url</span><span class="p">,</span> <span class="ss">notice: </span><span class="s2">"You have successfully logged out."</span>
+<span class="n">redirect_to</span> <span class="n">root_url</span><span class="p">,</span> <span class="ss">alert: </span><span class="s2">"You're stuck here!"</span>
+<span class="n">redirect_to</span> <span class="n">root_url</span><span class="p">,</span> <span class="ss">flash: </span><span class="p">{</span> <span class="ss">referral_code: </span><span class="mi">1234</span> <span class="p">}</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="redirect_to root_url, notice: &quot;You have successfully logged out.&quot;
+redirect_to root_url, alert: &quot;You're stuck here!&quot;
+redirect_to root_url, flash: { referral_code: 1234 }
+">Copy</button>
+</div>
+<p>The <code>destroy</code> action redirects to the application's <code>root_url</code>, where the message will be displayed. Note that it's entirely up to the next action to decide what, if anything, it will do with what the previous action put in the flash. It's conventional to display any error alerts or notices from the flash in the application's layout:</p>
+
+<div class="code_container">
+<pre><code class="highlight erb"><span class="nt">&lt;html&gt;</span>
+  <span class="c">&lt;!-- &lt;head/&gt; --&gt;</span>
+  <span class="nt">&lt;body&gt;</span>
+    <span class="cp">&lt;%</span> <span class="n">flash</span><span class="p">.</span><span class="nf">each</span> <span class="k">do</span> <span class="o">|</span><span class="nb">name</span><span class="p">,</span> <span class="n">msg</span><span class="o">|</span> <span class="cp">-%&gt;</span>
+      <span class="cp">&lt;%=</span> <span class="n">content_tag</span> <span class="ss">:div</span><span class="p">,</span> <span class="n">msg</span><span class="p">,</span> <span class="ss">class: </span><span class="nb">name</span> <span class="cp">%&gt;</span>
+    <span class="cp">&lt;%</span> <span class="k">end</span> <span class="cp">-%&gt;</span>
+
+    <span class="c">&lt;!-- more content --&gt;</span>
+  <span class="nt">&lt;/body&gt;</span>
+<span class="nt">&lt;/html&gt;</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="&lt;html&gt;
+  &lt;!-- &lt;head/&gt; --&gt;
+  &lt;body&gt;
+    &lt;% flash.each do |name, msg| -%&gt;
+      &lt;%= content_tag :div, msg, class: name %&gt;
+    &lt;% end -%&gt;
+
+    &lt;!-- more content --&gt;
+  &lt;/body&gt;
+&lt;/html&gt;
+">Copy</button>
+</div>
+<p>This way, if an action sets a notice or an alert message, the layout will display it automatically.</p>
+
+<p>You can pass anything that the session can store; you're not limited to notices and alerts:</p>
+
+<div class="code_container">
+<pre><code class="highlight erb"><span class="cp">&lt;%</span> <span class="k">if</span> <span class="n">flash</span><span class="p">[</span><span class="ss">:just_signed_up</span><span class="p">]</span> <span class="cp">%&gt;</span>
+  <span class="nt">&lt;p</span> <span class="na">class=</span><span class="s">"welcome"</span><span class="nt">&gt;</span>Welcome to our site!<span class="nt">&lt;/p&gt;</span>
+<span class="cp">&lt;%</span> <span class="k">end</span> <span class="cp">%&gt;</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='&lt;% if flash[:just_signed_up] %&gt;
+  &lt;p class="welcome"&gt;Welcome to our site!&lt;/p&gt;
+&lt;% end %&gt;
+'>Copy</button>
+</div>
+<p>If you want a flash value to be carried over to another request, use <a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActionDispatch/Flash/FlashHash.html#method-i-keep"><code>flash.keep</code></a>:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">MainController</span> <span class="o">&lt;</span> <span class="no">ApplicationController</span>
+  <span class="c1"># Let's say this action corresponds to root_url, but you want</span>
+  <span class="c1"># all requests here to be redirected to UsersController#index.</span>
+  <span class="c1"># If an action sets the flash and redirects here, the values</span>
+  <span class="c1"># would normally be lost when another redirect happens, but you</span>
+  <span class="c1"># can use 'keep' to make it persist for another request.</span>
+  <span class="k">def</span> <span class="nf">index</span>
+    <span class="c1"># Will persist all flash values.</span>
+    <span class="n">flash</span><span class="p">.</span><span class="nf">keep</span>
+
+    <span class="c1"># You can also use a key to keep only some kind of value.</span>
+    <span class="c1"># flash.keep(:notice)</span>
+    <span class="n">redirect_to</span> <span class="n">users_url</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="class MainController &lt; ApplicationController
+  # Let's say this action corresponds to root_url, but you want
+  # all requests here to be redirected to UsersController#index.
+  # If an action sets the flash and redirects here, the values
+  # would normally be lost when another redirect happens, but you
+  # can use 'keep' to make it persist for another request.
+  def index
+    # Will persist all flash values.
+    flash.keep
+
+    # You can also use a key to keep only some kind of value.
+    # flash.keep(:notice)
+    redirect_to users_url
+  end
+end
+">Copy</button>
+</div>
+<h5 id="flash-now"><a class="anchorlink" href="#flash-now">5.2.1 <code>flash.now</code></a></h5>
+
+<p>By default, adding values to the flash will make them available to the next request, but sometimes you may want to access those values in the same request. For example, if the <code>create</code> action fails to save a resource, and you render the <code>new</code> template directly, that's not going to result in a new request, but you may still want to display a message using the flash. To do this, you can use <a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActionDispatch/Flash/FlashHash.html#method-i-now"><code>flash.now</code></a> in the same way you use the normal <code>flash</code>:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">ClientsController</span> <span class="o">&lt;</span> <span class="no">ApplicationController</span>
+  <span class="k">def</span> <span class="nf">create</span>
+    <span class="vi">@client</span> <span class="o">=</span> <span class="no">Client</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="n">client_params</span><span class="p">)</span>
+    <span class="k">if</span> <span class="vi">@client</span><span class="p">.</span><span class="nf">save</span>
+      <span class="c1"># ...</span>
+    <span class="k">else</span>
+      <span class="n">flash</span><span class="p">.</span><span class="nf">now</span><span class="p">[</span><span class="ss">:error</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"Could not save client"</span>
+      <span class="n">render</span> <span class="ss">action: </span><span class="s2">"new"</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='class ClientsController &lt; ApplicationController
+  def create
+    @client = Client.new(client_params)
+    if @client.save
+      # ...
+    else
+      flash.now[:error] = "Could not save client"
+      render action: "new"
+    end
+  end
+end
+'>Copy</button>
+</div>
+</body>
+</html>

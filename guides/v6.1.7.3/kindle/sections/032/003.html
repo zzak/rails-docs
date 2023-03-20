@@ -1,0 +1,42 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>4 Autoloading Availability</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v6.1.7.3/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="autoloading-availability"><a class="anchorlink" href="#autoloading-availability">4 Autoloading Availability</a></h3>
+<p>Rails is always able to autoload provided its environment is in place. For
+example the <code>runner</code> command autoloads:</p>
+
+<div class="code_container">
+<pre><code class="highlight console"><span class="gp">$</span><span class="w"> </span><span class="nb">bin/rails </span>runner <span class="s1">'p User.column_names'</span>
+<span class="go">["id", "email", "created_at", "updated_at"]
+</span></code></pre>
+<textarea class="clipboard-content" id="clipboard-b351237ba6ca776046da633efff0355b">bin/rails runner 'p User.column_names'
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-b351237ba6ca776046da633efff0355b">Copy</button>
+</div>
+<p>The console autoloads, the test suite autoloads, and of course the application
+autoloads.</p>
+
+<p>By default, Rails eager loads the application files when it boots in production
+mode, so most of the autoloading going on in development does not happen. But
+autoloading may still be triggered during eager loading.</p>
+
+<p>For example, given</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">BeachHouse</span> <span class="o">&lt;</span> <span class="no">House</span>
+<span class="k">end</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-ce5aa8fe905873814cee5e159af9605f">class BeachHouse &lt; House
+end
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-ce5aa8fe905873814cee5e159af9605f">Copy</button>
+</div>
+<p>if <code>House</code> is still unknown when <code>app/models/beach_house.rb</code> is being eager
+loaded, Rails autoloads it.</p>
+</body>
+</html>

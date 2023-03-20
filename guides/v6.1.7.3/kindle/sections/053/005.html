@@ -1,0 +1,39 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>6 Action View</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v6.1.7.3/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="action-view"><a class="anchorlink" href="#action-view">6 Action View</a></h3>
+<p>Please refer to the <a href="https://github.com/rails/rails/blob/4-2-stable/actionview/CHANGELOG.md">Changelog</a> for detailed changes.</p>
+
+<h4 id="action-view-deprecations"><a class="anchorlink" href="#action-view-deprecations">6.1 Deprecations</a></h4>
+<ul>
+<li>  Deprecated <code>AbstractController::Base.parent_prefixes</code>.
+Override <code>AbstractController::Base.local_prefixes</code> when you want to change
+where to find views.
+(<a href="https://github.com/rails/rails/pull/15026">Pull Request</a>)</li>
+<li>  Deprecated <code>ActionView::Digestor#digest(name, format, finder, options = {})</code>.
+Arguments should be passed as a hash instead.
+(<a href="https://github.com/rails/rails/pull/14243">Pull Request</a>)</li>
+</ul>
+<h4 id="action-view-notable-changes"><a class="anchorlink" href="#action-view-notable-changes">6.2 Notable changes</a></h4>
+<ul>
+<li>  <code>render "foo/bar"</code> now expands to <code>render template: "foo/bar"</code> instead of
+<code>render file: "foo/bar"</code>.
+(<a href="https://github.com/rails/rails/pull/16888">Pull Request</a>)</li>
+<li>  The form helpers no longer generate a <code>&lt;div&gt;</code> element with inline CSS around
+the hidden fields.
+(<a href="https://github.com/rails/rails/pull/14738">Pull Request</a>)</li>
+<li>  Introduced a <code>#{partial_name}_iteration</code> special local variable for use with
+partials that are rendered with a collection. It provides access to the
+current state of the iteration via the <code>index</code>, <code>size</code>, <code>first?</code> and
+<code>last?</code> methods.
+(<a href="https://github.com/rails/rails/pull/7698">Pull Request</a>)</li>
+<li>  Placeholder I18n follows the same convention as <code>label</code> I18n.
+(<a href="https://github.com/rails/rails/pull/16438">Pull Request</a>)</li>
+</ul>
+</body>
+</html>

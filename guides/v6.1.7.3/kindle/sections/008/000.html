@@ -1,0 +1,861 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>1 What is Active Model?</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v6.1.7.3/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="what-is-active-model-questionmark"><a class="anchorlink" href="#what-is-active-model-questionmark">1 What is Active Model?</a></h3>
+<p>Active Model is a library containing various modules used in developing
+classes that need some features present on Active Record.
+Some of these modules are explained below.</p>
+
+<h4 id="attribute-methods"><a class="anchorlink" href="#attribute-methods">1.1 Attribute Methods</a></h4>
+
+<p>The <code>ActiveModel::AttributeMethods</code> module can add custom prefixes and suffixes
+on methods of a class. It is used by defining the prefixes and suffixes and
+which methods on the object will use them.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">Person</span>
+  <span class="kp">include</span> <span class="no">ActiveModel</span><span class="o">::</span><span class="no">AttributeMethods</span>
+
+  <span class="n">attribute_method_prefix</span> <span class="s1">'reset_'</span>
+  <span class="n">attribute_method_suffix</span> <span class="s1">'_highest?'</span>
+  <span class="n">define_attribute_methods</span> <span class="s1">'age'</span>
+
+  <span class="nb">attr_accessor</span> <span class="ss">:age</span>
+
+  <span class="kp">private</span>
+    <span class="k">def</span> <span class="nf">reset_attribute</span><span class="p">(</span><span class="n">attribute</span><span class="p">)</span>
+      <span class="nb">send</span><span class="p">(</span><span class="s2">"</span><span class="si">#{</span><span class="n">attribute</span><span class="si">}</span><span class="s2">="</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="k">end</span>
+
+    <span class="k">def</span> <span class="nf">attribute_highest?</span><span class="p">(</span><span class="n">attribute</span><span class="p">)</span>
+      <span class="nb">send</span><span class="p">(</span><span class="n">attribute</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">100</span>
+    <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-fa007fe282c0c2236487ba8307d4a77f">class Person
+  include ActiveModel::AttributeMethods
+
+  attribute_method_prefix 'reset_'
+  attribute_method_suffix '_highest?'
+  define_attribute_methods 'age'
+
+  attr_accessor :age
+
+  private
+    def reset_attribute(attribute)
+      send("#{attribute}=", 0)
+    end
+
+    def attribute_highest?(attribute)
+      send(attribute) &gt; 100
+    end
+end
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-fa007fe282c0c2236487ba8307d4a77f">Copy</button>
+</div>
+<div class="code_container">
+<pre><code class="highlight irb"><span class="gp">irb&gt;</span><span class="w"> </span><span class="n">person</span> <span class="o">=</span> <span class="no">Person</span><span class="p">.</span><span class="nf">new</span>
+<span class="gp">irb&gt;</span><span class="w"> </span><span class="n">person</span><span class="p">.</span><span class="nf">age</span> <span class="o">=</span> <span class="mi">110</span>
+<span class="gp">irb&gt;</span><span class="w"> </span><span class="n">person</span><span class="p">.</span><span class="nf">age_highest?</span>
+<span class="p">=&gt;</span> <span class="kp">true</span>
+<span class="gp">irb&gt;</span><span class="w"> </span><span class="n">person</span><span class="p">.</span><span class="nf">reset_age</span>
+<span class="p">=&gt;</span> <span class="mi">0</span>
+<span class="gp">irb&gt;</span><span class="w"> </span><span class="n">person</span><span class="p">.</span><span class="nf">age_highest?</span>
+<span class="p">=&gt;</span> <span class="kp">false</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-247342f08ced63f9b0d573281dcf49a2">person = Person.new
+person.age = 110
+person.age_highest?
+person.reset_age
+person.age_highest?
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-247342f08ced63f9b0d573281dcf49a2">Copy</button>
+</div>
+<h4 id="callbacks"><a class="anchorlink" href="#callbacks">1.2 Callbacks</a></h4>
+
+<p><code>ActiveModel::Callbacks</code> gives Active Record style callbacks. This provides an
+ability to define callbacks which run at appropriate times.
+After defining callbacks, you can wrap them with before, after, and around
+custom methods.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">Person</span>
+  <span class="kp">extend</span> <span class="no">ActiveModel</span><span class="o">::</span><span class="no">Callbacks</span>
+
+  <span class="n">define_model_callbacks</span> <span class="ss">:update</span>
+
+  <span class="n">before_update</span> <span class="ss">:reset_me</span>
+
+  <span class="k">def</span> <span class="nf">update</span>
+    <span class="n">run_callbacks</span><span class="p">(</span><span class="ss">:update</span><span class="p">)</span> <span class="k">do</span>
+      <span class="c1"># This method is called when update is called on an object.</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+
+  <span class="k">def</span> <span class="nf">reset_me</span>
+    <span class="c1"># This method is called when update is called on an object as a before_update callback is defined.</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-b8bb386995dc3822b36da5ba960a56b8">class Person
+  extend ActiveModel::Callbacks
+
+  define_model_callbacks :update
+
+  before_update :reset_me
+
+  def update
+    run_callbacks(:update) do
+      # This method is called when update is called on an object.
+    end
+  end
+
+  def reset_me
+    # This method is called when update is called on an object as a before_update callback is defined.
+  end
+end
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-b8bb386995dc3822b36da5ba960a56b8">Copy</button>
+</div>
+<h4 id="conversion"><a class="anchorlink" href="#conversion">1.3 Conversion</a></h4>
+
+<p>If a class defines <code>persisted?</code> and <code>id</code> methods, then you can include the
+<code>ActiveModel::Conversion</code> module in that class, and call the Rails conversion
+methods on objects of that class.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">Person</span>
+  <span class="kp">include</span> <span class="no">ActiveModel</span><span class="o">::</span><span class="no">Conversion</span>
+
+  <span class="k">def</span> <span class="nf">persisted?</span>
+    <span class="kp">false</span>
+  <span class="k">end</span>
+
+  <span class="k">def</span> <span class="nf">id</span>
+    <span class="kp">nil</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-0cf206a25ab55bffdafc8e979ca35290">class Person
+  include ActiveModel::Conversion
+
+  def persisted?
+    false
+  end
+
+  def id
+    nil
+  end
+end
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-0cf206a25ab55bffdafc8e979ca35290">Copy</button>
+</div>
+<div class="code_container">
+<pre><code class="highlight irb"><span class="gp">irb&gt;</span><span class="w"> </span><span class="n">person</span> <span class="o">=</span> <span class="no">Person</span><span class="p">.</span><span class="nf">new</span>
+<span class="gp">irb&gt;</span><span class="w"> </span><span class="n">person</span><span class="p">.</span><span class="nf">to_model</span> <span class="o">==</span> <span class="n">person</span>
+<span class="p">=&gt;</span> <span class="kp">true</span>
+<span class="gp">irb&gt;</span><span class="w"> </span><span class="n">person</span><span class="p">.</span><span class="nf">to_key</span>
+<span class="p">=&gt;</span> <span class="kp">nil</span>
+<span class="gp">irb&gt;</span><span class="w"> </span><span class="n">person</span><span class="p">.</span><span class="nf">to_param</span>
+<span class="p">=&gt;</span> <span class="kp">nil</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-a5fb4e93e4be530461ee3f41cafbe301">person = Person.new
+person.to_model == person
+person.to_key
+person.to_param
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-a5fb4e93e4be530461ee3f41cafbe301">Copy</button>
+</div>
+<h4 id="dirty"><a class="anchorlink" href="#dirty">1.4 Dirty</a></h4>
+
+<p>An object becomes dirty when it has gone through one or more changes to its
+attributes and has not been saved. <code>ActiveModel::Dirty</code> gives the ability to
+check whether an object has been changed or not. It also has attribute based
+accessor methods. Let's consider a Person class with attributes <code>first_name</code>
+and <code>last_name</code>:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">Person</span>
+  <span class="kp">include</span> <span class="no">ActiveModel</span><span class="o">::</span><span class="no">Dirty</span>
+  <span class="n">define_attribute_methods</span> <span class="ss">:first_name</span><span class="p">,</span> <span class="ss">:last_name</span>
+
+  <span class="k">def</span> <span class="nf">first_name</span>
+    <span class="vi">@first_name</span>
+  <span class="k">end</span>
+
+  <span class="k">def</span> <span class="nf">first_name</span><span class="o">=</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+    <span class="n">first_name_will_change!</span>
+    <span class="vi">@first_name</span> <span class="o">=</span> <span class="n">value</span>
+  <span class="k">end</span>
+
+  <span class="k">def</span> <span class="nf">last_name</span>
+    <span class="vi">@last_name</span>
+  <span class="k">end</span>
+
+  <span class="k">def</span> <span class="nf">last_name</span><span class="o">=</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+    <span class="n">last_name_will_change!</span>
+    <span class="vi">@last_name</span> <span class="o">=</span> <span class="n">value</span>
+  <span class="k">end</span>
+
+  <span class="k">def</span> <span class="nf">save</span>
+    <span class="c1"># do save work...</span>
+    <span class="n">changes_applied</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-329155d4c670bb77a0f5a7f4035aad47">class Person
+  include ActiveModel::Dirty
+  define_attribute_methods :first_name, :last_name
+
+  def first_name
+    @first_name
+  end
+
+  def first_name=(value)
+    first_name_will_change!
+    @first_name = value
+  end
+
+  def last_name
+    @last_name
+  end
+
+  def last_name=(value)
+    last_name_will_change!
+    @last_name = value
+  end
+
+  def save
+    # do save work...
+    changes_applied
+  end
+end
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-329155d4c670bb77a0f5a7f4035aad47">Copy</button>
+</div>
+<h5 id="querying-object-directly-for-its-list-of-all-changed-attributes"><a class="anchorlink" href="#querying-object-directly-for-its-list-of-all-changed-attributes">1.4.1 Querying object directly for its list of all changed attributes.</a></h5>
+
+<div class="code_container">
+<pre><code class="highlight irb"><span class="gp">irb&gt;</span><span class="w"> </span><span class="n">person</span> <span class="o">=</span> <span class="no">Person</span><span class="p">.</span><span class="nf">new</span>
+<span class="gp">irb&gt;</span><span class="w"> </span><span class="n">person</span><span class="p">.</span><span class="nf">changed?</span>
+<span class="p">=&gt;</span> <span class="kp">false</span>
+
+<span class="gp">irb&gt;</span><span class="w"> </span><span class="n">person</span><span class="p">.</span><span class="nf">first_name</span> <span class="o">=</span> <span class="s2">"First Name"</span>
+<span class="gp">irb&gt;</span><span class="w"> </span><span class="n">person</span><span class="p">.</span><span class="nf">first_name</span>
+<span class="p">=&gt;</span> <span class="s2">"First Name"</span>
+
+<span class="c"># Returns true if any of the attributes have unsaved changes.
+</span><span class="gp">irb&gt;</span><span class="w"> </span><span class="n">person</span><span class="p">.</span><span class="nf">changed?</span>
+<span class="p">=&gt;</span> <span class="kp">true</span>
+
+<span class="c"># Returns a list of attributes that have changed before saving.
+</span><span class="gp">irb&gt;</span><span class="w"> </span><span class="n">person</span><span class="p">.</span><span class="nf">changed</span>
+<span class="p">=&gt;</span> <span class="p">[</span><span class="s2">"first_name"</span><span class="p">]</span>
+
+<span class="c"># Returns a Hash of the attributes that have changed with their original values.
+</span><span class="gp">irb&gt;</span><span class="w"> </span><span class="n">person</span><span class="p">.</span><span class="nf">changed_attributes</span>
+<span class="p">=&gt;</span> <span class="p">{</span><span class="s2">"first_name"</span><span class="o">=&gt;</span><span class="kp">nil</span><span class="p">}</span>
+
+<span class="c"># Returns a Hash of changes, with the attribute names as the keys, and the values as an array of the old and new values for that field.
+</span><span class="gp">irb&gt;</span><span class="w"> </span><span class="n">person</span><span class="p">.</span><span class="nf">changes</span>
+<span class="p">=&gt;</span> <span class="p">{</span><span class="s2">"first_name"</span><span class="o">=&gt;</span><span class="p">[</span><span class="kp">nil</span><span class="p">,</span> <span class="s2">"First Name"</span><span class="p">]}</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-27fd1ef80b1b1959806d6c2c4e392a8e">person = Person.new
+person.changed?
+person.first_name = "First Name"
+person.first_name
+person.changed?
+person.changed
+person.changed_attributes
+person.changes
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-27fd1ef80b1b1959806d6c2c4e392a8e">Copy</button>
+</div>
+<h5 id="attribute-based-accessor-methods"><a class="anchorlink" href="#attribute-based-accessor-methods">1.4.2 Attribute based accessor methods</a></h5>
+
+<p>Track whether the particular attribute has been changed or not.</p>
+
+<div class="code_container">
+<pre><code class="highlight irb"><span class="gp">irb&gt;</span><span class="w"> </span><span class="n">person</span><span class="p">.</span><span class="nf">first_name</span>
+<span class="p">=&gt;</span> <span class="s2">"First Name"</span>
+
+<span class="c"># attr_name_changed?
+</span><span class="gp">irb&gt;</span><span class="w"> </span><span class="n">person</span><span class="p">.</span><span class="nf">first_name_changed?</span>
+<span class="p">=&gt;</span> <span class="kp">true</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-a68b3d93b196f022216f8da202c9a719">person.first_name
+person.first_name_changed?
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-a68b3d93b196f022216f8da202c9a719">Copy</button>
+</div>
+<p>Track the previous value of the attribute.</p>
+
+<div class="code_container">
+<pre><code class="highlight irb"><span class="c"># attr_name_was accessor
+</span><span class="gp">irb&gt;</span><span class="w"> </span><span class="n">person</span><span class="p">.</span><span class="nf">first_name_was</span>
+<span class="p">=&gt;</span> <span class="kp">nil</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-14b37996091b779585bd299b06523f6e">person.first_name_was
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-14b37996091b779585bd299b06523f6e">Copy</button>
+</div>
+<p>Track both previous and current value of the changed attribute. Returns an array
+if changed, otherwise returns nil.</p>
+
+<div class="code_container">
+<pre><code class="highlight irb"><span class="c"># attr_name_change
+</span><span class="gp">irb&gt;</span><span class="w"> </span><span class="n">person</span><span class="p">.</span><span class="nf">first_name_change</span>
+<span class="p">=&gt;</span> <span class="p">[</span><span class="kp">nil</span><span class="p">,</span> <span class="s2">"First Name"</span><span class="p">]</span>
+<span class="gp">irb&gt;</span><span class="w"> </span><span class="n">person</span><span class="p">.</span><span class="nf">last_name_change</span>
+<span class="p">=&gt;</span> <span class="kp">nil</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-ce3382187f76f0d3959ac07fa208af66">person.first_name_change
+person.last_name_change
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-ce3382187f76f0d3959ac07fa208af66">Copy</button>
+</div>
+<h4 id="validations"><a class="anchorlink" href="#validations">1.5 Validations</a></h4>
+
+<p>The <code>ActiveModel::Validations</code> module adds the ability to validate objects
+like in Active Record.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">Person</span>
+  <span class="kp">include</span> <span class="no">ActiveModel</span><span class="o">::</span><span class="no">Validations</span>
+
+  <span class="nb">attr_accessor</span> <span class="ss">:name</span><span class="p">,</span> <span class="ss">:email</span><span class="p">,</span> <span class="ss">:token</span>
+
+  <span class="n">validates</span> <span class="ss">:name</span><span class="p">,</span> <span class="ss">presence: </span><span class="kp">true</span>
+  <span class="n">validates_format_of</span> <span class="ss">:email</span><span class="p">,</span> <span class="ss">with: </span><span class="sr">/\A([^\s]+)((?:[-a-z0-9]\.)[a-z]{2,})\z/i</span>
+  <span class="n">validates!</span> <span class="ss">:token</span><span class="p">,</span> <span class="ss">presence: </span><span class="kp">true</span>
+<span class="k">end</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-03c0f734ef3e256462514effad5ebd70">class Person
+  include ActiveModel::Validations
+
+  attr_accessor :name, :email, :token
+
+  validates :name, presence: true
+  validates_format_of :email, with: /\A([^\s]+)((?:[-a-z0-9]\.)[a-z]{2,})\z/i
+  validates! :token, presence: true
+end
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-03c0f734ef3e256462514effad5ebd70">Copy</button>
+</div>
+<div class="code_container">
+<pre><code class="highlight irb"><span class="gp">irb&gt;</span><span class="w"> </span><span class="n">person</span> <span class="o">=</span> <span class="no">Person</span><span class="p">.</span><span class="nf">new</span>
+<span class="gp">irb&gt;</span><span class="w"> </span><span class="n">person</span><span class="p">.</span><span class="nf">token</span> <span class="o">=</span> <span class="s2">"2b1f325"</span>
+<span class="gp">irb&gt;</span><span class="w"> </span><span class="n">person</span><span class="p">.</span><span class="nf">valid?</span>
+<span class="p">=&gt;</span> <span class="kp">false</span>
+<span class="gp">irb&gt;</span><span class="w"> </span><span class="n">person</span><span class="p">.</span><span class="nf">name</span> <span class="o">=</span> <span class="s1">'vishnu'</span>
+<span class="gp">irb&gt;</span><span class="w"> </span><span class="n">person</span><span class="p">.</span><span class="nf">email</span> <span class="o">=</span> <span class="s1">'me'</span>
+<span class="gp">irb&gt;</span><span class="w"> </span><span class="n">person</span><span class="p">.</span><span class="nf">valid?</span>
+<span class="p">=&gt;</span> <span class="kp">false</span>
+<span class="gp">irb&gt;</span><span class="w"> </span><span class="n">person</span><span class="p">.</span><span class="nf">email</span> <span class="o">=</span> <span class="s1">'me@vishnuatrai.com'</span>
+<span class="gp">irb&gt;</span><span class="w"> </span><span class="n">person</span><span class="p">.</span><span class="nf">valid?</span>
+<span class="p">=&gt;</span> <span class="kp">true</span>
+<span class="gp">irb&gt;</span><span class="w"> </span><span class="n">person</span><span class="p">.</span><span class="nf">token</span> <span class="o">=</span> <span class="kp">nil</span>
+<span class="gp">irb&gt;</span><span class="w"> </span><span class="n">person</span><span class="p">.</span><span class="nf">valid?</span>
+<span class="go">ActiveModel::StrictValidationFailed
+</span></code></pre>
+<textarea class="clipboard-content" id="clipboard-696008d914b5dd17040af0d7e8d29c52">person = Person.new
+person.token = "2b1f325"
+person.valid?
+person.name = 'vishnu'
+person.email = 'me'
+person.valid?
+person.email = 'me@vishnuatrai.com'
+person.valid?
+person.token = nil
+person.valid?
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-696008d914b5dd17040af0d7e8d29c52">Copy</button>
+</div>
+<h4 id="naming"><a class="anchorlink" href="#naming">1.6 Naming</a></h4>
+
+<p><code>ActiveModel::Naming</code> adds a number of class methods which make naming and routing
+easier to manage. The module defines the <code>model_name</code> class method which
+will define a number of accessors using some <code>ActiveSupport::Inflector</code> methods.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">Person</span>
+  <span class="kp">extend</span> <span class="no">ActiveModel</span><span class="o">::</span><span class="no">Naming</span>
+<span class="k">end</span>
+
+<span class="no">Person</span><span class="p">.</span><span class="nf">model_name</span><span class="p">.</span><span class="nf">name</span>                <span class="c1"># =&gt; "Person"</span>
+<span class="no">Person</span><span class="p">.</span><span class="nf">model_name</span><span class="p">.</span><span class="nf">singular</span>            <span class="c1"># =&gt; "person"</span>
+<span class="no">Person</span><span class="p">.</span><span class="nf">model_name</span><span class="p">.</span><span class="nf">plural</span>              <span class="c1"># =&gt; "people"</span>
+<span class="no">Person</span><span class="p">.</span><span class="nf">model_name</span><span class="p">.</span><span class="nf">element</span>             <span class="c1"># =&gt; "person"</span>
+<span class="no">Person</span><span class="p">.</span><span class="nf">model_name</span><span class="p">.</span><span class="nf">human</span>               <span class="c1"># =&gt; "Person"</span>
+<span class="no">Person</span><span class="p">.</span><span class="nf">model_name</span><span class="p">.</span><span class="nf">collection</span>          <span class="c1"># =&gt; "people"</span>
+<span class="no">Person</span><span class="p">.</span><span class="nf">model_name</span><span class="p">.</span><span class="nf">param_key</span>           <span class="c1"># =&gt; "person"</span>
+<span class="no">Person</span><span class="p">.</span><span class="nf">model_name</span><span class="p">.</span><span class="nf">i18n_key</span>            <span class="c1"># =&gt; :person</span>
+<span class="no">Person</span><span class="p">.</span><span class="nf">model_name</span><span class="p">.</span><span class="nf">route_key</span>           <span class="c1"># =&gt; "people"</span>
+<span class="no">Person</span><span class="p">.</span><span class="nf">model_name</span><span class="p">.</span><span class="nf">singular_route_key</span>  <span class="c1"># =&gt; "person"</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-af6d84e5a06bee17a962c16d84dd376d">class Person
+  extend ActiveModel::Naming
+end
+
+Person.model_name.name                # =&gt; "Person"
+Person.model_name.singular            # =&gt; "person"
+Person.model_name.plural              # =&gt; "people"
+Person.model_name.element             # =&gt; "person"
+Person.model_name.human               # =&gt; "Person"
+Person.model_name.collection          # =&gt; "people"
+Person.model_name.param_key           # =&gt; "person"
+Person.model_name.i18n_key            # =&gt; :person
+Person.model_name.route_key           # =&gt; "people"
+Person.model_name.singular_route_key  # =&gt; "person"
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-af6d84e5a06bee17a962c16d84dd376d">Copy</button>
+</div>
+<h4 id="model"><a class="anchorlink" href="#model">1.7 Model</a></h4>
+
+<p><code>ActiveModel::Model</code> adds the ability for a class to work with Action Pack and
+Action View right out of the box.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">EmailContact</span>
+  <span class="kp">include</span> <span class="no">ActiveModel</span><span class="o">::</span><span class="no">Model</span>
+
+  <span class="nb">attr_accessor</span> <span class="ss">:name</span><span class="p">,</span> <span class="ss">:email</span><span class="p">,</span> <span class="ss">:message</span>
+  <span class="n">validates</span> <span class="ss">:name</span><span class="p">,</span> <span class="ss">:email</span><span class="p">,</span> <span class="ss">:message</span><span class="p">,</span> <span class="ss">presence: </span><span class="kp">true</span>
+
+  <span class="k">def</span> <span class="nf">deliver</span>
+    <span class="k">if</span> <span class="n">valid?</span>
+      <span class="c1"># deliver email</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-f1a05ed131aebeeb589246c6a1986740">class EmailContact
+  include ActiveModel::Model
+
+  attr_accessor :name, :email, :message
+  validates :name, :email, :message, presence: true
+
+  def deliver
+    if valid?
+      # deliver email
+    end
+  end
+end
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-f1a05ed131aebeeb589246c6a1986740">Copy</button>
+</div>
+<p>When including <code>ActiveModel::Model</code> you get some features like:</p>
+<ul>
+<li>model name introspection</li>
+<li>conversions</li>
+<li>translations</li>
+<li>validations</li>
+</ul>
+<p>It also gives you the ability to initialize an object with a hash of attributes,
+much like any Active Record object.</p>
+
+<div class="code_container">
+<pre><code class="highlight irb"><span class="gp">irb&gt;</span><span class="w"> </span><span class="n">email_contact</span> <span class="o">=</span> <span class="no">EmailContact</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="ss">name: </span><span class="s1">'David'</span><span class="p">,</span> <span class="ss">email: </span><span class="s1">'david@example.com'</span><span class="p">,</span> <span class="ss">message: </span><span class="s1">'Hello World'</span><span class="p">)</span>
+<span class="gp">irb&gt;</span><span class="w"> </span><span class="n">email_contact</span><span class="p">.</span><span class="nf">name</span>
+<span class="p">=&gt;</span> <span class="s2">"David"</span>
+<span class="gp">irb&gt;</span><span class="w"> </span><span class="n">email_contact</span><span class="p">.</span><span class="nf">email</span>
+<span class="p">=&gt;</span> <span class="s2">"david@example.com"</span>
+<span class="gp">irb&gt;</span><span class="w"> </span><span class="n">email_contact</span><span class="p">.</span><span class="nf">valid?</span>
+<span class="p">=&gt;</span> <span class="kp">true</span>
+<span class="gp">irb&gt;</span><span class="w"> </span><span class="n">email_contact</span><span class="p">.</span><span class="nf">persisted?</span>
+<span class="p">=&gt;</span> <span class="kp">false</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-60b00066c506430236aa6aa0d3688fec">email_contact = EmailContact.new(name: 'David', email: 'david@example.com', message: 'Hello World')
+email_contact.name
+email_contact.email
+email_contact.valid?
+email_contact.persisted?
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-60b00066c506430236aa6aa0d3688fec">Copy</button>
+</div>
+<p>Any class that includes <code>ActiveModel::Model</code> can be used with <code>form_with</code>,
+<code>render</code> and any other Action View helper methods, just like Active Record
+objects.</p>
+
+<h4 id="serialization"><a class="anchorlink" href="#serialization">1.8 Serialization</a></h4>
+
+<p><code>ActiveModel::Serialization</code> provides basic serialization for your object.
+You need to declare an attributes Hash which contains the attributes you want to
+serialize. Attributes must be strings, not symbols.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">Person</span>
+  <span class="kp">include</span> <span class="no">ActiveModel</span><span class="o">::</span><span class="no">Serialization</span>
+
+  <span class="nb">attr_accessor</span> <span class="ss">:name</span>
+
+  <span class="k">def</span> <span class="nf">attributes</span>
+    <span class="p">{</span><span class="s1">'name'</span> <span class="o">=&gt;</span> <span class="kp">nil</span><span class="p">}</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-66de85c6be5b29f33ddd0b77e8551cc6">class Person
+  include ActiveModel::Serialization
+
+  attr_accessor :name
+
+  def attributes
+    {'name' =&gt; nil}
+  end
+end
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-66de85c6be5b29f33ddd0b77e8551cc6">Copy</button>
+</div>
+<p>Now you can access a serialized Hash of your object using the <code>serializable_hash</code> method.</p>
+
+<div class="code_container">
+<pre><code class="highlight irb"><span class="gp">irb&gt;</span><span class="w"> </span><span class="n">person</span> <span class="o">=</span> <span class="no">Person</span><span class="p">.</span><span class="nf">new</span>
+<span class="gp">irb&gt;</span><span class="w"> </span><span class="n">person</span><span class="p">.</span><span class="nf">serializable_hash</span>
+<span class="p">=&gt;</span> <span class="p">{</span><span class="s2">"name"</span><span class="o">=&gt;</span><span class="kp">nil</span><span class="p">}</span>
+<span class="gp">irb&gt;</span><span class="w"> </span><span class="n">person</span><span class="p">.</span><span class="nf">name</span> <span class="o">=</span> <span class="s2">"Bob"</span>
+<span class="gp">irb&gt;</span><span class="w"> </span><span class="n">person</span><span class="p">.</span><span class="nf">serializable_hash</span>
+<span class="p">=&gt;</span> <span class="p">{</span><span class="s2">"name"</span><span class="o">=&gt;</span><span class="s2">"Bob"</span><span class="p">}</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-e24e6de415712c983503dc0f0447c805">person = Person.new
+person.serializable_hash
+person.name = "Bob"
+person.serializable_hash
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-e24e6de415712c983503dc0f0447c805">Copy</button>
+</div>
+<h5 id="activemodel-serializers"><a class="anchorlink" href="#activemodel-serializers">1.8.1 ActiveModel::Serializers</a></h5>
+
+<p>Active Model also provides the <code>ActiveModel::Serializers::JSON</code> module
+for JSON serializing / deserializing. This module automatically includes the
+previously discussed <code>ActiveModel::Serialization</code> module.</p>
+
+<h6 id="activemodel-serializers-json"><a class="anchorlink" href="#activemodel-serializers-json">1.8.1.1 ActiveModel::Serializers::JSON</a></h6>
+
+<p>To use <code>ActiveModel::Serializers::JSON</code> you only need to change the
+module you are including from <code>ActiveModel::Serialization</code> to <code>ActiveModel::Serializers::JSON</code>.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">Person</span>
+  <span class="kp">include</span> <span class="no">ActiveModel</span><span class="o">::</span><span class="no">Serializers</span><span class="o">::</span><span class="no">JSON</span>
+
+  <span class="nb">attr_accessor</span> <span class="ss">:name</span>
+
+  <span class="k">def</span> <span class="nf">attributes</span>
+    <span class="p">{</span><span class="s1">'name'</span> <span class="o">=&gt;</span> <span class="kp">nil</span><span class="p">}</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-1e4586b88d54227ea53e1140532f6e1c">class Person
+  include ActiveModel::Serializers::JSON
+
+  attr_accessor :name
+
+  def attributes
+    {'name' =&gt; nil}
+  end
+end
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-1e4586b88d54227ea53e1140532f6e1c">Copy</button>
+</div>
+<p>The <code>as_json</code> method, similar to <code>serializable_hash</code>, provides a Hash representing
+the model.</p>
+
+<div class="code_container">
+<pre><code class="highlight irb"><span class="gp">irb&gt;</span><span class="w"> </span><span class="n">person</span> <span class="o">=</span> <span class="no">Person</span><span class="p">.</span><span class="nf">new</span>
+<span class="gp">irb&gt;</span><span class="w"> </span><span class="n">person</span><span class="p">.</span><span class="nf">as_json</span>
+<span class="p">=&gt;</span> <span class="p">{</span><span class="s2">"name"</span><span class="o">=&gt;</span><span class="kp">nil</span><span class="p">}</span>
+<span class="gp">irb&gt;</span><span class="w"> </span><span class="n">person</span><span class="p">.</span><span class="nf">name</span> <span class="o">=</span> <span class="s2">"Bob"</span>
+<span class="gp">irb&gt;</span><span class="w"> </span><span class="n">person</span><span class="p">.</span><span class="nf">as_json</span>
+<span class="p">=&gt;</span> <span class="p">{</span><span class="s2">"name"</span><span class="o">=&gt;</span><span class="s2">"Bob"</span><span class="p">}</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-d72d646b164d0a33eaab79a0529adb8f">person = Person.new
+person.as_json
+person.name = "Bob"
+person.as_json
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-d72d646b164d0a33eaab79a0529adb8f">Copy</button>
+</div>
+<p>You can also define the attributes for a model from a JSON string.
+However, you need to define the <code>attributes=</code> method on your class:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">Person</span>
+  <span class="kp">include</span> <span class="no">ActiveModel</span><span class="o">::</span><span class="no">Serializers</span><span class="o">::</span><span class="no">JSON</span>
+
+  <span class="nb">attr_accessor</span> <span class="ss">:name</span>
+
+  <span class="k">def</span> <span class="nf">attributes</span><span class="o">=</span><span class="p">(</span><span class="nb">hash</span><span class="p">)</span>
+    <span class="nb">hash</span><span class="p">.</span><span class="nf">each</span> <span class="k">do</span> <span class="o">|</span><span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="o">|</span>
+      <span class="nb">send</span><span class="p">(</span><span class="s2">"</span><span class="si">#{</span><span class="n">key</span><span class="si">}</span><span class="s2">="</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+
+  <span class="k">def</span> <span class="nf">attributes</span>
+    <span class="p">{</span><span class="s1">'name'</span> <span class="o">=&gt;</span> <span class="kp">nil</span><span class="p">}</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-52caf61b8c2e2eb62a3486a8a1e8b988">class Person
+  include ActiveModel::Serializers::JSON
+
+  attr_accessor :name
+
+  def attributes=(hash)
+    hash.each do |key, value|
+      send("#{key}=", value)
+    end
+  end
+
+  def attributes
+    {'name' =&gt; nil}
+  end
+end
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-52caf61b8c2e2eb62a3486a8a1e8b988">Copy</button>
+</div>
+<p>Now it is possible to create an instance of <code>Person</code> and set attributes using <code>from_json</code>.</p>
+
+<div class="code_container">
+<pre><code class="highlight irb"><span class="gp">irb&gt;</span><span class="w"> </span><span class="n">json</span> <span class="o">=</span> <span class="p">{</span> <span class="ss">name: </span><span class="s1">'Bob'</span> <span class="p">}.</span><span class="nf">to_json</span>
+<span class="gp">irb&gt;</span><span class="w"> </span><span class="n">person</span> <span class="o">=</span> <span class="no">Person</span><span class="p">.</span><span class="nf">new</span>
+<span class="gp">irb&gt;</span><span class="w"> </span><span class="n">person</span><span class="p">.</span><span class="nf">from_json</span><span class="p">(</span><span class="n">json</span><span class="p">)</span>
+<span class="p">=&gt;</span> <span class="kt">#&lt;</span><span class="no">Person</span><span class="p">:</span><span class="mh">0x00000100c773f0</span> <span class="vi">@name</span><span class="o">=</span><span class="s2">"Bob"</span><span class="kt">&gt;</span>
+<span class="gp">irb&gt;</span><span class="w"> </span><span class="n">person</span><span class="p">.</span><span class="nf">name</span>
+<span class="p">=&gt;</span> <span class="s2">"Bob"</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-f7032e89871af2e0ac6e487df18a95e5">json = { name: 'Bob' }.to_json
+person = Person.new
+person.from_json(json)
+person.name
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-f7032e89871af2e0ac6e487df18a95e5">Copy</button>
+</div>
+<h4 id="translation"><a class="anchorlink" href="#translation">1.9 Translation</a></h4>
+
+<p><code>ActiveModel::Translation</code> provides integration between your object and the Rails
+internationalization (i18n) framework.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">Person</span>
+  <span class="kp">extend</span> <span class="no">ActiveModel</span><span class="o">::</span><span class="no">Translation</span>
+<span class="k">end</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-e2c6d843339b33c9e2eb85c0604edcb1">class Person
+  extend ActiveModel::Translation
+end
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-e2c6d843339b33c9e2eb85c0604edcb1">Copy</button>
+</div>
+<p>With the <code>human_attribute_name</code> method, you can transform attribute names into a
+more human-readable format. The human-readable format is defined in your locale file(s).</p>
+<ul>
+<li>config/locales/app.pt-BR.yml</li>
+</ul>
+<div class="code_container">
+<pre><code class="highlight yaml"><span class="na">pt-BR</span><span class="pi">:</span>
+  <span class="na">activemodel</span><span class="pi">:</span>
+    <span class="na">attributes</span><span class="pi">:</span>
+      <span class="na">person</span><span class="pi">:</span>
+        <span class="na">name</span><span class="pi">:</span> <span class="s1">'</span><span class="s">Nome'</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-d628d2802613cea88d29b54bd628f06c">pt-BR:
+  activemodel:
+    attributes:
+      person:
+        name: 'Nome'
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-d628d2802613cea88d29b54bd628f06c">Copy</button>
+</div>
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="no">Person</span><span class="p">.</span><span class="nf">human_attribute_name</span><span class="p">(</span><span class="s1">'name'</span><span class="p">)</span> <span class="c1"># =&gt; "Nome"</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-d31b811dbbe4a371d464e2a4d6b4eee6">Person.human_attribute_name('name') # =&gt; "Nome"
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-d31b811dbbe4a371d464e2a4d6b4eee6">Copy</button>
+</div>
+<h4 id="lint-tests"><a class="anchorlink" href="#lint-tests">1.10 Lint Tests</a></h4>
+
+<p><code>ActiveModel::Lint::Tests</code> allows you to test whether an object is compliant with
+the Active Model API.</p>
+<ul>
+<li>
+<code>app/models/person.rb</code>
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">Person</span>
+  <span class="kp">include</span> <span class="no">ActiveModel</span><span class="o">::</span><span class="no">Model</span>
+<span class="k">end</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-23fa2babf2edd23377677e1266e4fd68">class Person
+  include ActiveModel::Model
+end
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-23fa2babf2edd23377677e1266e4fd68">Copy</button>
+</div>
+</li>
+<li>
+<code>test/models/person_test.rb</code>
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="nb">require</span> <span class="s2">"test_helper"</span>
+
+<span class="k">class</span> <span class="nc">PersonTest</span> <span class="o">&lt;</span> <span class="no">ActiveSupport</span><span class="o">::</span><span class="no">TestCase</span>
+  <span class="kp">include</span> <span class="no">ActiveModel</span><span class="o">::</span><span class="no">Lint</span><span class="o">::</span><span class="no">Tests</span>
+
+  <span class="n">setup</span> <span class="k">do</span>
+    <span class="vi">@model</span> <span class="o">=</span> <span class="no">Person</span><span class="p">.</span><span class="nf">new</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-3f574ce4712cd79fd0d383150154056e">require "test_helper"
+
+class PersonTest &lt; ActiveSupport::TestCase
+  include ActiveModel::Lint::Tests
+
+  setup do
+    @model = Person.new
+  end
+end
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-3f574ce4712cd79fd0d383150154056e">Copy</button>
+</div>
+</li>
+</ul>
+<div class="code_container">
+<pre><code class="highlight console"><span class="gp">$</span><span class="w"> </span><span class="nb">bin/rails test</span>
+<span class="go">
+Run options: --seed 14596
+
+</span><span class="gp">#</span><span class="w"> </span>Running:
+<span class="go">
+</span><span class="c">......
+</span><span class="go">
+Finished in 0.024899s, 240.9735 runs/s, 1204.8677 assertions/s.
+
+6 runs, 30 assertions, 0 failures, 0 errors, 0 skips
+</span></code></pre>
+<textarea class="clipboard-content" id="clipboard-088af47ec37013cca3a1e6e2115f5fd1">bin/rails test
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-088af47ec37013cca3a1e6e2115f5fd1">Copy</button>
+</div>
+<p>An object is not required to implement all APIs in order to work with
+Action Pack. This module only intends to provide guidance in case you want all
+features out of the box.</p>
+
+<h4 id="securepassword"><a class="anchorlink" href="#securepassword">1.11 SecurePassword</a></h4>
+
+<p><code>ActiveModel::SecurePassword</code> provides a way to securely store any
+password in an encrypted form. When you include this module, a
+<code>has_secure_password</code> class method is provided which defines
+a <code>password</code> accessor with certain validations on it by default.</p>
+
+<h5 id="requirements"><a class="anchorlink" href="#requirements">1.11.1 Requirements</a></h5>
+
+<p><code>ActiveModel::SecurePassword</code> depends on <a href="https://github.com/codahale/bcrypt-ruby" title="BCrypt"><code>bcrypt</code></a>,
+so include this gem in your <code>Gemfile</code> to use <code>ActiveModel::SecurePassword</code> correctly.
+In order to make this work, the model must have an accessor named <code>XXX_digest</code>.
+Where <code>XXX</code> is the attribute name of your desired password.
+The following validations are added automatically:</p>
+<ol>
+<li>Password should be present.</li>
+<li>Password should be equal to its confirmation (provided <code>XXX_confirmation</code> is passed along).</li>
+<li>The maximum length of a password is 72 (required by <code>bcrypt</code> on which ActiveModel::SecurePassword depends)</li>
+</ol>
+<h5 id="examples"><a class="anchorlink" href="#examples">1.11.2 Examples</a></h5>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">Person</span>
+  <span class="kp">include</span> <span class="no">ActiveModel</span><span class="o">::</span><span class="no">SecurePassword</span>
+  <span class="n">has_secure_password</span>
+  <span class="n">has_secure_password</span> <span class="ss">:recovery_password</span><span class="p">,</span> <span class="ss">validations: </span><span class="kp">false</span>
+
+  <span class="nb">attr_accessor</span> <span class="ss">:password_digest</span><span class="p">,</span> <span class="ss">:recovery_password_digest</span>
+<span class="k">end</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-5a28d33fb4e7e802e824c740b9883279">class Person
+  include ActiveModel::SecurePassword
+  has_secure_password
+  has_secure_password :recovery_password, validations: false
+
+  attr_accessor :password_digest, :recovery_password_digest
+end
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-5a28d33fb4e7e802e824c740b9883279">Copy</button>
+</div>
+<div class="code_container">
+<pre><code class="highlight irb"><span class="gp">irb&gt;</span><span class="w"> </span><span class="n">person</span> <span class="o">=</span> <span class="no">Person</span><span class="p">.</span><span class="nf">new</span>
+<span class="err">
+</span><span class="c"># When password is blank.
+</span><span class="gp">irb&gt;</span><span class="w"> </span><span class="n">person</span><span class="p">.</span><span class="nf">valid?</span>
+<span class="p">=&gt;</span> <span class="kp">false</span>
+
+<span class="c"># When the confirmation doesn't match the password.
+</span><span class="gp">irb&gt;</span><span class="w"> </span><span class="n">person</span><span class="p">.</span><span class="nf">password</span> <span class="o">=</span> <span class="s1">'aditya'</span>
+<span class="gp">irb&gt;</span><span class="w"> </span><span class="n">person</span><span class="p">.</span><span class="nf">password_confirmation</span> <span class="o">=</span> <span class="s1">'nomatch'</span>
+<span class="gp">irb&gt;</span><span class="w"> </span><span class="n">person</span><span class="p">.</span><span class="nf">valid?</span>
+<span class="p">=&gt;</span> <span class="kp">false</span>
+
+<span class="c"># When the length of password exceeds 72.
+</span><span class="gp">irb&gt;</span><span class="w"> </span><span class="n">person</span><span class="p">.</span><span class="nf">password</span> <span class="o">=</span> <span class="n">person</span><span class="p">.</span><span class="nf">password_confirmation</span> <span class="o">=</span> <span class="s1">'a'</span> <span class="o">*</span> <span class="mi">100</span>
+<span class="gp">irb&gt;</span><span class="w"> </span><span class="n">person</span><span class="p">.</span><span class="nf">valid?</span>
+<span class="p">=&gt;</span> <span class="kp">false</span>
+
+<span class="c"># When only password is supplied with no password_confirmation.
+</span><span class="gp">irb&gt;</span><span class="w"> </span><span class="n">person</span><span class="p">.</span><span class="nf">password</span> <span class="o">=</span> <span class="s1">'aditya'</span>
+<span class="gp">irb&gt;</span><span class="w"> </span><span class="n">person</span><span class="p">.</span><span class="nf">valid?</span>
+<span class="p">=&gt;</span> <span class="kp">true</span>
+
+<span class="c"># When all validations are passed.
+</span><span class="gp">irb&gt;</span><span class="w"> </span><span class="n">person</span><span class="p">.</span><span class="nf">password</span> <span class="o">=</span> <span class="n">person</span><span class="p">.</span><span class="nf">password_confirmation</span> <span class="o">=</span> <span class="s1">'aditya'</span>
+<span class="gp">irb&gt;</span><span class="w"> </span><span class="n">person</span><span class="p">.</span><span class="nf">valid?</span>
+<span class="p">=&gt;</span> <span class="kp">true</span>
+
+<span class="gp">irb&gt;</span><span class="w"> </span><span class="n">person</span><span class="p">.</span><span class="nf">recovery_password</span> <span class="o">=</span> <span class="s2">"42password"</span>
+<span class="err">
+</span><span class="gp">irb&gt;</span><span class="w"> </span><span class="n">person</span><span class="p">.</span><span class="nf">authenticate</span><span class="p">(</span><span class="s1">'aditya'</span><span class="p">)</span>
+<span class="p">=&gt;</span> <span class="kt">#&lt;</span><span class="no">Person</span><span class="kt">&gt;</span> <span class="c1"># == person</span>
+<span class="gp">irb&gt;</span><span class="w"> </span><span class="n">person</span><span class="p">.</span><span class="nf">authenticate</span><span class="p">(</span><span class="s1">'notright'</span><span class="p">)</span>
+<span class="p">=&gt;</span> <span class="kp">false</span>
+<span class="gp">irb&gt;</span><span class="w"> </span><span class="n">person</span><span class="p">.</span><span class="nf">authenticate_password</span><span class="p">(</span><span class="s1">'aditya'</span><span class="p">)</span>
+<span class="p">=&gt;</span> <span class="kt">#&lt;</span><span class="no">Person</span><span class="kt">&gt;</span> <span class="c1"># == person</span>
+<span class="gp">irb&gt;</span><span class="w"> </span><span class="n">person</span><span class="p">.</span><span class="nf">authenticate_password</span><span class="p">(</span><span class="s1">'notright'</span><span class="p">)</span>
+<span class="p">=&gt;</span> <span class="kp">false</span>
+
+<span class="gp">irb&gt;</span><span class="w"> </span><span class="n">person</span><span class="p">.</span><span class="nf">authenticate_recovery_password</span><span class="p">(</span><span class="s1">'42password'</span><span class="p">)</span>
+<span class="p">=&gt;</span> <span class="kt">#&lt;</span><span class="no">Person</span><span class="kt">&gt;</span> <span class="c1"># == person</span>
+<span class="gp">irb&gt;</span><span class="w"> </span><span class="n">person</span><span class="p">.</span><span class="nf">authenticate_recovery_password</span><span class="p">(</span><span class="s1">'notright'</span><span class="p">)</span>
+<span class="p">=&gt;</span> <span class="kp">false</span>
+
+<span class="gp">irb&gt;</span><span class="w"> </span><span class="n">person</span><span class="p">.</span><span class="nf">password_digest</span>
+<span class="p">=&gt;</span> <span class="s2">"$2a$04$gF8RfZdoXHvyTjHhiU4ZsO.kQqV9oonYZu31PRE4hLQn3xM2qkpIy"</span>
+<span class="gp">irb&gt;</span><span class="w"> </span><span class="n">person</span><span class="p">.</span><span class="nf">recovery_password_digest</span>
+<span class="p">=&gt;</span> <span class="s2">"$2a$04$iOfhwahFymCs5weB3BNH/uXkTG65HR.qpW.bNhEjFP3ftli3o5DQC"</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-cc6773ea2f3b0353f551018292840131">person = Person.new
+person.valid?
+person.password = 'aditya'
+person.password_confirmation = 'nomatch'
+person.valid?
+person.password = person.password_confirmation = 'a' * 100
+person.valid?
+person.password = 'aditya'
+person.valid?
+person.password = person.password_confirmation = 'aditya'
+person.valid?
+person.recovery_password = "42password"
+person.authenticate('aditya')
+person.authenticate('notright')
+person.authenticate_password('aditya')
+person.authenticate_password('notright')
+person.authenticate_recovery_password('42password')
+person.authenticate_recovery_password('notright')
+person.password_digest
+person.recovery_password_digest
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-cc6773ea2f3b0353f551018292840131">Copy</button>
+</div>
+</body>
+</html>

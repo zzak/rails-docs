@@ -1,0 +1,74 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>1 Why Associations?</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v4.2.11.3/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="why-associations-questionmark">1 Why Associations?</h3>
+<p>Why do we need associations between models? Because they make common operations simpler and easier in your code. For example, consider a simple Rails application that includes a model for customers and a model for orders. Each customer can have many orders. Without associations, the model declarations would look like this:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class Customer &lt; ActiveRecord::Base
+end
+
+class Order &lt; ActiveRecord::Base
+end
+
+</pre>
+</div>
+<p>Now, suppose we wanted to add a new order for an existing customer. We'd need to do something like this:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+@order = Order.create(order_date: Time.now, customer_id: @customer.id)
+
+</pre>
+</div>
+<p>Or consider deleting a customer, and ensuring that all of its orders get deleted as well:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+@orders = Order.where(customer_id: @customer.id)
+@orders.each do |order|
+  order.destroy
+end
+@customer.destroy
+
+</pre>
+</div>
+<p>With Active Record associations, we can streamline these - and other - operations by declaratively telling Rails that there is a connection between the two models. Here's the revised code for setting up customers and orders:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class Customer &lt; ActiveRecord::Base
+  has_many :orders, dependent: :destroy
+end
+
+class Order &lt; ActiveRecord::Base
+  belongs_to :customer
+end
+
+</pre>
+</div>
+<p>With this change, creating a new order for a particular customer is easier:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+@order = @customer.orders.create(order_date: Time.now)
+
+</pre>
+</div>
+<p>Deleting a customer and all of its orders is <em>much</em> easier:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+@customer.destroy
+
+</pre>
+</div>
+<p>To learn more about the different types of associations, read the next section of this guide. That's followed by some tips and tricks for working with associations, and then by a complete reference to the methods and options for associations in Rails.</p>
+</body>
+</html>

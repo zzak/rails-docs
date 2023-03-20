@@ -1,0 +1,155 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>3 Built-in Helpers</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v5.0.7.2/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="built-in-helpers">3 Built-in Helpers</h3>
+<p>Rails provides a bunch of view helper methods written in Ruby to assist you
+in generating HTML. Sometimes, you want to add a little Ajax to those elements,
+and Rails has got your back in those cases.</p>
+
+<p>Because of Unobtrusive JavaScript, the Rails "Ajax helpers" are actually in two
+parts: the JavaScript half and the Ruby half.</p>
+
+<p>Unless you have disabled the Asset Pipeline,
+<a href="https://github.com/rails/jquery-ujs/blob/master/src/rails.js">rails.js</a>
+provides the JavaScript half, and the regular Ruby view helpers add appropriate
+tags to your DOM.</p>
+
+<h4 id="form-for">3.1 form_for</h4>
+
+<p><a href="http://api.rubyonrails.org/classes/ActionView/Helpers/FormHelper.html#method-i-form_for"><code>form_for</code></a>
+is a helper that assists with writing forms. <code>form_for</code> takes a <code>:remote</code>
+option. It works like this:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; html-script: true; gutter: false; toolbar: false">
+&lt;%= form_for(@article, remote: true) do |f| %&gt;
+  ...
+&lt;% end %&gt;
+
+</pre>
+</div>
+<p>This will generate the following HTML:</p>
+
+<div class="code_container">
+<pre class="brush: xml; gutter: false; toolbar: false">
+&lt;form accept-charset="UTF-8" action="/articles" class="new_article" data-remote="true" id="new_article" method="post"&gt;
+  ...
+&lt;/form&gt;
+
+</pre>
+</div>
+<p>Note the <code>data-remote="true"</code>. Now, the form will be submitted by Ajax rather
+than by the browser's normal submit mechanism.</p>
+
+<p>You probably don't want to just sit there with a filled out <code>&lt;form&gt;</code>, though.
+You probably want to do something upon a successful submission. To do that,
+bind to the <code>ajax:success</code> event. On failure, use <code>ajax:error</code>. Check it out:</p>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+$(document).ready -&gt;
+  $("#new_article").on("ajax:success", (e, data, status, xhr) -&gt;
+    $("#new_article").append xhr.responseText
+  ).on "ajax:error", (e, xhr, status, error) -&gt;
+    $("#new_article").append "&lt;p&gt;ERROR&lt;/p&gt;"
+
+</pre>
+</div>
+<p>Obviously, you'll want to be a bit more sophisticated than that, but it's a
+start. You can see more about the events <a href="https://github.com/rails/jquery-ujs/wiki/ajax">in the jquery-ujs wiki</a>.</p>
+
+<h4 id="form-tag">3.2 form_tag</h4>
+
+<p><a href="http://api.rubyonrails.org/classes/ActionView/Helpers/FormTagHelper.html#method-i-form_tag"><code>form_tag</code></a>
+is very similar to <code>form_for</code>. It has a <code>:remote</code> option that you can use like
+this:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; html-script: true; gutter: false; toolbar: false">
+&lt;%= form_tag('/articles', remote: true) do %&gt;
+  ...
+&lt;% end %&gt;
+
+</pre>
+</div>
+<p>This will generate the following HTML:</p>
+
+<div class="code_container">
+<pre class="brush: xml; gutter: false; toolbar: false">
+&lt;form accept-charset="UTF-8" action="/articles" data-remote="true" method="post"&gt;
+  ...
+&lt;/form&gt;
+
+</pre>
+</div>
+<p>Everything else is the same as <code>form_for</code>. See its documentation for full
+details.</p>
+
+<h4 id="link-to">3.3 link_to</h4>
+
+<p><a href="http://api.rubyonrails.org/classes/ActionView/Helpers/UrlHelper.html#method-i-link_to"><code>link_to</code></a>
+is a helper that assists with generating links. It has a <code>:remote</code> option you
+can use like this:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; html-script: true; gutter: false; toolbar: false">
+&lt;%= link_to "an article", @article, remote: true %&gt;
+
+</pre>
+</div>
+<p>which generates</p>
+
+<div class="code_container">
+<pre class="brush: xml; gutter: false; toolbar: false">
+&lt;a href="/articles/1" data-remote="true"&gt;an article&lt;/a&gt;
+
+</pre>
+</div>
+<p>You can bind to the same Ajax events as <code>form_for</code>. Here's an example. Let's
+assume that we have a list of articles that can be deleted with just one
+click. We would generate some HTML like this:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; html-script: true; gutter: false; toolbar: false">
+&lt;%= link_to "Delete article", @article, remote: true, method: :delete %&gt;
+
+</pre>
+</div>
+<p>and write some CoffeeScript like this:</p>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+$ -&gt;
+  $("a[data-remote]").on "ajax:success", (e, data, status, xhr) -&gt;
+    alert "The article was deleted."
+
+</pre>
+</div>
+<h4 id="button-to">3.4 button_to</h4>
+
+<p><a href="http://api.rubyonrails.org/classes/ActionView/Helpers/UrlHelper.html#method-i-button_to"><code>button_to</code></a> is a helper that helps you create buttons. It has a <code>:remote</code> option that you can call like this:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; html-script: true; gutter: false; toolbar: false">
+&lt;%= button_to "An article", @article, remote: true %&gt;
+
+</pre>
+</div>
+<p>this generates</p>
+
+<div class="code_container">
+<pre class="brush: xml; gutter: false; toolbar: false">
+&lt;form action="/articles/1" class="button_to" data-remote="true" method="post"&gt;
+  &lt;input type="submit" value="An article" /&gt;
+&lt;/form&gt;
+
+</pre>
+</div>
+<p>Since it's just a <code>&lt;form&gt;</code>, all of the information on <code>form_for</code> also applies.</p>
+</body>
+</html>

@@ -1,0 +1,37 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>3 Methods and Actions</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v5.1.7/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="methods-and-actions">3 Methods and Actions</h3>
+<p>A controller is a Ruby class which inherits from <code>ApplicationController</code> and has methods just like any other class. When your application receives a request, the routing will determine which controller and action to run, then Rails creates an instance of that controller and runs the method with the same name as the action.</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class ClientsController &lt; ApplicationController
+  def new
+  end
+end
+
+</pre>
+</div>
+<p>As an example, if a user goes to <code>/clients/new</code> in your application to add a new client, Rails will create an instance of <code>ClientsController</code> and call its <code>new</code> method. Note that the empty method from the example above would work just fine because Rails will by default render the <code>new.html.erb</code> view unless the action says otherwise. The <code>new</code> method could make available to the view a <code>@client</code> instance variable by creating a new <code>Client</code>:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+def new
+  @client = Client.new
+end
+
+</pre>
+</div>
+<p>The <a href="layouts_and_rendering.html">Layouts &amp; Rendering Guide</a> explains this in more detail.</p>
+
+<p><code>ApplicationController</code> inherits from <code>ActionController::Base</code>, which defines a number of helpful methods. This guide will cover some of these, but if you're curious to see what's in there, you can see all of them in the <a href="http://api.rubyonrails.org/v5.1.7/classes/ActionController.html">API documentation</a> or in the source itself.</p>
+
+<p>Only public methods are callable as actions. It is a best practice to lower the visibility of methods (with <code>private</code> or <code>protected</code>) which are not intended to be actions, like auxiliary methods or filters.</p>
+</body>
+</html>

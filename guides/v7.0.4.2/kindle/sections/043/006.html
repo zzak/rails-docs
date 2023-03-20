@@ -1,0 +1,313 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>7 Load and Configuration Hooks</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v7.0.4.2/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="load-and-configuration-hooks"><a class="anchorlink" href="#load-and-configuration-hooks">7 Load and Configuration Hooks</a></h3>
+<p>Rails code can often be referenced on load of an application. Rails is responsible for the load order of these frameworks, so when you load frameworks, such as <code>ActiveRecord::Base</code>, prematurely you are violating an implicit contract your application has with Rails. Moreover, by loading code such as <code>ActiveRecord::Base</code> on boot of your application you are loading entire frameworks which may slow down your boot time and could cause conflicts with load order and boot of your application.</p>
+
+<p>Load and configuration hooks are the API that allow you to hook into this initialization process without violating the load contract with Rails. This will also mitigate boot performance degradation and avoid conflicts.</p>
+
+<h4 id="avoid-loading-rails-frameworks"><a class="anchorlink" href="#avoid-loading-rails-frameworks">7.1 Avoid loading Rails Frameworks</a></h4>
+
+<p>Since Ruby is a dynamic language, some code will cause different Rails frameworks to load. Take this snippet for instance:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Base</span><span class="p">.</span><span class="nf">include</span><span class="p">(</span><span class="no">MyActiveRecordHelper</span><span class="p">)</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="ActiveRecord::Base.include(MyActiveRecordHelper)
+">Copy</button>
+</div>
+<p>This snippet means that when this file is loaded, it will encounter <code>ActiveRecord::Base</code>. This encounter causes Ruby to look for the definition of that constant and will require it. This causes the entire Active Record framework to be loaded on boot.</p>
+
+<p><code>ActiveSupport.on_load</code> is a mechanism that can be used to defer the loading of code until it is actually needed. The snippet above can be changed to:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="no">ActiveSupport</span><span class="p">.</span><span class="nf">on_load</span><span class="p">(</span><span class="ss">:active_record</span><span class="p">)</span> <span class="k">do</span>
+  <span class="kp">include</span> <span class="no">MyActiveRecordHelper</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="ActiveSupport.on_load(:active_record) do
+  include MyActiveRecordHelper
+end
+">Copy</button>
+</div>
+<p>This new snippet will only include <code>MyActiveRecordHelper</code> when <code>ActiveRecord::Base</code> is loaded.</p>
+
+<h4 id="when-are-hooks-called-questionmark"><a class="anchorlink" href="#when-are-hooks-called-questionmark">7.2 When are Hooks called?</a></h4>
+
+<p>In the Rails framework these hooks are called when a specific library is loaded. For example, when <code>ActionController::Base</code> is loaded, the <code>:action_controller_base</code> hook is called. This means that all <code>ActiveSupport.on_load</code> calls with <code>:action_controller_base</code> hooks will be called in the context of <code>ActionController::Base</code> (that means <code>self</code> will be an <code>ActionController::Base</code>).</p>
+
+<h4 id="modifying-code-to-use-load-hooks"><a class="anchorlink" href="#modifying-code-to-use-load-hooks">7.3 Modifying Code to use Load Hooks</a></h4>
+
+<p>Modifying code is generally straightforward. If you have a line of code that refers to a Rails framework such as <code>ActiveRecord::Base</code> you can wrap that code in a load hook.</p>
+
+<p><strong>Modifying calls to <code>include</code></strong></p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Base</span><span class="p">.</span><span class="nf">include</span><span class="p">(</span><span class="no">MyActiveRecordHelper</span><span class="p">)</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="ActiveRecord::Base.include(MyActiveRecordHelper)
+">Copy</button>
+</div>
+<p>becomes</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="no">ActiveSupport</span><span class="p">.</span><span class="nf">on_load</span><span class="p">(</span><span class="ss">:active_record</span><span class="p">)</span> <span class="k">do</span>
+  <span class="c1"># self refers to ActiveRecord::Base here,</span>
+  <span class="c1"># so we can call .include</span>
+  <span class="kp">include</span> <span class="no">MyActiveRecordHelper</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="ActiveSupport.on_load(:active_record) do
+  # self refers to ActiveRecord::Base here,
+  # so we can call .include
+  include MyActiveRecordHelper
+end
+">Copy</button>
+</div>
+<p><strong>Modifying calls to <code>prepend</code></strong></p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="no">ActionController</span><span class="o">::</span><span class="no">Base</span><span class="p">.</span><span class="nf">prepend</span><span class="p">(</span><span class="no">MyActionControllerHelper</span><span class="p">)</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="ActionController::Base.prepend(MyActionControllerHelper)
+">Copy</button>
+</div>
+<p>becomes</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="no">ActiveSupport</span><span class="p">.</span><span class="nf">on_load</span><span class="p">(</span><span class="ss">:action_controller_base</span><span class="p">)</span> <span class="k">do</span>
+  <span class="c1"># self refers to ActionController::Base here,</span>
+  <span class="c1"># so we can call .prepend</span>
+  <span class="n">prepend</span> <span class="no">MyActionControllerHelper</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="ActiveSupport.on_load(:action_controller_base) do
+  # self refers to ActionController::Base here,
+  # so we can call .prepend
+  prepend MyActionControllerHelper
+end
+">Copy</button>
+</div>
+<p><strong>Modifying calls to class methods</strong></p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Base</span><span class="p">.</span><span class="nf">include_root_in_json</span> <span class="o">=</span> <span class="kp">true</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="ActiveRecord::Base.include_root_in_json = true
+">Copy</button>
+</div>
+<p>becomes</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="no">ActiveSupport</span><span class="p">.</span><span class="nf">on_load</span><span class="p">(</span><span class="ss">:active_record</span><span class="p">)</span> <span class="k">do</span>
+  <span class="c1"># self refers to ActiveRecord::Base here</span>
+  <span class="nb">self</span><span class="p">.</span><span class="nf">include_root_in_json</span> <span class="o">=</span> <span class="kp">true</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="ActiveSupport.on_load(:active_record) do
+  # self refers to ActiveRecord::Base here
+  self.include_root_in_json = true
+end
+">Copy</button>
+</div>
+<h4 id="available-load-hooks"><a class="anchorlink" href="#available-load-hooks">7.4 Available Load Hooks</a></h4>
+
+<p>These are the load hooks you can use in your own code. To hook into the initialization process of one of the following classes use the available hook.</p>
+<table>
+<thead>
+<tr>
+<th>Class</th>
+<th>Hook</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>ActionCable</code></td>
+<td><code>action_cable</code></td>
+</tr>
+<tr>
+<td><code>ActionCable::Channel::Base</code></td>
+<td><code>action_cable_channel</code></td>
+</tr>
+<tr>
+<td><code>ActionCable::Connection::Base</code></td>
+<td><code>action_cable_connection</code></td>
+</tr>
+<tr>
+<td><code>ActionCable::Connection::TestCase</code></td>
+<td><code>action_cable_connection_test_case</code></td>
+</tr>
+<tr>
+<td><code>ActionController::API</code></td>
+<td><code>action_controller_api</code></td>
+</tr>
+<tr>
+<td><code>ActionController::API</code></td>
+<td><code>action_controller</code></td>
+</tr>
+<tr>
+<td><code>ActionController::Base</code></td>
+<td><code>action_controller_base</code></td>
+</tr>
+<tr>
+<td><code>ActionController::Base</code></td>
+<td><code>action_controller</code></td>
+</tr>
+<tr>
+<td><code>ActionController::TestCase</code></td>
+<td><code>action_controller_test_case</code></td>
+</tr>
+<tr>
+<td><code>ActionDispatch::IntegrationTest</code></td>
+<td><code>action_dispatch_integration_test</code></td>
+</tr>
+<tr>
+<td><code>ActionDispatch::Response</code></td>
+<td><code>action_dispatch_response</code></td>
+</tr>
+<tr>
+<td><code>ActionDispatch::Request</code></td>
+<td><code>action_dispatch_request</code></td>
+</tr>
+<tr>
+<td><code>ActionDispatch::SystemTestCase</code></td>
+<td><code>action_dispatch_system_test_case</code></td>
+</tr>
+<tr>
+<td><code>ActionMailbox::Base</code></td>
+<td><code>action_mailbox</code></td>
+</tr>
+<tr>
+<td><code>ActionMailbox::InboundEmail</code></td>
+<td><code>action_mailbox_inbound_email</code></td>
+</tr>
+<tr>
+<td><code>ActionMailbox::Record</code></td>
+<td><code>action_mailbox_record</code></td>
+</tr>
+<tr>
+<td><code>ActionMailbox::TestCase</code></td>
+<td><code>action_mailbox_test_case</code></td>
+</tr>
+<tr>
+<td><code>ActionMailer::Base</code></td>
+<td><code>action_mailer</code></td>
+</tr>
+<tr>
+<td><code>ActionMailer::TestCase</code></td>
+<td><code>action_mailer_test_case</code></td>
+</tr>
+<tr>
+<td><code>ActionText::Content</code></td>
+<td><code>action_text_content</code></td>
+</tr>
+<tr>
+<td><code>ActionText::Record</code></td>
+<td><code>action_text_record</code></td>
+</tr>
+<tr>
+<td><code>ActionText::RichText</code></td>
+<td><code>action_text_rich_text</code></td>
+</tr>
+<tr>
+<td><code>ActionView::Base</code></td>
+<td><code>action_view</code></td>
+</tr>
+<tr>
+<td><code>ActionView::TestCase</code></td>
+<td><code>action_view_test_case</code></td>
+</tr>
+<tr>
+<td><code>ActiveJob::Base</code></td>
+<td><code>active_job</code></td>
+</tr>
+<tr>
+<td><code>ActiveJob::TestCase</code></td>
+<td><code>active_job_test_case</code></td>
+</tr>
+<tr>
+<td><code>ActiveRecord::Base</code></td>
+<td><code>active_record</code></td>
+</tr>
+<tr>
+<td><code>ActiveStorage::Attachment</code></td>
+<td><code>active_storage_attachment</code></td>
+</tr>
+<tr>
+<td><code>ActiveStorage::VariantRecord</code></td>
+<td><code>active_storage_variant_record</code></td>
+</tr>
+<tr>
+<td><code>ActiveStorage::Blob</code></td>
+<td><code>active_storage_blob</code></td>
+</tr>
+<tr>
+<td><code>ActiveStorage::Record</code></td>
+<td><code>active_storage_record</code></td>
+</tr>
+<tr>
+<td><code>ActiveSupport::TestCase</code></td>
+<td><code>active_support_test_case</code></td>
+</tr>
+<tr>
+<td><code>i18n</code></td>
+<td><code>i18n</code></td>
+</tr>
+</tbody>
+</table>
+<h4 id="available-configuration-hooks"><a class="anchorlink" href="#available-configuration-hooks">7.5 Available Configuration Hooks</a></h4>
+
+<p>Configuration hooks do not hook into any particular framework, but instead they run in context of the entire application.</p>
+<table>
+<thead>
+<tr>
+<th>Hook</th>
+<th>Use Case</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>before_configuration</code></td>
+<td>First configurable block to run. Called before any initializers are run.</td>
+</tr>
+<tr>
+<td><code>before_initialize</code></td>
+<td>Second configurable block to run. Called before frameworks initialize.</td>
+</tr>
+<tr>
+<td><code>before_eager_load</code></td>
+<td>Third configurable block to run. Does not run if <a href="configuring.html#config-eager-load"><code>config.eager_load</code></a> set to false.</td>
+</tr>
+<tr>
+<td><code>after_initialize</code></td>
+<td>Last configurable block to run. Called after frameworks initialize.</td>
+</tr>
+</tbody>
+</table>
+<p>Configuration hooks can be called in the Engine class.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">module</span> <span class="nn">Blorgh</span>
+  <span class="k">class</span> <span class="nc">Engine</span> <span class="o">&lt;</span> <span class="o">::</span><span class="no">Rails</span><span class="o">::</span><span class="no">Engine</span>
+    <span class="n">config</span><span class="p">.</span><span class="nf">before_configuration</span> <span class="k">do</span>
+      <span class="nb">puts</span> <span class="s1">'I am called before any initializers'</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="module Blorgh
+  class Engine &lt; ::Rails::Engine
+    config.before_configuration do
+      puts 'I am called before any initializers'
+    end
+  end
+end
+">Copy</button>
+</div>
+</body>
+</html>

@@ -1,0 +1,55 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>9 Security</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v4.0.13/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="security">9 Security</h3>
+<p>If you were to publish your blog online, anybody would be able to add, edit and
+delete posts or delete comments.</p>
+<p>Rails provides a very simple HTTP authentication system that will work nicely in
+this situation.</p>
+<p>In the <code>PostsController</code> we need to have a way to block access to the various
+actions if the person is not authenticated, here we can use the Rails
+<code>http_basic_authenticate_with</code> method, allowing access to the requested
+action if that method allows it.</p>
+<p>To use the authentication system, we specify it at the top of our
+<code>PostsController</code>, in this case, we want the user to be authenticated on every
+action, except for <code>index</code> and <code>show</code>, so we write that in <code>app/controllers/posts_controller.rb</code>:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class PostsController &lt; ApplicationController
+
+  http_basic_authenticate_with name: "dhh", password: "secret", except: [:index, :show]
+
+  def index
+    @posts = Post.all
+  end
+
+  # snipped for brevity
+
+</pre>
+</div>
+<p>We also only want to allow authenticated users to delete comments, so in the
+<code>CommentsController</code> (<code>app/controllers/comments_controller.rb</code>) we write:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class CommentsController &lt; ApplicationController
+
+  http_basic_authenticate_with name: "dhh", password: "secret", only: :destroy
+
+  def create
+    @post = Post.find(params[:post_id])
+    ...
+  end
+  # snipped for brevity
+
+</pre>
+</div>
+<p>Now if you try to create a new post, you will be greeted with a basic HTTP
+Authentication challenge</p>
+<p><img src="/home/rails/v4.0.13/guides/output/kindle/images/getting_started/challenge.png" alt="Basic HTTP Authentication Challenge"></p>
+</body>
+</html>

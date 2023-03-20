@@ -1,0 +1,47 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>3 Upgrading from Rails 5.0 to Rails 5.1</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v5.2.8.1/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="upgrading-from-rails-5-0-to-rails-5-1"><a class="anchorlink" href="#upgrading-from-rails-5-0-to-rails-5-1">3 Upgrading from Rails 5.0 to Rails 5.1</a></h3>
+<p>For more information on changes made to Rails 5.1 please see the <a href="5_1_release_notes.html">release notes</a>.</p>
+
+<h4 id="top-level-hashwithindifferentaccess-is-soft-deprecated"><a class="anchorlink" href="#top-level-hashwithindifferentaccess-is-soft-deprecated">3.1 Top-level <code>HashWithIndifferentAccess</code> is soft-deprecated</a></h4>
+
+<p>If your application uses the top-level <code>HashWithIndifferentAccess</code> class, you
+should slowly move your code to instead use <code>ActiveSupport::HashWithIndifferentAccess</code>.</p>
+
+<p>It is only soft-deprecated, which means that your code will not break at the
+moment and no deprecation warning will be displayed, but this constant will be
+removed in the future.</p>
+
+<p>Also, if you have pretty old YAML documents containing dumps of such objects,
+you may need to load and dump them again to make sure that they reference
+the right constant, and that loading them won't break in the future.</p>
+
+<h4 id="application-secrets-now-loaded-with-all-keys-as-symbols"><a class="anchorlink" href="#application-secrets-now-loaded-with-all-keys-as-symbols">3.2 <code>application.secrets</code> now loaded with all keys as symbols</a></h4>
+
+<p>If your application stores nested configuration in <code>config/secrets.yml</code>, all keys
+are now loaded as symbols, so access using strings should be changed.</p>
+
+<p>From:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+Rails.application.secrets[:smtp_settings]["address"]
+
+</pre>
+</div>
+<p>To:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+Rails.application.secrets[:smtp_settings][:address]
+
+</pre>
+</div>
+</body>
+</html>

@@ -1,0 +1,142 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>4 Conditional GET support</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v6.0.6.1/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="conditional-get-support"><a class="anchorlink" href="#conditional-get-support">4 Conditional GET support</a></h3>
+<p>Conditional GETs are a feature of the HTTP specification that provide a way for web servers to tell browsers that the response to a GET request hasn't changed since the last request and can be safely pulled from the browser cache.</p>
+
+<p>They work by using the <code>HTTP_IF_NONE_MATCH</code> and <code>HTTP_IF_MODIFIED_SINCE</code> headers to pass back and forth both a unique content identifier and the timestamp of when the content was last changed. If the browser makes a request where the content identifier (etag) or last modified since timestamp matches the server's version then the server only needs to send back an empty response with a not modified status.</p>
+
+<p>It is the server's (i.e. our) responsibility to look for a last modified timestamp and the if-none-match header and determine whether or not to send back the full response. With conditional-get support in Rails this is a pretty easy task:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class ProductsController &lt; ApplicationController
+
+  def show
+    @product = Product.find(params[:id])
+
+    # If the request is stale according to the given timestamp and etag value
+    # (i.e. it needs to be processed again) then execute this block
+    if stale?(last_modified: @product.updated_at.utc, etag: @product.cache_key_with_version)
+      respond_to do |wants|
+        # ... normal response processing
+      end
+    end
+
+    # If the request is fresh (i.e. it's not modified) then you don't need to do
+    # anything. The default render checks for this using the parameters
+    # used in the previous call to stale? and will automatically send a
+    # :not_modified. So that's it, you're done.
+  end
+end
+
+</pre>
+</div>
+<p>Instead of an options hash, you can also simply pass in a model. Rails will use the <code>updated_at</code> and <code>cache_key_with_version</code> methods for setting <code>last_modified</code> and <code>etag</code>:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class ProductsController &lt; ApplicationController
+  def show
+    @product = Product.find(params[:id])
+
+    if stale?(@product)
+      respond_to do |wants|
+        # ... normal response processing
+      end
+    end
+  end
+end
+
+</pre>
+</div>
+<p>If you don't have any special response processing and are using the default rendering mechanism (i.e. you're not using <code>respond_to</code> or calling render yourself) then you've got an easy helper in <code>fresh_when</code>:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class ProductsController &lt; ApplicationController
+
+  # This will automatically send back a :not_modified if the request is fresh,
+  # and will render the default template (product.*) if it's stale.
+
+  def show
+    @product = Product.find(params[:id])
+    fresh_when last_modified: @product.published_at.utc, etag: @product
+  end
+end
+
+</pre>
+</div>
+<p>Sometimes we want to cache response, for example a static page, that never gets
+expired. To achieve this, we can use <code>http_cache_forever</code> helper and by doing
+so browser and proxies will cache it indefinitely.</p>
+
+<p>By default cached responses will be private, cached only on the user's web
+browser. To allow proxies to cache the response, set <code>public: true</code> to indicate
+that they can serve the cached response to all users.</p>
+
+<p>Using this helper, <code>last_modified</code> header is set to <code>Time.new(2011, 1, 1).utc</code>
+and <code>expires</code> header is set to a 100 years.</p>
+
+<div class="warning"><p>Use this method carefully as browser/proxy won't be able to invalidate
+the cached response unless browser cache is forcefully cleared.</p></div>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class HomeController &lt; ApplicationController
+  def index
+    http_cache_forever(public: true) do
+      render
+    end
+  end
+end
+
+</pre>
+</div>
+<h4 id="strong-v-s-weak-etags"><a class="anchorlink" href="#strong-v-s-weak-etags">4.1 Strong v/s Weak ETags</a></h4>
+
+<p>Rails generates weak ETags by default. Weak ETags allow semantically equivalent
+responses to have the same ETags, even if their bodies do not match exactly.
+This is useful when we don't want the page to be regenerated for minor changes in
+response body.</p>
+
+<p>Weak ETags have a leading <code>W/</code> to differentiate them from strong ETags.</p>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+  W/"618bbc92e2d35ea1945008b42799b0e7" → Weak ETag
+  "618bbc92e2d35ea1945008b42799b0e7" → Strong ETag
+
+</pre>
+</div>
+<p>Unlike weak ETag, strong ETag implies that response should be exactly the same
+and byte by byte identical. Useful when doing Range requests within a
+large video or PDF file. Some CDNs support only strong ETags, like Akamai.
+If you absolutely need to generate a strong ETag, it can be done as follows.</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+  class ProductsController &lt; ApplicationController
+    def show
+      @product = Product.find(params[:id])
+      fresh_when last_modified: @product.published_at.utc, strong_etag: @product
+    end
+  end
+
+</pre>
+</div>
+<p>You can also set the strong ETag directly on the response.</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+  response.strong_etag = response.body # =&gt; "618bbc92e2d35ea1945008b42799b0e7"
+
+</pre>
+</div>
+</body>
+</html>

@@ -1,0 +1,84 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>7 Intercepting and Observing Emails</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v7.0.4.2/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="intercepting-and-observing-emails"><a class="anchorlink" href="#intercepting-and-observing-emails">7 Intercepting and Observing Emails</a></h3>
+<p>Action Mailer provides hooks into the Mail observer and interceptor methods. These allow you to register classes that are called during the mail delivery life cycle of every email sent.</p>
+
+<h4 id="intercepting-emails"><a class="anchorlink" href="#intercepting-emails">7.1 Intercepting Emails</a></h4>
+
+<p>Interceptors allow you to make modifications to emails before they are handed off to the delivery agents. An interceptor class must implement the <code>::delivering_email(message)</code> method which will be called before the email is sent.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">SandboxEmailInterceptor</span>
+  <span class="k">def</span> <span class="nc">self</span><span class="o">.</span><span class="nf">delivering_email</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+    <span class="n">message</span><span class="p">.</span><span class="nf">to</span> <span class="o">=</span> <span class="p">[</span><span class="s1">'sandbox@example.com'</span><span class="p">]</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="class SandboxEmailInterceptor
+  def self.delivering_email(message)
+    message.to = ['sandbox@example.com']
+  end
+end
+">Copy</button>
+</div>
+<p>Before the interceptor can do its job you need to register it using the <code>interceptors</code> config option.
+You can do this in an initializer file like <code>config/initializers/mail_interceptors.rb</code>:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="no">Rails</span><span class="p">.</span><span class="nf">application</span><span class="p">.</span><span class="nf">configure</span> <span class="k">do</span>
+  <span class="k">if</span> <span class="no">Rails</span><span class="p">.</span><span class="nf">env</span><span class="p">.</span><span class="nf">staging?</span>
+    <span class="n">config</span><span class="p">.</span><span class="nf">action_mailer</span><span class="p">.</span><span class="nf">interceptors</span> <span class="o">=</span> <span class="sx">%w[SandboxEmailInterceptor]</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="Rails.application.configure do
+  if Rails.env.staging?
+    config.action_mailer.interceptors = %w[SandboxEmailInterceptor]
+  end
+end
+">Copy</button>
+</div>
+<div class="note"><p>The example above uses a custom environment called "staging" for a
+production-like server but for testing purposes. You can read
+<a href="configuring.html#creating-rails-environments">Creating Rails Environments</a>
+for more information about custom Rails environments.</p></div>
+
+<h4 id="observing-emails"><a class="anchorlink" href="#observing-emails">7.2 Observing Emails</a></h4>
+
+<p>Observers give you access to the email message after it has been sent. An observer class must implement the <code>:delivered_email(message)</code> method, which will be called after the email is sent.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">EmailDeliveryObserver</span>
+  <span class="k">def</span> <span class="nc">self</span><span class="o">.</span><span class="nf">delivered_email</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+    <span class="no">EmailDelivery</span><span class="p">.</span><span class="nf">log</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="class EmailDeliveryObserver
+  def self.delivered_email(message)
+    EmailDelivery.log(message)
+  end
+end
+">Copy</button>
+</div>
+<p>Similar to interceptors, you must register observers using the <code>observers</code> config option.
+You can do this in an initializer file like <code>config/initializers/mail_observers.rb</code>:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="no">Rails</span><span class="p">.</span><span class="nf">application</span><span class="p">.</span><span class="nf">configure</span> <span class="k">do</span>
+  <span class="n">config</span><span class="p">.</span><span class="nf">action_mailer</span><span class="p">.</span><span class="nf">observers</span> <span class="o">=</span> <span class="sx">%w[EmailDeliveryObserver]</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="Rails.application.configure do
+  config.action_mailer.observers = %w[EmailDeliveryObserver]
+end
+">Copy</button>
+</div>
+</body>
+</html>

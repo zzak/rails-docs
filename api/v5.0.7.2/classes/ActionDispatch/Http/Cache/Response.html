@@ -1,0 +1,786 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>ActionDispatch::Http::Cache::Response</title>
+    <meta charset="UTF-8" />
+    <link rel="stylesheet" href="../../../../css/reset.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="../../../../css/main.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="../../../../css/github.css" type="text/css" media="screen" />
+<script src="../../../../js/jquery-1.3.2.min.js" type="text/javascript" charset="utf-8"></script>
+<script src="../../../../js/main.js" type="text/javascript" charset="utf-8"></script>
+<script src="../../../../js/highlight.pack.js" type="text/javascript" charset="utf-8"></script>
+
+
+    <meta property="og:title" value="ActionDispatch::Http::Cache::Response">
+
+  
+
+    <meta name="keywords" content="ActionDispatch::Http::Cache::Response class">
+  
+    <meta name="keywords" content="last_modified, last_modified?, last_modified=, date, date?, date=, etag=, weak_etag=, strong_etag=, etag?, weak_etag?, strong_etag?">
+  
+</head>
+
+<body>
+    <div class="banner">
+        
+            <span>Ruby on Rails 5.0.7.2</span><br />
+        
+        <h1>
+            <span class="type">Module</span>
+            ActionDispatch::Http::Cache::Response
+            
+        </h1>
+        <ul class="files">
+            
+            <li><a href="../../../../files/actionpack/lib/action_dispatch/http/cache_rb.html">actionpack/lib/action_dispatch/http/cache.rb</a></li>
+            
+        </ul>
+    </div>
+    <div id="bodyContent">
+        <div id="content">
+  
+
+
+  
+
+
+  
+  
+
+
+  
+
+
+  
+    <!-- Method ref -->
+    <div class="sectiontitle">Methods</div>
+    <dl class="methods">
+      
+        <dt>D</dt>
+        <dd>
+          <ul>
+            
+              
+              <li>
+                <a href="#method-i-date">date</a>,
+              </li>
+            
+              
+              <li>
+                <a href="#method-i-date-3D">date=</a>,
+              </li>
+            
+              
+              <li>
+                <a href="#method-i-date-3F">date?</a>
+              </li>
+            
+          </ul>
+        </dd>
+      
+        <dt>E</dt>
+        <dd>
+          <ul>
+            
+              
+              <li>
+                <a href="#method-i-etag-3D">etag=</a>,
+              </li>
+            
+              
+              <li>
+                <a href="#method-i-etag-3F">etag?</a>
+              </li>
+            
+          </ul>
+        </dd>
+      
+        <dt>L</dt>
+        <dd>
+          <ul>
+            
+              
+              <li>
+                <a href="#method-i-last_modified">last_modified</a>,
+              </li>
+            
+              
+              <li>
+                <a href="#method-i-last_modified-3D">last_modified=</a>,
+              </li>
+            
+              
+              <li>
+                <a href="#method-i-last_modified-3F">last_modified?</a>
+              </li>
+            
+          </ul>
+        </dd>
+      
+        <dt>S</dt>
+        <dd>
+          <ul>
+            
+              
+              <li>
+                <a href="#method-i-strong_etag-3D">strong_etag=</a>,
+              </li>
+            
+              
+              <li>
+                <a href="#method-i-strong_etag-3F">strong_etag?</a>
+              </li>
+            
+          </ul>
+        </dd>
+      
+        <dt>W</dt>
+        <dd>
+          <ul>
+            
+              
+              <li>
+                <a href="#method-i-weak_etag-3D">weak_etag=</a>,
+              </li>
+            
+              
+              <li>
+                <a href="#method-i-weak_etag-3F">weak_etag?</a>
+              </li>
+            
+          </ul>
+        </dd>
+      
+    </dl>
+  
+
+  
+
+
+
+  
+
+    
+
+    
+
+    
+      <!-- Section constants -->
+      <div class="sectiontitle">Constants</div>
+      <table border='0' cellpadding='5'>
+        
+          <tr valign='top'>
+            <td class="attr-name">DATE</td>
+            <td>=</td>
+            <td class="attr-value">&#39;Date&#39;.freeze</td>
+          </tr>
+          
+            <tr valign='top'>
+              <td>&nbsp;</td>
+              <td colspan="2" class="attr-desc"></td>
+            </tr>
+          
+        
+          <tr valign='top'>
+            <td class="attr-name">LAST_MODIFIED</td>
+            <td>=</td>
+            <td class="attr-value">&quot;Last-Modified&quot;.freeze</td>
+          </tr>
+          
+            <tr valign='top'>
+              <td>&nbsp;</td>
+              <td colspan="2" class="attr-desc"></td>
+            </tr>
+          
+        
+          <tr valign='top'>
+            <td class="attr-name">SPECIAL_KEYS</td>
+            <td>=</td>
+            <td class="attr-value">Set.new(%w[extras no-cache max-age public private must-revalidate])</td>
+          </tr>
+          
+            <tr valign='top'>
+              <td>&nbsp;</td>
+              <td colspan="2" class="attr-desc"></td>
+            </tr>
+          
+        
+          <tr valign='top'>
+            <td class="attr-name">DEFAULT_CACHE_CONTROL</td>
+            <td>=</td>
+            <td class="attr-value">&quot;max-age=0, private, must-revalidate&quot;.freeze</td>
+          </tr>
+          
+            <tr valign='top'>
+              <td>&nbsp;</td>
+              <td colspan="2" class="attr-desc"></td>
+            </tr>
+          
+        
+          <tr valign='top'>
+            <td class="attr-name">NO_CACHE</td>
+            <td>=</td>
+            <td class="attr-value">&quot;no-cache&quot;.freeze</td>
+          </tr>
+          
+            <tr valign='top'>
+              <td>&nbsp;</td>
+              <td colspan="2" class="attr-desc"></td>
+            </tr>
+          
+        
+          <tr valign='top'>
+            <td class="attr-name">PUBLIC</td>
+            <td>=</td>
+            <td class="attr-value">&quot;public&quot;.freeze</td>
+          </tr>
+          
+            <tr valign='top'>
+              <td>&nbsp;</td>
+              <td colspan="2" class="attr-desc"></td>
+            </tr>
+          
+        
+          <tr valign='top'>
+            <td class="attr-name">PRIVATE</td>
+            <td>=</td>
+            <td class="attr-value">&quot;private&quot;.freeze</td>
+          </tr>
+          
+            <tr valign='top'>
+              <td>&nbsp;</td>
+              <td colspan="2" class="attr-desc"></td>
+            </tr>
+          
+        
+          <tr valign='top'>
+            <td class="attr-name">MUST_REVALIDATE</td>
+            <td>=</td>
+            <td class="attr-value">&quot;must-revalidate&quot;.freeze</td>
+          </tr>
+          
+            <tr valign='top'>
+              <td>&nbsp;</td>
+              <td colspan="2" class="attr-desc"></td>
+            </tr>
+          
+        
+      </table>
+    
+
+
+    
+      <!-- Section attributes -->
+      <div class="sectiontitle">Attributes</div>
+      <table border='0' cellpadding='5'>
+        
+          <tr valign='top'>
+            <td class='attr-rw'>
+              [R]
+            </td>
+            <td class='attr-name'>cache_control</td>
+            <td class='attr-desc'></td>
+          </tr>
+        
+      </table>
+    
+
+
+    <!-- Methods -->
+        
+      <div class="sectiontitle">Instance Public methods</div>
+      
+        <div class="method">
+          <div class="title method-title" id="method-i-date">
+            
+              <b>date</b>()
+            
+            <a href="../../../../classes/ActionDispatch/Http/Cache/Response.html#method-i-date" name="method-i-date" class="permalink">Link</a>
+          </div>
+
+          
+            <div class="description">
+              
+            </div>
+          
+
+          
+
+          
+
+          
+            
+            <div class="sourcecode">
+              
+              <p class="source-link">
+                Source:
+                <a href="javascript:toggleSource('method-i-date_source')" id="l_method-i-date_source">show</a>
+                
+                  | <a href="https://github.com/rails/rails/blob/c1c9c690401bff43b350241cb58b6017ca5fe632/actionpack/lib/action_dispatch/http/cache.rb#L67" target="_blank" class="github_url">on GitHub</a>
+                
+              </p>
+              <div id="method-i-date_source" class="dyn-source">
+                <pre><span class="ruby-comment"># File actionpack/lib/action_dispatch/http/cache.rb, line 67</span>
+<span class="ruby-keyword">def</span> <span class="ruby-keyword ruby-title">date</span>
+  <span class="ruby-keyword">if</span> <span class="ruby-identifier">date_header</span> = <span class="ruby-identifier">get_header</span>(<span class="ruby-constant">DATE</span>)
+    <span class="ruby-constant">Time</span>.<span class="ruby-identifier">httpdate</span>(<span class="ruby-identifier">date_header</span>)
+  <span class="ruby-keyword">end</span>
+<span class="ruby-keyword">end</span></pre>
+              </div>
+            </div>
+            
+          </div>
+        
+        <div class="method">
+          <div class="title method-title" id="method-i-date-3D">
+            
+              <b>date=</b>(utc_time)
+            
+            <a href="../../../../classes/ActionDispatch/Http/Cache/Response.html#method-i-date-3D" name="method-i-date-3D" class="permalink">Link</a>
+          </div>
+
+          
+            <div class="description">
+              
+            </div>
+          
+
+          
+
+          
+
+          
+            
+            <div class="sourcecode">
+              
+              <p class="source-link">
+                Source:
+                <a href="javascript:toggleSource('method-i-date-3D_source')" id="l_method-i-date-3D_source">show</a>
+                
+                  | <a href="https://github.com/rails/rails/blob/c1c9c690401bff43b350241cb58b6017ca5fe632/actionpack/lib/action_dispatch/http/cache.rb#L77" target="_blank" class="github_url">on GitHub</a>
+                
+              </p>
+              <div id="method-i-date-3D_source" class="dyn-source">
+                <pre><span class="ruby-comment"># File actionpack/lib/action_dispatch/http/cache.rb, line 77</span>
+<span class="ruby-keyword">def</span> <span class="ruby-keyword ruby-title">date=</span>(<span class="ruby-identifier">utc_time</span>)
+  <span class="ruby-identifier">set_header</span> <span class="ruby-constant">DATE</span>, <span class="ruby-identifier">utc_time</span>.<span class="ruby-identifier">httpdate</span>
+<span class="ruby-keyword">end</span></pre>
+              </div>
+            </div>
+            
+          </div>
+        
+        <div class="method">
+          <div class="title method-title" id="method-i-date-3F">
+            
+              <b>date?</b>()
+            
+            <a href="../../../../classes/ActionDispatch/Http/Cache/Response.html#method-i-date-3F" name="method-i-date-3F" class="permalink">Link</a>
+          </div>
+
+          
+            <div class="description">
+              
+            </div>
+          
+
+          
+
+          
+
+          
+            
+            <div class="sourcecode">
+              
+              <p class="source-link">
+                Source:
+                <a href="javascript:toggleSource('method-i-date-3F_source')" id="l_method-i-date-3F_source">show</a>
+                
+                  | <a href="https://github.com/rails/rails/blob/c1c9c690401bff43b350241cb58b6017ca5fe632/actionpack/lib/action_dispatch/http/cache.rb#L73" target="_blank" class="github_url">on GitHub</a>
+                
+              </p>
+              <div id="method-i-date-3F_source" class="dyn-source">
+                <pre><span class="ruby-comment"># File actionpack/lib/action_dispatch/http/cache.rb, line 73</span>
+<span class="ruby-keyword">def</span> <span class="ruby-keyword ruby-title">date?</span>
+  <span class="ruby-identifier">has_header?</span> <span class="ruby-constant">DATE</span>
+<span class="ruby-keyword">end</span></pre>
+              </div>
+            </div>
+            
+          </div>
+        
+        <div class="method">
+          <div class="title method-title" id="method-i-etag-3D">
+            
+              <b>etag=</b>(weak_validators)
+            
+            <a href="../../../../classes/ActionDispatch/Http/Cache/Response.html#method-i-etag-3D" name="method-i-etag-3D" class="permalink">Link</a>
+          </div>
+
+          
+            <div class="description">
+              <p>This method sets a weak ETag validator on the response so browsers and
+proxies may cache the response, keyed on the ETag. On subsequent requests,
+the If-None-Match header is set to the cached ETag. If it matches the
+current ETag, we can return a 304 Not Modified response with no body,
+letting the browser or proxy know that their cache is current. Big savings
+in request time and network bandwidth.</p>
+
+<p>Weak ETags are considered to be semantically equivalent but not
+byte-for-byte identical. This is perfect for browser caching of HTML pages
+where we don&#39;t care about exact equality, just what the user is
+viewing.</p>
+
+<p>Strong ETags are considered byte-for-byte identical. They allow a browser
+or proxy cache to support <a href="../../../Range.html">Range</a> requests,
+useful for paging through a PDF file or scrubbing through a video. Some
+CDNs only support strong ETags and will ignore weak ETags entirely.</p>
+
+<p>Weak ETags are what we almost always need, so they&#39;re the default.
+Check out `#strong_etag=` to provide a strong ETag validator.</p>
+            </div>
+          
+
+          
+
+          
+
+          
+            
+            <div class="sourcecode">
+              
+              <p class="source-link">
+                Source:
+                <a href="javascript:toggleSource('method-i-etag-3D_source')" id="l_method-i-etag-3D_source">show</a>
+                
+                  | <a href="https://github.com/rails/rails/blob/c1c9c690401bff43b350241cb58b6017ca5fe632/actionpack/lib/action_dispatch/http/cache.rb#L100" target="_blank" class="github_url">on GitHub</a>
+                
+              </p>
+              <div id="method-i-etag-3D_source" class="dyn-source">
+                <pre><span class="ruby-comment"># File actionpack/lib/action_dispatch/http/cache.rb, line 100</span>
+<span class="ruby-keyword">def</span> <span class="ruby-keyword ruby-title">etag=</span>(<span class="ruby-identifier">weak_validators</span>)
+  <span class="ruby-keyword">self</span>.<span class="ruby-identifier">weak_etag</span> = <span class="ruby-identifier">weak_validators</span>
+<span class="ruby-keyword">end</span></pre>
+              </div>
+            </div>
+            
+          </div>
+        
+        <div class="method">
+          <div class="title method-title" id="method-i-etag-3F">
+            
+              <b>etag?</b>()
+            
+            <a href="../../../../classes/ActionDispatch/Http/Cache/Response.html#method-i-etag-3F" name="method-i-etag-3F" class="permalink">Link</a>
+          </div>
+
+          
+            <div class="description">
+              
+            </div>
+          
+
+          
+
+          
+
+          
+            
+            <div class="sourcecode">
+              
+              <p class="source-link">
+                Source:
+                <a href="javascript:toggleSource('method-i-etag-3F_source')" id="l_method-i-etag-3F_source">show</a>
+                
+                  | <a href="https://github.com/rails/rails/blob/c1c9c690401bff43b350241cb58b6017ca5fe632/actionpack/lib/action_dispatch/http/cache.rb#L112" target="_blank" class="github_url">on GitHub</a>
+                
+              </p>
+              <div id="method-i-etag-3F_source" class="dyn-source">
+                <pre><span class="ruby-comment"># File actionpack/lib/action_dispatch/http/cache.rb, line 112</span>
+<span class="ruby-keyword">def</span> <span class="ruby-keyword ruby-title">etag?</span>; <span class="ruby-identifier">etag</span>; <span class="ruby-keyword">end</span></pre>
+              </div>
+            </div>
+            
+          </div>
+        
+        <div class="method">
+          <div class="title method-title" id="method-i-last_modified">
+            
+              <b>last_modified</b>()
+            
+            <a href="../../../../classes/ActionDispatch/Http/Cache/Response.html#method-i-last_modified" name="method-i-last_modified" class="permalink">Link</a>
+          </div>
+
+          
+            <div class="description">
+              
+            </div>
+          
+
+          
+
+          
+
+          
+            
+            <div class="sourcecode">
+              
+              <p class="source-link">
+                Source:
+                <a href="javascript:toggleSource('method-i-last_modified_source')" id="l_method-i-last_modified_source">show</a>
+                
+                  | <a href="https://github.com/rails/rails/blob/c1c9c690401bff43b350241cb58b6017ca5fe632/actionpack/lib/action_dispatch/http/cache.rb#L53" target="_blank" class="github_url">on GitHub</a>
+                
+              </p>
+              <div id="method-i-last_modified_source" class="dyn-source">
+                <pre><span class="ruby-comment"># File actionpack/lib/action_dispatch/http/cache.rb, line 53</span>
+<span class="ruby-keyword">def</span> <span class="ruby-keyword ruby-title">last_modified</span>
+  <span class="ruby-keyword">if</span> <span class="ruby-identifier">last</span> = <span class="ruby-identifier">get_header</span>(<span class="ruby-constant">LAST_MODIFIED</span>)
+    <span class="ruby-constant">Time</span>.<span class="ruby-identifier">httpdate</span>(<span class="ruby-identifier">last</span>)
+  <span class="ruby-keyword">end</span>
+<span class="ruby-keyword">end</span></pre>
+              </div>
+            </div>
+            
+          </div>
+        
+        <div class="method">
+          <div class="title method-title" id="method-i-last_modified-3D">
+            
+              <b>last_modified=</b>(utc_time)
+            
+            <a href="../../../../classes/ActionDispatch/Http/Cache/Response.html#method-i-last_modified-3D" name="method-i-last_modified-3D" class="permalink">Link</a>
+          </div>
+
+          
+            <div class="description">
+              
+            </div>
+          
+
+          
+
+          
+
+          
+            
+            <div class="sourcecode">
+              
+              <p class="source-link">
+                Source:
+                <a href="javascript:toggleSource('method-i-last_modified-3D_source')" id="l_method-i-last_modified-3D_source">show</a>
+                
+                  | <a href="https://github.com/rails/rails/blob/c1c9c690401bff43b350241cb58b6017ca5fe632/actionpack/lib/action_dispatch/http/cache.rb#L63" target="_blank" class="github_url">on GitHub</a>
+                
+              </p>
+              <div id="method-i-last_modified-3D_source" class="dyn-source">
+                <pre><span class="ruby-comment"># File actionpack/lib/action_dispatch/http/cache.rb, line 63</span>
+<span class="ruby-keyword">def</span> <span class="ruby-keyword ruby-title">last_modified=</span>(<span class="ruby-identifier">utc_time</span>)
+  <span class="ruby-identifier">set_header</span> <span class="ruby-constant">LAST_MODIFIED</span>, <span class="ruby-identifier">utc_time</span>.<span class="ruby-identifier">httpdate</span>
+<span class="ruby-keyword">end</span></pre>
+              </div>
+            </div>
+            
+          </div>
+        
+        <div class="method">
+          <div class="title method-title" id="method-i-last_modified-3F">
+            
+              <b>last_modified?</b>()
+            
+            <a href="../../../../classes/ActionDispatch/Http/Cache/Response.html#method-i-last_modified-3F" name="method-i-last_modified-3F" class="permalink">Link</a>
+          </div>
+
+          
+            <div class="description">
+              
+            </div>
+          
+
+          
+
+          
+
+          
+            
+            <div class="sourcecode">
+              
+              <p class="source-link">
+                Source:
+                <a href="javascript:toggleSource('method-i-last_modified-3F_source')" id="l_method-i-last_modified-3F_source">show</a>
+                
+                  | <a href="https://github.com/rails/rails/blob/c1c9c690401bff43b350241cb58b6017ca5fe632/actionpack/lib/action_dispatch/http/cache.rb#L59" target="_blank" class="github_url">on GitHub</a>
+                
+              </p>
+              <div id="method-i-last_modified-3F_source" class="dyn-source">
+                <pre><span class="ruby-comment"># File actionpack/lib/action_dispatch/http/cache.rb, line 59</span>
+<span class="ruby-keyword">def</span> <span class="ruby-keyword ruby-title">last_modified?</span>
+  <span class="ruby-identifier">has_header?</span> <span class="ruby-constant">LAST_MODIFIED</span>
+<span class="ruby-keyword">end</span></pre>
+              </div>
+            </div>
+            
+          </div>
+        
+        <div class="method">
+          <div class="title method-title" id="method-i-strong_etag-3D">
+            
+              <b>strong_etag=</b>(strong_validators)
+            
+            <a href="../../../../classes/ActionDispatch/Http/Cache/Response.html#method-i-strong_etag-3D" name="method-i-strong_etag-3D" class="permalink">Link</a>
+          </div>
+
+          
+            <div class="description">
+              
+            </div>
+          
+
+          
+
+          
+
+          
+            
+            <div class="sourcecode">
+              
+              <p class="source-link">
+                Source:
+                <a href="javascript:toggleSource('method-i-strong_etag-3D_source')" id="l_method-i-strong_etag-3D_source">show</a>
+                
+                  | <a href="https://github.com/rails/rails/blob/c1c9c690401bff43b350241cb58b6017ca5fe632/actionpack/lib/action_dispatch/http/cache.rb#L108" target="_blank" class="github_url">on GitHub</a>
+                
+              </p>
+              <div id="method-i-strong_etag-3D_source" class="dyn-source">
+                <pre><span class="ruby-comment"># File actionpack/lib/action_dispatch/http/cache.rb, line 108</span>
+<span class="ruby-keyword">def</span> <span class="ruby-keyword ruby-title">strong_etag=</span>(<span class="ruby-identifier">strong_validators</span>)
+  <span class="ruby-identifier">set_header</span> <span class="ruby-string">&#39;ETag&#39;</span>, <span class="ruby-identifier">generate_strong_etag</span>(<span class="ruby-identifier">strong_validators</span>)
+<span class="ruby-keyword">end</span></pre>
+              </div>
+            </div>
+            
+          </div>
+        
+        <div class="method">
+          <div class="title method-title" id="method-i-strong_etag-3F">
+            
+              <b>strong_etag?</b>()
+            
+            <a href="../../../../classes/ActionDispatch/Http/Cache/Response.html#method-i-strong_etag-3F" name="method-i-strong_etag-3F" class="permalink">Link</a>
+          </div>
+
+          
+            <div class="description">
+              <p>True if an ETag is set and it isn&#39;t a weak validator (not preceded with
+W/)</p>
+            </div>
+          
+
+          
+
+          
+
+          
+            
+            <div class="sourcecode">
+              
+              <p class="source-link">
+                Source:
+                <a href="javascript:toggleSource('method-i-strong_etag-3F_source')" id="l_method-i-strong_etag-3F_source">show</a>
+                
+                  | <a href="https://github.com/rails/rails/blob/c1c9c690401bff43b350241cb58b6017ca5fe632/actionpack/lib/action_dispatch/http/cache.rb#L120" target="_blank" class="github_url">on GitHub</a>
+                
+              </p>
+              <div id="method-i-strong_etag-3F_source" class="dyn-source">
+                <pre><span class="ruby-comment"># File actionpack/lib/action_dispatch/http/cache.rb, line 120</span>
+<span class="ruby-keyword">def</span> <span class="ruby-keyword ruby-title">strong_etag?</span>
+  <span class="ruby-identifier">etag?</span> <span class="ruby-operator">&amp;&amp;</span> <span class="ruby-operator">!</span><span class="ruby-identifier">weak_etag?</span>
+<span class="ruby-keyword">end</span></pre>
+              </div>
+            </div>
+            
+          </div>
+        
+        <div class="method">
+          <div class="title method-title" id="method-i-weak_etag-3D">
+            
+              <b>weak_etag=</b>(weak_validators)
+            
+            <a href="../../../../classes/ActionDispatch/Http/Cache/Response.html#method-i-weak_etag-3D" name="method-i-weak_etag-3D" class="permalink">Link</a>
+          </div>
+
+          
+            <div class="description">
+              
+            </div>
+          
+
+          
+
+          
+
+          
+            
+            <div class="sourcecode">
+              
+              <p class="source-link">
+                Source:
+                <a href="javascript:toggleSource('method-i-weak_etag-3D_source')" id="l_method-i-weak_etag-3D_source">show</a>
+                
+                  | <a href="https://github.com/rails/rails/blob/c1c9c690401bff43b350241cb58b6017ca5fe632/actionpack/lib/action_dispatch/http/cache.rb#L104" target="_blank" class="github_url">on GitHub</a>
+                
+              </p>
+              <div id="method-i-weak_etag-3D_source" class="dyn-source">
+                <pre><span class="ruby-comment"># File actionpack/lib/action_dispatch/http/cache.rb, line 104</span>
+<span class="ruby-keyword">def</span> <span class="ruby-keyword ruby-title">weak_etag=</span>(<span class="ruby-identifier">weak_validators</span>)
+  <span class="ruby-identifier">set_header</span> <span class="ruby-string">&#39;ETag&#39;</span>, <span class="ruby-identifier">generate_weak_etag</span>(<span class="ruby-identifier">weak_validators</span>)
+<span class="ruby-keyword">end</span></pre>
+              </div>
+            </div>
+            
+          </div>
+        
+        <div class="method">
+          <div class="title method-title" id="method-i-weak_etag-3F">
+            
+              <b>weak_etag?</b>()
+            
+            <a href="../../../../classes/ActionDispatch/Http/Cache/Response.html#method-i-weak_etag-3F" name="method-i-weak_etag-3F" class="permalink">Link</a>
+          </div>
+
+          
+            <div class="description">
+              <p>True if an ETag is set and it&#39;s a weak validator (preceded with W/)</p>
+            </div>
+          
+
+          
+
+          
+
+          
+            
+            <div class="sourcecode">
+              
+              <p class="source-link">
+                Source:
+                <a href="javascript:toggleSource('method-i-weak_etag-3F_source')" id="l_method-i-weak_etag-3F_source">show</a>
+                
+                  | <a href="https://github.com/rails/rails/blob/c1c9c690401bff43b350241cb58b6017ca5fe632/actionpack/lib/action_dispatch/http/cache.rb#L115" target="_blank" class="github_url">on GitHub</a>
+                
+              </p>
+              <div id="method-i-weak_etag-3F_source" class="dyn-source">
+                <pre><span class="ruby-comment"># File actionpack/lib/action_dispatch/http/cache.rb, line 115</span>
+<span class="ruby-keyword">def</span> <span class="ruby-keyword ruby-title">weak_etag?</span>
+  <span class="ruby-identifier">etag?</span> <span class="ruby-operator">&amp;&amp;</span> <span class="ruby-identifier">etag</span>.<span class="ruby-identifier">starts_with?</span>(<span class="ruby-string">&#39;W/&quot;&#39;</span>)
+<span class="ruby-keyword">end</span></pre>
+              </div>
+            </div>
+            
+          </div>
+                    </div>
+
+    </div>
+  </body>
+</html>

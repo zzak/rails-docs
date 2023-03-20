@@ -1,0 +1,70 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>4 Debugging with the web-console gem</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v5.2.8.1/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="debugging-with-the-web-console-gem"><a class="anchorlink" href="#debugging-with-the-web-console-gem">4 Debugging with the <code>web-console</code> gem</a></h3>
+<p>Web Console is a bit like <code>byebug</code>, but it runs in the browser. In any page you
+are developing, you can request a console in the context of a view or a
+controller. The console would be rendered next to your HTML content.</p>
+
+<h4 id="console"><a class="anchorlink" href="#console">4.1 Console</a></h4>
+
+<p>Inside any controller action or view, you can invoke the console by
+calling the <code>console</code> method.</p>
+
+<p>For example, in a controller:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class PostsController &lt; ApplicationController
+  def new
+    console
+    @post = Post.new
+  end
+end
+
+</pre>
+</div>
+<p>Or in a view:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; html-script: true; gutter: false; toolbar: false">
+&lt;% console %&gt;
+
+&lt;h2&gt;New Post&lt;/h2&gt;
+
+</pre>
+</div>
+<p>This will render a console inside your view. You don't need to care about the
+location of the <code>console</code> call; it won't be rendered on the spot of its
+invocation but next to your HTML content.</p>
+
+<p>The console executes pure Ruby code: You can define and instantiate
+custom classes, create new models and inspect variables.</p>
+
+<div class="note"><p>Only one console can be rendered per request. Otherwise <code>web-console</code>
+will raise an error on the second <code>console</code> invocation.</p></div>
+
+<h4 id="debugging-with-the-web-console-gem-inspecting-variables"><a class="anchorlink" href="#debugging-with-the-web-console-gem-inspecting-variables">4.2 Inspecting Variables</a></h4>
+
+<p>You can invoke <code>instance_variables</code> to list all the instance variables
+available in your context. If you want to list all the local variables, you can
+do that with <code>local_variables</code>.</p>
+
+<h4 id="debugging-with-the-web-console-gem-settings"><a class="anchorlink" href="#debugging-with-the-web-console-gem-settings">4.3 Settings</a></h4>
+<ul>
+<li>
+<code>config.web_console.whitelisted_ips</code>: Authorized list of IPv4 or IPv6
+addresses and networks (defaults: <code>127.0.0.1/8, ::1</code>).</li>
+<li>
+<code>config.web_console.whiny_requests</code>: Log a message when a console rendering
+is prevented (defaults: <code>true</code>).</li>
+</ul>
+<p>Since <code>web-console</code> evaluates plain Ruby code remotely on the server, don't try
+to use it in production.</p>
+</body>
+</html>

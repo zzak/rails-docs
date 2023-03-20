@@ -1,0 +1,124 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>5 Load Interlock</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v6.0.6.1/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="load-interlock"><a class="anchorlink" href="#load-interlock">5 Load Interlock</a></h3>
+<p>The Load Interlock allows autoloading and reloading to be enabled in a
+multi-threaded runtime environment.</p>
+
+<p>When one thread is performing an autoload by evaluating the class definition
+from the appropriate file, it is important no other thread encounters a
+reference to the partially-defined constant.</p>
+
+<p>Similarly, it is only safe to perform an unload/reload when no application code
+is in mid-execution: after the reload, the <code>User</code> constant, for example, may
+point to a different class. Without this rule, a poorly-timed reload would mean
+<code>User.new.class == User</code>, or even <code>User == User</code>, could be false.</p>
+
+<p>Both of these constraints are addressed by the Load Interlock. It keeps track of
+which threads are currently running application code, loading a class, or
+unloading autoloaded constants.</p>
+
+<p>Only one thread may load or unload at a time, and to do either, it must wait
+until no other threads are running application code. If a thread is waiting to
+perform a load, it doesn't prevent other threads from loading (in fact, they'll
+cooperate, and each perform their queued load in turn, before all resuming
+running together).</p>
+
+<h4 id="permit-concurrent-loads"><a class="anchorlink" href="#permit-concurrent-loads">5.1 <code>permit_concurrent_loads</code></a></h4>
+
+<p>The Executor automatically acquires a <code>running</code> lock for the duration of its
+block, and autoload knows when to upgrade to a <code>load</code> lock, and switch back to
+<code>running</code> again afterwards.</p>
+
+<p>Other blocking operations performed inside the Executor block (which includes
+all application code), however, can needlessly retain the <code>running</code> lock. If
+another thread encounters a constant it must autoload, this can cause a
+deadlock.</p>
+
+<p>For example, assuming <code>User</code> is not yet loaded, the following will deadlock:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+Rails.application.executor.wrap do
+  th = Thread.new do
+    Rails.application.executor.wrap do
+      User # inner thread waits here; it cannot load
+           # User while another thread is running
+    end
+  end
+
+  th.join # outer thread waits here, holding 'running' lock
+end
+
+</pre>
+</div>
+<p>To prevent this deadlock, the outer thread can <code>permit_concurrent_loads</code>. By
+calling this method, the thread guarantees it will not dereference any
+possibly-autoloaded constant inside the supplied block. The safest way to meet
+that promise is to put it as close as possible to the blocking call:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+Rails.application.executor.wrap do
+  th = Thread.new do
+    Rails.application.executor.wrap do
+      User # inner thread can acquire the 'load' lock,
+           # load User, and continue
+    end
+  end
+
+  ActiveSupport::Dependencies.interlock.permit_concurrent_loads do
+    th.join # outer thread waits here, but has no lock
+  end
+end
+
+</pre>
+</div>
+<p>Another example, using Concurrent Ruby:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+Rails.application.executor.wrap do
+  futures = 3.times.collect do |i|
+    Concurrent::Future.execute do
+      Rails.application.executor.wrap do
+        # do work here
+      end
+    end
+  end
+
+  values = ActiveSupport::Dependencies.interlock.permit_concurrent_loads do
+    futures.collect(&amp;:value)
+  end
+end
+
+</pre>
+</div>
+<h4 id="actiondispatch-debuglocks"><a class="anchorlink" href="#actiondispatch-debuglocks">5.2 ActionDispatch::DebugLocks</a></h4>
+
+<p>If your application is deadlocking and you think the Load Interlock may be
+involved, you can temporarily add the ActionDispatch::DebugLocks middleware to
+<code>config/application.rb</code>:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+config.middleware.insert_before Rack::Sendfile,
+                                  ActionDispatch::DebugLocks
+
+</pre>
+</div>
+<p>If you then restart the application and re-trigger the deadlock condition,
+<code>/rails/locks</code> will show a summary of all threads currently known to the
+interlock, which lock level they are holding or awaiting, and their current
+backtrace.</p>
+
+<p>Generally a deadlock will be caused by the interlock conflicting with some other
+external lock or blocking I/O call. Once you find it, you can wrap it with
+<code>permit_concurrent_loads</code>.</p>
+</body>
+</html>

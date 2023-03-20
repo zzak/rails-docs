@@ -1,0 +1,529 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html 
+     PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+  <head>
+    <title>Module: ActionDispatch::Routing::Mapper::Scoping</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <link rel="stylesheet" href="../../../../rdoc-style.css" type="text/css" media="screen" />
+
+    <script language="JavaScript" type="text/javascript">
+    // <![CDATA[
+
+        function toggleSource( id )
+        {
+          var elem
+          var link
+
+          if( document.getElementById )
+          {
+            elem = document.getElementById( id )
+            link = document.getElementById( "l_" + id )
+          }
+          else if ( document.all )
+          {
+            elem = eval( "document.all." + id )
+            link = eval( "document.all.l_" + id )
+          }
+          else
+            return false;
+
+          if( elem.style.display == "block" )
+          {
+            elem.style.display = "none"
+            link.innerHTML = "show source"
+          }
+          else
+          {
+            elem.style.display = "block"
+            link.innerHTML = "hide source"
+          }
+        }
+
+        function openCode( url )
+        {
+          window.open( url, "SOURCE_CODE", "resizable=yes,scrollbars=yes,toolbar=no,status=no,height=480,width=750" ).focus();
+        }
+      // ]]>
+    </script>
+  </head>
+
+  <body>
+    <table width="100%" border='0' cellpadding='0' cellspacing='0' class='banner'>
+    <tr><td>Ruby on Rails v3.0.9</td></tr>
+    <tr>
+  <td class="file-title"><span class="file-title-prefix">Module</span><br />ActionDispatch::Routing::Mapper::Scoping</td>
+  <td align="right">
+    <table cellspacing="0" cellpadding="2">
+      <tr valign="top">
+        <td>In:</td>
+        <td>
+<a href="../../../../files/actionpack/lib/action_dispatch/routing/mapper_rb.html">actionpack/lib/action_dispatch/routing/mapper.rb</a>:
+        </td>
+      </tr>
+         </table>
+        </td>
+        </tr>
+      </table>
+  <div id="bodyContent">
+  <div id="content">
+
+  <div class="description">
+<p>You may wish to organize groups of controllers under a namespace. Most
+commonly, you might group a number of administrative controllers under an
+<tt>admin</tt> namespace. You would place these controllers under the
+app/controllers/admin directory, and you can group them together in your
+router:</p>
+
+<pre>namespace &quot;admin&quot; do
+  resources :posts, :comments
+end</pre>
+
+<p>This will create a number of routes for each of the posts and comments
+controller. For Admin::PostsController, <a
+href="../../../Rails.html">Rails</a> will create:</p>
+
+<pre>GET       /admin/photos
+GET       /admin/photos/new
+POST    /admin/photos
+GET       /admin/photos/1
+GET       /admin/photos/1/edit
+PUT       /admin/photos/1
+DELETE  /admin/photos/1</pre>
+
+<p>If you want to route /photos (without the prefix /admin) to
+Admin::PostsController, you could use</p>
+
+<pre>scope :module =&gt; &quot;admin&quot; do
+  resources :posts, :comments
+end</pre>
+
+<p>or, for a single case</p>
+
+<pre>resources :posts, :module =&gt; &quot;admin&quot;</pre>
+
+<p>If you want to route /admin/photos to PostsController</p>
+<table class="rdoc-list"><tr><td class="rdoc-term"><p>(without the Admin</p></td>
+<td>
+<p>module prefix), you could use</p>
+</td></tr></table>
+
+<pre>scope &quot;/admin&quot; do
+  resources :posts, :comments
+end</pre>
+
+<p>or, for a single case</p>
+
+<pre>resources :posts, :path =&gt; &quot;/admin&quot;</pre>
+
+<p>In each of these cases, the named routes remain the same as if you did not
+use scope. In the last case, the following paths map to PostsController:</p>
+
+<pre>GET       /admin/photos
+GET       /admin/photos/new
+POST    /admin/photos
+GET       /admin/photos/1
+GET       /admin/photos/1/edit
+PUT       /admin/photos/1
+DELETE  /admin/photos/1</pre>
+</div>
+
+
+  <div class="sectiontitle">Methods</div>
+  <ul>
+                <li><a href="#method-i-constraints">constraints</a></li>
+                <li><a href="#method-i-controller">controller</a></li>
+                <li><a href="#method-i-defaults">defaults</a></li>
+                <li><a href="#method-i-namespace">namespace</a></li>
+                <li><a href="#method-i-scope">scope</a></li>
+      </ul>
+
+
+
+
+                        
+    <div class="sectiontitle">
+      Public      Instance      methods
+    </div>
+
+          
+      <div class="method">
+        <div class="title">
+                      <a name="method-i-constraints"></a>
+            <b>constraints</b>(constraints = {})          
+        </div>
+
+                  <div class="description">
+            <h3>Parameter Restriction</h3>
+
+<p>Allows you to constrain the nested routes based on a set of rules. For
+instance, in order to change the routes to allow for a dot character in the
+<tt>id</tt> parameter:</p>
+
+<pre>constraints(:id =&gt; /\d+\.\d+) do
+  resources :posts
+end</pre>
+
+<p>Now routes such as <tt>/posts/1</tt> will no longer be valid, but
+<tt>/posts/1.1</tt> will be. The <tt>id</tt> parameter must match the
+constraint passed in for this example.</p>
+
+<p>You may use this to also resrict other parameters:</p>
+
+<pre>resources :posts do
+  constraints(:post_id =&gt; /\d+\.\d+) do
+    resources :comments
+  end</pre>
+
+<h3>Restricting based on IP</h3>
+
+<p>Routes can also be constrained to an IP or a certain range of IP addresses:</p>
+
+<pre>constraints(:ip =&gt; /192.168.\d+.\d+/) do
+  resources :posts
+end</pre>
+
+<p>Any user connecting from the 192.168.* range will be able to see this
+resource, where as any user connecting outside of this range will be told
+there is no such route.</p>
+
+<h3>Dynamic request matching</h3>
+
+<p>Requests to routes can be constrained based on specific critera:</p>
+
+<pre>constraints(lambda { |req| req.env[&quot;HTTP_USER_AGENT&quot;] =~ /iPhone/ }) do
+  resources :iphones
+end</pre>
+
+<p>You are able to move this logic out into a class if it is too complex for
+routes. This class must have a <tt>matches?</tt> method defined on it which
+either returns <tt>true</tt> if the user should be given access to that
+route, or <tt>false</tt> if the user should not.</p>
+
+<pre>class Iphone
+  def self.matches(request)
+    request.env[&quot;HTTP_USER_AGENT&quot;] =~ /iPhone/
+  end
+end</pre>
+
+<p>An expected place for this code would be <tt>lib/constraints</tt>.</p>
+
+<p>This class is then used like this:</p>
+
+<pre>constraints(Iphone) do
+  resources :iphones
+end</pre>          </div>
+        
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('constraints_source')"
+                 id="l_method-i-constraints_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="constraints_source">
+<pre>
+  <span class="ruby-comment"># File actionpack/lib/action_dispatch/routing/mapper.rb, line 681</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">constraints</span>(<span class="ruby-identifier">constraints</span> = {})
+  <span class="ruby-identifier">scope</span>(<span class="ruby-value">:constraints</span> =<span class="ruby-operator">&gt;</span> <span class="ruby-identifier">constraints</span>) { <span class="ruby-keyword">yield</span> }
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+          
+      <div class="method">
+        <div class="title">
+                      <a name="method-i-controller"></a>
+            <b>controller</b>(controller, options={})          
+        </div>
+
+                  <div class="description">
+            <p>Scopes routes to a specific controller</p>
+
+<p>Example:</p>
+
+<pre>controller &quot;food&quot; do
+  match &quot;bacon&quot;, :action =&gt; &quot;bacon&quot;
+end</pre>          </div>
+        
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('controller_source')"
+                 id="l_method-i-controller_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="controller_source">
+<pre>
+  <span class="ruby-comment"># File actionpack/lib/action_dispatch/routing/mapper.rb, line 563</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">controller</span>(<span class="ruby-identifier">controller</span>, <span class="ruby-identifier">options</span>={})
+  <span class="ruby-identifier">options</span>[<span class="ruby-value">:controller</span>] = <span class="ruby-identifier">controller</span>
+  <span class="ruby-identifier">scope</span>(<span class="ruby-identifier">options</span>) { <span class="ruby-keyword">yield</span> }
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+          
+      <div class="method">
+        <div class="title">
+                      <a name="method-i-defaults"></a>
+            <b>defaults</b>(defaults = {})          
+        </div>
+
+                  <div class="description">
+            <p>Allows you to set default parameters for a route, such as this: defaults
+:id =&gt; ‘home’ do</p>
+
+<pre>match 'scoped_pages/(:id)', :to =&gt; 'pages#show'</pre>
+
+<p>end Using this, the <tt>:id</tt> parameter here will default to ‘home’.</p>          </div>
+        
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('defaults_source')"
+                 id="l_method-i-defaults_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="defaults_source">
+<pre>
+  <span class="ruby-comment"># File actionpack/lib/action_dispatch/routing/mapper.rb, line 690</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">defaults</span>(<span class="ruby-identifier">defaults</span> = {})
+  <span class="ruby-identifier">scope</span>(<span class="ruby-value">:defaults</span> =<span class="ruby-operator">&gt;</span> <span class="ruby-identifier">defaults</span>) { <span class="ruby-keyword">yield</span> }
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+          
+      <div class="method">
+        <div class="title">
+                      <a name="method-i-namespace"></a>
+            <b>namespace</b>(path, options = {})          
+        </div>
+
+                  <div class="description">
+            <p>Scopes routes to a specific namespace. For example:</p>
+
+<pre>namespace :admin do
+  resources :posts
+end</pre>
+
+<p>This generates the following routes:</p>
+
+<pre>    admin_posts GET    /admin/posts(.:format)          {:action=&gt;&quot;index&quot;, :controller=&gt;&quot;admin/posts&quot;}
+    admin_posts POST   /admin/posts(.:format)          {:action=&gt;&quot;create&quot;, :controller=&gt;&quot;admin/posts&quot;}
+ new_admin_post GET    /admin/posts/new(.:format)      {:action=&gt;&quot;new&quot;, :controller=&gt;&quot;admin/posts&quot;}
+edit_admin_post GET    /admin/posts/:id/edit(.:format) {:action=&gt;&quot;edit&quot;, :controller=&gt;&quot;admin/posts&quot;}
+     admin_post GET    /admin/posts/:id(.:format)      {:action=&gt;&quot;show&quot;, :controller=&gt;&quot;admin/posts&quot;}
+     admin_post PUT    /admin/posts/:id(.:format)      {:action=&gt;&quot;update&quot;, :controller=&gt;&quot;admin/posts&quot;}
+     admin_post DELETE /admin/posts/:id(.:format)      {:action=&gt;&quot;destroy&quot;, :controller=&gt;&quot;admin/posts&quot;}</pre>
+
+<h3>Supported options</h3>
+
+<p>The <tt>:path</tt>, <tt>:as</tt>, <tt>:module</tt>, <tt>:shallow_path</tt>
+and <tt>:shallow_prefix</tt> options all default to the name of the
+namespace.</p>
+<dl><dt>:path</dt>
+<dd>
+<p>The path prefix for the routes.</p>
+
+<pre>namespace :admin, :path =&gt; &quot;sekret&quot; do
+  resources :posts
+end</pre>
+
+<p>All routes for the above <tt>resources</tt> will be accessible through
+<tt>/sekret/posts</tt>, rather than <tt>/admin/posts</tt></p>
+</dd><dt>:module</dt>
+<dd>
+<p>The namespace for the controllers.</p>
+
+<pre>namespace :admin, :module =&gt; &quot;sekret&quot; do
+  resources :posts
+end</pre>
+
+<p>The <tt>PostsController</tt> here should go in the <tt>Sekret</tt>
+namespace and so it should be defined like this:</p>
+
+<pre>class Sekret::PostsController &lt; ApplicationController
+  # code go here
+end</pre>
+</dd><dt>:as</dt>
+<dd>
+<p>Changes the name used in routing helpers for this namespace.</p>
+
+<pre>namespace :admin, :as =&gt; &quot;sekret&quot; do
+  resources :posts
+end</pre>
+</dd></dl>
+
+<p><a href="../../Routing.html">Routing</a> helpers such as
+<tt>admin_posts_path</tt> will now be <tt>sekret_posts_path</tt>.</p>
+<dl><dt>:shallow_path</dt>
+<dd>
+<p>See the <tt>scope</tt> method.</p>
+</dd></dl>          </div>
+        
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('namespace_source')"
+                 id="l_method-i-namespace_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="namespace_source">
+<pre>
+  <span class="ruby-comment"># File actionpack/lib/action_dispatch/routing/mapper.rb, line 620</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">namespace</span>(<span class="ruby-identifier">path</span>, <span class="ruby-identifier">options</span> = {})
+  <span class="ruby-identifier">path</span> = <span class="ruby-identifier">path</span>.<span class="ruby-identifier">to_s</span>
+  <span class="ruby-identifier">options</span> = { <span class="ruby-value">:path</span> =<span class="ruby-operator">&gt;</span> <span class="ruby-identifier">path</span>, <span class="ruby-value">:as</span> =<span class="ruby-operator">&gt;</span> <span class="ruby-identifier">path</span>, <span class="ruby-value">:module</span> =<span class="ruby-operator">&gt;</span> <span class="ruby-identifier">path</span>,
+              <span class="ruby-value">:shallow_path</span> =<span class="ruby-operator">&gt;</span> <span class="ruby-identifier">path</span>, <span class="ruby-value">:shallow_prefix</span> =<span class="ruby-operator">&gt;</span> <span class="ruby-identifier">path</span> }.<span class="ruby-identifier">merge!</span>(<span class="ruby-identifier">options</span>)
+  <span class="ruby-identifier">scope</span>(<span class="ruby-identifier">options</span>) { <span class="ruby-keyword">yield</span> }
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+          
+      <div class="method">
+        <div class="title">
+                      <a name="method-i-scope"></a>
+            <b>scope</b>(*args)          
+        </div>
+
+                  <div class="description">
+            <p>Used to scope a set of routes to particular constraints.</p>
+
+<p>Take the following route definition as an example:</p>
+
+<pre>scope :path =&gt; &quot;:account_id&quot;, :as =&gt; &quot;account&quot; do
+  resources :projects
+end</pre>
+
+<p>This generates helpers such as <tt>account_projects_path</tt>, just like
+<tt>resources</tt> does. The difference here being that the routes
+generated are like /rails/projects/2, rather than
+/accounts/rails/projects/2.</p>
+
+<h3>Supported options</h3>
+<dl><dt>:module</dt>
+<dd>
+<p>If you want to route /posts (without the prefix /admin) to
+Admin::PostsController, you could use</p>
+
+<pre>scope :module =&gt; &quot;admin&quot; do
+  resources :posts
+end</pre>
+</dd><dt>:path</dt>
+<dd>
+<p>If you want to prefix the route, you could use</p>
+
+<pre>scope :path =&gt; &quot;/admin&quot; do
+  resources :posts
+end</pre>
+
+<p>This will prefix all of the <tt>posts</tt> resource’s requests with
+‘/admin’</p>
+</dd><dt>:as</dt>
+<dd>
+<p>Prefixes the routing helpers in this scope with the specified label.</p>
+
+<pre>scope :as =&gt; &quot;sekret&quot; do
+  resources :posts
+end</pre>
+</dd></dl>
+
+<p>Helpers such as <tt>posts_path</tt> will now be <tt>sekret_posts_path</tt></p>
+<dl><dt>:shallow_path</dt>
+<dd>
+<p>Prefixes nested shallow routes with the specified path.</p>
+
+<p>scope :shallow_path =&gt; “sekret” do</p>
+
+<pre>resources :posts do
+  resources :comments, :shallow =&gt; true
+end</pre>
+
+<p>The <tt>comments</tt> resource here will have the following routes
+generated for it:</p>
+
+<pre>post_comments    GET    /sekret/posts/:post_id/comments(.:format)
+post_comments    POST   /sekret/posts/:post_id/comments(.:format)
+new_post_comment GET    /sekret/posts/:post_id/comments/new(.:format)
+edit_comment     GET    /sekret/comments/:id/edit(.:format)
+comment          GET    /sekret/comments/:id(.:format)
+comment          PUT    /sekret/comments/:id(.:format)
+comment          DELETE /sekret/comments/:id(.:format)</pre>
+</dd></dl>          </div>
+        
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('scope_source')"
+                 id="l_method-i-scope_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="scope_source">
+<pre>
+  <span class="ruby-comment"># File actionpack/lib/action_dispatch/routing/mapper.rb, line 516</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">scope</span>(*<span class="ruby-identifier">args</span>)
+  <span class="ruby-identifier">options</span> = <span class="ruby-identifier">args</span>.<span class="ruby-identifier">extract_options!</span>
+  <span class="ruby-identifier">options</span> = <span class="ruby-identifier">options</span>.<span class="ruby-identifier">dup</span>
+
+  <span class="ruby-keyword">if</span> <span class="ruby-identifier">name_prefix</span> = <span class="ruby-identifier">options</span>.<span class="ruby-identifier">delete</span>(<span class="ruby-value">:name_prefix</span>)
+    <span class="ruby-identifier">options</span>[<span class="ruby-value">:as</span>] <span class="ruby-operator">||=</span> <span class="ruby-identifier">name_prefix</span>
+    <span class="ruby-constant">ActiveSupport</span><span class="ruby-operator">::</span><span class="ruby-constant">Deprecation</span>.<span class="ruby-identifier">warn</span> <span class="ruby-string">&quot;:name_prefix was deprecated in the new router syntax. Use :as instead.&quot;</span>, <span class="ruby-identifier">caller</span>
+  <span class="ruby-keyword">end</span>
+
+  <span class="ruby-identifier">options</span>[<span class="ruby-value">:path</span>] = <span class="ruby-identifier">args</span>.<span class="ruby-identifier">first</span> <span class="ruby-keyword">if</span> <span class="ruby-identifier">args</span>.<span class="ruby-identifier">first</span>.<span class="ruby-identifier">is_a?</span>(<span class="ruby-constant">String</span>)
+  <span class="ruby-identifier">recover</span> = {}
+
+  <span class="ruby-identifier">options</span>[<span class="ruby-value">:constraints</span>] <span class="ruby-operator">||=</span> {}
+  <span class="ruby-keyword">unless</span> <span class="ruby-identifier">options</span>[<span class="ruby-value">:constraints</span>].<span class="ruby-identifier">is_a?</span>(<span class="ruby-constant">Hash</span>)
+    <span class="ruby-identifier">block</span>, <span class="ruby-identifier">options</span>[<span class="ruby-value">:constraints</span>] = <span class="ruby-identifier">options</span>[<span class="ruby-value">:constraints</span>], {}
+  <span class="ruby-keyword">end</span>
+
+  <span class="ruby-identifier">scope_options</span>.<span class="ruby-identifier">each</span> <span class="ruby-keyword">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">option</span><span class="ruby-operator">|</span>
+    <span class="ruby-keyword">if</span> <span class="ruby-identifier">value</span> = <span class="ruby-identifier">options</span>.<span class="ruby-identifier">delete</span>(<span class="ruby-identifier">option</span>)
+      <span class="ruby-identifier">recover</span>[<span class="ruby-identifier">option</span>] = <span class="ruby-ivar">@scope</span>[<span class="ruby-identifier">option</span>]
+      <span class="ruby-ivar">@scope</span>[<span class="ruby-identifier">option</span>]  = <span class="ruby-identifier">send</span>(<span class="ruby-node">&quot;merge_#{option}_scope&quot;</span>, <span class="ruby-ivar">@scope</span>[<span class="ruby-identifier">option</span>], <span class="ruby-identifier">value</span>)
+    <span class="ruby-keyword">end</span>
+  <span class="ruby-keyword">end</span>
+
+  <span class="ruby-identifier">recover</span>[<span class="ruby-value">:block</span>] = <span class="ruby-ivar">@scope</span>[<span class="ruby-value">:blocks</span>]
+  <span class="ruby-ivar">@scope</span>[<span class="ruby-value">:blocks</span>] = <span class="ruby-identifier">merge_blocks_scope</span>(<span class="ruby-ivar">@scope</span>[<span class="ruby-value">:blocks</span>], <span class="ruby-identifier">block</span>)
+
+  <span class="ruby-identifier">recover</span>[<span class="ruby-value">:options</span>] = <span class="ruby-ivar">@scope</span>[<span class="ruby-value">:options</span>]
+  <span class="ruby-ivar">@scope</span>[<span class="ruby-value">:options</span>]  = <span class="ruby-identifier">merge_options_scope</span>(<span class="ruby-ivar">@scope</span>[<span class="ruby-value">:options</span>], <span class="ruby-identifier">options</span>)
+
+  <span class="ruby-keyword">yield</span>
+  <span class="ruby-keyword">self</span>
+<span class="ruby-keyword">ensure</span>
+  <span class="ruby-identifier">scope_options</span>.<span class="ruby-identifier">each</span> <span class="ruby-keyword">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">option</span><span class="ruby-operator">|</span>
+    <span class="ruby-ivar">@scope</span>[<span class="ruby-identifier">option</span>] = <span class="ruby-identifier">recover</span>[<span class="ruby-identifier">option</span>] <span class="ruby-keyword">if</span> <span class="ruby-identifier">recover</span>.<span class="ruby-identifier">has_key?</span>(<span class="ruby-identifier">option</span>)
+  <span class="ruby-keyword">end</span>
+
+  <span class="ruby-ivar">@scope</span>[<span class="ruby-value">:options</span>] = <span class="ruby-identifier">recover</span>[<span class="ruby-value">:options</span>]
+  <span class="ruby-ivar">@scope</span>[<span class="ruby-value">:blocks</span>]  = <span class="ruby-identifier">recover</span>[<span class="ruby-value">:block</span>]
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+              </div>
+  </div>
+  </body>
+</html>

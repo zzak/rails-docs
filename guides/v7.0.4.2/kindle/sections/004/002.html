@@ -1,0 +1,213 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>3 Common Validation Options</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v7.0.4.2/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="common-validation-options"><a class="anchorlink" href="#common-validation-options">3 Common Validation Options</a></h3>
+<p>These are common validation options:</p>
+
+<h4 id="allow-nil"><a class="anchorlink" href="#allow-nil">3.1 <code>:allow_nil</code></a></h4>
+
+<p>The <code>:allow_nil</code> option skips the validation when the value being validated is
+<code>nil</code>.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">Coffee</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="n">validates</span> <span class="ss">:size</span><span class="p">,</span> <span class="ss">inclusion: </span><span class="p">{</span> <span class="ss">in: </span><span class="sx">%w(small medium large)</span><span class="p">,</span>
+    <span class="ss">message: </span><span class="s2">"%{value} is not a valid size"</span> <span class="p">},</span> <span class="ss">allow_nil: </span><span class="kp">true</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='class Coffee &lt; ApplicationRecord
+  validates :size, inclusion: { in: %w(small medium large),
+    message: "%{value} is not a valid size" }, allow_nil: true
+end
+'>Copy</button>
+</div>
+<p>For full options to the message argument please see the
+<a href="#message">message documentation</a>.</p>
+
+<h4 id="allow-blank"><a class="anchorlink" href="#allow-blank">3.2 <code>:allow_blank</code></a></h4>
+
+<p>The <code>:allow_blank</code> option is similar to the <code>:allow_nil</code> option. This option
+will let validation pass if the attribute's value is <code>blank?</code>, like <code>nil</code> or an
+empty string for example.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">Topic</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="n">validates</span> <span class="ss">:title</span><span class="p">,</span> <span class="ss">length: </span><span class="p">{</span> <span class="ss">is: </span><span class="mi">5</span> <span class="p">},</span> <span class="ss">allow_blank: </span><span class="kp">true</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="class Topic &lt; ApplicationRecord
+  validates :title, length: { is: 5 }, allow_blank: true
+end
+">Copy</button>
+</div>
+<div class="code_container">
+<pre><code class="highlight irb"><span class="gp">irb&gt;</span><span class="w"> </span><span class="no">Topic</span><span class="p">.</span><span class="nf">create</span><span class="p">(</span><span class="ss">title: </span><span class="s2">""</span><span class="p">).</span><span class="nf">valid?</span>
+<span class="p">=&gt;</span> <span class="kp">true</span>
+<span class="gp">irb&gt;</span><span class="w"> </span><span class="no">Topic</span><span class="p">.</span><span class="nf">create</span><span class="p">(</span><span class="ss">title: </span><span class="kp">nil</span><span class="p">).</span><span class="nf">valid?</span>
+<span class="p">=&gt;</span> <span class="kp">true</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='Topic.create(title: "").valid?
+Topic.create(title: nil).valid?
+'>Copy</button>
+</div>
+<h4 id="message"><a class="anchorlink" href="#message">3.3 <code>:message</code></a></h4>
+
+<p>As you've already seen, the <code>:message</code> option lets you specify the message that
+will be added to the <code>errors</code> collection when validation fails. When this
+option is not used, Active Record will use the respective default error message
+for each validation helper. The <code>:message</code> option accepts a <code>String</code> or <code>Proc</code>.</p>
+
+<p>A <code>String</code> <code>:message</code> value can optionally contain any/all of <code>%{value}</code>,
+<code>%{attribute}</code>, and <code>%{model}</code> which will be dynamically replaced when
+validation fails. This replacement is done using the I18n gem, and the
+placeholders must match exactly, no spaces are allowed.</p>
+
+<p>A <code>Proc</code> <code>:message</code> value is given two arguments: the object being validated, and
+a hash with <code>:model</code>, <code>:attribute</code>, and <code>:value</code> key-value pairs.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">Person</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="c1"># Hard-coded message</span>
+  <span class="n">validates</span> <span class="ss">:name</span><span class="p">,</span> <span class="ss">presence: </span><span class="p">{</span> <span class="ss">message: </span><span class="s2">"must be given please"</span> <span class="p">}</span>
+
+  <span class="c1"># Message with dynamic attribute value. %{value} will be replaced</span>
+  <span class="c1"># with the actual value of the attribute. %{attribute} and %{model}</span>
+  <span class="c1"># are also available.</span>
+  <span class="n">validates</span> <span class="ss">:age</span><span class="p">,</span> <span class="ss">numericality: </span><span class="p">{</span> <span class="ss">message: </span><span class="s2">"%{value} seems wrong"</span> <span class="p">}</span>
+
+  <span class="c1"># Proc</span>
+  <span class="n">validates</span> <span class="ss">:username</span><span class="p">,</span>
+    <span class="ss">uniqueness: </span><span class="p">{</span>
+      <span class="c1"># object = person object being validated</span>
+      <span class="c1"># data = { model: "Person", attribute: "Username", value: &lt;username&gt; }</span>
+      <span class="ss">message: </span><span class="o">-&gt;</span><span class="p">(</span><span class="n">object</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span> <span class="k">do</span>
+        <span class="s2">"Hey </span><span class="si">#{</span><span class="n">object</span><span class="p">.</span><span class="nf">name</span><span class="si">}</span><span class="s2">, </span><span class="si">#{</span><span class="n">data</span><span class="p">[</span><span class="ss">:value</span><span class="p">]</span><span class="si">}</span><span class="s2"> is already taken."</span>
+      <span class="k">end</span>
+    <span class="p">}</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='class Person &lt; ApplicationRecord
+  # Hard-coded message
+  validates :name, presence: { message: "must be given please" }
+
+  # Message with dynamic attribute value. %{value} will be replaced
+  # with the actual value of the attribute. %{attribute} and %{model}
+  # are also available.
+  validates :age, numericality: { message: "%{value} seems wrong" }
+
+  # Proc
+  validates :username,
+    uniqueness: {
+      # object = person object being validated
+      # data = { model: "Person", attribute: "Username", value: &lt;username&gt; }
+      message: -&gt;(object, data) do
+        "Hey #{object.name}, #{data[:value]} is already taken."
+      end
+    }
+end
+'>Copy</button>
+</div>
+<h4 id="on"><a class="anchorlink" href="#on">3.4 <code>:on</code></a></h4>
+
+<p>The <code>:on</code> option lets you specify when the validation should happen. The
+default behavior for all the built-in validation helpers is to be run on save
+(both when you're creating a new record and when you're updating it). If you
+want to change it, you can use <code>on: :create</code> to run the validation only when a
+new record is created or <code>on: :update</code> to run the validation only when a record
+is updated.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">Person</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="c1"># it will be possible to update email with a duplicated value</span>
+  <span class="n">validates</span> <span class="ss">:email</span><span class="p">,</span> <span class="ss">uniqueness: </span><span class="kp">true</span><span class="p">,</span> <span class="ss">on: :create</span>
+
+  <span class="c1"># it will be possible to create the record with a non-numerical age</span>
+  <span class="n">validates</span> <span class="ss">:age</span><span class="p">,</span> <span class="ss">numericality: </span><span class="kp">true</span><span class="p">,</span> <span class="ss">on: :update</span>
+
+  <span class="c1"># the default (validates on both create and update)</span>
+  <span class="n">validates</span> <span class="ss">:name</span><span class="p">,</span> <span class="ss">presence: </span><span class="kp">true</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="class Person &lt; ApplicationRecord
+  # it will be possible to update email with a duplicated value
+  validates :email, uniqueness: true, on: :create
+
+  # it will be possible to create the record with a non-numerical age
+  validates :age, numericality: true, on: :update
+
+  # the default (validates on both create and update)
+  validates :name, presence: true
+end
+">Copy</button>
+</div>
+<p>You can also use <code>on:</code> to define custom contexts. Custom contexts need to be
+triggered explicitly by passing the name of the context to <code>valid?</code>,
+<code>invalid?</code>, or <code>save</code>.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">Person</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="n">validates</span> <span class="ss">:email</span><span class="p">,</span> <span class="ss">uniqueness: </span><span class="kp">true</span><span class="p">,</span> <span class="ss">on: :account_setup</span>
+  <span class="n">validates</span> <span class="ss">:age</span><span class="p">,</span> <span class="ss">numericality: </span><span class="kp">true</span><span class="p">,</span> <span class="ss">on: :account_setup</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="class Person &lt; ApplicationRecord
+  validates :email, uniqueness: true, on: :account_setup
+  validates :age, numericality: true, on: :account_setup
+end
+">Copy</button>
+</div>
+<div class="code_container">
+<pre><code class="highlight irb"><span class="gp">irb&gt;</span><span class="w"> </span><span class="n">person</span> <span class="o">=</span> <span class="no">Person</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="ss">age: </span><span class="s1">'thirty-three'</span><span class="p">)</span>
+<span class="gp">irb&gt;</span><span class="w"> </span><span class="n">person</span><span class="p">.</span><span class="nf">valid?</span>
+<span class="p">=&gt;</span> <span class="kp">true</span>
+<span class="gp">irb&gt;</span><span class="w"> </span><span class="n">person</span><span class="p">.</span><span class="nf">valid?</span><span class="p">(</span><span class="ss">:account_setup</span><span class="p">)</span>
+<span class="p">=&gt;</span> <span class="kp">false</span>
+<span class="gp">irb&gt;</span><span class="w"> </span><span class="n">person</span><span class="p">.</span><span class="nf">errors</span><span class="p">.</span><span class="nf">messages</span>
+<span class="p">=&gt;</span> <span class="p">{</span><span class="ss">:email</span><span class="o">=&gt;</span><span class="p">[</span><span class="s2">"has already been taken"</span><span class="p">],</span> <span class="ss">:age</span><span class="o">=&gt;</span><span class="p">[</span><span class="s2">"is not a number"</span><span class="p">]}</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="person = Person.new(age: 'thirty-three')
+person.valid?
+person.valid?(:account_setup)
+person.errors.messages
+">Copy</button>
+</div>
+<p><code>person.valid?(:account_setup)</code> executes both the validations without saving
+the model. <code>person.save(context: :account_setup)</code> validates <code>person</code> in the
+<code>account_setup</code> context before saving.</p>
+
+<p>When triggered by an explicit context, validations are run for that context,
+as well as any validations <em>without</em> a context.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">Person</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="n">validates</span> <span class="ss">:email</span><span class="p">,</span> <span class="ss">uniqueness: </span><span class="kp">true</span><span class="p">,</span> <span class="ss">on: :account_setup</span>
+  <span class="n">validates</span> <span class="ss">:age</span><span class="p">,</span> <span class="ss">numericality: </span><span class="kp">true</span><span class="p">,</span> <span class="ss">on: :account_setup</span>
+  <span class="n">validates</span> <span class="ss">:name</span><span class="p">,</span> <span class="ss">presence: </span><span class="kp">true</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="class Person &lt; ApplicationRecord
+  validates :email, uniqueness: true, on: :account_setup
+  validates :age, numericality: true, on: :account_setup
+  validates :name, presence: true
+end
+">Copy</button>
+</div>
+<div class="code_container">
+<pre><code class="highlight irb"><span class="gp">irb&gt;</span><span class="w"> </span><span class="n">person</span> <span class="o">=</span> <span class="no">Person</span><span class="p">.</span><span class="nf">new</span>
+<span class="gp">irb&gt;</span><span class="w"> </span><span class="n">person</span><span class="p">.</span><span class="nf">valid?</span><span class="p">(</span><span class="ss">:account_setup</span><span class="p">)</span>
+<span class="p">=&gt;</span> <span class="kp">false</span>
+<span class="gp">irb&gt;</span><span class="w"> </span><span class="n">person</span><span class="p">.</span><span class="nf">errors</span><span class="p">.</span><span class="nf">messages</span>
+<span class="p">=&gt;</span> <span class="p">{</span><span class="ss">:email</span><span class="o">=&gt;</span><span class="p">[</span><span class="s2">"has already been taken"</span><span class="p">],</span> <span class="ss">:age</span><span class="o">=&gt;</span><span class="p">[</span><span class="s2">"is not a number"</span><span class="p">],</span> <span class="ss">:name</span><span class="o">=&gt;</span><span class="p">[</span><span class="s2">"can't be blank"</span><span class="p">]}</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="person = Person.new
+person.valid?(:account_setup)
+person.errors.messages
+">Copy</button>
+</div>
+</body>
+</html>

@@ -1,0 +1,38 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>6 Validations</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v5.1.7/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="validations">6 Validations</h3>
+<p>Active Record allows you to validate the state of a model before it gets written
+into the database. There are several methods that you can use to check your
+models and validate that an attribute value is not empty, is unique and not
+already in the database, follows a specific format and many more.</p>
+
+<p>Validation is a very important issue to consider when persisting to the database, so
+the methods <code>save</code> and <code>update</code> take it into account when
+running: they return <code>false</code> when validation fails and they didn't actually
+perform any operation on the database. All of these have a bang counterpart (that
+is, <code>save!</code> and <code>update!</code>), which are stricter in that
+they raise the exception <code>ActiveRecord::RecordInvalid</code> if validation fails.
+A quick example to illustrate:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class User &lt; ApplicationRecord
+  validates :name, presence: true
+end
+
+user = User.new
+user.save  # =&gt; false
+user.save! # =&gt; ActiveRecord::RecordInvalid: Validation failed: Name can't be blank
+
+</pre>
+</div>
+<p>You can learn more about validations in the <a href="active_record_validations.html">Active Record Validations
+guide</a>.</p>
+</body>
+</html>

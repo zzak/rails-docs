@@ -1,0 +1,150 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>1 Upgrading to Rails 3.1</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v6.0.6.1/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="upgrading-to-rails-3-1"><a class="anchorlink" href="#upgrading-to-rails-3-1">1 Upgrading to Rails 3.1</a></h3>
+<p>If you're upgrading an existing application, it's a great idea to have good test coverage before going in. You should also first upgrade to Rails 3 in case you haven't and make sure your application still runs as expected before attempting to update to Rails 3.1. Then take heed of the following changes:</p>
+
+<h4 id="rails-3-1-requires-at-least-ruby-1-8-7"><a class="anchorlink" href="#rails-3-1-requires-at-least-ruby-1-8-7">1.1 Rails 3.1 requires at least Ruby 1.8.7</a></h4>
+
+<p>Rails 3.1 requires Ruby 1.8.7 or higher. Support for all of the previous Ruby versions has been dropped officially and you should upgrade as early as possible. Rails 3.1 is also compatible with Ruby 1.9.2.</p>
+
+<div class="info"><p>Note that Ruby 1.8.7 p248 and p249 have marshalling bugs that crash Rails. Ruby Enterprise Edition have these fixed since release 1.8.7-2010.02 though. On the 1.9 front, Ruby 1.9.1 is not usable because it outright segfaults, so if you want to use 1.9.x jump on 1.9.2 for smooth sailing.</p></div>
+
+<h4 id="what-to-update-in-your-apps"><a class="anchorlink" href="#what-to-update-in-your-apps">1.2 What to update in your apps</a></h4>
+
+<p>The following changes are meant for upgrading your application to Rails 3.1.3, the latest 3.1.x version of Rails.</p>
+
+<h5 id="gemfile"><a class="anchorlink" href="#gemfile">1.2.1 Gemfile</a></h5>
+
+<p>Make the following changes to your <code>Gemfile</code>.</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+gem 'rails', '= 3.1.3'
+gem 'mysql2'
+
+# Needed for the new asset pipeline
+group :assets do
+  gem 'sass-rails',   "~&gt; 3.1.5"
+  gem 'coffee-rails', "~&gt; 3.1.1"
+  gem 'uglifier',     "&gt;= 1.0.3"
+end
+
+# jQuery is the default JavaScript library in Rails 3.1
+gem 'jquery-rails'
+
+</pre>
+</div>
+<h5 id="config-application-rb"><a class="anchorlink" href="#config-application-rb">1.2.2 config/application.rb</a></h5>
+<ul>
+<li>
+The asset pipeline requires the following additions:
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+config.assets.enabled = true
+config.assets.version = '1.0'
+
+</pre>
+</div>
+</li>
+<li>
+If your application is using the "/assets" route for a resource you may want change the prefix used for assets to avoid conflicts:
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+# Defaults to '/assets'
+config.assets.prefix = '/asset-files'
+
+</pre>
+</div>
+</li>
+</ul>
+<h5 id="config-environments-development-rb"><a class="anchorlink" href="#config-environments-development-rb">1.2.3 config/environments/development.rb</a></h5>
+<ul>
+<li>Remove the RJS setting <code>config.action_view.debug_rjs = true</code>.</li>
+<li>
+Add the following, if you enable the asset pipeline.
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+# Do not compress assets
+config.assets.compress = false
+
+# Expands the lines which load the assets
+config.assets.debug = true
+
+</pre>
+</div>
+</li>
+</ul>
+<h5 id="config-environments-production-rb"><a class="anchorlink" href="#config-environments-production-rb">1.2.4 config/environments/production.rb</a></h5>
+<ul>
+<li>
+Again, most of the changes below are for the asset pipeline. You can read more about these in the <a href="asset_pipeline.html">Asset Pipeline</a> guide.
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+# Compress JavaScripts and CSS
+config.assets.compress = true
+
+# Don't fallback to assets pipeline if a precompiled asset is missed
+config.assets.compile = false
+
+# Generate digests for assets URLs
+config.assets.digest = true
+
+# Defaults to Rails.root.join("public/assets")
+# config.assets.manifest = YOUR_PATH
+
+# Precompile additional assets (application.js, application.css, and all non-JS/CSS are already added)
+# config.assets.precompile `= %w( admin.js admin.css )
+
+# Force all access to the app over SSL, use Strict-Transport-Security, and use secure cookies.
+# config.force_ssl = true
+
+</pre>
+</div>
+</li>
+</ul>
+<h5 id="config-environments-test-rb"><a class="anchorlink" href="#config-environments-test-rb">1.2.5 config/environments/test.rb</a></h5>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+# Configure static asset server for tests with Cache-Control for performance
+config.serve_static_assets = true
+config.static_cache_control = "public, max-age=3600"
+
+</pre>
+</div>
+<h5 id="config-initializers-wrap-parameters-rb"><a class="anchorlink" href="#config-initializers-wrap-parameters-rb">1.2.6 config/initializers/wrap_parameters.rb</a></h5>
+<ul>
+<li>
+Add this file with the following contents, if you wish to wrap parameters into a nested hash. This is on by default in new applications.
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+# Be sure to restart your server when you modify this file.
+# This file contains settings for ActionController::ParamsWrapper which
+# is enabled by default.
+
+# Enable parameter wrapping for JSON. You can disable this by setting :format to an empty array.
+ActiveSupport.on_load(:action_controller) do
+  wrap_parameters :format =&gt; [:json]
+end
+
+# Disable root element in JSON by default.
+ActiveSupport.on_load(:active_record) do
+  self.include_root_in_json = false
+end
+
+</pre>
+</div>
+</li>
+</ul>
+<h5 id="remove-cache-and-concat-options-in-asset-helpers-references-in-views"><a class="anchorlink" href="#remove-cache-and-concat-options-in-asset-helpers-references-in-views">1.2.7 Remove :cache and :concat options in asset helpers references in views</a></h5>
+<ul>
+<li>With the Asset Pipeline the :cache and :concat options aren't used anymore, delete these options from your views.</li>
+</ul>
+</body>
+</html>

@@ -1,0 +1,36 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>4 Strict Validations</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v5.2.8.1/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="strict-validations"><a class="anchorlink" href="#strict-validations">4 Strict Validations</a></h3>
+<p>You can also specify validations to be strict and raise
+<code>ActiveModel::StrictValidationFailed</code> when the object is invalid.</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class Person &lt; ApplicationRecord
+  validates :name, presence: { strict: true }
+end
+
+Person.new.valid?  # =&gt; ActiveModel::StrictValidationFailed: Name can't be blank
+
+</pre>
+</div>
+<p>There is also the ability to pass a custom exception to the <code>:strict</code> option.</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class Person &lt; ApplicationRecord
+  validates :token, presence: true, uniqueness: true, strict: TokenGenerationException
+end
+
+Person.new.valid?  # =&gt; TokenGenerationException: Token can't be blank
+
+</pre>
+</div>
+</body>
+</html>

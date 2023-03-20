@@ -1,0 +1,51 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>11 Testing helpers</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v4.0.13/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="testing-helpers">11 Testing helpers</h3>
+<p>In order to test helpers, all you need to do is check that the output of the
+helper method matches what you'd expect. Tests related to the helpers are
+located under the <code>test/helpers</code> directory. Rails provides a generator which
+generates both the helper and the test file:</p>
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+$ rails generate helper User
+      create  app/helpers/user_helper.rb
+      invoke  test_unit
+      create    test/helpers/user_helper_test.rb
+
+</pre>
+</div>
+<p>The generated test file contains the following code:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+require 'test_helper'
+
+class UserHelperTest &lt; ActionView::TestCase
+end
+
+</pre>
+</div>
+<p>A helper is just a simple module where you can define methods which are
+available into your views. To test the output of the helper's methods, you just
+have to use a mixin like this:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class UserHelperTest &lt; ActionView::TestCase
+  include UserHelper
+
+  test "should return the user name" do
+    # ...
+  end
+end
+
+</pre>
+</div>
+<p>Moreover, since the test class extends from <code>ActionView::TestCase</code>, you have
+access to Rails' helper methods such as <code>link_to</code> or <code>pluralize</code>.</p>
+</body>
+</html>

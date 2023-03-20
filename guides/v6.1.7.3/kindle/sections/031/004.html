@@ -1,0 +1,21 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>5 $LOAD_PATH</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v6.1.7.3/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="$load-path"><a class="anchorlink" href="#%24load-path">5 $LOAD_PATH</a></h3>
+<p>Autoload paths are added to <code>$LOAD_PATH</code> by default. However, Zeitwerk uses absolute file names internally, and your application should not issue <code>require</code> calls for autoloadable files, so those directories are actually not needed there. You can opt-out with this flag:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">config</span><span class="p">.</span><span class="nf">add_autoload_paths_to_load_path</span> <span class="o">=</span> <span class="kp">false</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-0d273827b4e9bfece9fd1f15e49078c0">config.add_autoload_paths_to_load_path = false
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-0d273827b4e9bfece9fd1f15e49078c0">Copy</button>
+</div>
+<p>That may speed legit <code>require</code> calls a bit, since there are less lookups. Also, if your application uses <a href="https://github.com/Shopify/bootsnap">Bootsnap</a>, that saves the library from building unnecessary indexes, and saves the RAM they would need.</p>
+</body>
+</html>

@@ -1,0 +1,162 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>1 What is the Asset Pipeline?</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v5.1.7/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="what-is-the-asset-pipeline-questionmark">1 What is the Asset Pipeline?</h3>
+<p>The asset pipeline provides a framework to concatenate and minify or compress
+JavaScript and CSS assets. It also adds the ability to write these assets in
+other languages and pre-processors such as CoffeeScript, Sass and ERB.
+It allows assets in your application to be automatically combined with assets
+from other gems. For example, jquery-rails includes a copy of jquery.js
+and enables AJAX features in Rails.</p>
+
+<p>The asset pipeline is implemented by the
+<a href="https://github.com/rails/sprockets-rails">sprockets-rails</a> gem,
+and is enabled by default. You can disable it while creating a new application by
+passing the <code>--skip-sprockets</code> option.</p>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+rails new appname --skip-sprockets
+
+</pre>
+</div>
+<p>Rails automatically adds the <code>sass-rails</code>, <code>coffee-rails</code> and <code>uglifier</code>
+gems to your Gemfile, which are used by Sprockets for asset compression:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+gem 'sass-rails'
+gem 'uglifier'
+gem 'coffee-rails'
+
+</pre>
+</div>
+<p>Using the <code>--skip-sprockets</code> option will prevent Rails from adding
+them to your Gemfile, so if you later want to enable
+the asset pipeline you will have to add those gems to your Gemfile. Also,
+creating an application with the <code>--skip-sprockets</code> option will generate
+a slightly different <code>config/application.rb</code> file, with a require statement
+for the sprockets railtie that is commented-out. You will have to remove
+the comment operator on that line to later enable the asset pipeline:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+# require "sprockets/railtie"
+
+</pre>
+</div>
+<p>To set asset compression methods, set the appropriate configuration options
+in <code>production.rb</code> - <code>config.assets.css_compressor</code> for your CSS and
+<code>config.assets.js_compressor</code> for your JavaScript:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+config.assets.css_compressor = :yui
+config.assets.js_compressor = :uglifier
+
+</pre>
+</div>
+<div class="note"><p>The <code>sass-rails</code> gem is automatically used for CSS compression if included
+in the Gemfile and no <code>config.assets.css_compressor</code> option is set.</p></div>
+
+<h4 id="main-features">1.1 Main Features</h4>
+
+<p>The first feature of the pipeline is to concatenate assets, which can reduce the
+number of requests that a browser makes to render a web page. Web browsers are
+limited in the number of requests that they can make in parallel, so fewer
+requests can mean faster loading for your application.</p>
+
+<p>Sprockets concatenates all JavaScript files into one master <code>.js</code> file and all
+CSS files into one master <code>.css</code> file. As you'll learn later in this guide, you
+can customize this strategy to group files any way you like. In production,
+Rails inserts an SHA256 fingerprint into each filename so that the file is
+cached by the web browser. You can invalidate the cache by altering this
+fingerprint, which happens automatically whenever you change the file contents.</p>
+
+<p>The second feature of the asset pipeline is asset minification or compression.
+For CSS files, this is done by removing whitespace and comments. For JavaScript,
+more complex processes can be applied. You can choose from a set of built in
+options or specify your own.</p>
+
+<p>The third feature of the asset pipeline is it allows coding assets via a
+higher-level language, with precompilation down to the actual assets. Supported
+languages include Sass for CSS, CoffeeScript for JavaScript, and ERB for both by
+default.</p>
+
+<h4 id="what-is-fingerprinting-and-why-should-i-care-questionmark">1.2 What is Fingerprinting and Why Should I Care?</h4>
+
+<p>Fingerprinting is a technique that makes the name of a file dependent on the
+contents of the file. When the file contents change, the filename is also
+changed. For content that is static or infrequently changed, this provides an
+easy way to tell whether two versions of a file are identical, even across
+different servers or deployment dates.</p>
+
+<p>When a filename is unique and based on its content, HTTP headers can be set to
+encourage caches everywhere (whether at CDNs, at ISPs, in networking equipment,
+or in web browsers) to keep their own copy of the content. When the content is
+updated, the fingerprint will change. This will cause the remote clients to
+request a new copy of the content. This is generally known as <em>cache busting</em>.</p>
+
+<p>The technique Sprockets uses for fingerprinting is to insert a hash of the
+content into the name, usually at the end. For example a CSS file <code>global.css</code></p>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+global-908e25f4bf641868d8683022a5b62f54.css
+
+</pre>
+</div>
+<p>This is the strategy adopted by the Rails asset pipeline.</p>
+
+<p>Rails' old strategy was to append a date-based query string to every asset linked
+with a built-in helper. In the source the generated code looked like this:</p>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+/stylesheets/global.css?1309495796
+
+</pre>
+</div>
+<p>The query string strategy has several disadvantages:</p>
+<ol>
+<li>
+<strong>Not all caches will reliably cache content where the filename only differs by
+query parameters</strong>
+<a href="http://www.stevesouders.com/blog/2008/08/23/revving-filenames-dont-use-querystring/">Steve Souders recommends</a>,
+"...avoiding a querystring for cacheable resources". He found that in this
+case 5-20% of requests will not be cached. Query strings in particular do not
+work at all with some CDNs for cache invalidation.
+</li>
+<li>
+<strong>The file name can change between nodes in multi-server environments.</strong>
+The default query string in Rails 2.x is based on the modification time of
+the files. When assets are deployed to a cluster, there is no guarantee that the
+timestamps will be the same, resulting in different values being used depending
+on which server handles the request.
+</li>
+<li>
+<strong>Too much cache invalidation</strong>
+When static assets are deployed with each new release of code, the mtime
+(time of last modification) of <em>all</em> these files changes, forcing all remote
+clients to fetch them again, even when the content of those assets has not changed.
+</li>
+</ol>
+<p>Fingerprinting fixes these problems by avoiding query strings, and by ensuring
+that filenames are consistent based on their content.</p>
+
+<p>Fingerprinting is enabled by default for both the development and production
+environments. You can enable or disable it in your configuration through the
+<code>config.assets.digest</code> option.</p>
+
+<p>More reading:</p>
+<ul>
+<li><a href="http://code.google.com/speed/page-speed/docs/caching.html">Optimize caching</a></li>
+<li><a href="http://www.stevesouders.com/blog/2008/08/23/revving-filenames-dont-use-querystring/">Revving Filenames: don't use querystring</a></li>
+</ul>
+</body>
+</html>

@@ -1,0 +1,175 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>8 Overriding Conditions</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v5.2.8.1/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="overriding-conditions"><a class="anchorlink" href="#overriding-conditions">8 Overriding Conditions</a></h3>
+<h4 id="unscope"><a class="anchorlink" href="#unscope">8.1 <code>unscope</code></a></h4>
+
+<p>You can specify certain conditions to be removed using the <code>unscope</code> method. For example:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+Article.where('id &gt; 10').limit(20).order('id asc').unscope(:order)
+
+</pre>
+</div>
+<p>The SQL that would be executed:</p>
+
+<div class="code_container">
+<pre class="brush: sql; gutter: false; toolbar: false">
+SELECT * FROM articles WHERE id &gt; 10 LIMIT 20
+
+# Original query without `unscope`
+SELECT * FROM articles WHERE id &gt; 10 ORDER BY id asc LIMIT 20
+
+
+</pre>
+</div>
+<p>You can also unscope specific <code>where</code> clauses. For example:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+Article.where(id: 10, trashed: false).unscope(where: :id)
+# SELECT "articles".* FROM "articles" WHERE trashed = 0
+
+</pre>
+</div>
+<p>A relation which has used <code>unscope</code> will affect any relation into which it is merged:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+Article.order('id asc').merge(Article.unscope(:order))
+# SELECT "articles".* FROM "articles"
+
+</pre>
+</div>
+<h4 id="only"><a class="anchorlink" href="#only">8.2 <code>only</code></a></h4>
+
+<p>You can also override conditions using the <code>only</code> method. For example:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+Article.where('id &gt; 10').limit(20).order('id desc').only(:order, :where)
+
+</pre>
+</div>
+<p>The SQL that would be executed:</p>
+
+<div class="code_container">
+<pre class="brush: sql; gutter: false; toolbar: false">
+SELECT * FROM articles WHERE id &gt; 10 ORDER BY id DESC
+
+# Original query without `only`
+SELECT * FROM articles WHERE id &gt; 10 ORDER BY id DESC LIMIT 20
+
+
+</pre>
+</div>
+<h4 id="reorder"><a class="anchorlink" href="#reorder">8.3 <code>reorder</code></a></h4>
+
+<p>The <code>reorder</code> method overrides the default scope order. For example:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class Article &lt; ApplicationRecord
+  has_many :comments, -&gt; { order('posted_at DESC') }
+end
+
+Article.find(10).comments.reorder('name')
+
+</pre>
+</div>
+<p>The SQL that would be executed:</p>
+
+<div class="code_container">
+<pre class="brush: sql; gutter: false; toolbar: false">
+SELECT * FROM articles WHERE id = 10 LIMIT 1
+SELECT * FROM comments WHERE article_id = 10 ORDER BY name
+
+</pre>
+</div>
+<p>In the case where the <code>reorder</code> clause is not used, the SQL executed would be:</p>
+
+<div class="code_container">
+<pre class="brush: sql; gutter: false; toolbar: false">
+SELECT * FROM articles WHERE id = 10 LIMIT 1
+SELECT * FROM comments WHERE article_id = 10 ORDER BY posted_at DESC
+
+</pre>
+</div>
+<h4 id="reverse-order"><a class="anchorlink" href="#reverse-order">8.4 <code>reverse_order</code></a></h4>
+
+<p>The <code>reverse_order</code> method reverses the ordering clause if specified.</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+Client.where("orders_count &gt; 10").order(:name).reverse_order
+
+</pre>
+</div>
+<p>The SQL that would be executed:</p>
+
+<div class="code_container">
+<pre class="brush: sql; gutter: false; toolbar: false">
+SELECT * FROM clients WHERE orders_count &gt; 10 ORDER BY name DESC
+
+</pre>
+</div>
+<p>If no ordering clause is specified in the query, the <code>reverse_order</code> orders by the primary key in reverse order.</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+Client.where("orders_count &gt; 10").reverse_order
+
+</pre>
+</div>
+<p>The SQL that would be executed:</p>
+
+<div class="code_container">
+<pre class="brush: sql; gutter: false; toolbar: false">
+SELECT * FROM clients WHERE orders_count &gt; 10 ORDER BY clients.id DESC
+
+</pre>
+</div>
+<p>This method accepts <strong>no</strong> arguments.</p>
+
+<h4 id="rewhere"><a class="anchorlink" href="#rewhere">8.5 <code>rewhere</code></a></h4>
+
+<p>The <code>rewhere</code> method overrides an existing, named where condition. For example:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+Article.where(trashed: true).rewhere(trashed: false)
+
+</pre>
+</div>
+<p>The SQL that would be executed:</p>
+
+<div class="code_container">
+<pre class="brush: sql; gutter: false; toolbar: false">
+SELECT * FROM articles WHERE `trashed` = 0
+
+</pre>
+</div>
+<p>In case the <code>rewhere</code> clause is not used,</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+Article.where(trashed: true).where(trashed: false)
+
+</pre>
+</div>
+<p>the SQL executed would be:</p>
+
+<div class="code_container">
+<pre class="brush: sql; gutter: false; toolbar: false">
+SELECT * FROM articles WHERE `trashed` = 1 AND `trashed` = 0
+
+</pre>
+</div>
+</body>
+</html>

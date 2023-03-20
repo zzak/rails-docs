@@ -1,0 +1,77 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>5 Selecting Specific Fields</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v7.0.4.2/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="selecting-specific-fields"><a class="anchorlink" href="#selecting-specific-fields">5 Selecting Specific Fields</a></h3>
+<p>By default, <code>Model.find</code> selects all the fields from the result set using <code>select *</code>.</p>
+
+<p>To select only a subset of fields from the result set, you can specify the subset via the <a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveRecord/QueryMethods.html#method-i-select"><code>select</code></a> method.</p>
+
+<p>For example, to select only <code>isbn</code> and <code>out_of_print</code> columns:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="no">Book</span><span class="p">.</span><span class="nf">select</span><span class="p">(</span><span class="ss">:isbn</span><span class="p">,</span> <span class="ss">:out_of_print</span><span class="p">)</span>
+<span class="c1"># OR</span>
+<span class="no">Book</span><span class="p">.</span><span class="nf">select</span><span class="p">(</span><span class="s2">"isbn, out_of_print"</span><span class="p">)</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='Book.select(:isbn, :out_of_print)
+# OR
+Book.select("isbn, out_of_print")
+'>Copy</button>
+</div>
+<p>The SQL query used by this find call will be somewhat like:</p>
+
+<div class="code_container">
+<pre><code class="highlight sql"><span class="k">SELECT</span> <span class="n">isbn</span><span class="p">,</span> <span class="n">out_of_print</span> <span class="k">FROM</span> <span class="n">books</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="SELECT isbn, out_of_print FROM books
+">Copy</button>
+</div>
+<p>Be careful because this also means you're initializing a model object with only the fields that you've selected. If you attempt to access a field that is not in the initialized record you'll receive:</p>
+
+<div class="code_container">
+<pre><code class="highlight plaintext">ActiveModel::MissingAttributeError: missing attribute: &lt;attribute&gt;
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="ActiveModel::MissingAttributeError: missing attribute: &lt;attribute&gt;
+">Copy</button>
+</div>
+<p>Where <code>&lt;attribute&gt;</code> is the attribute you asked for. The <code>id</code> method will not raise the <code>ActiveRecord::MissingAttributeError</code>, so just be careful when working with associations because they need the <code>id</code> method to function properly.</p>
+
+<p>If you would like to only grab a single record per unique value in a certain field, you can use <a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveRecord/QueryMethods.html#method-i-distinct"><code>distinct</code></a>:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="no">Customer</span><span class="p">.</span><span class="nf">select</span><span class="p">(</span><span class="ss">:last_name</span><span class="p">).</span><span class="nf">distinct</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="Customer.select(:last_name).distinct
+">Copy</button>
+</div>
+<p>This would generate SQL like:</p>
+
+<div class="code_container">
+<pre><code class="highlight sql"><span class="k">SELECT</span> <span class="k">DISTINCT</span> <span class="n">last_name</span> <span class="k">FROM</span> <span class="n">customers</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="SELECT DISTINCT last_name FROM customers
+">Copy</button>
+</div>
+<p>You can also remove the uniqueness constraint:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="c1"># Returns unique last_names</span>
+<span class="n">query</span> <span class="o">=</span> <span class="no">Customer</span><span class="p">.</span><span class="nf">select</span><span class="p">(</span><span class="ss">:last_name</span><span class="p">).</span><span class="nf">distinct</span>
+
+<span class="c1"># Returns all last_names, even if there are duplicates</span>
+<span class="n">query</span><span class="p">.</span><span class="nf">distinct</span><span class="p">(</span><span class="kp">false</span><span class="p">)</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="# Returns unique last_names
+query = Customer.select(:last_name).distinct
+
+# Returns all last_names, even if there are duplicates
+query.distinct(false)
+">Copy</button>
+</div>
+</body>
+</html>

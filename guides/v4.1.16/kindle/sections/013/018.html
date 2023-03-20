@@ -1,0 +1,56 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>19 Extensions to Logger
+</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v4.1.16/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="extensions-to-logger">19 Extensions to <code>Logger</code>
+</h3>
+<h4 id="around-level">19.1 <code>around_[level]</code>
+</h4>
+<p>Takes two arguments, a <code>before_message</code> and <code>after_message</code> and calls the current level method on the <code>Logger</code> instance, passing in the <code>before_message</code>, then the specified message, then the <code>after_message</code>:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+logger = Logger.new("log/development.log")
+logger.around_info("before", "after") { |logger| logger.info("during") }
+
+</pre>
+</div>
+<h4 id="silence">19.2 <code>silence</code>
+</h4>
+<p>Silences every log level lesser to the specified one for the duration of the given block. Log level orders are: debug, info, error and fatal.</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+logger = Logger.new("log/development.log")
+logger.silence(Logger::INFO) do
+  logger.debug("In space, no one can hear you scream.")
+  logger.info("Scream all you want, small mailman!")
+end
+
+</pre>
+</div>
+<h4 id="datetime-format">19.3 <code>datetime_format=</code>
+</h4>
+<p>Modifies the datetime format output by the formatter class associated with this logger. If the formatter class does not have a <code>datetime_format</code> method then this is ignored.</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class Logger::FormatWithTime &lt; Logger::Formatter
+  cattr_accessor(:datetime_format) { "%Y%m%d%H%m%S" }
+
+  def self.call(severity, timestamp, progname, msg)
+    "#{timestamp.strftime(datetime_format)} -- #{String === msg ? msg : msg.inspect}\n"
+  end
+end
+
+logger = Logger.new("log/development.log")
+logger.formatter = Logger::FormatWithTime
+logger.info("&lt;- is the current time")
+
+</pre>
+</div>
+<div class="note"><p>Defined in <code>active_support/core_ext/logger.rb</code>.</p></div>
+</body>
+</html>

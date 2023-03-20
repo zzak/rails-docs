@@ -1,0 +1,459 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>11 Extensions to Hash
+</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v4.2.11.3/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="extensions-to-hash">11 Extensions to <code>Hash</code>
+</h3>
+<h4 id="extensions-to-hash-conversions">11.1 Conversions</h4>
+
+<h5 id="conversions-to-xml">11.1.1 <code>to_xml</code>
+</h5>
+
+<p>The method <code>to_xml</code> returns a string containing an XML representation of its receiver:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+{"foo" =&gt; 1, "bar" =&gt; 2}.to_xml
+# =&gt;
+# &lt;?xml version="1.0" encoding="UTF-8"?&gt;
+# &lt;hash&gt;
+#   &lt;foo type="integer"&gt;1&lt;/foo&gt;
+#   &lt;bar type="integer"&gt;2&lt;/bar&gt;
+# &lt;/hash&gt;
+
+</pre>
+</div>
+<p>To do so, the method loops over the pairs and builds nodes that depend on the <em>values</em>. Given a pair <code>key</code>, <code>value</code>:</p>
+<ul>
+<li>If <code>value</code> is a hash there's a recursive call with <code>key</code> as <code>:root</code>.</li>
+<li>If <code>value</code> is an array there's a recursive call with <code>key</code> as <code>:root</code>, and <code>key</code> singularized as <code>:children</code>.</li>
+<li>If <code>value</code> is a callable object it must expect one or two arguments. Depending on the arity, the callable is invoked with the <code>options</code> hash as first argument with <code>key</code> as <code>:root</code>, and <code>key</code> singularized as second argument. Its return value becomes a new node.</li>
+<li>If <code>value</code> responds to <code>to_xml</code> the method is invoked with <code>key</code> as <code>:root</code>.</li>
+<li>Otherwise, a node with <code>key</code> as tag is created with a string representation of <code>value</code> as text node. If <code>value</code> is <code>nil</code> an attribute "nil" set to "true" is added. Unless the option <code>:skip_types</code> exists and is true, an attribute "type" is added as well according to the following mapping:</li>
+</ul>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+XML_TYPE_NAMES = {
+  "Symbol"     =&gt; "symbol",
+  "Integer"    =&gt; "integer",
+  "BigDecimal" =&gt; "decimal",
+  "Float"      =&gt; "float",
+  "TrueClass"  =&gt; "boolean",
+  "FalseClass" =&gt; "boolean",
+  "Date"       =&gt; "date",
+  "DateTime"   =&gt; "datetime",
+  "Time"       =&gt; "datetime"
+}
+
+</pre>
+</div>
+<p>By default the root node is "hash", but that's configurable via the <code>:root</code> option.</p>
+
+<p>The default XML builder is a fresh instance of <code>Builder::XmlMarkup</code>. You can configure your own builder with the <code>:builder</code> option. The method also accepts options like <code>:dasherize</code> and friends, they are forwarded to the builder.</p>
+
+<div class="note"><p>Defined in <code>active_support/core_ext/hash/conversions.rb</code>.</p></div>
+
+<h4 id="merging">11.2 Merging</h4>
+
+<p>Ruby has a built-in method <code>Hash#merge</code> that merges two hashes:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+{a: 1, b: 1}.merge(a: 0, c: 2)
+# =&gt; {:a=&gt;0, :b=&gt;1, :c=&gt;2}
+
+</pre>
+</div>
+<p>Active Support defines a few more ways of merging hashes that may be convenient.</p>
+
+<h5 id="reverse-merge-and-reverse-merge-bang">11.2.1 <code>reverse_merge</code> and <code>reverse_merge!</code>
+</h5>
+
+<p>In case of collision the key in the hash of the argument wins in <code>merge</code>. You can support option hashes with default values in a compact way with this idiom:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+options = {length: 30, omission: "..."}.merge(options)
+
+</pre>
+</div>
+<p>Active Support defines <code>reverse_merge</code> in case you prefer this alternative notation:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+options = options.reverse_merge(length: 30, omission: "...")
+
+</pre>
+</div>
+<p>And a bang version <code>reverse_merge!</code> that performs the merge in place:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+options.reverse_merge!(length: 30, omission: "...")
+
+</pre>
+</div>
+<div class="warning"><p>Take into account that <code>reverse_merge!</code> may change the hash in the caller, which may or may not be a good idea.</p></div>
+
+<div class="note"><p>Defined in <code>active_support/core_ext/hash/reverse_merge.rb</code>.</p></div>
+
+<h5 id="reverse-update">11.2.2 <code>reverse_update</code>
+</h5>
+
+<p>The method <code>reverse_update</code> is an alias for <code>reverse_merge!</code>, explained above.</p>
+
+<div class="warning"><p>Note that <code>reverse_update</code> has no bang.</p></div>
+
+<div class="note"><p>Defined in <code>active_support/core_ext/hash/reverse_merge.rb</code>.</p></div>
+
+<h5 id="deep-merge-and-deep-merge-bang">11.2.3 <code>deep_merge</code> and <code>deep_merge!</code>
+</h5>
+
+<p>As you can see in the previous example if a key is found in both hashes the value in the one in the argument wins.</p>
+
+<p>Active Support defines <code>Hash#deep_merge</code>. In a deep merge, if a key is found in both hashes and their values are hashes in turn, then their <em>merge</em> becomes the value in the resulting hash:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+{a: {b: 1}}.deep_merge(a: {c: 2})
+# =&gt; {:a=&gt;{:b=&gt;1, :c=&gt;2}}
+
+</pre>
+</div>
+<p>The method <code>deep_merge!</code> performs a deep merge in place.</p>
+
+<div class="note"><p>Defined in <code>active_support/core_ext/hash/deep_merge.rb</code>.</p></div>
+
+<h4 id="deep-duplicating">11.3 Deep duplicating</h4>
+
+<p>The method <code>Hash.deep_dup</code> duplicates itself and all keys and values
+inside recursively with Active Support method <code>Object#deep_dup</code>. It works like <code>Enumerator#each_with_object</code> with sending <code>deep_dup</code> method to each pair inside.</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+hash = { a: 1, b: { c: 2, d: [3, 4] } }
+
+dup = hash.deep_dup
+dup[:b][:e] = 5
+dup[:b][:d] &lt;&lt; 5
+
+hash[:b][:e] == nil      # =&gt; true
+hash[:b][:d] == [3, 4]   # =&gt; true
+
+</pre>
+</div>
+<div class="note"><p>Defined in <code>active_support/core_ext/object/deep_dup.rb</code>.</p></div>
+
+<h4 id="working-with-keys">11.4 Working with Keys</h4>
+
+<h5 id="except-and-except-bang">11.4.1 <code>except</code> and <code>except!</code>
+</h5>
+
+<p>The method <code>except</code> returns a hash with the keys in the argument list removed, if present:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+{a: 1, b: 2}.except(:a) # =&gt; {:b=&gt;2}
+
+</pre>
+</div>
+<p>If the receiver responds to <code>convert_key</code>, the method is called on each of the arguments. This allows <code>except</code> to play nice with hashes with indifferent access for instance:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+{a: 1}.with_indifferent_access.except(:a)  # =&gt; {}
+{a: 1}.with_indifferent_access.except("a") # =&gt; {}
+
+</pre>
+</div>
+<p>There's also the bang variant <code>except!</code> that removes keys in the very receiver.</p>
+
+<div class="note"><p>Defined in <code>active_support/core_ext/hash/except.rb</code>.</p></div>
+
+<h5 id="transform-keys-and-transform-keys-bang">11.4.2 <code>transform_keys</code> and <code>transform_keys!</code>
+</h5>
+
+<p>The method <code>transform_keys</code> accepts a block and returns a hash that has applied the block operations to each of the keys in the receiver:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+{nil =&gt; nil, 1 =&gt; 1, a: :a}.transform_keys { |key| key.to_s.upcase }
+# =&gt; {"" =&gt; nil, "A" =&gt; :a, "1" =&gt; 1}
+
+</pre>
+</div>
+<p>In case of key collision, one of the values will be chosen. The chosen value may not always be the same given the same hash:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+{"a" =&gt; 1, a: 2}.transform_keys { |key| key.to_s.upcase }
+# The result could either be
+# =&gt; {"A"=&gt;2}
+# or
+# =&gt; {"A"=&gt;1}
+
+</pre>
+</div>
+<p>This method may be useful for example to build specialized conversions. For instance <code>stringify_keys</code> and <code>symbolize_keys</code> use <code>transform_keys</code> to perform their key conversions:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+def stringify_keys
+  transform_keys { |key| key.to_s }
+end
+...
+def symbolize_keys
+  transform_keys { |key| key.to_sym rescue key }
+end
+
+</pre>
+</div>
+<p>There's also the bang variant <code>transform_keys!</code> that applies the block operations to keys in the very receiver.</p>
+
+<p>Besides that, one can use <code>deep_transform_keys</code> and <code>deep_transform_keys!</code> to perform the block operation on all the keys in the given hash and all the hashes nested into it. An example of the result is:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+{nil =&gt; nil, 1 =&gt; 1, nested: {a: 3, 5 =&gt; 5}}.deep_transform_keys { |key| key.to_s.upcase }
+# =&gt; {""=&gt;nil, "1"=&gt;1, "NESTED"=&gt;{"A"=&gt;3, "5"=&gt;5}}
+
+</pre>
+</div>
+<div class="note"><p>Defined in <code>active_support/core_ext/hash/keys.rb</code>.</p></div>
+
+<h5 id="stringify-keys-and-stringify-keys-bang">11.4.3 <code>stringify_keys</code> and <code>stringify_keys!</code>
+</h5>
+
+<p>The method <code>stringify_keys</code> returns a hash that has a stringified version of the keys in the receiver. It does so by sending <code>to_s</code> to them:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+{nil =&gt; nil, 1 =&gt; 1, a: :a}.stringify_keys
+# =&gt; {"" =&gt; nil, "a" =&gt; :a, "1" =&gt; 1}
+
+</pre>
+</div>
+<p>In case of key collision, one of the values will be chosen. The chosen value may not always be the same given the same hash:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+{"a" =&gt; 1, a: 2}.stringify_keys
+# The result could either be
+# =&gt; {"a"=&gt;2}
+# or
+# =&gt; {"a"=&gt;1}
+
+</pre>
+</div>
+<p>This method may be useful for example to easily accept both symbols and strings as options. For instance <code>ActionView::Helpers::FormHelper</code> defines:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+def to_check_box_tag(options = {}, checked_value = "1", unchecked_value = "0")
+  options = options.stringify_keys
+  options["type"] = "checkbox"
+  ...
+end
+
+</pre>
+</div>
+<p>The second line can safely access the "type" key, and let the user to pass either <code>:type</code> or "type".</p>
+
+<p>There's also the bang variant <code>stringify_keys!</code> that stringifies keys in the very receiver.</p>
+
+<p>Besides that, one can use <code>deep_stringify_keys</code> and <code>deep_stringify_keys!</code> to stringify all the keys in the given hash and all the hashes nested into it. An example of the result is:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+{nil =&gt; nil, 1 =&gt; 1, nested: {a: 3, 5 =&gt; 5}}.deep_stringify_keys
+# =&gt; {""=&gt;nil, "1"=&gt;1, "nested"=&gt;{"a"=&gt;3, "5"=&gt;5}}
+
+</pre>
+</div>
+<div class="note"><p>Defined in <code>active_support/core_ext/hash/keys.rb</code>.</p></div>
+
+<h5 id="symbolize-keys-and-symbolize-keys-bang">11.4.4 <code>symbolize_keys</code> and <code>symbolize_keys!</code>
+</h5>
+
+<p>The method <code>symbolize_keys</code> returns a hash that has a symbolized version of the keys in the receiver, where possible. It does so by sending <code>to_sym</code> to them:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+{nil =&gt; nil, 1 =&gt; 1, "a" =&gt; "a"}.symbolize_keys
+# =&gt; {1=&gt;1, nil=&gt;nil, :a=&gt;"a"}
+
+</pre>
+</div>
+<div class="warning"><p>Note in the previous example only one key was symbolized.</p></div>
+
+<p>In case of key collision, one of the values will be chosen. The chosen value may not always be the same given the same hash:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+{"a" =&gt; 1, a: 2}.symbolize_keys
+# The result could either be
+# =&gt; {:a=&gt;2}
+# or
+# =&gt; {:a=&gt;1}
+
+</pre>
+</div>
+<p>This method may be useful for example to easily accept both symbols and strings as options. For instance <code>ActionController::UrlRewriter</code> defines</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+def rewrite_path(options)
+  options = options.symbolize_keys
+  options.update(options[:params].symbolize_keys) if options[:params]
+  ...
+end
+
+</pre>
+</div>
+<p>The second line can safely access the <code>:params</code> key, and let the user to pass either <code>:params</code> or "params".</p>
+
+<p>There's also the bang variant <code>symbolize_keys!</code> that symbolizes keys in the very receiver.</p>
+
+<p>Besides that, one can use <code>deep_symbolize_keys</code> and <code>deep_symbolize_keys!</code> to symbolize all the keys in the given hash and all the hashes nested into it. An example of the result is:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+{nil =&gt; nil, 1 =&gt; 1, "nested" =&gt; {"a" =&gt; 3, 5 =&gt; 5}}.deep_symbolize_keys
+# =&gt; {nil=&gt;nil, 1=&gt;1, nested:{a:3, 5=&gt;5}}
+
+</pre>
+</div>
+<div class="note"><p>Defined in <code>active_support/core_ext/hash/keys.rb</code>.</p></div>
+
+<h5 id="to-options-and-to-options-bang">11.4.5 <code>to_options</code> and <code>to_options!</code>
+</h5>
+
+<p>The methods <code>to_options</code> and <code>to_options!</code> are respectively aliases of <code>symbolize_keys</code> and <code>symbolize_keys!</code>.</p>
+
+<div class="note"><p>Defined in <code>active_support/core_ext/hash/keys.rb</code>.</p></div>
+
+<h5 id="assert-valid-keys">11.4.6 <code>assert_valid_keys</code>
+</h5>
+
+<p>The method <code>assert_valid_keys</code> receives an arbitrary number of arguments, and checks whether the receiver has any key outside that white list. If it does <code>ArgumentError</code> is raised.</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+{a: 1}.assert_valid_keys(:a)  # passes
+{a: 1}.assert_valid_keys("a") # ArgumentError
+
+</pre>
+</div>
+<p>Active Record does not accept unknown options when building associations, for example. It implements that control via <code>assert_valid_keys</code>.</p>
+
+<div class="note"><p>Defined in <code>active_support/core_ext/hash/keys.rb</code>.</p></div>
+
+<h4 id="working-with-values">11.5 Working with Values</h4>
+
+<h5 id="transform-values-transform-values-bang">11.5.1 <code>transform_values</code> &amp;&amp; <code>transform_values!</code>
+</h5>
+
+<p>The method <code>transform_values</code> accepts a block and returns a hash that has applied the block operations to each of the values in the receiver.</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+{ nil =&gt; nil, 1 =&gt; 1, :x =&gt; :a }.transform_values { |value| value.to_s.upcase }
+# =&gt; {nil=&gt;"", 1=&gt;"1", :x=&gt;"A"}
+
+</pre>
+</div>
+<p>There's also the bang variant <code>transform_values!</code> that applies the block operations to values in the very receiver.</p>
+
+<div class="note"><p>Defined in <code>active_support/core_text/hash/transform_values.rb</code>.</p></div>
+
+<h4 id="slicing">11.6 Slicing</h4>
+
+<p>Ruby has built-in support for taking slices out of strings and arrays. Active Support extends slicing to hashes:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+{a: 1, b: 2, c: 3}.slice(:a, :c)
+# =&gt; {:c=&gt;3, :a=&gt;1}
+
+{a: 1, b: 2, c: 3}.slice(:b, :X)
+# =&gt; {:b=&gt;2} # non-existing keys are ignored
+
+</pre>
+</div>
+<p>If the receiver responds to <code>convert_key</code> keys are normalized:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+{a: 1, b: 2}.with_indifferent_access.slice("a")
+# =&gt; {:a=&gt;1}
+
+</pre>
+</div>
+<div class="note"><p>Slicing may come in handy for sanitizing option hashes with a white list of keys.</p></div>
+
+<p>There's also <code>slice!</code> which in addition to perform a slice in place returns what's removed:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+hash = {a: 1, b: 2}
+rest = hash.slice!(:a) # =&gt; {:b=&gt;2}
+hash                   # =&gt; {:a=&gt;1}
+
+</pre>
+</div>
+<div class="note"><p>Defined in <code>active_support/core_ext/hash/slice.rb</code>.</p></div>
+
+<h4 id="extracting">11.7 Extracting</h4>
+
+<p>The method <code>extract!</code> removes and returns the key/value pairs matching the given keys.</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+hash = {a: 1, b: 2}
+rest = hash.extract!(:a) # =&gt; {:a=&gt;1}
+hash                     # =&gt; {:b=&gt;2}
+
+</pre>
+</div>
+<p>The method <code>extract!</code> returns the same subclass of Hash, that the receiver is.</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+hash = {a: 1, b: 2}.with_indifferent_access
+rest = hash.extract!(:a).class
+# =&gt; ActiveSupport::HashWithIndifferentAccess
+
+</pre>
+</div>
+<div class="note"><p>Defined in <code>active_support/core_ext/hash/slice.rb</code>.</p></div>
+
+<h4 id="indifferent-access">11.8 Indifferent Access</h4>
+
+<p>The method <code>with_indifferent_access</code> returns an <code>ActiveSupport::HashWithIndifferentAccess</code> out of its receiver:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+{a: 1}.with_indifferent_access["a"] # =&gt; 1
+
+</pre>
+</div>
+<div class="note"><p>Defined in <code>active_support/core_ext/hash/indifferent_access.rb</code>.</p></div>
+
+<h4 id="compacting">11.9 Compacting</h4>
+
+<p>The methods <code>compact</code> and <code>compact!</code> return a Hash without items with <code>nil</code> value.</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+{a: 1, b: 2, c: nil}.compact # =&gt; {a: 1, b: 2}
+
+</pre>
+</div>
+<div class="note"><p>Defined in <code>active_support/core_ext/hash/compact.rb</code>.</p></div>
+</body>
+</html>

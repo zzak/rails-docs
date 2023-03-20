@@ -1,0 +1,29 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>5 Testing an engine</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v4.0.13/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="testing-an-engine">5 Testing an engine</h3>
+<p>When an engine is generated there is a smaller dummy application created inside it at <code>test/dummy</code>. This application is used as a mounting point for the engine to make testing the engine extremely simple. You may extend this application by generating controllers, models or views from within the directory, and then use those to test your engine.</p>
+<p>The <code>test</code> directory should be treated like a typical Rails testing environment, allowing for unit, functional and integration tests.</p>
+<h4 id="functional-tests">5.1 Functional tests</h4>
+<p>A matter worth taking into consideration when writing functional tests is that the tests are going to be running on an application — the <code>test/dummy</code> application — rather than your engine. This is due to the setup of the testing environment; an engine needs an application as a host for testing its main functionality, especially controllers. This means that if you were to make a typical <code>GET</code> to a controller in a controller's functional test like this:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+get :index
+
+</pre>
+</div>
+<p>It may not function correctly. This is because the application doesn't know how to route these requests to the engine unless you explicitly tell it <strong>how</strong>. To do this, you must pass the <code>:use_route</code> option (as a parameter) on these requests also:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+get :index, use_route: :blorgh
+
+</pre>
+</div>
+<p>This tells the application that you still want to perform a <code>GET</code> request to the <code>index</code> action of this controller, just that you want to use the engine's route to get there, rather than the application.</p>
+</body>
+</html>

@@ -1,0 +1,65 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>3 Activating automatic connection switching</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v6.0.6.1/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="activating-automatic-connection-switching"><a class="anchorlink" href="#activating-automatic-connection-switching">3 Activating automatic connection switching</a></h3>
+<p>Finally, in order to use the read-only replica in your application you'll need to activate
+the middleware for automatic switching.</p>
+
+<p>Automatic switching allows the application to switch from the primary to replica or replica
+to primary based on the HTTP verb and whether there was a recent write.</p>
+
+<p>If the application is receiving a POST, PUT, DELETE, or PATCH request the application will
+automatically write to the primary. For the specified time after the write the application
+will read from the primary. For a GET or HEAD request the application will read from the
+replica unless there was a recent write.</p>
+
+<p>To activate the automatic connection switching middleware, add or uncomment the following
+lines in your application config.</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+config.active_record.database_selector = { delay: 2.seconds }
+config.active_record.database_resolver = ActiveRecord::Middleware::DatabaseSelector::Resolver
+config.active_record.database_resolver_context = ActiveRecord::Middleware::DatabaseSelector::Resolver::Session
+
+</pre>
+</div>
+<p>Rails guarantees "read your own write" and will send your GET or HEAD request to the
+primary if it's within the <code>delay</code> window. By default the delay is set to 2 seconds. You
+should change this based on your database infrastructure. Rails doesn't guarantee "read
+a recent write" for other users within the delay window and will send GET and HEAD requests
+to the replicas unless they wrote recently.</p>
+
+<p>The automatic connection switching in Rails is relatively primitive and deliberately doesn't
+do a whole lot. The goal was a system that demonstrated how to do automatic connection
+switching that was flexible enough to be customizable by app developers.</p>
+
+<p>The setup in Rails allows you to easily change how the switching is done and what
+parameters it's based on. Let's say you want to use a cookie instead of a session to
+decide when to swap connections. You can write your own class:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class MyCookieResolver
+  # code for your cookie class
+end
+
+</pre>
+</div>
+<p>And then pass it to the middleware:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+config.active_record.database_selector = { delay: 2.seconds }
+config.active_record.database_resolver = ActiveRecord::Middleware::DatabaseSelector::Resolver
+config.active_record.database_resolver_context = MyCookieResolver
+
+</pre>
+</div>
+</body>
+</html>

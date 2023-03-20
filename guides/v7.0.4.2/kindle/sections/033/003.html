@@ -1,0 +1,50 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>4 How to Activate zeitwerk Mode</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v7.0.4.2/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="how-to-activate-zeitwerk-mode"><a class="anchorlink" href="#how-to-activate-zeitwerk-mode">4 How to Activate <code>zeitwerk</code> Mode</a></h3>
+<h4 id="applications-running-rails-5-x-or-less"><a class="anchorlink" href="#applications-running-rails-5-x-or-less">4.1 Applications running Rails 5.x or Less</a></h4>
+
+<p>In applications running a Rails version previous to 6.0, <code>zeitwerk</code> mode is not available. You need to be at least in Rails 6.0.</p>
+
+<h4 id="applications-running-rails-6-x"><a class="anchorlink" href="#applications-running-rails-6-x">4.2 Applications running Rails 6.x</a></h4>
+
+<p>In applications running Rails 6.x there are two scenarios.</p>
+
+<p>If the application is loading the framework defaults of Rails 6.0 or 6.1 and it is running in <code>classic</code> mode, it must be opting out by hand. You have to have something similar to this:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="c1"># config/application.rb</span>
+<span class="n">config</span><span class="p">.</span><span class="nf">load_defaults</span> <span class="mf">6.0</span>
+<span class="n">config</span><span class="p">.</span><span class="nf">autoloader</span> <span class="o">=</span> <span class="ss">:classic</span> <span class="c1"># DELETE THIS LINE</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="# config/application.rb
+config.load_defaults 6.0
+config.autoloader = :classic # DELETE THIS LINE
+">Copy</button>
+</div>
+<p>As noted, just delete the override, <code>zeitwerk</code> mode is the default.</p>
+
+<p>On the other hand, if the application is loading old framework defaults you need to enable <code>zeitwerk</code> mode explicitly:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="c1"># config/application.rb</span>
+<span class="n">config</span><span class="p">.</span><span class="nf">load_defaults</span> <span class="mf">5.2</span>
+<span class="n">config</span><span class="p">.</span><span class="nf">autoloader</span> <span class="o">=</span> <span class="ss">:zeitwerk</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="# config/application.rb
+config.load_defaults 5.2
+config.autoloader = :zeitwerk
+">Copy</button>
+</div>
+<h4 id="applications-running-rails-7"><a class="anchorlink" href="#applications-running-rails-7">4.3 Applications Running Rails 7</a></h4>
+
+<p>In Rails 7 there is only <code>zeitwerk</code> mode, you do not need to do anything to enable it.</p>
+
+<p>Indeed, in Rails 7 the setter <code>config.autoloader=</code> does not even exist. If <code>config/application.rb</code> uses it, please delete the line.</p>
+</body>
+</html>

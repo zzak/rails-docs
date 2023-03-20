@@ -1,0 +1,132 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>1 Migration Overview</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v6.1.7.3/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="migration-overview"><a class="anchorlink" href="#migration-overview">1 Migration Overview</a></h3>
+<p>Migrations are a convenient way to
+<a href="https://en.wikipedia.org/wiki/Schema_migration">alter your database schema over time</a>
+in a consistent way. They use a Ruby DSL so that you don't have to
+write SQL by hand, allowing your schema and changes to be database independent.</p>
+
+<p>You can think of each migration as being a new 'version' of the database. A
+schema starts off with nothing in it, and each migration modifies it to add or
+remove tables, columns, or entries. Active Record knows how to update your
+schema along this timeline, bringing it from whatever point it is in the
+history to the latest version. Active Record will also update your
+<code>db/schema.rb</code> file to match the up-to-date structure of your database.</p>
+
+<p>Here's an example of a migration:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">CreateProducts</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Migration</span><span class="p">[</span><span class="mf">6.0</span><span class="p">]</span>
+  <span class="k">def</span> <span class="nf">change</span>
+    <span class="n">create_table</span> <span class="ss">:products</span> <span class="k">do</span> <span class="o">|</span><span class="n">t</span><span class="o">|</span>
+      <span class="n">t</span><span class="p">.</span><span class="nf">string</span> <span class="ss">:name</span>
+      <span class="n">t</span><span class="p">.</span><span class="nf">text</span> <span class="ss">:description</span>
+
+      <span class="n">t</span><span class="p">.</span><span class="nf">timestamps</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-bda020ee802ad4e91834044dc0e9cc21">class CreateProducts &lt; ActiveRecord::Migration[6.0]
+  def change
+    create_table :products do |t|
+      t.string :name
+      t.text :description
+
+      t.timestamps
+    end
+  end
+end
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-bda020ee802ad4e91834044dc0e9cc21">Copy</button>
+</div>
+<p>This migration adds a table called <code>products</code> with a string column called
+<code>name</code> and a text column called <code>description</code>. A primary key column called <code>id</code>
+will also be added implicitly, as it's the default primary key for all Active
+Record models. The <code>timestamps</code> macro adds two columns, <code>created_at</code> and
+<code>updated_at</code>. These special columns are automatically managed by Active Record
+if they exist.</p>
+
+<p>Note that we define the change that we want to happen moving forward in time.
+Before this migration is run, there will be no table. After, the table will
+exist. Active Record knows how to reverse this migration as well: if we roll
+this migration back, it will remove the table.</p>
+
+<p>On databases that support transactions with statements that change the schema,
+migrations are wrapped in a transaction. If the database does not support this
+then when a migration fails the parts of it that succeeded will not be rolled
+back. You will have to rollback the changes that were made by hand.</p>
+
+<div class="note"><p>There are certain queries that can't run inside a transaction. If your
+adapter supports DDL transactions you can use <code>disable_ddl_transaction!</code> to
+disable them for a single migration.</p></div>
+
+<p>If you wish for a migration to do something that Active Record doesn't know how
+to reverse, you can use <code>reversible</code>:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">ChangeProductsPrice</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Migration</span><span class="p">[</span><span class="mf">6.0</span><span class="p">]</span>
+  <span class="k">def</span> <span class="nf">change</span>
+    <span class="n">reversible</span> <span class="k">do</span> <span class="o">|</span><span class="n">dir</span><span class="o">|</span>
+      <span class="n">change_table</span> <span class="ss">:products</span> <span class="k">do</span> <span class="o">|</span><span class="n">t</span><span class="o">|</span>
+        <span class="n">dir</span><span class="p">.</span><span class="nf">up</span>   <span class="p">{</span> <span class="n">t</span><span class="p">.</span><span class="nf">change</span> <span class="ss">:price</span><span class="p">,</span> <span class="ss">:string</span> <span class="p">}</span>
+        <span class="n">dir</span><span class="p">.</span><span class="nf">down</span> <span class="p">{</span> <span class="n">t</span><span class="p">.</span><span class="nf">change</span> <span class="ss">:price</span><span class="p">,</span> <span class="ss">:integer</span> <span class="p">}</span>
+      <span class="k">end</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-087aba1f6c0631a23b586d6883e1af5a">class ChangeProductsPrice &lt; ActiveRecord::Migration[6.0]
+  def change
+    reversible do |dir|
+      change_table :products do |t|
+        dir.up   { t.change :price, :string }
+        dir.down { t.change :price, :integer }
+      end
+    end
+  end
+end
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-087aba1f6c0631a23b586d6883e1af5a">Copy</button>
+</div>
+<p>Alternatively, you can use <code>up</code> and <code>down</code> instead of <code>change</code>:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">ChangeProductsPrice</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Migration</span><span class="p">[</span><span class="mf">6.0</span><span class="p">]</span>
+  <span class="k">def</span> <span class="nf">up</span>
+    <span class="n">change_table</span> <span class="ss">:products</span> <span class="k">do</span> <span class="o">|</span><span class="n">t</span><span class="o">|</span>
+      <span class="n">t</span><span class="p">.</span><span class="nf">change</span> <span class="ss">:price</span><span class="p">,</span> <span class="ss">:string</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+
+  <span class="k">def</span> <span class="nf">down</span>
+    <span class="n">change_table</span> <span class="ss">:products</span> <span class="k">do</span> <span class="o">|</span><span class="n">t</span><span class="o">|</span>
+      <span class="n">t</span><span class="p">.</span><span class="nf">change</span> <span class="ss">:price</span><span class="p">,</span> <span class="ss">:integer</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-4e913c90f80c871c468c9cbcc6d94ccc">class ChangeProductsPrice &lt; ActiveRecord::Migration[6.0]
+  def up
+    change_table :products do |t|
+      t.change :price, :string
+    end
+  end
+
+  def down
+    change_table :products do |t|
+      t.change :price, :integer
+    end
+  end
+end
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-4e913c90f80c871c468c9cbcc6d94ccc">Copy</button>
+</div>
+</body>
+</html>

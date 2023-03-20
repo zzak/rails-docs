@@ -1,0 +1,63 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>16 Creating custom events</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v6.1.7.3/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="creating-custom-events"><a class="anchorlink" href="#creating-custom-events">16 Creating custom events</a></h3>
+<p>Adding your own events is easy as well. <code>ActiveSupport::Notifications</code> will take care of
+all the heavy lifting for you. Simply call <code>instrument</code> with a <code>name</code>, <code>payload</code> and a block.
+The notification will be sent after the block returns. <code>ActiveSupport</code> will generate the start and end times
+and add the instrumenter's unique ID. All data passed into the <code>instrument</code> call will make
+it into the payload.</p>
+
+<p>Here's an example:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="no">ActiveSupport</span><span class="o">::</span><span class="no">Notifications</span><span class="p">.</span><span class="nf">instrument</span> <span class="s2">"my.custom.event"</span><span class="p">,</span> <span class="ss">this: :data</span> <span class="k">do</span>
+  <span class="c1"># do your custom stuff here</span>
+<span class="k">end</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-c7c7f9b0b216fcf2e3af4d7050930380">ActiveSupport::Notifications.instrument "my.custom.event", this: :data do
+  # do your custom stuff here
+end
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-c7c7f9b0b216fcf2e3af4d7050930380">Copy</button>
+</div>
+<p>Now you can listen to this event with:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="no">ActiveSupport</span><span class="o">::</span><span class="no">Notifications</span><span class="p">.</span><span class="nf">subscribe</span> <span class="s2">"my.custom.event"</span> <span class="k">do</span> <span class="o">|</span><span class="nb">name</span><span class="p">,</span> <span class="n">started</span><span class="p">,</span> <span class="n">finished</span><span class="p">,</span> <span class="n">unique_id</span><span class="p">,</span> <span class="n">data</span><span class="o">|</span>
+  <span class="nb">puts</span> <span class="n">data</span><span class="p">.</span><span class="nf">inspect</span> <span class="c1"># {:this=&gt;:data}</span>
+<span class="k">end</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-53711a3f8ecd910169d3263566cb766a">ActiveSupport::Notifications.subscribe "my.custom.event" do |name, started, finished, unique_id, data|
+  puts data.inspect # {:this=&gt;:data}
+end
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-53711a3f8ecd910169d3263566cb766a">Copy</button>
+</div>
+<p>You also have the option to call instrument without passing a block. This lets you leverage the
+instrumentation infrastructure for other messaging uses.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="no">ActiveSupport</span><span class="o">::</span><span class="no">Notifications</span><span class="p">.</span><span class="nf">instrument</span> <span class="s2">"my.custom.event"</span><span class="p">,</span> <span class="ss">this: :data</span>
+
+<span class="no">ActiveSupport</span><span class="o">::</span><span class="no">Notifications</span><span class="p">.</span><span class="nf">subscribe</span> <span class="s2">"my.custom.event"</span> <span class="k">do</span> <span class="o">|</span><span class="nb">name</span><span class="p">,</span> <span class="n">started</span><span class="p">,</span> <span class="n">finished</span><span class="p">,</span> <span class="n">unique_id</span><span class="p">,</span> <span class="n">data</span><span class="o">|</span>
+  <span class="nb">puts</span> <span class="n">data</span><span class="p">.</span><span class="nf">inspect</span> <span class="c1"># {:this=&gt;:data}</span>
+<span class="k">end</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-d0fbeee607472269fdc25345712b78e2">ActiveSupport::Notifications.instrument "my.custom.event", this: :data
+
+ActiveSupport::Notifications.subscribe "my.custom.event" do |name, started, finished, unique_id, data|
+  puts data.inspect # {:this=&gt;:data}
+end
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-d0fbeee607472269fdc25345712b78e2">Copy</button>
+</div>
+<p>You should follow Rails conventions when defining your own events. The format is: <code>event.library</code>.
+If your application is sending Tweets, you should create an event named <code>tweet.twitter</code>.</p>
+</body>
+</html>

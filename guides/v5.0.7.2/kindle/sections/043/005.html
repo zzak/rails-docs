@@ -1,0 +1,149 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>6 Active Record</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v5.0.7.2/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="active-record">6 Active Record</h3>
+<p>Please refer to the
+<a href="https://github.com/rails/rails/blob/4-1-stable/activerecord/CHANGELOG.md">Changelog</a>
+for detailed changes.</p>
+
+<h4 id="active-record-removals">6.1 Removals</h4>
+<ul>
+<li>Removed deprecated nil-passing to the following <code>SchemaCache</code> methods:
+<code>primary_keys</code>, <code>tables</code>, <code>columns</code> and <code>columns_hash</code>.</li>
+<li>Removed deprecated block filter from <code>ActiveRecord::Migrator#migrate</code>.</li>
+<li>Removed deprecated String constructor from <code>ActiveRecord::Migrator</code>.</li>
+<li>Removed deprecated <code>scope</code> use without passing a callable object.</li>
+<li>Removed deprecated <code>transaction_joinable=</code> in favor of <code>begin_transaction</code>
+with a <code>:joinable</code> option.</li>
+<li>Removed deprecated <code>decrement_open_transactions</code>.</li>
+<li>Removed deprecated <code>increment_open_transactions</code>.</li>
+<li>Removed deprecated <code>PostgreSQLAdapter#outside_transaction?</code>
+method. You can use <code>#transaction_open?</code> instead.</li>
+<li>Removed deprecated <code>ActiveRecord::Fixtures.find_table_name</code> in favor of
+<code>ActiveRecord::Fixtures.default_fixture_model_name</code>.</li>
+<li>Removed deprecated <code>columns_for_remove</code> from <code>SchemaStatements</code>.</li>
+<li>Removed deprecated <code>SchemaStatements#distinct</code>.</li>
+<li>Moved deprecated <code>ActiveRecord::TestCase</code> into the Rails test
+suite. The class is no longer public and is only used for internal
+Rails tests.</li>
+<li>Removed support for deprecated option <code>:restrict</code> for <code>:dependent</code>
+in associations.</li>
+<li>Removed support for deprecated <code>:delete_sql</code>, <code>:insert_sql</code>, <code>:finder_sql</code>
+and <code>:counter_sql</code> options in associations.</li>
+<li>Removed deprecated method <code>type_cast_code</code> from Column.</li>
+<li>Removed deprecated <code>ActiveRecord::Base#connection</code> method.
+Make sure to access it via the class.</li>
+<li>Removed deprecation warning for <code>auto_explain_threshold_in_seconds</code>.</li>
+<li>Removed deprecated <code>:distinct</code> option from <code>Relation#count</code>.</li>
+<li>Removed deprecated methods <code>partial_updates</code>, <code>partial_updates?</code> and
+<code>partial_updates=</code>.</li>
+<li>Removed deprecated method <code>scoped</code>.</li>
+<li>Removed deprecated method <code>default_scopes?</code>.</li>
+<li>Remove implicit join references that were deprecated in 4.0.</li>
+<li>Removed <code>activerecord-deprecated_finders</code> as a dependency.
+Please see <a href="https://github.com/rails/activerecord-deprecated_finders#active-record-deprecated-finders">the gem README</a>
+for more info.</li>
+<li>Removed usage of <code>implicit_readonly</code>. Please use <code>readonly</code> method
+explicitly to mark records as
+<code>readonly</code>. (<a href="https://github.com/rails/rails/pull/10769">Pull Request</a>)</li>
+</ul>
+<h4 id="active-record-deprecations">6.2 Deprecations</h4>
+<ul>
+<li>Deprecated <code>quoted_locking_column</code> method, which isn't used anywhere.</li>
+<li>Deprecated <code>ConnectionAdapters::SchemaStatements#distinct</code>,
+as it is no longer used by internals. (<a href="https://github.com/rails/rails/pull/10556">Pull Request</a>)</li>
+<li>Deprecated <code>rake db:test:*</code> tasks as the test database is now
+automatically maintained. See railties release notes. (<a href="https://github.com/rails/rails/pull/13528">Pull
+Request</a>)</li>
+<li>Deprecate unused <code>ActiveRecord::Base.symbolized_base_class</code>
+and <code>ActiveRecord::Base.symbolized_sti_name</code> without
+replacement. <a href="https://github.com/rails/rails/commit/97e7ca48c139ea5cce2fa9b4be631946252a1ebd">Commit</a>
+</li>
+</ul>
+<h4 id="active-record-notable-changes">6.3 Notable changes</h4>
+<ul>
+<li>Default scopes are no longer overridden by chained conditions.</li>
+</ul>
+<p>  Before this change when you defined a <code>default_scope</code> in a model
+  it was overridden by chained conditions in the same field. Now it
+  is merged like any other scope. <a href="upgrading_ruby_on_rails.html#changes-on-default-scopes">More Details</a>.</p>
+<ul>
+<li>Added <code>ActiveRecord::Base.to_param</code> for convenient "pretty" URLs derived from
+a model's attribute or
+method. (<a href="https://github.com/rails/rails/pull/12891">Pull Request</a>)</li>
+<li>Added <code>ActiveRecord::Base.no_touching</code>, which allows ignoring touch on
+models. (<a href="https://github.com/rails/rails/pull/12772">Pull Request</a>)</li>
+<li>Unify boolean type casting for <code>MysqlAdapter</code> and <code>Mysql2Adapter</code>.
+<code>type_cast</code> will return <code>1</code> for <code>true</code> and <code>0</code> for <code>false</code>. (<a href="https://github.com/rails/rails/pull/12425">Pull Request</a>)</li>
+<li>
+<code>.unscope</code> now removes conditions specified in
+<code>default_scope</code>. (<a href="https://github.com/rails/rails/commit/94924dc32baf78f13e289172534c2e71c9c8cade">Commit</a>)</li>
+<li>Added <code>ActiveRecord::QueryMethods#rewhere</code> which will overwrite an existing,
+named where condition. (<a href="https://github.com/rails/rails/commit/f950b2699f97749ef706c6939a84dfc85f0b05f2">Commit</a>)</li>
+<li>Extended <code>ActiveRecord::Base#cache_key</code> to take an optional list of timestamp
+attributes of which the highest will be used. (<a href="https://github.com/rails/rails/commit/e94e97ca796c0759d8fcb8f946a3bbc60252d329">Commit</a>)</li>
+<li>Added <code>ActiveRecord::Base#enum</code> for declaring enum attributes where the values
+map to integers in the database, but can be queried by
+name. (<a href="https://github.com/rails/rails/commit/db41eb8a6ea88b854bf5cd11070ea4245e1639c5">Commit</a>)</li>
+<li>Type cast json values on write, so that the value is consistent with reading
+from the database. (<a href="https://github.com/rails/rails/pull/12643">Pull Request</a>)</li>
+<li>Type cast hstore values on write, so that the value is consistent
+with reading from the database. (<a href="https://github.com/rails/rails/commit/5ac2341fab689344991b2a4817bd2bc8b3edac9d">Commit</a>)</li>
+<li>Make <code>next_migration_number</code> accessible for third party
+generators. (<a href="https://github.com/rails/rails/pull/12407">Pull Request</a>)</li>
+<li>Calling <code>update_attributes</code> will now throw an <code>ArgumentError</code> whenever it
+gets a <code>nil</code> argument. More specifically, it will throw an error if the
+argument that it gets passed does not respond to to
+<code>stringify_keys</code>. (<a href="https://github.com/rails/rails/pull/9860">Pull Request</a>)</li>
+<li>
+<code>CollectionAssociation#first</code>/<code>#last</code> (e.g. <code>has_many</code>) use a <code>LIMIT</code>ed
+query to fetch results rather than loading the entire
+collection. (<a href="https://github.com/rails/rails/pull/12137">Pull Request</a>)</li>
+<li>
+<code>inspect</code> on Active Record model classes does not initiate a new
+connection. This means that calling <code>inspect</code>, when the database is missing,
+will no longer raise an exception. (<a href="https://github.com/rails/rails/pull/11014">Pull Request</a>)</li>
+<li>Removed column restrictions for <code>count</code>, let the database raise if the SQL is
+invalid. (<a href="https://github.com/rails/rails/pull/10710">Pull Request</a>)</li>
+<li>Rails now automatically detects inverse associations. If you do not set the
+<code>:inverse_of</code> option on the association, then Active Record will guess the
+inverse association based on heuristics. (<a href="https://github.com/rails/rails/pull/10886">Pull Request</a>)</li>
+<li>Handle aliased attributes in ActiveRecord::Relation. When using symbol keys,
+ActiveRecord will now translate aliased attribute names to the actual column
+name used in the database. (<a href="https://github.com/rails/rails/pull/7839">Pull Request</a>)</li>
+<li>The ERB in fixture files is no longer evaluated in the context of the main
+object. Helper methods used by multiple fixtures should be defined on modules
+included in <code>ActiveRecord::FixtureSet.context_class</code>. (<a href="https://github.com/rails/rails/pull/13022">Pull Request</a>)</li>
+<li>Don't create or drop the test database if RAILS_ENV is specified
+explicitly. (<a href="https://github.com/rails/rails/pull/13629">Pull Request</a>)</li>
+<li>
+<code>Relation</code> no longer has mutator methods like <code>#map!</code> and <code>#delete_if</code>. Convert
+to an <code>Array</code> by calling <code>#to_a</code> before using these methods. (<a href="https://github.com/rails/rails/pull/13314">Pull Request</a>)</li>
+<li>
+<code>find_in_batches</code>, <code>find_each</code>, <code>Result#each</code> and <code>Enumerable#index_by</code> now
+return an <code>Enumerator</code> that can calculate its
+size. (<a href="https://github.com/rails/rails/pull/13938">Pull Request</a>)</li>
+<li>
+<code>scope</code>, <code>enum</code> and Associations now raise on "dangerous" name
+conflicts. (<a href="https://github.com/rails/rails/pull/13450">Pull Request</a>,
+<a href="https://github.com/rails/rails/pull/13896">Pull Request</a>)</li>
+<li>
+<code>second</code> through <code>fifth</code> methods act like the <code>first</code>
+finder. (<a href="https://github.com/rails/rails/pull/13757">Pull Request</a>)</li>
+<li>Make <code>touch</code> fire the <code>after_commit</code> and <code>after_rollback</code>
+callbacks. (<a href="https://github.com/rails/rails/pull/12031">Pull Request</a>)</li>
+<li>Enable partial indexes for <code>sqlite &gt;= 3.8.0</code>.
+(<a href="https://github.com/rails/rails/pull/13350">Pull Request</a>)</li>
+<li>Make <code>change_column_null</code>
+revertible. (<a href="https://github.com/rails/rails/commit/724509a9d5322ff502aefa90dd282ba33a281a96">Commit</a>)</li>
+<li>Added a flag to disable schema dump after migration. This is set to <code>false</code>
+by default in the production environment for new applications.
+(<a href="https://github.com/rails/rails/pull/13948">Pull Request</a>)</li>
+</ul>
+</body>
+</html>

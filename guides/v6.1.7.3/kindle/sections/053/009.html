@@ -1,0 +1,63 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>10 Active Support</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v6.1.7.3/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="active-support"><a class="anchorlink" href="#active-support">10 Active Support</a></h3>
+<p>Please refer to the <a href="https://github.com/rails/rails/blob/4-2-stable/activesupport/CHANGELOG.md">Changelog</a> for detailed changes.</p>
+
+<h4 id="removals"><a class="anchorlink" href="#removals">10.1 Removals</a></h4>
+<ul>
+<li>  Removed deprecated <code>Numeric#ago</code>, <code>Numeric#until</code>, <code>Numeric#since</code>,
+<code>Numeric#from_now</code>.
+(<a href="https://github.com/rails/rails/commit/f1eddea1e3f6faf93581c43651348f48b2b7d8bb">Commit</a>)</li>
+<li>  Removed deprecated string based terminators for <code>ActiveSupport::Callbacks</code>.
+(<a href="https://github.com/rails/rails/pull/15100">Pull Request</a>)</li>
+</ul>
+<h4 id="deprecations"><a class="anchorlink" href="#deprecations">10.2 Deprecations</a></h4>
+<ul>
+<li>  Deprecated <code>Kernel#silence_stderr</code>, <code>Kernel#capture</code> and <code>Kernel#quietly</code>
+without replacement.
+(<a href="https://github.com/rails/rails/pull/13392">Pull Request</a>)</li>
+<li>  Deprecated <code>Class#superclass_delegating_accessor</code>, use
+<code>Class#class_attribute</code> instead.
+(<a href="https://github.com/rails/rails/pull/14271">Pull Request</a>)</li>
+<li>  Deprecated <code>ActiveSupport::SafeBuffer#prepend!</code> as
+<code>ActiveSupport::SafeBuffer#prepend</code> now performs the same function.
+(<a href="https://github.com/rails/rails/pull/14529">Pull Request</a>)</li>
+</ul>
+<h4 id="notable-changes"><a class="anchorlink" href="#notable-changes">10.3 Notable changes</a></h4>
+<ul>
+<li>  Introduced a new configuration option <code>active_support.test_order</code> for
+specifying the order test cases are executed. This option currently defaults
+to <code>:sorted</code> but will be changed to <code>:random</code> in Rails 5.0.
+(<a href="https://github.com/rails/rails/commit/53e877f7d9291b2bf0b8c425f9e32ef35829f35b">Commit</a>)</li>
+<li>  <code>Object#try</code> and <code>Object#try!</code> can now be used without an explicit receiver in the block.
+(<a href="https://github.com/rails/rails/commit/5e51bdda59c9ba8e5faf86294e3e431bd45f1830">Commit</a>,
+<a href="https://github.com/rails/rails/pull/17361">Pull Request</a>)</li>
+<li>  The <code>travel_to</code> test helper now truncates the <code>usec</code> component to 0.
+(<a href="https://github.com/rails/rails/commit/9f6e82ee4783e491c20f5244a613fdeb4024beb5">Commit</a>)</li>
+<li>  Introduced <code>Object#itself</code> as an identity function.
+(Commit <a href="https://github.com/rails/rails/commit/702ad710b57bef45b081ebf42e6fa70820fdd810">1</a>,
+<a href="https://github.com/rails/rails/commit/64d91122222c11ad3918cc8e2e3ebc4b0a03448a">2</a>)</li>
+<li>  <code>Object#with_options</code> can now be used without an explicit receiver in the block.
+(<a href="https://github.com/rails/rails/pull/16339">Pull Request</a>)</li>
+<li>  Introduced <code>String#truncate_words</code> to truncate a string by a number of words.
+(<a href="https://github.com/rails/rails/pull/16190">Pull Request</a>)</li>
+<li>  Added <code>Hash#transform_values</code> and <code>Hash#transform_values!</code> to simplify a
+common pattern where the values of a hash must change, but the keys are left
+the same.
+(<a href="https://github.com/rails/rails/pull/15819">Pull Request</a>)</li>
+<li>  The <code>humanize</code> inflector helper now strips any leading underscores.
+(<a href="https://github.com/rails/rails/commit/daaa21bc7d20f2e4ff451637423a25ff2d5e75c7">Commit</a>)</li>
+<li>  Introduced <code>Concern#class_methods</code> as an alternative to
+<code>module ClassMethods</code>, as well as <code>Kernel#concern</code> to avoid the
+<code>module Foo; extend ActiveSupport::Concern; end</code> boilerplate.
+(<a href="https://github.com/rails/rails/commit/b16c36e688970df2f96f793a759365b248b582ad">Commit</a>)</li>
+<li>  New <a href="autoloading_and_reloading_constants_classic_mode.html">guide</a> about constant autoloading and reloading.</li>
+</ul>
+</body>
+</html>

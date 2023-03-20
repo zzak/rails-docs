@@ -1,0 +1,43 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>8 Migrations and Seed Data</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v4.2.11.3/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="migrations-and-seed-data">8 Migrations and Seed Data</h3>
+<p>Some people use migrations to add data to the database:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class AddInitialProducts &lt; ActiveRecord::Migration
+  def up
+    5.times do |i|
+      Product.create(name: "Product ##{i}", description: "A product.")
+    end
+  end
+
+  def down
+    Product.delete_all
+  end
+end
+
+</pre>
+</div>
+<p>However, Rails has a 'seeds' feature that should be used for seeding a database
+with initial data. It's a really simple feature: just fill up <code>db/seeds.rb</code>
+with some Ruby code, and run <code>rake db:seed</code>:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+5.times do |i|
+  Product.create(name: "Product ##{i}", description: "A product.")
+end
+
+</pre>
+</div>
+<p>This is generally a much cleaner way to set up the database of a blank
+application.</p>
+</body>
+</html>

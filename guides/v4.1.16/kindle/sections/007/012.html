@@ -1,0 +1,95 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>13 Eager Loading Associations</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v4.1.16/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="eager-loading-associations">13 Eager Loading Associations</h3>
+<p>Eager loading is the mechanism for loading the associated records of the objects returned by <code>Model.find</code> using as few queries as possible.</p>
+<p><strong>N + 1 queries problem</strong></p>
+<p>Consider the following code, which finds 10 clients and prints their postcodes:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+clients = Client.limit(10)
+
+clients.each do |client|
+  puts client.address.postcode
+end
+
+</pre>
+</div>
+<p>This code looks fine at the first sight. But the problem lies within the total number of queries executed. The above code executes 1 (to find 10 clients) + 10 (one per each client to load the address) = <strong>11</strong> queries in total.</p>
+<p><strong>Solution to N + 1 queries problem</strong></p>
+<p>Active Record lets you specify in advance all the associations that are going to be loaded. This is possible by specifying the <code>includes</code> method of the <code>Model.find</code> call. With <code>includes</code>, Active Record ensures that all of the specified associations are loaded using the minimum possible number of queries.</p>
+<p>Revisiting the above case, we could rewrite <code>Client.limit(10)</code> to use eager load addresses:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+clients = Client.includes(:address).limit(10)
+
+clients.each do |client|
+  puts client.address.postcode
+end
+
+</pre>
+</div>
+<p>The above code will execute just <strong>2</strong> queries, as opposed to <strong>11</strong> queries in the previous case:</p>
+<div class="code_container">
+<pre class="brush: sql; gutter: false; toolbar: false">
+SELECT * FROM clients LIMIT 10
+SELECT addresses.* FROM addresses
+  WHERE (addresses.client_id IN (1,2,3,4,5,6,7,8,9,10))
+
+</pre>
+</div>
+<h4 id="eager-loading-multiple-associations">13.1 Eager Loading Multiple Associations</h4>
+<p>Active Record lets you eager load any number of associations with a single <code>Model.find</code> call by using an array, hash, or a nested hash of array/hash with the <code>includes</code> method.</p>
+<h5 id="array-of-multiple-associations">13.1.1 Array of Multiple Associations</h5>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+Post.includes(:category, :comments)
+
+</pre>
+</div>
+<p>This loads all the posts and the associated category and comments for each post.</p>
+<h5 id="nested-associations-hash">13.1.2 Nested Associations Hash</h5>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+Category.includes(posts: [{ comments: :guest }, :tags]).find(1)
+
+</pre>
+</div>
+<p>This will find the category with id 1 and eager load all of the associated posts, the associated posts' tags and comments, and every comment's guest association.</p>
+<h4 id="specifying-conditions-on-eager-loaded-associations">13.2 Specifying Conditions on Eager Loaded Associations</h4>
+<p>Even though Active Record lets you specify conditions on the eager loaded associations just like <code>joins</code>, the recommended way is to use <a href="#joining-tables">joins</a> instead.</p>
+<p>However if you must do this, you may use <code>where</code> as you would normally.</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+Post.includes(:comments).where(comments: { visible: true })
+
+</pre>
+</div>
+<p>This would generate a query which contains a <code>LEFT OUTER JOIN</code> whereas the
+<code>joins</code> method would generate one using the <code>INNER JOIN</code> function instead.</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+  SELECT "posts"."id" AS t0_r0, ... "comments"."updated_at" AS t1_r5 FROM "posts" LEFT OUTER JOIN "comments" ON "comments"."post_id" = "posts"."id" WHERE (comments.visible = 1)
+
+</pre>
+</div>
+<p>If there was no <code>where</code> condition, this would generate the normal set of two
+queries.</p>
+<div class="note"><p>Using <code>where</code> like this will only work when you pass it a Hash. For
+SQL-fragments you need use <code>references</code> to force joined tables:</p></div>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+Post.includes(:comments).where("comments.visible = true").references(:comments)
+
+</pre>
+</div>
+<p>If, in the case of this <code>includes</code> query, there were no comments for any posts,
+all the posts would still be loaded. By using <code>joins</code> (an INNER JOIN), the join
+conditions <strong>must</strong> match, otherwise no records will be returned.</p>
+</body>
+</html>

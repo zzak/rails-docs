@@ -1,0 +1,36 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>7 API / Backend development</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v7.0.4.2/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="api-backend-development"><a class="anchorlink" href="#api-backend-development">7 API / Backend development</a></h3>
+<ol>
+<li>
+A backend API (for example, using JSON) needs a separate endpoint for uploading files that creates an <code>ActiveStorage::Blob</code> and returns its <code>attachable_sgid</code>:
+<div class="code_container">
+<pre><code class="highlight json"><span class="p">{</span><span class="w">
+  </span><span class="nl">"attachable_sgid"</span><span class="p">:</span><span class="w"> </span><span class="s2">"BAh7CEkiCG…"</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre>
+<button class="clipboard-button" data-clipboard-text='{
+  "attachable_sgid": "BAh7CEkiCG…"
+}
+'>Copy</button>
+</div>
+</li>
+<li>
+Take that <code>attachable_sgid</code> and ask your frontend to insert it in rich text content using an <code>&lt;action-text-attachment&gt;</code> tag:
+<div class="code_container">
+<pre><code class="highlight html"><span class="nt">&lt;action-text-attachment</span> <span class="na">sgid=</span><span class="s">"BAh7CEkiCG…"</span><span class="nt">&gt;&lt;/action-text-attachment&gt;</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='&lt;action-text-attachment sgid="BAh7CEkiCG…"&gt;&lt;/action-text-attachment&gt;
+'>Copy</button>
+</div>
+</li>
+</ol>
+<p>This is based on Basecamp, so if you still can't find what you are looking for, check this <a href="https://github.com/basecamp/bc3-api/blob/master/sections/rich_text.md">Basecamp Doc</a>.</p>
+</body>
+</html>

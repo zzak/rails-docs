@@ -1,0 +1,44 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>8 Constant Reloading</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v5.2.8.1/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="constant-reloading"><a class="anchorlink" href="#constant-reloading">8 Constant Reloading</a></h3>
+<p>When <code>config.cache_classes</code> is false Rails is able to reload autoloaded
+constants.</p>
+
+<p>For example, if you're in a console session and edit some file behind the
+scenes, the code can be reloaded with the <code>reload!</code> command:</p>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+&gt; reload!
+
+</pre>
+</div>
+<p>When the application runs, code is reloaded when something relevant to this
+logic changes. In order to do that, Rails monitors a number of things:</p>
+<ul>
+<li>
+<code>config/routes.rb</code>.</li>
+<li>Locales.</li>
+<li>Ruby files under <code>autoload_paths</code>.</li>
+<li>
+<code>db/schema.rb</code> and <code>db/structure.sql</code>.</li>
+</ul>
+<p>If anything in there changes, there is a middleware that detects it and reloads
+the code.</p>
+
+<p>Autoloading keeps track of autoloaded constants. Reloading is implemented by
+removing them all from their respective classes and modules using
+<code>Module#remove_const</code>. That way, when the code goes on, those constants are
+going to be unknown again, and files reloaded on demand.</p>
+
+<div class="info"><p>This is an all-or-nothing operation, Rails does not attempt to reload only
+what changed since dependencies between classes makes that really tricky.
+Instead, everything is wiped.</p></div>
+</body>
+</html>

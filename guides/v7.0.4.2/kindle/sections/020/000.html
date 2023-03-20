@@ -1,0 +1,44 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>1 What is Active Storage?</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v7.0.4.2/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="what-is-active-storage-questionmark"><a class="anchorlink" href="#what-is-active-storage-questionmark">1 What is Active Storage?</a></h3>
+<p>Active Storage facilitates uploading files to a cloud storage service like
+Amazon S3, Google Cloud Storage, or Microsoft Azure Storage and attaching those
+files to Active Record objects. It comes with a local disk-based service for
+development and testing and supports mirroring files to subordinate services for
+backups and migrations.</p>
+
+<p>Using Active Storage, an application can transform image uploads or generate image
+representations of non-image uploads like PDFs and videos, and extract metadata from
+arbitrary files.</p>
+
+<h4 id="requirements"><a class="anchorlink" href="#requirements">1.1 Requirements</a></h4>
+
+<p>Various features of Active Storage depend on third-party software which Rails
+will not install, and must be installed separately:</p>
+<ul>
+<li>
+<a href="https://github.com/libvips/libvips">libvips</a> v8.6+ or <a href="https://imagemagick.org/index.php">ImageMagick</a> for image analysis and transformations</li>
+<li>
+<a href="http://ffmpeg.org/">ffmpeg</a> v3.4+ for video previews and ffprobe for video/audio analysis</li>
+<li>
+<a href="https://poppler.freedesktop.org/">poppler</a> or <a href="https://mupdf.com/">muPDF</a> for PDF previews</li>
+</ul>
+<p>Image analysis and transformations also require the <code>image_processing</code> gem. Uncomment it in your <code>Gemfile</code>, or add it if necessary:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">gem</span> <span class="s2">"image_processing"</span><span class="p">,</span> <span class="s2">"&gt;= 1.2"</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='gem "image_processing", "&gt;= 1.2"
+'>Copy</button>
+</div>
+<div class="info"><p>Compared to libvips, ImageMagick is better known and more widely available. However, libvips can be <a href="https://github.com/libvips/libvips/wiki/Speed-and-memory-use">up to 10x faster and consume 1/10 the memory</a>. For JPEG files, this can be further improved by replacing <code>libjpeg-dev</code> with <code>libjpeg-turbo-dev</code>, which is <a href="https://libjpeg-turbo.org/About/Performance">2-7x faster</a>.</p></div>
+
+<div class="warning"><p>Before you install and use third-party software, make sure you understand the licensing implications of doing so. MuPDF, in particular, is licensed under AGPL and requires a commercial license for some use.</p></div>
+</body>
+</html>

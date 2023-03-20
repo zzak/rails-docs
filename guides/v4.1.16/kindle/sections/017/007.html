@@ -1,0 +1,73 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>8 Unsafe Query Generation</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v4.1.16/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="unsafe-query-generation">8 Unsafe Query Generation</h3>
+<p>Due to the way Active Record interprets parameters in combination with the way
+that Rack parses query parameters it was possible to issue unexpected database
+queries with <code>IS NULL</code> where clauses. As a response to that security issue
+(<a href="https://groups.google.com/forum/#!searchin/rubyonrails-security/deep_munge/rubyonrails-security/8SA-M3as7A8/Mr9fi9X4kNgJ">CVE-2012-2660</a>,
+<a href="https://groups.google.com/forum/#!searchin/rubyonrails-security/deep_munge/rubyonrails-security/jILZ34tAHF4/7x0hLH-o0-IJ">CVE-2012-2694</a>
+and <a href="https://groups.google.com/forum/#!searchin/rubyonrails-security/CVE-2012-2660/rubyonrails-security/c7jT-EeN9eI/L0u4e87zYGMJ">CVE-2013-0155</a>)
+<code>deep_munge</code> method was introduced as a solution to keep Rails secure by default.</p>
+<p>Example of vulnerable code that could be used by attacker, if <code>deep_munge</code>
+wasn't performed is:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+unless params[:token].nil?
+  user = User.find_by_token(params[:token])
+  user.reset_password!
+end
+
+</pre>
+</div>
+<p>When <code>params[:token]</code> is one of: <code>[]</code>, <code>[nil]</code>, <code>[nil, nil, ...]</code> or
+<code>['foo', nil]</code> it will bypass the test for <code>nil</code>, but <code>IS NULL</code> or
+<code>IN ('foo', NULL)</code> where clauses still will be added to the SQL query.</p>
+<p>To keep rails secure by default, <code>deep_munge</code> replaces some of the values with
+<code>nil</code>. Below table shows what the parameters look like based on <code>JSON</code> sent in
+request:</p>
+<table>
+<thead>
+<tr>
+<th>JSON</th>
+<th>Parameters</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>{ "person": null }</code></td>
+<td><code>{ :person =&gt; nil }</code></td>
+</tr>
+<tr>
+<td><code>{ "person": [] }</code></td>
+<td><code>{ :person =&gt; nil }</code></td>
+</tr>
+<tr>
+<td><code>{ "person": [null] }</code></td>
+<td><code>{ :person =&gt; nil }</code></td>
+</tr>
+<tr>
+<td><code>{ "person": [null, null, ...] }</code></td>
+<td><code>{ :person =&gt; nil }</code></td>
+</tr>
+<tr>
+<td><code>{ "person": ["foo", null] }</code></td>
+<td><code>{ :person =&gt; ["foo"] }</code></td>
+</tr>
+</tbody>
+</table>
+<p>It is possible to return to old behaviour and disable <code>deep_munge</code> configuring
+your application if you are aware of the risk and know how to handle it:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+config.action_dispatch.perform_deep_munge = false
+
+</pre>
+</div>
+</body>
+</html>

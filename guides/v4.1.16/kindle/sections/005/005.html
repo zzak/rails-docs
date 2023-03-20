@@ -1,0 +1,14 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>6 Halting Execution</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v4.1.16/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="halting-execution">6 Halting Execution</h3>
+<p>As you start registering new callbacks for your models, they will be queued for execution. This queue will include all your model's validations, the registered callbacks, and the database operation to be executed.</p>
+<p>The whole callback chain is wrapped in a transaction. If any <em>before</em> callback method returns exactly <code>false</code> or raises an exception, the execution chain gets halted and a ROLLBACK is issued; <em>after</em> callbacks can only accomplish that by raising an exception.</p>
+<div class="warning"><p>Any exception that is not <code>ActiveRecord::Rollback</code> will be re-raised by Rails after the callback chain is halted. Raising an exception other than <code>ActiveRecord::Rollback</code> may break code that does not expect methods like <code>save</code> and <code>update_attributes</code> (which normally try to return <code>true</code> or <code>false</code>) to raise an exception.</p></div>
+</body>
+</html>

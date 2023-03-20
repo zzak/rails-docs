@@ -1,0 +1,472 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>2 Setup</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v7.0.4.2/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="setup"><a class="anchorlink" href="#setup">2 Setup</a></h3>
+<p>Active Storage uses three tables in your application’s database named
+<code>active_storage_blobs</code>, <code>active_storage_variant_records</code>
+and <code>active_storage_attachments</code>. After creating a new
+application (or upgrading your application to Rails 5.2), run
+<code>bin/rails active_storage:install</code> to generate a migration that creates these
+tables. Use <code>bin/rails db:migrate</code> to run the migration.</p>
+
+<div class="warning"><p><code>active_storage_attachments</code> is a polymorphic join table that stores your model's class name. If your model's class name changes, you will need to run a migration on this table to update the underlying <code>record_type</code> to your model's new class name.</p></div>
+
+<div class="warning"><p>If you are using UUIDs instead of integers as the primary key on your models you will need to change the column type of <code>active_storage_attachments.record_id</code> and <code>active_storage_variant_records.id</code> in the generated migration accordingly.</p></div>
+
+<p>Declare Active Storage services in <code>config/storage.yml</code>. For each service your
+application uses, provide a name and the requisite configuration. The example
+below declares three services named <code>local</code>, <code>test</code>, and <code>amazon</code>:</p>
+
+<div class="code_container">
+<pre><code class="highlight yaml"><span class="na">local</span><span class="pi">:</span>
+  <span class="na">service</span><span class="pi">:</span> <span class="s">Disk</span>
+  <span class="na">root</span><span class="pi">:</span> <span class="s">&lt;%= Rails.root.join("storage") %&gt;</span>
+
+<span class="na">test</span><span class="pi">:</span>
+  <span class="na">service</span><span class="pi">:</span> <span class="s">Disk</span>
+  <span class="na">root</span><span class="pi">:</span> <span class="s">&lt;%= Rails.root.join("tmp/storage") %&gt;</span>
+
+<span class="na">amazon</span><span class="pi">:</span>
+  <span class="na">service</span><span class="pi">:</span> <span class="s">S3</span>
+  <span class="na">access_key_id</span><span class="pi">:</span> <span class="s2">"</span><span class="s">"</span>
+  <span class="na">secret_access_key</span><span class="pi">:</span> <span class="s2">"</span><span class="s">"</span>
+  <span class="na">bucket</span><span class="pi">:</span> <span class="s2">"</span><span class="s">"</span>
+  <span class="na">region</span><span class="pi">:</span> <span class="s2">"</span><span class="s">"</span> <span class="c1"># e.g. 'us-east-1'</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="local:
+  service: Disk
+  root: &lt;%= Rails.root.join(&quot;storage&quot;) %&gt;
+
+test:
+  service: Disk
+  root: &lt;%= Rails.root.join(&quot;tmp/storage&quot;) %&gt;
+
+amazon:
+  service: S3
+  access_key_id: &quot;&quot;
+  secret_access_key: &quot;&quot;
+  bucket: &quot;&quot;
+  region: &quot;&quot; # e.g. 'us-east-1'
+">Copy</button>
+</div>
+<p>Tell Active Storage which service to use by setting
+<code>Rails.application.config.active_storage.service</code>. Because each environment will
+likely use a different service, it is recommended to do this on a
+per-environment basis. To use the disk service from the previous example in the
+development environment, you would add the following to
+<code>config/environments/development.rb</code>:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="c1"># Store files locally.</span>
+<span class="n">config</span><span class="p">.</span><span class="nf">active_storage</span><span class="p">.</span><span class="nf">service</span> <span class="o">=</span> <span class="ss">:local</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="# Store files locally.
+config.active_storage.service = :local
+">Copy</button>
+</div>
+<p>To use the S3 service in production, you add the following to
+<code>config/environments/production.rb</code>:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="c1"># Store files on Amazon S3.</span>
+<span class="n">config</span><span class="p">.</span><span class="nf">active_storage</span><span class="p">.</span><span class="nf">service</span> <span class="o">=</span> <span class="ss">:amazon</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="# Store files on Amazon S3.
+config.active_storage.service = :amazon
+">Copy</button>
+</div>
+<p>To use the test service when testing, you add the following to
+<code>config/environments/test.rb</code>:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="c1"># Store uploaded files on the local file system in a temporary directory.</span>
+<span class="n">config</span><span class="p">.</span><span class="nf">active_storage</span><span class="p">.</span><span class="nf">service</span> <span class="o">=</span> <span class="ss">:test</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="# Store uploaded files on the local file system in a temporary directory.
+config.active_storage.service = :test
+">Copy</button>
+</div>
+<p>Continue reading for more information on the built-in service adapters (e.g.
+<code>Disk</code> and <code>S3</code>) and the configuration they require.</p>
+
+<div class="note"><p>Configuration files that are environment-specific will take precedence:
+in production, for example, the <code>config/storage/production.yml</code> file (if existent)
+will take precedence over the <code>config/storage.yml</code> file.</p></div>
+
+<p>It is recommended to use <code>Rails.env</code> in the bucket names to further reduce the risk of accidentally destroying production data.</p>
+
+<div class="code_container">
+<pre><code class="highlight yaml"><span class="na">amazon</span><span class="pi">:</span>
+  <span class="na">service</span><span class="pi">:</span> <span class="s">S3</span>
+  <span class="c1"># ...</span>
+  <span class="na">bucket</span><span class="pi">:</span> <span class="s">your_own_bucket-&lt;%= Rails.env %&gt;</span>
+
+<span class="na">google</span><span class="pi">:</span>
+  <span class="na">service</span><span class="pi">:</span> <span class="s">GCS</span>
+  <span class="c1"># ...</span>
+  <span class="na">bucket</span><span class="pi">:</span> <span class="s">your_own_bucket-&lt;%= Rails.env %&gt;</span>
+
+<span class="na">azure</span><span class="pi">:</span>
+  <span class="na">service</span><span class="pi">:</span> <span class="s">AzureStorage</span>
+  <span class="c1"># ...</span>
+  <span class="na">container</span><span class="pi">:</span> <span class="s">your_container_name-&lt;%= Rails.env %&gt;</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="amazon:
+  service: S3
+  # ...
+  bucket: your_own_bucket-&lt;%= Rails.env %&gt;
+
+google:
+  service: GCS
+  # ...
+  bucket: your_own_bucket-&lt;%= Rails.env %&gt;
+
+azure:
+  service: AzureStorage
+  # ...
+  container: your_container_name-&lt;%= Rails.env %&gt;
+">Copy</button>
+</div>
+<h4 id="disk-service"><a class="anchorlink" href="#disk-service">2.1 Disk Service</a></h4>
+
+<p>Declare a Disk service in <code>config/storage.yml</code>:</p>
+
+<div class="code_container">
+<pre><code class="highlight yaml"><span class="na">local</span><span class="pi">:</span>
+  <span class="na">service</span><span class="pi">:</span> <span class="s">Disk</span>
+  <span class="na">root</span><span class="pi">:</span> <span class="s">&lt;%= Rails.root.join("storage") %&gt;</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='local:
+  service: Disk
+  root: &lt;%= Rails.root.join("storage") %&gt;
+'>Copy</button>
+</div>
+<h4 id="s3-service-amazon-s3-and-s3-compatible-apis"><a class="anchorlink" href="#s3-service-amazon-s3-and-s3-compatible-apis">2.2 S3 Service (Amazon S3 and S3-compatible APIs)</a></h4>
+
+<p>To connect to Amazon S3, declare an S3 service in <code>config/storage.yml</code>:</p>
+
+<div class="code_container">
+<pre><code class="highlight yaml"><span class="na">amazon</span><span class="pi">:</span>
+  <span class="na">service</span><span class="pi">:</span> <span class="s">S3</span>
+  <span class="na">access_key_id</span><span class="pi">:</span> <span class="s2">"</span><span class="s">"</span>
+  <span class="na">secret_access_key</span><span class="pi">:</span> <span class="s2">"</span><span class="s">"</span>
+  <span class="na">region</span><span class="pi">:</span> <span class="s2">"</span><span class="s">"</span>
+  <span class="na">bucket</span><span class="pi">:</span> <span class="s2">"</span><span class="s">"</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='amazon:
+  service: S3
+  access_key_id: ""
+  secret_access_key: ""
+  region: ""
+  bucket: ""
+'>Copy</button>
+</div>
+<p>Optionally provide client and upload options:</p>
+
+<div class="code_container">
+<pre><code class="highlight yaml"><span class="na">amazon</span><span class="pi">:</span>
+  <span class="na">service</span><span class="pi">:</span> <span class="s">S3</span>
+  <span class="na">access_key_id</span><span class="pi">:</span> <span class="s2">"</span><span class="s">"</span>
+  <span class="na">secret_access_key</span><span class="pi">:</span> <span class="s2">"</span><span class="s">"</span>
+  <span class="na">region</span><span class="pi">:</span> <span class="s2">"</span><span class="s">"</span>
+  <span class="na">bucket</span><span class="pi">:</span> <span class="s2">"</span><span class="s">"</span>
+  <span class="na">http_open_timeout</span><span class="pi">:</span> <span class="m">0</span>
+  <span class="na">http_read_timeout</span><span class="pi">:</span> <span class="m">0</span>
+  <span class="na">retry_limit</span><span class="pi">:</span> <span class="m">0</span>
+  <span class="na">upload</span><span class="pi">:</span>
+    <span class="na">server_side_encryption</span><span class="pi">:</span> <span class="s2">"</span><span class="s">"</span> <span class="c1"># 'aws:kms' or 'AES256'</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="amazon:
+  service: S3
+  access_key_id: &quot;&quot;
+  secret_access_key: &quot;&quot;
+  region: &quot;&quot;
+  bucket: &quot;&quot;
+  http_open_timeout: 0
+  http_read_timeout: 0
+  retry_limit: 0
+  upload:
+    server_side_encryption: &quot;&quot; # 'aws:kms' or 'AES256'
+">Copy</button>
+</div>
+<div class="info"><p>Set sensible client HTTP timeouts and retry limits for your application. In certain failure scenarios, the default AWS client configuration may cause connections to be held for up to several minutes and lead to request queuing.</p></div>
+
+<p>Add the <a href="https://github.com/aws/aws-sdk-ruby"><code>aws-sdk-s3</code></a> gem to your <code>Gemfile</code>:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">gem</span> <span class="s2">"aws-sdk-s3"</span><span class="p">,</span> <span class="ss">require: </span><span class="kp">false</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='gem "aws-sdk-s3", require: false
+'>Copy</button>
+</div>
+<div class="note"><p>The core features of Active Storage require the following permissions: <code>s3:ListBucket</code>, <code>s3:PutObject</code>, <code>s3:GetObject</code>, and <code>s3:DeleteObject</code>. <a href="#public-access">Public access</a> additionally requires <code>s3:PutObjectAcl</code>. If you have additional upload options configured such as setting ACLs then additional permissions may be required.</p></div>
+
+<div class="note"><p>If you want to use environment variables, standard SDK configuration files, profiles,
+IAM instance profiles or task roles, you can omit the <code>access_key_id</code>, <code>secret_access_key</code>,
+and <code>region</code> keys in the example above. The S3 Service supports all of the
+authentication options described in the <a href="https://docs.aws.amazon.com/sdk-for-ruby/v3/developer-guide/setup-config.html">AWS SDK documentation</a>.</p></div>
+
+<p>To connect to an S3-compatible object storage API such as DigitalOcean Spaces, provide the <code>endpoint</code>:</p>
+
+<div class="code_container">
+<pre><code class="highlight yaml"><span class="na">digitalocean</span><span class="pi">:</span>
+  <span class="na">service</span><span class="pi">:</span> <span class="s">S3</span>
+  <span class="na">endpoint</span><span class="pi">:</span> <span class="s">https://nyc3.digitaloceanspaces.com</span>
+  <span class="na">access_key_id</span><span class="pi">:</span> <span class="s">...</span>
+  <span class="na">secret_access_key</span><span class="pi">:</span> <span class="s">...</span>
+  <span class="c1"># ...and other options</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="digitalocean:
+  service: S3
+  endpoint: https://nyc3.digitaloceanspaces.com
+  access_key_id: ...
+  secret_access_key: ...
+  # ...and other options
+">Copy</button>
+</div>
+<p>There are many other options available. You can check them in <a href="https://docs.aws.amazon.com/sdk-for-ruby/v3/api/Aws/S3/Client.html#initialize-instance_method">AWS S3 Client</a> documentation.</p>
+
+<h4 id="microsoft-azure-storage-service"><a class="anchorlink" href="#microsoft-azure-storage-service">2.3 Microsoft Azure Storage Service</a></h4>
+
+<p>Declare an Azure Storage service in <code>config/storage.yml</code>:</p>
+
+<div class="code_container">
+<pre><code class="highlight yaml"><span class="na">azure</span><span class="pi">:</span>
+  <span class="na">service</span><span class="pi">:</span> <span class="s">AzureStorage</span>
+  <span class="na">storage_account_name</span><span class="pi">:</span> <span class="s2">"</span><span class="s">"</span>
+  <span class="na">storage_access_key</span><span class="pi">:</span> <span class="s2">"</span><span class="s">"</span>
+  <span class="na">container</span><span class="pi">:</span> <span class="s2">"</span><span class="s">"</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='azure:
+  service: AzureStorage
+  storage_account_name: ""
+  storage_access_key: ""
+  container: ""
+'>Copy</button>
+</div>
+<p>Add the <a href="https://github.com/Azure/azure-storage-ruby"><code>azure-storage-blob</code></a> gem to your <code>Gemfile</code>:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">gem</span> <span class="s2">"azure-storage-blob"</span><span class="p">,</span> <span class="ss">require: </span><span class="kp">false</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='gem "azure-storage-blob", require: false
+'>Copy</button>
+</div>
+<h4 id="google-cloud-storage-service"><a class="anchorlink" href="#google-cloud-storage-service">2.4 Google Cloud Storage Service</a></h4>
+
+<p>Declare a Google Cloud Storage service in <code>config/storage.yml</code>:</p>
+
+<div class="code_container">
+<pre><code class="highlight yaml"><span class="na">google</span><span class="pi">:</span>
+  <span class="na">service</span><span class="pi">:</span> <span class="s">GCS</span>
+  <span class="na">credentials</span><span class="pi">:</span> <span class="s">&lt;%= Rails.root.join("path/to/keyfile.json") %&gt;</span>
+  <span class="na">project</span><span class="pi">:</span> <span class="s2">"</span><span class="s">"</span>
+  <span class="na">bucket</span><span class="pi">:</span> <span class="s2">"</span><span class="s">"</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='google:
+  service: GCS
+  credentials: &lt;%= Rails.root.join("path/to/keyfile.json") %&gt;
+  project: ""
+  bucket: ""
+'>Copy</button>
+</div>
+<p>Optionally provide a Hash of credentials instead of a keyfile path:</p>
+
+<div class="code_container">
+<pre><code class="highlight yaml"><span class="na">google</span><span class="pi">:</span>
+  <span class="na">service</span><span class="pi">:</span> <span class="s">GCS</span>
+  <span class="na">credentials</span><span class="pi">:</span>
+    <span class="na">type</span><span class="pi">:</span> <span class="s2">"</span><span class="s">service_account"</span>
+    <span class="na">project_id</span><span class="pi">:</span> <span class="s2">"</span><span class="s">"</span>
+    <span class="na">private_key_id</span><span class="pi">:</span> <span class="s">&lt;%= Rails.application.credentials.dig(:gcs, :private_key_id) %&gt;</span>
+    <span class="na">private_key</span><span class="pi">:</span> <span class="s">&lt;%= Rails.application.credentials.dig(:gcs, :private_key).dump %&gt;</span>
+    <span class="na">client_email</span><span class="pi">:</span> <span class="s2">"</span><span class="s">"</span>
+    <span class="na">client_id</span><span class="pi">:</span> <span class="s2">"</span><span class="s">"</span>
+    <span class="na">auth_uri</span><span class="pi">:</span> <span class="s2">"</span><span class="s">https://accounts.google.com/o/oauth2/auth"</span>
+    <span class="na">token_uri</span><span class="pi">:</span> <span class="s2">"</span><span class="s">https://accounts.google.com/o/oauth2/token"</span>
+    <span class="na">auth_provider_x509_cert_url</span><span class="pi">:</span> <span class="s2">"</span><span class="s">https://www.googleapis.com/oauth2/v1/certs"</span>
+    <span class="na">client_x509_cert_url</span><span class="pi">:</span> <span class="s2">"</span><span class="s">"</span>
+  <span class="na">project</span><span class="pi">:</span> <span class="s2">"</span><span class="s">"</span>
+  <span class="na">bucket</span><span class="pi">:</span> <span class="s2">"</span><span class="s">"</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='google:
+  service: GCS
+  credentials:
+    type: "service_account"
+    project_id: ""
+    private_key_id: &lt;%= Rails.application.credentials.dig(:gcs, :private_key_id) %&gt;
+    private_key: &lt;%= Rails.application.credentials.dig(:gcs, :private_key).dump %&gt;
+    client_email: ""
+    client_id: ""
+    auth_uri: "https://accounts.google.com/o/oauth2/auth"
+    token_uri: "https://accounts.google.com/o/oauth2/token"
+    auth_provider_x509_cert_url: "https://www.googleapis.com/oauth2/v1/certs"
+    client_x509_cert_url: ""
+  project: ""
+  bucket: ""
+'>Copy</button>
+</div>
+<p>Optionally provide a Cache-Control metadata to set on uploaded assets:</p>
+
+<div class="code_container">
+<pre><code class="highlight yaml"><span class="na">google</span><span class="pi">:</span>
+  <span class="na">service</span><span class="pi">:</span> <span class="s">GCS</span>
+  <span class="s">...</span>
+  <span class="na">cache_control</span><span class="pi">:</span> <span class="s2">"</span><span class="s">public,</span><span class="nv"> </span><span class="s">max-age=3600"</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='google:
+  service: GCS
+  ...
+  cache_control: "public, max-age=3600"
+'>Copy</button>
+</div>
+<p>Optionally use <a href="https://cloud.google.com/storage/docs/access-control/signed-urls#signing-iam">IAM</a> instead of the <code>credentials</code> when signing URLs. This is useful if you are authenticating your GKE applications with Workload Identity, see <a href="https://cloud.google.com/blog/products/containers-kubernetes/introducing-workload-identity-better-authentication-for-your-gke-applications">this Google Cloud blog post</a> for more information.</p>
+
+<div class="code_container">
+<pre><code class="highlight yaml"><span class="na">google</span><span class="pi">:</span>
+  <span class="na">service</span><span class="pi">:</span> <span class="s">GCS</span>
+  <span class="s">...</span>
+  <span class="na">iam</span><span class="pi">:</span> <span class="no">true</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="google:
+  service: GCS
+  ...
+  iam: true
+">Copy</button>
+</div>
+<p>Optionally use a specific GSA when signing URLs. When using IAM, the <a href="https://cloud.google.com/compute/docs/storing-retrieving-metadata">metadata server</a> will be contacted to get the GSA email, but this metadata server is not always present (e.g. local tests) and you may wish to use a non-default GSA.</p>
+
+<div class="code_container">
+<pre><code class="highlight yaml"><span class="na">google</span><span class="pi">:</span>
+  <span class="na">service</span><span class="pi">:</span> <span class="s">GCS</span>
+  <span class="s">...</span>
+  <span class="na">iam</span><span class="pi">:</span> <span class="no">true</span>
+  <span class="na">gsa_email</span><span class="pi">:</span> <span class="s2">"</span><span class="s">foobar@baz.iam.gserviceaccount.com"</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='google:
+  service: GCS
+  ...
+  iam: true
+  gsa_email: "foobar@baz.iam.gserviceaccount.com"
+'>Copy</button>
+</div>
+<p>Add the <a href="https://github.com/GoogleCloudPlatform/google-cloud-ruby/tree/master/google-cloud-storage"><code>google-cloud-storage</code></a> gem to your <code>Gemfile</code>:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">gem</span> <span class="s2">"google-cloud-storage"</span><span class="p">,</span> <span class="s2">"~&gt; 1.11"</span><span class="p">,</span> <span class="ss">require: </span><span class="kp">false</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='gem "google-cloud-storage", "~&gt; 1.11", require: false
+'>Copy</button>
+</div>
+<h4 id="mirror-service"><a class="anchorlink" href="#mirror-service">2.5 Mirror Service</a></h4>
+
+<p>You can keep multiple services in sync by defining a mirror service. A mirror
+service replicates uploads and deletes across two or more subordinate services.</p>
+
+<p>A mirror service is intended to be used temporarily during a migration between
+services in production. You can start mirroring to a new service, copy
+pre-existing files from the old service to the new, then go all-in on the new
+service.</p>
+
+<div class="note"><p>Mirroring is not atomic. It is possible for an upload to succeed on the
+primary service and fail on any of the subordinate services. Before going
+all-in on a new service, verify that all files have been copied.</p></div>
+
+<p>Define each of the services you'd like to mirror as described above. Reference
+them by name when defining a mirror service:</p>
+
+<div class="code_container">
+<pre><code class="highlight yaml"><span class="na">s3_west_coast</span><span class="pi">:</span>
+  <span class="na">service</span><span class="pi">:</span> <span class="s">S3</span>
+  <span class="na">access_key_id</span><span class="pi">:</span> <span class="s2">"</span><span class="s">"</span>
+  <span class="na">secret_access_key</span><span class="pi">:</span> <span class="s2">"</span><span class="s">"</span>
+  <span class="na">region</span><span class="pi">:</span> <span class="s2">"</span><span class="s">"</span>
+  <span class="na">bucket</span><span class="pi">:</span> <span class="s2">"</span><span class="s">"</span>
+
+<span class="na">s3_east_coast</span><span class="pi">:</span>
+  <span class="na">service</span><span class="pi">:</span> <span class="s">S3</span>
+  <span class="na">access_key_id</span><span class="pi">:</span> <span class="s2">"</span><span class="s">"</span>
+  <span class="na">secret_access_key</span><span class="pi">:</span> <span class="s2">"</span><span class="s">"</span>
+  <span class="na">region</span><span class="pi">:</span> <span class="s2">"</span><span class="s">"</span>
+  <span class="na">bucket</span><span class="pi">:</span> <span class="s2">"</span><span class="s">"</span>
+
+<span class="na">production</span><span class="pi">:</span>
+  <span class="na">service</span><span class="pi">:</span> <span class="s">Mirror</span>
+  <span class="na">primary</span><span class="pi">:</span> <span class="s">s3_east_coast</span>
+  <span class="na">mirrors</span><span class="pi">:</span>
+    <span class="pi">-</span> <span class="s">s3_west_coast</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='s3_west_coast:
+  service: S3
+  access_key_id: ""
+  secret_access_key: ""
+  region: ""
+  bucket: ""
+
+s3_east_coast:
+  service: S3
+  access_key_id: ""
+  secret_access_key: ""
+  region: ""
+  bucket: ""
+
+production:
+  service: Mirror
+  primary: s3_east_coast
+  mirrors:
+    - s3_west_coast
+'>Copy</button>
+</div>
+<p>Although all secondary services receive uploads, downloads are always handled
+by the primary service.</p>
+
+<p>Mirror services are compatible with direct uploads. New files are directly
+uploaded to the primary service. When a directly-uploaded file is attached to a
+record, a background job is enqueued to copy it to the secondary services.</p>
+
+<h4 id="public-access"><a class="anchorlink" href="#public-access">2.6 Public access</a></h4>
+
+<p>By default, Active Storage assumes private access to services. This means generating signed, single-use URLs for blobs. If you'd rather make blobs publicly accessible, specify <code>public: true</code> in your app's <code>config/storage.yml</code>:</p>
+
+<div class="code_container">
+<pre><code class="highlight yaml"><span class="na">gcs</span><span class="pi">:</span> <span class="nl">&amp;gcs</span>
+  <span class="na">service</span><span class="pi">:</span> <span class="s">GCS</span>
+  <span class="na">project</span><span class="pi">:</span> <span class="s2">"</span><span class="s">"</span>
+
+<span class="na">private_gcs</span><span class="pi">:</span>
+  <span class="na">&lt;&lt;</span><span class="pi">:</span> <span class="nv">*gcs</span>
+  <span class="na">credentials</span><span class="pi">:</span> <span class="s">&lt;%= Rails.root.join("path/to/private_keyfile.json") %&gt;</span>
+  <span class="na">bucket</span><span class="pi">:</span> <span class="s2">"</span><span class="s">"</span>
+
+<span class="na">public_gcs</span><span class="pi">:</span>
+  <span class="na">&lt;&lt;</span><span class="pi">:</span> <span class="nv">*gcs</span>
+  <span class="na">credentials</span><span class="pi">:</span> <span class="s">&lt;%= Rails.root.join("path/to/public_keyfile.json") %&gt;</span>
+  <span class="na">bucket</span><span class="pi">:</span> <span class="s2">"</span><span class="s">"</span>
+  <span class="na">public</span><span class="pi">:</span> <span class="no">true</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='gcs: &amp;gcs
+  service: GCS
+  project: ""
+
+private_gcs:
+  &lt;&lt;: *gcs
+  credentials: &lt;%= Rails.root.join("path/to/private_keyfile.json") %&gt;
+  bucket: ""
+
+public_gcs:
+  &lt;&lt;: *gcs
+  credentials: &lt;%= Rails.root.join("path/to/public_keyfile.json") %&gt;
+  bucket: ""
+  public: true
+'>Copy</button>
+</div>
+<p>Make sure your buckets are properly configured for public access. See docs on how to enable public read permissions for <a href="https://docs.aws.amazon.com/AmazonS3/latest/user-guide/block-public-access-bucket.html">Amazon S3</a>, <a href="https://cloud.google.com/storage/docs/access-control/making-data-public#buckets">Google Cloud Storage</a>, and <a href="https://docs.microsoft.com/en-us/azure/storage/blobs/storage-manage-access-to-resources#set-container-public-access-level-in-the-azure-portal">Microsoft Azure</a> storage services. Amazon S3 additionally requires that you have the <code>s3:PutObjectAcl</code> permission.</p>
+
+<p>When converting an existing application to use <code>public: true</code>, make sure to update every individual file in the bucket to be publicly-readable before switching over.</p>
+</body>
+</html>

@@ -1,0 +1,39 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>16 Additional Testing Resources</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v7.0.4.2/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="additional-testing-resources"><a class="anchorlink" href="#additional-testing-resources">16 Additional Testing Resources</a></h3>
+<h4 id="testing-time-dependent-code"><a class="anchorlink" href="#testing-time-dependent-code">16.1 Testing Time-Dependent Code</a></h4>
+
+<p>Rails provides built-in helper methods that enable you to assert that your time-sensitive code works as expected.</p>
+
+<p>Here is an example using the <a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveSupport/Testing/TimeHelpers.html#method-i-travel_to"><code>travel_to</code></a> helper:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="c1"># Lets say that a user is eligible for gifting a month after they register.</span>
+<span class="n">user</span> <span class="o">=</span> <span class="no">User</span><span class="p">.</span><span class="nf">create</span><span class="p">(</span><span class="ss">name: </span><span class="s2">"Gaurish"</span><span class="p">,</span> <span class="ss">activation_date: </span><span class="no">Date</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="mi">2004</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">24</span><span class="p">))</span>
+<span class="n">assert_not</span> <span class="n">user</span><span class="p">.</span><span class="nf">applicable_for_gifting?</span>
+<span class="n">travel_to</span> <span class="no">Date</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="mi">2004</span><span class="p">,</span> <span class="mi">11</span><span class="p">,</span> <span class="mi">24</span><span class="p">)</span> <span class="k">do</span>
+  <span class="n">assert_equal</span> <span class="no">Date</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="mi">2004</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">24</span><span class="p">),</span> <span class="n">user</span><span class="p">.</span><span class="nf">activation_date</span> <span class="c1"># inside the `travel_to` block `Date.current` is mocked</span>
+  <span class="n">assert</span> <span class="n">user</span><span class="p">.</span><span class="nf">applicable_for_gifting?</span>
+<span class="k">end</span>
+<span class="n">assert_equal</span> <span class="no">Date</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="mi">2004</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">24</span><span class="p">),</span> <span class="n">user</span><span class="p">.</span><span class="nf">activation_date</span> <span class="c1"># The change was visible only inside the `travel_to` block.</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='# Lets say that a user is eligible for gifting a month after they register.
+user = User.create(name: "Gaurish", activation_date: Date.new(2004, 10, 24))
+assert_not user.applicable_for_gifting?
+travel_to Date.new(2004, 11, 24) do
+  assert_equal Date.new(2004, 10, 24), user.activation_date # inside the `travel_to` block `Date.current` is mocked
+  assert user.applicable_for_gifting?
+end
+assert_equal Date.new(2004, 10, 24), user.activation_date # The change was visible only inside the `travel_to` block.
+'>Copy</button>
+</div>
+<p>Please see <a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveSupport/Testing/TimeHelpers.html"><code>ActiveSupport::Testing::TimeHelpers</code> API Documentation</a>
+for in-depth information about the available time helpers.</p>
+</body>
+</html>

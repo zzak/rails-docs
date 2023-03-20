@@ -1,0 +1,88 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>9 Active Record</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v5.0.7.2/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="active-record">9 Active Record</h3>
+<p>Active Record received a lot of attention in Rails 3.0, including abstraction into Active Model, a full update to the Query interface using Arel, validation updates and many enhancements and fixes. All of the Rails 2.x API will be usable through a compatibility layer that will be supported until version 3.1.</p>
+
+<h4 id="query-interface">9.1 Query Interface</h4>
+
+<p>Active Record, through the use of Arel, now returns relations on its core methods. The existing API in Rails 2.3.x is still supported and will not be deprecated until Rails 3.1 and not removed until Rails 3.2, however, the new API provides the following new methods that all return relations allowing them to be chained together:</p>
+<ul>
+<li>
+<code>where</code> - provides conditions on the relation, what gets returned.</li>
+<li>
+<code>select</code> - choose what attributes of the models you wish to have returned from the database.</li>
+<li>
+<code>group</code> - groups the relation on the attribute supplied.</li>
+<li>
+<code>having</code> - provides an expression limiting group relations (GROUP BY constraint).</li>
+<li>
+<code>joins</code> - joins the relation to another table.</li>
+<li>
+<code>clause</code> - provides an expression limiting join relations (JOIN constraint).</li>
+<li>
+<code>includes</code> - includes other relations pre-loaded.</li>
+<li>
+<code>order</code> - orders the relation based on the expression supplied.</li>
+<li>
+<code>limit</code> - limits the relation to the number of records specified.</li>
+<li>
+<code>lock</code> - locks the records returned from the table.</li>
+<li>
+<code>readonly</code> - returns an read only copy of the data.</li>
+<li>
+<code>from</code> - provides a way to select relationships from more than one table.</li>
+<li>
+<code>scope</code> - (previously <code>named_scope</code>) return relations and can be chained together with the other relation methods.</li>
+<li>
+<code>with_scope</code> - and <code>with_exclusive_scope</code> now also return relations and so can be chained.</li>
+<li>
+<code>default_scope</code> - also works with relations.</li>
+</ul>
+<p>More Information:</p>
+<ul>
+<li><a href="http://m.onkey.org/2010/1/22/active-record-query-interface">Active Record Query Interface</a></li>
+<li><a href="http://hasmanyquestions.wordpress.com/2010/01/17/let-your-sql-growl-in-rails-3/">Let your SQL Growl in Rails 3</a></li>
+</ul>
+<h4 id="enhancements">9.2 Enhancements</h4>
+<ul>
+<li>Added <code>:destroyed?</code> to Active Record objects.</li>
+<li>Added <code>:inverse_of</code> to Active Record associations allowing you to pull the instance of an already loaded association without hitting the database.</li>
+</ul>
+<h4 id="patches-and-deprecations">9.3 Patches and Deprecations</h4>
+
+<p>Additionally, many fixes in the Active Record branch:</p>
+<ul>
+<li>SQLite 2 support has been dropped in favor of SQLite 3.</li>
+<li>MySQL support for column order.</li>
+<li>PostgreSQL adapter has had its <code>TIME ZONE</code> support fixed so it no longer inserts incorrect values.</li>
+<li>Support multiple schemas in table names for PostgreSQL.</li>
+<li>PostgreSQL support for the XML data type column.</li>
+<li>
+<code>table_name</code> is now cached.</li>
+<li>A large amount of work done on the Oracle adapter as well with many bug fixes.</li>
+</ul>
+<p>As well as the following deprecations:</p>
+<ul>
+<li>
+<code>named_scope</code> in an Active Record class is deprecated and has been renamed to just <code>scope</code>.</li>
+<li>In <code>scope</code> methods, you should move to using the relation methods, instead of a <code>:conditions =&gt; {}</code> finder method, for example <code>scope :since, lambda {|time| where("created_at &gt; ?", time) }</code>.</li>
+<li>
+<code>save(false)</code> is deprecated, in favor of <code>save(:validate =&gt; false)</code>.</li>
+<li>I18n error messages for Active Record should be changed from :en.activerecord.errors.template to <code>:en.errors.template</code>.</li>
+<li>
+<code>model.errors.on</code> is deprecated in favor of <code>model.errors[]</code>
+</li>
+<li>validates_presence_of =&gt; validates... :presence =&gt; true</li>
+<li>
+<code>ActiveRecord::Base.colorize_logging</code> and <code>config.active_record.colorize_logging</code> are deprecated in favor of <code>Rails::LogSubscriber.colorize_logging</code> or <code>config.colorize_logging</code>
+</li>
+</ul>
+<div class="note"><p>While an implementation of State Machine has been in Active Record edge for some months now, it has been removed from the Rails 3.0 release.</p></div>
+</body>
+</html>

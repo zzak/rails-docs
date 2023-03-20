@@ -1,0 +1,122 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>5 Choices from a Collection of Arbitrary Objects</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v6.1.7.3/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="choices-from-a-collection-of-arbitrary-objects"><a class="anchorlink" href="#choices-from-a-collection-of-arbitrary-objects">5 Choices from a Collection of Arbitrary Objects</a></h3>
+<p>Often, we want to generate a set of choices in a form from a collection of objects. For example, when we want the user to choose from cities in our database, and we have a <code>City</code> model like:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="no">City</span><span class="p">.</span><span class="nf">order</span><span class="p">(</span><span class="ss">:name</span><span class="p">).</span><span class="nf">to_a</span>
+<span class="c1"># =&gt; [</span>
+<span class="c1">#      #&lt;City id: 3, name: "Berlin"&gt;,</span>
+<span class="c1">#      #&lt;City id: 1, name: "Chicago"&gt;,</span>
+<span class="c1">#      #&lt;City id: 2, name: "Madrid"&gt;</span>
+<span class="c1">#    ]</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-c3511289031dd02657900cdfd6cc5995">City.order(:name).to_a
+# =&gt; [
+#      #&lt;City id: 3, name: "Berlin"&gt;,
+#      #&lt;City id: 1, name: "Chicago"&gt;,
+#      #&lt;City id: 2, name: "Madrid"&gt;
+#    ]
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-c3511289031dd02657900cdfd6cc5995">Copy</button>
+</div>
+<p>Rails provides helpers that generate choices from a collection without having to explicitly iterate over it. These helpers determine the value and text label of each choice by calling specified methods on each object in the collection.</p>
+
+<h4 id="the-collection-select-helper"><a class="anchorlink" href="#the-collection-select-helper">5.1 The <code>collection_select</code> Helper</a></h4>
+
+<p>To generate a select box for our cities, we can use <a href="https://api.rubyonrails.org/v6.1.7.3/classes/ActionView/Helpers/FormBuilder.html#method-i-collection_select"><code>collection_select</code></a>:</p>
+
+<div class="code_container">
+<pre><code class="highlight erb"><span class="cp">&lt;%=</span> <span class="n">form</span><span class="p">.</span><span class="nf">collection_select</span> <span class="ss">:city_id</span><span class="p">,</span> <span class="no">City</span><span class="p">.</span><span class="nf">order</span><span class="p">(</span><span class="ss">:name</span><span class="p">),</span> <span class="ss">:id</span><span class="p">,</span> <span class="ss">:name</span> <span class="cp">%&gt;</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-676ad908600d230e23c0d106d0c2d97c">&lt;%= form.collection_select :city_id, City.order(:name), :id, :name %&gt;
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-676ad908600d230e23c0d106d0c2d97c">Copy</button>
+</div>
+<p>Output:</p>
+
+<div class="code_container">
+<pre><code class="highlight html"><span class="nt">&lt;select</span> <span class="na">name=</span><span class="s">"city_id"</span> <span class="na">id=</span><span class="s">"city_id"</span><span class="nt">&gt;</span>
+  <span class="nt">&lt;option</span> <span class="na">value=</span><span class="s">"3"</span><span class="nt">&gt;</span>Berlin<span class="nt">&lt;/option&gt;</span>
+  <span class="nt">&lt;option</span> <span class="na">value=</span><span class="s">"1"</span><span class="nt">&gt;</span>Chicago<span class="nt">&lt;/option&gt;</span>
+  <span class="nt">&lt;option</span> <span class="na">value=</span><span class="s">"2"</span><span class="nt">&gt;</span>Madrid<span class="nt">&lt;/option&gt;</span>
+<span class="nt">&lt;/select&gt;</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-2c2c167837d15692871fe26d8ca0ceeb">&lt;select name="city_id" id="city_id"&gt;
+  &lt;option value="3"&gt;Berlin&lt;/option&gt;
+  &lt;option value="1"&gt;Chicago&lt;/option&gt;
+  &lt;option value="2"&gt;Madrid&lt;/option&gt;
+&lt;/select&gt;
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-2c2c167837d15692871fe26d8ca0ceeb">Copy</button>
+</div>
+<div class="note"><p>With <code>collection_select</code> we specify the value method first (<code>:id</code> in the example above), and the text label method second (<code>:name</code> in the example above).  This is opposite of the order used when specifying choices for the <code>select</code> helper, where the text label comes first and the value second.</p></div>
+
+<h4 id="the-collection-radio-buttons-helper"><a class="anchorlink" href="#the-collection-radio-buttons-helper">5.2 The <code>collection_radio_buttons</code> Helper</a></h4>
+
+<p>To generate a set of radio buttons for our cities, we can use <a href="https://api.rubyonrails.org/v6.1.7.3/classes/ActionView/Helpers/FormBuilder.html#method-i-collection_radio_buttons"><code>collection_radio_buttons</code></a>:</p>
+
+<div class="code_container">
+<pre><code class="highlight erb"><span class="cp">&lt;%=</span> <span class="n">form</span><span class="p">.</span><span class="nf">collection_radio_buttons</span> <span class="ss">:city_id</span><span class="p">,</span> <span class="no">City</span><span class="p">.</span><span class="nf">order</span><span class="p">(</span><span class="ss">:name</span><span class="p">),</span> <span class="ss">:id</span><span class="p">,</span> <span class="ss">:name</span> <span class="cp">%&gt;</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-3f1c0dd8ab1f56b1231aa9a2c054e82c">&lt;%= form.collection_radio_buttons :city_id, City.order(:name), :id, :name %&gt;
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-3f1c0dd8ab1f56b1231aa9a2c054e82c">Copy</button>
+</div>
+<p>Output:</p>
+
+<div class="code_container">
+<pre><code class="highlight html"><span class="nt">&lt;input</span> <span class="na">type=</span><span class="s">"radio"</span> <span class="na">name=</span><span class="s">"city_id"</span> <span class="na">value=</span><span class="s">"3"</span> <span class="na">id=</span><span class="s">"city_id_3"</span><span class="nt">&gt;</span>
+<span class="nt">&lt;label</span> <span class="na">for=</span><span class="s">"city_id_3"</span><span class="nt">&gt;</span>Berlin<span class="nt">&lt;/label&gt;</span>
+<span class="nt">&lt;input</span> <span class="na">type=</span><span class="s">"radio"</span> <span class="na">name=</span><span class="s">"city_id"</span> <span class="na">value=</span><span class="s">"1"</span> <span class="na">id=</span><span class="s">"city_id_1"</span><span class="nt">&gt;</span>
+<span class="nt">&lt;label</span> <span class="na">for=</span><span class="s">"city_id_1"</span><span class="nt">&gt;</span>Chicago<span class="nt">&lt;/label&gt;</span>
+<span class="nt">&lt;input</span> <span class="na">type=</span><span class="s">"radio"</span> <span class="na">name=</span><span class="s">"city_id"</span> <span class="na">value=</span><span class="s">"2"</span> <span class="na">id=</span><span class="s">"city_id_2"</span><span class="nt">&gt;</span>
+<span class="nt">&lt;label</span> <span class="na">for=</span><span class="s">"city_id_2"</span><span class="nt">&gt;</span>Madrid<span class="nt">&lt;/label&gt;</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-73de4b09c260ae768a3a83d50bdcdfd3">&lt;input type="radio" name="city_id" value="3" id="city_id_3"&gt;
+&lt;label for="city_id_3"&gt;Berlin&lt;/label&gt;
+&lt;input type="radio" name="city_id" value="1" id="city_id_1"&gt;
+&lt;label for="city_id_1"&gt;Chicago&lt;/label&gt;
+&lt;input type="radio" name="city_id" value="2" id="city_id_2"&gt;
+&lt;label for="city_id_2"&gt;Madrid&lt;/label&gt;
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-73de4b09c260ae768a3a83d50bdcdfd3">Copy</button>
+</div>
+<h4 id="the-collection-check-boxes-helper"><a class="anchorlink" href="#the-collection-check-boxes-helper">5.3 The <code>collection_check_boxes</code> Helper</a></h4>
+
+<p>To generate a set of check boxes for our cities (which allows users to choose more than one), we can use <a href="https://api.rubyonrails.org/v6.1.7.3/classes/ActionView/Helpers/FormBuilder.html#method-i-collection_check_boxes"><code>collection_check_boxes</code></a>:</p>
+
+<div class="code_container">
+<pre><code class="highlight erb"><span class="cp">&lt;%=</span> <span class="n">form</span><span class="p">.</span><span class="nf">collection_check_boxes</span> <span class="ss">:city_id</span><span class="p">,</span> <span class="no">City</span><span class="p">.</span><span class="nf">order</span><span class="p">(</span><span class="ss">:name</span><span class="p">),</span> <span class="ss">:id</span><span class="p">,</span> <span class="ss">:name</span> <span class="cp">%&gt;</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-6bc757beb3abbc9958bb593c95d84d6e">&lt;%= form.collection_check_boxes :city_id, City.order(:name), :id, :name %&gt;
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-6bc757beb3abbc9958bb593c95d84d6e">Copy</button>
+</div>
+<p>Output:</p>
+
+<div class="code_container">
+<pre><code class="highlight html"><span class="nt">&lt;input</span> <span class="na">type=</span><span class="s">"checkbox"</span> <span class="na">name=</span><span class="s">"city_id[]"</span> <span class="na">value=</span><span class="s">"3"</span> <span class="na">id=</span><span class="s">"city_id_3"</span><span class="nt">&gt;</span>
+<span class="nt">&lt;label</span> <span class="na">for=</span><span class="s">"city_id_3"</span><span class="nt">&gt;</span>Berlin<span class="nt">&lt;/label&gt;</span>
+<span class="nt">&lt;input</span> <span class="na">type=</span><span class="s">"checkbox"</span> <span class="na">name=</span><span class="s">"city_id[]"</span> <span class="na">value=</span><span class="s">"1"</span> <span class="na">id=</span><span class="s">"city_id_1"</span><span class="nt">&gt;</span>
+<span class="nt">&lt;label</span> <span class="na">for=</span><span class="s">"city_id_1"</span><span class="nt">&gt;</span>Chicago<span class="nt">&lt;/label&gt;</span>
+<span class="nt">&lt;input</span> <span class="na">type=</span><span class="s">"checkbox"</span> <span class="na">name=</span><span class="s">"city_id[]"</span> <span class="na">value=</span><span class="s">"2"</span> <span class="na">id=</span><span class="s">"city_id_2"</span><span class="nt">&gt;</span>
+<span class="nt">&lt;label</span> <span class="na">for=</span><span class="s">"city_id_2"</span><span class="nt">&gt;</span>Madrid<span class="nt">&lt;/label&gt;</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-c03327a098abdb60bbc465a383f0acab">&lt;input type="checkbox" name="city_id[]" value="3" id="city_id_3"&gt;
+&lt;label for="city_id_3"&gt;Berlin&lt;/label&gt;
+&lt;input type="checkbox" name="city_id[]" value="1" id="city_id_1"&gt;
+&lt;label for="city_id_1"&gt;Chicago&lt;/label&gt;
+&lt;input type="checkbox" name="city_id[]" value="2" id="city_id_2"&gt;
+&lt;label for="city_id_2"&gt;Madrid&lt;/label&gt;
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-c03327a098abdb60bbc465a383f0acab">Copy</button>
+</div>
+</body>
+</html>

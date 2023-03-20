@@ -1,0 +1,58 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>7 Group</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v7.0.4.2/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="group"><a class="anchorlink" href="#group">7 Group</a></h3>
+<p>To apply a <code>GROUP BY</code> clause to the SQL fired by the finder, you can use the <a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveRecord/QueryMethods.html#method-i-group"><code>group</code></a> method.</p>
+
+<p>For example, if you want to find a collection of the dates on which orders were created:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="no">Order</span><span class="p">.</span><span class="nf">select</span><span class="p">(</span><span class="s2">"created_at"</span><span class="p">).</span><span class="nf">group</span><span class="p">(</span><span class="s2">"created_at"</span><span class="p">)</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='Order.select("created_at").group("created_at")
+'>Copy</button>
+</div>
+<p>And this will give you a single <code>Order</code> object for each date where there are orders in the database.</p>
+
+<p>The SQL that would be executed would be something like this:</p>
+
+<div class="code_container">
+<pre><code class="highlight sql"><span class="k">SELECT</span> <span class="n">created_at</span>
+<span class="k">FROM</span> <span class="n">orders</span>
+<span class="k">GROUP</span> <span class="k">BY</span> <span class="n">created_at</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="SELECT created_at
+FROM orders
+GROUP BY created_at
+">Copy</button>
+</div>
+<h4 id="total-of-grouped-items"><a class="anchorlink" href="#total-of-grouped-items">7.1 Total of grouped items</a></h4>
+
+<p>To get the total of grouped items on a single query, call <a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveRecord/Calculations.html#method-i-count"><code>count</code></a> after the <code>group</code>.</p>
+
+<div class="code_container">
+<pre><code class="highlight irb"><span class="gp">irb&gt;</span><span class="w"> </span><span class="no">Order</span><span class="p">.</span><span class="nf">group</span><span class="p">(</span><span class="ss">:status</span><span class="p">).</span><span class="nf">count</span>
+<span class="p">=&gt;</span> <span class="p">{</span><span class="s2">"being_packed"</span><span class="o">=&gt;</span><span class="mi">7</span><span class="p">,</span> <span class="s2">"shipped"</span><span class="o">=&gt;</span><span class="mi">12</span><span class="p">}</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="Order.group(:status).count
+">Copy</button>
+</div>
+<p>The SQL that would be executed would be something like this:</p>
+
+<div class="code_container">
+<pre><code class="highlight sql"><span class="k">SELECT</span> <span class="k">COUNT</span> <span class="p">(</span><span class="o">*</span><span class="p">)</span> <span class="k">AS</span> <span class="n">count_all</span><span class="p">,</span> <span class="n">status</span> <span class="k">AS</span> <span class="n">status</span>
+<span class="k">FROM</span> <span class="n">orders</span>
+<span class="k">GROUP</span> <span class="k">BY</span> <span class="n">status</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="SELECT COUNT (*) AS count_all, status AS status
+FROM orders
+GROUP BY status
+">Copy</button>
+</div>
+</body>
+</html>

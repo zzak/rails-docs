@@ -1,0 +1,728 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html 
+     PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+  <head>
+    <title>Class: Rails::AppBuilder</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <link rel="stylesheet" href="../../rdoc-style.css" type="text/css" media="screen" />
+
+    <script language="JavaScript" type="text/javascript">
+    // <![CDATA[
+
+        function toggleSource( id )
+        {
+          var elem
+          var link
+
+          if( document.getElementById )
+          {
+            elem = document.getElementById( id )
+            link = document.getElementById( "l_" + id )
+          }
+          else if ( document.all )
+          {
+            elem = eval( "document.all." + id )
+            link = eval( "document.all.l_" + id )
+          }
+          else
+            return false;
+
+          if( elem.style.display == "block" )
+          {
+            elem.style.display = "none"
+            link.innerHTML = "show source"
+          }
+          else
+          {
+            elem.style.display = "block"
+            link.innerHTML = "hide source"
+          }
+        }
+
+        function openCode( url )
+        {
+          window.open( url, "SOURCE_CODE", "resizable=yes,scrollbars=yes,toolbar=no,status=no,height=480,width=750" ).focus();
+        }
+      // ]]>
+    </script>
+  </head>
+
+  <body>
+    <table width="100%" border='0' cellpadding='0' cellspacing='0' class='banner'>
+    <tr><td>Ruby on Rails v3.0.9</td></tr>
+    <tr>
+  <td class="file-title"><span class="file-title-prefix">Class</span><br />Rails::AppBuilder</td>
+  <td align="right">
+    <table cellspacing="0" cellpadding="2">
+      <tr valign="top">
+        <td>In:</td>
+        <td>
+<a href="../../files/railties/lib/rails/generators/rails/app/app_generator_rb.html">railties/lib/rails/generators/rails/app/app_generator.rb</a>:
+        </td>
+      </tr>
+      <tr>
+        <td>Parent:</td>
+        <td>
+
+      <a href="../Object.html">Object</a>         </td>
+     </tr>
+         </table>
+        </td>
+        </tr>
+      </table>
+  <div id="bodyContent">
+  <div id="content">
+
+  <div class="description"></div>
+
+
+  <div class="sectiontitle">Methods</div>
+  <ul>
+                <li><a href="#method-i-app">app</a></li>
+                <li><a href="#method-i-config">config</a></li>
+                <li><a href="#method-i-configru">configru</a></li>
+                <li><a href="#method-i-database_yml">database_yml</a></li>
+                <li><a href="#method-i-db">db</a></li>
+                <li><a href="#method-i-doc">doc</a></li>
+                <li><a href="#method-i-gemfile">gemfile</a></li>
+                <li><a href="#method-i-gitignore">gitignore</a></li>
+                <li><a href="#method-i-images">images</a></li>
+                <li><a href="#method-i-javascripts">javascripts</a></li>
+                <li><a href="#method-i-lib">lib</a></li>
+                <li><a href="#method-i-log">log</a></li>
+                <li><a href="#method-i-public_directory">public_directory</a></li>
+                <li><a href="#method-i-rakefile">rakefile</a></li>
+                <li><a href="#method-i-readme">readme</a></li>
+                <li><a href="#method-i-script">script</a></li>
+                <li><a href="#method-i-stylesheets">stylesheets</a></li>
+                <li><a href="#method-i-test">test</a></li>
+                <li><a href="#method-i-tmp">tmp</a></li>
+                <li><a href="#method-i-vendor_plugins">vendor_plugins</a></li>
+      </ul>
+
+
+
+
+                        
+    <div class="sectiontitle">
+      Public      Instance      methods
+    </div>
+
+          
+      <div class="method">
+        <div class="title">
+                      <a name="method-i-app"></a>
+            <b>app</b>()          
+        </div>
+
+                  <div class="description">
+                      </div>
+        
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('app_source')"
+                 id="l_method-i-app_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="app_source">
+<pre>
+  <span class="ruby-comment"># File railties/lib/rails/generators/rails/app/app_generator.rb, line 55</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">app</span>
+  <span class="ruby-identifier">directory</span> <span class="ruby-string">'app'</span>
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+          
+      <div class="method">
+        <div class="title">
+                      <a name="method-i-config"></a>
+            <b>config</b>()          
+        </div>
+
+                  <div class="description">
+                      </div>
+        
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('config_source')"
+                 id="l_method-i-config_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="config_source">
+<pre>
+  <span class="ruby-comment"># File railties/lib/rails/generators/rails/app/app_generator.rb, line 59</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">config</span>
+  <span class="ruby-identifier">empty_directory</span> <span class="ruby-string">&quot;config&quot;</span>
+
+  <span class="ruby-identifier">inside</span> <span class="ruby-string">&quot;config&quot;</span> <span class="ruby-keyword">do</span>
+    <span class="ruby-identifier">template</span> <span class="ruby-string">&quot;routes.rb&quot;</span>
+    <span class="ruby-identifier">template</span> <span class="ruby-string">&quot;application.rb&quot;</span>
+    <span class="ruby-identifier">template</span> <span class="ruby-string">&quot;environment.rb&quot;</span>
+
+    <span class="ruby-identifier">directory</span> <span class="ruby-string">&quot;environments&quot;</span>
+    <span class="ruby-identifier">directory</span> <span class="ruby-string">&quot;initializers&quot;</span>
+    <span class="ruby-identifier">directory</span> <span class="ruby-string">&quot;locales&quot;</span>
+  <span class="ruby-keyword">end</span>
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+          
+      <div class="method">
+        <div class="title">
+                      <a name="method-i-configru"></a>
+            <b>configru</b>()          
+        </div>
+
+                  <div class="description">
+                      </div>
+        
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('configru_source')"
+                 id="l_method-i-configru_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="configru_source">
+<pre>
+  <span class="ruby-comment"># File railties/lib/rails/generators/rails/app/app_generator.rb, line 47</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">configru</span>
+  <span class="ruby-identifier">template</span> <span class="ruby-string">&quot;config.ru&quot;</span>
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+          
+      <div class="method">
+        <div class="title">
+                      <a name="method-i-database_yml"></a>
+            <b>database_yml</b>()          
+        </div>
+
+                  <div class="description">
+                      </div>
+        
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('database_yml_source')"
+                 id="l_method-i-database_yml_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="database_yml_source">
+<pre>
+  <span class="ruby-comment"># File railties/lib/rails/generators/rails/app/app_generator.rb, line 73</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">database_yml</span>
+  <span class="ruby-identifier">template</span> <span class="ruby-node">&quot;config/databases/#{@options[:database]}.yml&quot;</span>, <span class="ruby-string">&quot;config/database.yml&quot;</span>
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+          
+      <div class="method">
+        <div class="title">
+                      <a name="method-i-db"></a>
+            <b>db</b>()          
+        </div>
+
+                  <div class="description">
+                      </div>
+        
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('db_source')"
+                 id="l_method-i-db_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="db_source">
+<pre>
+  <span class="ruby-comment"># File railties/lib/rails/generators/rails/app/app_generator.rb, line 77</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">db</span>
+  <span class="ruby-identifier">directory</span> <span class="ruby-string">&quot;db&quot;</span>
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+          
+      <div class="method">
+        <div class="title">
+                      <a name="method-i-doc"></a>
+            <b>doc</b>()          
+        </div>
+
+                  <div class="description">
+                      </div>
+        
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('doc_source')"
+                 id="l_method-i-doc_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="doc_source">
+<pre>
+  <span class="ruby-comment"># File railties/lib/rails/generators/rails/app/app_generator.rb, line 81</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">doc</span>
+  <span class="ruby-identifier">directory</span> <span class="ruby-string">&quot;doc&quot;</span>
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+          
+      <div class="method">
+        <div class="title">
+                      <a name="method-i-gemfile"></a>
+            <b>gemfile</b>()          
+        </div>
+
+                  <div class="description">
+                      </div>
+        
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('gemfile_source')"
+                 id="l_method-i-gemfile_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="gemfile_source">
+<pre>
+  <span class="ruby-comment"># File railties/lib/rails/generators/rails/app/app_generator.rb, line 43</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">gemfile</span>
+  <span class="ruby-identifier">template</span> <span class="ruby-string">&quot;Gemfile&quot;</span>
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+          
+      <div class="method">
+        <div class="title">
+                      <a name="method-i-gitignore"></a>
+            <b>gitignore</b>()          
+        </div>
+
+                  <div class="description">
+                      </div>
+        
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('gitignore_source')"
+                 id="l_method-i-gitignore_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="gitignore_source">
+<pre>
+  <span class="ruby-comment"># File railties/lib/rails/generators/rails/app/app_generator.rb, line 51</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">gitignore</span>
+  <span class="ruby-identifier">copy_file</span> <span class="ruby-string">&quot;gitignore&quot;</span>, <span class="ruby-string">&quot;.gitignore&quot;</span>
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+          
+      <div class="method">
+        <div class="title">
+                      <a name="method-i-images"></a>
+            <b>images</b>()          
+        </div>
+
+                  <div class="description">
+                      </div>
+        
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('images_source')"
+                 id="l_method-i-images_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="images_source">
+<pre>
+  <span class="ruby-comment"># File railties/lib/rails/generators/rails/app/app_generator.rb, line 105</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">images</span>
+  <span class="ruby-identifier">directory</span> <span class="ruby-string">&quot;public/images&quot;</span>
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+          
+      <div class="method">
+        <div class="title">
+                      <a name="method-i-javascripts"></a>
+            <b>javascripts</b>()          
+        </div>
+
+                  <div class="description">
+                      </div>
+        
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('javascripts_source')"
+                 id="l_method-i-javascripts_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="javascripts_source">
+<pre>
+  <span class="ruby-comment"># File railties/lib/rails/generators/rails/app/app_generator.rb, line 113</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">javascripts</span>
+  <span class="ruby-keyword">unless</span> <span class="ruby-identifier">options</span>[<span class="ruby-value">:skip_prototype</span>]
+    <span class="ruby-identifier">directory</span> <span class="ruby-string">&quot;public/javascripts&quot;</span>
+  <span class="ruby-keyword">else</span>
+    <span class="ruby-identifier">empty_directory_with_gitkeep</span> <span class="ruby-string">&quot;public/javascripts&quot;</span>
+    <span class="ruby-identifier">create_file</span> <span class="ruby-string">&quot;public/javascripts/application.js&quot;</span>
+  <span class="ruby-keyword">end</span>
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+          
+      <div class="method">
+        <div class="title">
+                      <a name="method-i-lib"></a>
+            <b>lib</b>()          
+        </div>
+
+                  <div class="description">
+                      </div>
+        
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('lib_source')"
+                 id="l_method-i-lib_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="lib_source">
+<pre>
+  <span class="ruby-comment"># File railties/lib/rails/generators/rails/app/app_generator.rb, line 85</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">lib</span>
+  <span class="ruby-identifier">empty_directory</span> <span class="ruby-string">&quot;lib&quot;</span>
+  <span class="ruby-identifier">empty_directory_with_gitkeep</span> <span class="ruby-string">&quot;lib/tasks&quot;</span>
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+          
+      <div class="method">
+        <div class="title">
+                      <a name="method-i-log"></a>
+            <b>log</b>()          
+        </div>
+
+                  <div class="description">
+                      </div>
+        
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('log_source')"
+                 id="l_method-i-log_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="log_source">
+<pre>
+  <span class="ruby-comment"># File railties/lib/rails/generators/rails/app/app_generator.rb, line 90</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">log</span>
+  <span class="ruby-identifier">empty_directory</span> <span class="ruby-string">&quot;log&quot;</span>
+
+  <span class="ruby-identifier">inside</span> <span class="ruby-string">&quot;log&quot;</span> <span class="ruby-keyword">do</span>
+    <span class="ruby-node">%( server production development test )</span>.<span class="ruby-identifier">each</span> <span class="ruby-keyword">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">file</span><span class="ruby-operator">|</span>
+      <span class="ruby-identifier">create_file</span> <span class="ruby-node">&quot;#{file}.log&quot;</span>
+      <span class="ruby-identifier">chmod</span> <span class="ruby-node">&quot;#{file}.log&quot;</span>, <span class="ruby-value">0666</span>, <span class="ruby-value">:verbose</span> =<span class="ruby-operator">&gt;</span> <span class="ruby-keyword">false</span>
+    <span class="ruby-keyword">end</span>
+  <span class="ruby-keyword">end</span>
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+          
+      <div class="method">
+        <div class="title">
+                      <a name="method-i-public_directory"></a>
+            <b>public_directory</b>()          
+        </div>
+
+                  <div class="description">
+                      </div>
+        
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('public_directory_source')"
+                 id="l_method-i-public_directory_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="public_directory_source">
+<pre>
+  <span class="ruby-comment"># File railties/lib/rails/generators/rails/app/app_generator.rb, line 101</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">public_directory</span>
+  <span class="ruby-identifier">directory</span> <span class="ruby-string">&quot;public&quot;</span>, <span class="ruby-string">&quot;public&quot;</span>, <span class="ruby-value">:recursive</span> =<span class="ruby-operator">&gt;</span> <span class="ruby-keyword">false</span>
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+          
+      <div class="method">
+        <div class="title">
+                      <a name="method-i-rakefile"></a>
+            <b>rakefile</b>()          
+        </div>
+
+                  <div class="description">
+                      </div>
+        
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('rakefile_source')"
+                 id="l_method-i-rakefile_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="rakefile_source">
+<pre>
+  <span class="ruby-comment"># File railties/lib/rails/generators/rails/app/app_generator.rb, line 35</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">rakefile</span>
+  <span class="ruby-identifier">template</span> <span class="ruby-string">&quot;Rakefile&quot;</span>
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+          
+      <div class="method">
+        <div class="title">
+                      <a name="method-i-readme"></a>
+            <b>readme</b>()          
+        </div>
+
+                  <div class="description">
+                      </div>
+        
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('readme_source')"
+                 id="l_method-i-readme_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="readme_source">
+<pre>
+  <span class="ruby-comment"># File railties/lib/rails/generators/rails/app/app_generator.rb, line 39</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">readme</span>
+  <span class="ruby-identifier">copy_file</span> <span class="ruby-string">&quot;README&quot;</span>
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+          
+      <div class="method">
+        <div class="title">
+                      <a name="method-i-script"></a>
+            <b>script</b>()          
+        </div>
+
+                  <div class="description">
+                      </div>
+        
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('script_source')"
+                 id="l_method-i-script_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="script_source">
+<pre>
+  <span class="ruby-comment"># File railties/lib/rails/generators/rails/app/app_generator.rb, line 122</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">script</span>
+  <span class="ruby-identifier">directory</span> <span class="ruby-string">&quot;script&quot;</span> <span class="ruby-keyword">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">content</span><span class="ruby-operator">|</span>
+    <span class="ruby-node">&quot;#{shebang}\n&quot;</span> <span class="ruby-operator">+</span> <span class="ruby-identifier">content</span>
+  <span class="ruby-keyword">end</span>
+  <span class="ruby-identifier">chmod</span> <span class="ruby-string">&quot;script&quot;</span>, <span class="ruby-value">0755</span>, <span class="ruby-value">:verbose</span> =<span class="ruby-operator">&gt;</span> <span class="ruby-keyword">false</span>
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+          
+      <div class="method">
+        <div class="title">
+                      <a name="method-i-stylesheets"></a>
+            <b>stylesheets</b>()          
+        </div>
+
+                  <div class="description">
+                      </div>
+        
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('stylesheets_source')"
+                 id="l_method-i-stylesheets_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="stylesheets_source">
+<pre>
+  <span class="ruby-comment"># File railties/lib/rails/generators/rails/app/app_generator.rb, line 109</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">stylesheets</span>
+  <span class="ruby-identifier">empty_directory_with_gitkeep</span> <span class="ruby-string">&quot;public/stylesheets&quot;</span>
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+          
+      <div class="method">
+        <div class="title">
+                      <a name="method-i-test"></a>
+            <b>test</b>()          
+        </div>
+
+                  <div class="description">
+                      </div>
+        
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('test_source')"
+                 id="l_method-i-test_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="test_source">
+<pre>
+  <span class="ruby-comment"># File railties/lib/rails/generators/rails/app/app_generator.rb, line 129</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">test</span>
+  <span class="ruby-identifier">directory</span> <span class="ruby-string">&quot;test&quot;</span>
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+          
+      <div class="method">
+        <div class="title">
+                      <a name="method-i-tmp"></a>
+            <b>tmp</b>()          
+        </div>
+
+                  <div class="description">
+                      </div>
+        
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('tmp_source')"
+                 id="l_method-i-tmp_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="tmp_source">
+<pre>
+  <span class="ruby-comment"># File railties/lib/rails/generators/rails/app/app_generator.rb, line 133</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">tmp</span>
+  <span class="ruby-identifier">empty_directory</span> <span class="ruby-string">&quot;tmp&quot;</span>
+
+  <span class="ruby-identifier">inside</span> <span class="ruby-string">&quot;tmp&quot;</span> <span class="ruby-keyword">do</span>
+    <span class="ruby-node">%(sessions sockets cache pids)</span>.<span class="ruby-identifier">each</span> <span class="ruby-keyword">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">dir</span><span class="ruby-operator">|</span>
+      <span class="ruby-identifier">empty_directory</span>(<span class="ruby-identifier">dir</span>)
+    <span class="ruby-keyword">end</span>
+  <span class="ruby-keyword">end</span>
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+          
+      <div class="method">
+        <div class="title">
+                      <a name="method-i-vendor_plugins"></a>
+            <b>vendor_plugins</b>()          
+        </div>
+
+                  <div class="description">
+                      </div>
+        
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('vendor_plugins_source')"
+                 id="l_method-i-vendor_plugins_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="vendor_plugins_source">
+<pre>
+  <span class="ruby-comment"># File railties/lib/rails/generators/rails/app/app_generator.rb, line 143</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">vendor_plugins</span>
+  <span class="ruby-identifier">empty_directory_with_gitkeep</span> <span class="ruby-string">&quot;vendor/plugins&quot;</span>
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+              </div>
+  </div>
+  </body>
+</html>

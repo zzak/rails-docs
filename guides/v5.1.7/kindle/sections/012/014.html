@@ -1,0 +1,34 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>15 Force HTTPS protocol</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v5.1.7/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="force-https-protocol">15 Force HTTPS protocol</h3>
+<p>Sometime you might want to force a particular controller to only be accessible via an HTTPS protocol for security reasons. You can use the <code>force_ssl</code> method in your controller to enforce that:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class DinnerController
+  force_ssl
+end
+
+</pre>
+</div>
+<p>Just like the filter, you could also pass <code>:only</code> and <code>:except</code> to enforce the secure connection only to specific actions:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class DinnerController
+  force_ssl only: :cheeseburger
+  # or
+  force_ssl except: :cheeseburger
+end
+
+</pre>
+</div>
+<p>Please note that if you find yourself adding <code>force_ssl</code> to many controllers, you may want to force the whole application to use HTTPS instead. In that case, you can set the <code>config.force_ssl</code> in your environment file.</p>
+</body>
+</html>

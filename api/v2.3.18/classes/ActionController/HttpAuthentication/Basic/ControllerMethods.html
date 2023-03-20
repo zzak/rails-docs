@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html 
+     PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+  <head>
+    <title>Module: ActionController::HttpAuthentication::Basic::ControllerMethods</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <link rel="stylesheet" href="../../../.././rdoc-style.css" type="text/css" media="screen" />
+
+    <script language="JavaScript" type="text/javascript">
+    // <![CDATA[
+
+        function toggleSource( id )
+        {
+          var elem
+          var link
+
+          if( document.getElementById )
+          {
+            elem = document.getElementById( id )
+            link = document.getElementById( "l_" + id )
+          }
+          else if ( document.all )
+          {
+            elem = eval( "document.all." + id )
+            link = eval( "document.all.l_" + id )
+          }
+          else
+            return false;
+
+          if( elem.style.display == "block" )
+          {
+            elem.style.display = "none"
+            link.innerHTML = "show source"
+          }
+          else
+          {
+            elem.style.display = "block"
+            link.innerHTML = "hide source"
+          }
+        }
+
+        function openCode( url )
+        {
+          window.open( url, "SOURCE_CODE", "resizable=yes,scrollbars=yes,toolbar=no,status=no,height=480,width=750" ).focus();
+        }
+      // ]]>
+    </script>
+  </head>
+
+  <body>
+  <table width="100%" border='0' cellpadding='0' cellspacing='0' class='banner'><tr>
+  <td class="file-title"><span class="file-title-prefix">Module</span><br />ActionController::HttpAuthentication::Basic::ControllerMethods</td>
+  <td align="right">
+    <table cellspacing="0" cellpadding="2">
+      <tr valign="top">
+        <td>In:</td>
+        <td>
+<a href="../../../../files/actionpack/lib/action_controller/http_authentication_rb.html">actionpack/lib/action_controller/http_authentication.rb</a>
+        </td>
+      </tr>
+         </table>
+        </td>
+        </tr>
+      </table>
+ <!-- banner header -->
+
+  <div id="bodyContent">
+      <div id="content">
+
+
+
+
+  <div class="sectiontitle">Methods</div>
+  <ul>
+  <li><a href="#M001613">authenticate_or_request_with_http_basic</a></li>
+  <li><a href="#M001614">authenticate_with_http_basic</a></li>
+  <li><a href="#M001615">request_http_basic_authentication</a></li>
+  </ul>
+
+
+
+
+
+
+<div class="sectiontitle">Public Instance methods</div>
+<div class="method">
+  <div class="title">
+    <a name="M001613"></a><b>authenticate_or_request_with_http_basic</b>(realm = &quot;Application&quot;, &amp;login_procedure)
+  </div>
+<div class="sourcecode">
+  <p class="source-link">[ <a href="javascript:toggleSource('M001613_source')" id="l_M001613_source">show source</a> ]</p>
+  <div id="M001613_source" class="dyn-source">
+<pre>
+     <span class="ruby-comment cmt"># File actionpack/lib/action_controller/http_authentication.rb, line 111</span>
+111:         <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">authenticate_or_request_with_http_basic</span>(<span class="ruby-identifier">realm</span> = <span class="ruby-value str">&quot;Application&quot;</span>, <span class="ruby-operator">&amp;</span><span class="ruby-identifier">login_procedure</span>)
+112:           <span class="ruby-identifier">authenticate_with_http_basic</span>(<span class="ruby-operator">&amp;</span><span class="ruby-identifier">login_procedure</span>) <span class="ruby-operator">||</span> <span class="ruby-identifier">request_http_basic_authentication</span>(<span class="ruby-identifier">realm</span>)
+113:         <span class="ruby-keyword kw">end</span>
+</pre>
+  </div>
+</div>
+</div>
+<div class="method">
+  <div class="title">
+    <a name="M001614"></a><b>authenticate_with_http_basic</b>(&amp;login_procedure)
+  </div>
+<div class="sourcecode">
+  <p class="source-link">[ <a href="javascript:toggleSource('M001614_source')" id="l_M001614_source">show source</a> ]</p>
+  <div id="M001614_source" class="dyn-source">
+<pre>
+     <span class="ruby-comment cmt"># File actionpack/lib/action_controller/http_authentication.rb, line 115</span>
+115:         <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">authenticate_with_http_basic</span>(<span class="ruby-operator">&amp;</span><span class="ruby-identifier">login_procedure</span>)
+116:           <span class="ruby-constant">HttpAuthentication</span><span class="ruby-operator">::</span><span class="ruby-constant">Basic</span>.<span class="ruby-identifier">authenticate</span>(<span class="ruby-keyword kw">self</span>, <span class="ruby-operator">&amp;</span><span class="ruby-identifier">login_procedure</span>)
+117:         <span class="ruby-keyword kw">end</span>
+</pre>
+  </div>
+</div>
+</div>
+<div class="method">
+  <div class="title">
+    <a name="M001615"></a><b>request_http_basic_authentication</b>(realm = &quot;Application&quot;)
+  </div>
+<div class="sourcecode">
+  <p class="source-link">[ <a href="javascript:toggleSource('M001615_source')" id="l_M001615_source">show source</a> ]</p>
+  <div id="M001615_source" class="dyn-source">
+<pre>
+     <span class="ruby-comment cmt"># File actionpack/lib/action_controller/http_authentication.rb, line 119</span>
+119:         <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">request_http_basic_authentication</span>(<span class="ruby-identifier">realm</span> = <span class="ruby-value str">&quot;Application&quot;</span>)
+120:           <span class="ruby-constant">HttpAuthentication</span><span class="ruby-operator">::</span><span class="ruby-constant">Basic</span>.<span class="ruby-identifier">authentication_request</span>(<span class="ruby-keyword kw">self</span>, <span class="ruby-identifier">realm</span>)
+121:         <span class="ruby-keyword kw">end</span>
+</pre>
+  </div>
+</div>
+</div>
+</div>
+
+  </div>
+
+    </body>
+</html>

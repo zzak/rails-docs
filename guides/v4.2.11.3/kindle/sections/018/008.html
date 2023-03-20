@@ -1,0 +1,27 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>9 Testing Routes</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v4.2.11.3/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="testing-routes">9 Testing Routes</h3>
+<p>Like everything else in your Rails application, it is recommended that you test your routes. Below are example tests for the routes of default <code>show</code> and <code>create</code> action of <code>Articles</code> controller above and it should look like:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class ArticleRoutesTest &lt; ActionController::TestCase
+  test "should route to article" do
+    assert_routing '/articles/1', { controller: "articles", action: "show", id: "1" }
+  end
+
+  test "should route to create article" do
+    assert_routing({ method: 'post', path: '/articles' }, { controller: "articles", action: "create" })
+  end
+end
+
+</pre>
+</div>
+</body>
+</html>

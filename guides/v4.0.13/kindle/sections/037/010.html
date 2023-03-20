@@ -1,0 +1,80 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>11 Active Support</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v4.0.13/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="active-support">11 Active Support</h3>
+<p>A large effort was made in Active Support to make it cherry pickable, that is, you no longer have to require the entire Active Support library to get pieces of it. This allows the various core components of Rails to run slimmer.</p>
+<p>These are the main changes in Active Support:</p>
+<ul>
+<li>Large clean up of the library removing unused methods throughout.</li>
+<li>Active Support no longer provides vendored versions of <a href="http://tzinfo.rubyforge.org/">TZInfo</a>, <a href="http://deveiate.org/projects/RMemCache/">Memcache Client</a> and <a href="http://builder.rubyforge.org/,">Builder</a> these are all included as dependencies and installed via the <code>bundle install</code> command.</li>
+<li>Safe buffers are implemented in <code>ActiveSupport::SafeBuffer</code>.</li>
+<li>Added <code>Array.uniq_by</code> and <code>Array.uniq_by!</code>.</li>
+<li>Removed <code>Array#rand</code> and backported <code>Array#sample</code> from Ruby 1.9.</li>
+<li>Fixed bug on <code>TimeZone.seconds_to_utc_offset</code> returning wrong value.</li>
+<li>Added <code>ActiveSupport::Notifications</code> middleware.</li>
+<li>
+<code>ActiveSupport.use_standard_json_time_format</code> now defaults to true.</li>
+<li>
+<code>ActiveSupport.escape_html_entities_in_json</code> now defaults to false.</li>
+<li>
+<code>Integer#multiple_of?</code> accepts zero as an argument, returns false unless the receiver is zero.</li>
+<li>
+<code>string.chars</code> has been renamed to <code>string.mb_chars</code>.</li>
+<li>
+<code>ActiveSupport::OrderedHash</code> now can de-serialize through YAML.</li>
+<li>Added SAX-based parser for XmlMini, using LibXML and Nokogiri.</li>
+<li>Added <code>Object#presence</code> that returns the object if it's <code>#present?</code> otherwise returns <code>nil</code>.</li>
+<li>Added <code>String#exclude?</code> core extension that returns the inverse of <code>#include?</code>.</li>
+<li>Added <code>to_i</code> to <code>DateTime</code> in <code>ActiveSupport</code> so <code>to_yaml</code> works correctly on models with <code>DateTime</code> attributes.</li>
+<li>Added <code>Enumerable#exclude?</code> to bring parity to <code>Enumerable#include?</code> and avoid if <code>!x.include?</code>.</li>
+<li>Switch to on-by-default XSS escaping for rails.</li>
+<li>Support deep-merging in <code>ActiveSupport::HashWithIndifferentAccess</code>.</li>
+<li>
+<code>Enumerable#sum</code> now works will all enumerables, even if they don't respond to <code>:size</code>.</li>
+<li>
+<code>inspect</code> on a zero length duration returns '0 seconds' instead of empty string.</li>
+<li>Add <code>element</code> and <code>collection</code> to <code>ModelName</code>.</li>
+<li>
+<code>String#to_time</code> and <code>String#to_datetime</code> handle fractional seconds.</li>
+<li>Added support to new callbacks for around filter object that respond to <code>:before</code> and <code>:after</code> used in before and after callbacks.</li>
+<li>The <code>ActiveSupport::OrderedHash#to_a</code> method returns an ordered set of arrays. Matches Ruby 1.9's <code>Hash#to_a</code>.</li>
+<li>
+<code>MissingSourceFile</code> exists as a constant but it is now just equals to <code>LoadError</code>.</li>
+<li>Added <code>Class#class_attribute</code>, to be able to declare a class-level attribute whose value is inheritable and overwritable by subclasses.</li>
+<li>Finally removed <code>DeprecatedCallbacks</code> in <code>ActiveRecord::Associations</code>.</li>
+<li>
+<code>Object#metaclass</code> is now <code>Kernel#singleton_class</code> to match Ruby.</li>
+</ul>
+<p>The following methods have been removed because they are now available in Ruby 1.8.7 and 1.9.</p>
+<ul>
+<li>
+<code>Integer#even?</code> and <code>Integer#odd?</code>
+</li>
+<li><code>String#each_char</code></li>
+<li>
+<code>String#start_with?</code> and <code>String#end_with?</code> (3rd person aliases still kept)</li>
+<li><code>String#bytesize</code></li>
+<li><code>Object#tap</code></li>
+<li><code>Symbol#to_proc</code></li>
+<li><code>Object#instance_variable_defined?</code></li>
+<li><code>Enumerable#none?</code></li>
+</ul>
+<p>The security patch for REXML remains in Active Support because early patch-levels of Ruby 1.8.7 still need it. Active Support knows whether it has to apply it or not.</p>
+<p>The following methods have been removed because they are no longer used in the framework:</p>
+<ul>
+<li><code>Kernel#daemonize</code></li>
+<li>
+<code>Object#remove_subclasses_of</code> <code>Object#extend_with_included_modules_from</code>, <code>Object#extended_by</code>
+</li>
+<li><code>Class#remove_class</code></li>
+<li>
+<code>Regexp#number_of_captures</code>, <code>Regexp.unoptionalize</code>, <code>Regexp.optionalize</code>, <code>Regexp#number_of_captures</code>
+</li>
+</ul>
+</body>
+</html>

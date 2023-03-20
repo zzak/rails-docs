@@ -1,0 +1,118 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>10 The Request and Response Objects</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v4.0.13/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="the-request-and-response-objects">10 The Request and Response Objects</h3>
+<p>In every controller there are two accessor methods pointing to the request and the response objects associated with the request cycle that is currently in execution. The <code>request</code> method contains an instance of <code>AbstractRequest</code> and the <code>response</code> method returns a response object representing what is going to be sent back to the client.</p>
+<h4 id="the-request-object">10.1 The <code>request</code> Object</h4>
+<p>The request object contains a lot of useful information about the request coming in from the client. To get a full list of the available methods, refer to the <a href="http://api.rubyonrails.org/classes/ActionDispatch/Request.html">API documentation</a>. Among the properties that you can access on this object are:</p>
+<table>
+<thead>
+<tr>
+<th>Property of <code>request</code>
+</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>host</td>
+<td>The hostname used for this request.</td>
+</tr>
+<tr>
+<td>domain(n=2)</td>
+<td>The hostname's first <code>n</code> segments, starting from the right (the TLD).</td>
+</tr>
+<tr>
+<td>format</td>
+<td>The content type requested by the client.</td>
+</tr>
+<tr>
+<td>method</td>
+<td>The HTTP method used for the request.</td>
+</tr>
+<tr>
+<td>get?, post?, patch?, put?, delete?, head?</td>
+<td>Returns true if the HTTP method is GET/POST/PATCH/PUT/DELETE/HEAD.</td>
+</tr>
+<tr>
+<td>headers</td>
+<td>Returns a hash containing the headers associated with the request.</td>
+</tr>
+<tr>
+<td>port</td>
+<td>The port number (integer) used for the request.</td>
+</tr>
+<tr>
+<td>protocol</td>
+<td>Returns a string containing the protocol used plus "://", for example "http://".</td>
+</tr>
+<tr>
+<td>query_string</td>
+<td>The query string part of the URL, i.e., everything after "?".</td>
+</tr>
+<tr>
+<td>remote_ip</td>
+<td>The IP address of the client.</td>
+</tr>
+<tr>
+<td>url</td>
+<td>The entire URL used for the request.</td>
+</tr>
+</tbody>
+</table>
+<h5 id="path-parameters-query-parameters-and-request-parameters">10.1.1 <code>path_parameters</code>, <code>query_parameters</code>, and <code>request_parameters</code>
+</h5>
+<p>Rails collects all of the parameters sent along with the request in the <code>params</code> hash, whether they are sent as part of the query string or the post body. The request object has three accessors that give you access to these parameters depending on where they came from. The <code>query_parameters</code> hash contains parameters that were sent as part of the query string while the <code>request_parameters</code> hash contains parameters sent as part of the post body. The <code>path_parameters</code> hash contains parameters that were recognized by the routing as being part of the path leading to this particular controller and action.</p>
+<h4 id="the-response-object">10.2 The <code>response</code> Object</h4>
+<p>The response object is not usually used directly, but is built up during the execution of the action and rendering of the data that is being sent back to the user, but sometimes - like in an after filter - it can be useful to access the response directly. Some of these accessor methods also have setters, allowing you to change their values.</p>
+<table>
+<thead>
+<tr>
+<th>Property of <code>response</code>
+</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>body</td>
+<td>This is the string of data being sent back to the client. This is most often HTML.</td>
+</tr>
+<tr>
+<td>status</td>
+<td>The HTTP status code for the response, like 200 for a successful request or 404 for file not found.</td>
+</tr>
+<tr>
+<td>location</td>
+<td>The URL the client is being redirected to, if any.</td>
+</tr>
+<tr>
+<td>content_type</td>
+<td>The content type of the response.</td>
+</tr>
+<tr>
+<td>charset</td>
+<td>The character set being used for the response. Default is "utf-8".</td>
+</tr>
+<tr>
+<td>headers</td>
+<td>Headers used for the response.</td>
+</tr>
+</tbody>
+</table>
+<h5 id="setting-custom-headers">10.2.1 Setting Custom Headers</h5>
+<p>If you want to set custom headers for a response then <code>response.headers</code> is the place to do it. The headers attribute is a hash which maps header names to their values, and Rails will set some of them automatically. If you want to add or change a header, just assign it to <code>response.headers</code> this way:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+response.headers["Content-Type"] = "application/pdf"
+
+</pre>
+</div>
+<p>Note: in the above case it would make more sense to use the <code>content_type</code> setter directly.</p>
+</body>
+</html>

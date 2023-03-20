@@ -1,0 +1,254 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html 
+     PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+  <head>
+    <title>Class: ActiveModel::EachValidator</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <link rel="stylesheet" href="../../rdoc-style.css" type="text/css" media="screen" />
+
+    <script language="JavaScript" type="text/javascript">
+    // <![CDATA[
+
+        function toggleSource( id )
+        {
+          var elem
+          var link
+
+          if( document.getElementById )
+          {
+            elem = document.getElementById( id )
+            link = document.getElementById( "l_" + id )
+          }
+          else if ( document.all )
+          {
+            elem = eval( "document.all." + id )
+            link = eval( "document.all.l_" + id )
+          }
+          else
+            return false;
+
+          if( elem.style.display == "block" )
+          {
+            elem.style.display = "none"
+            link.innerHTML = "show source"
+          }
+          else
+          {
+            elem.style.display = "block"
+            link.innerHTML = "hide source"
+          }
+        }
+
+        function openCode( url )
+        {
+          window.open( url, "SOURCE_CODE", "resizable=yes,scrollbars=yes,toolbar=no,status=no,height=480,width=750" ).focus();
+        }
+      // ]]>
+    </script>
+  </head>
+
+  <body>
+    <table width="100%" border='0' cellpadding='0' cellspacing='0' class='banner'>
+    <tr><td>Ruby on Rails v3.0.9</td></tr>
+    <tr>
+  <td class="file-title"><span class="file-title-prefix">Class</span><br />ActiveModel::EachValidator</td>
+  <td align="right">
+    <table cellspacing="0" cellpadding="2">
+      <tr valign="top">
+        <td>In:</td>
+        <td>
+<a href="../../files/activemodel/lib/active_model/validator_rb.html">activemodel/lib/active_model/validator.rb</a>:
+        </td>
+      </tr>
+      <tr>
+        <td>Parent:</td>
+        <td>
+
+      <a href="Validator.html">ActiveModel::Validator</a>         </td>
+     </tr>
+         </table>
+        </td>
+        </tr>
+      </table>
+  <div id="bodyContent">
+  <div id="content">
+
+  <div class="description">
+<p><a href="EachValidator.html">EachValidator</a> is a validator which
+iterates through the attributes given in the options hash invoking the <a
+href="EachValidator.html#method-i-validate_each">validate_each</a> method
+passing in the record, attribute and value.</p>
+
+<p>All Active Model validations are built on top of this <a
+href="Validator.html">Validator</a>.</p>
+</div>
+
+
+  <div class="sectiontitle">Methods</div>
+  <ul>
+                <li><a href="#method-i-check_validity-21">check_validity!</a></li>
+                <li><a href="#method-c-new">new</a></li>
+                <li><a href="#method-i-validate">validate</a></li>
+                <li><a href="#method-i-validate_each">validate_each</a></li>
+      </ul>
+
+
+
+  <div class="sectiontitle">Attributes</div>
+  <table border='0' cellpadding='5'>
+  <tr valign='top'>
+    <td class='attr-rw'>
+[R]
+    </td>
+    <td class='attr-name'>attributes</td>
+    <td class='attr-desc'>
+                        </td>
+  </tr>
+  </table>
+
+        
+    <div class="sectiontitle">
+      Public      Class      methods
+    </div>
+
+          
+      <div class="method">
+        <div class="title">
+                      <a name="method-c-new"></a>
+            <b>new</b>(options)          
+        </div>
+
+                  <div class="description">
+            <p>Returns a new validator instance. All options will be available via the
+<tt>options</tt> reader, however the <tt>:attributes</tt> option will be
+removed and instead be made available through the <tt>attributes</tt>
+reader.</p>          </div>
+        
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('new_source')"
+                 id="l_method-c-new_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="new_source">
+<pre>
+  <span class="ruby-comment"># File activemodel/lib/active_model/validator.rb, line 140</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">initialize</span>(<span class="ruby-identifier">options</span>)
+  <span class="ruby-ivar">@attributes</span> = <span class="ruby-constant">Array</span>.<span class="ruby-identifier">wrap</span>(<span class="ruby-identifier">options</span>.<span class="ruby-identifier">delete</span>(<span class="ruby-value">:attributes</span>))
+  <span class="ruby-identifier">raise</span> <span class="ruby-string">&quot;:attributes cannot be blank&quot;</span> <span class="ruby-keyword">if</span> <span class="ruby-ivar">@attributes</span>.<span class="ruby-identifier">empty?</span>
+  <span class="ruby-keyword">super</span>
+  <span class="ruby-identifier">check_validity!</span>
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+                      
+    <div class="sectiontitle">
+      Public      Instance      methods
+    </div>
+
+          
+      <div class="method">
+        <div class="title">
+                      <a name="method-i-check_validity-21"></a>
+            <b>check_validity!</b>()          
+        </div>
+
+                  <div class="description">
+            <p>Hook method that gets called by the initializer allowing verification that
+the arguments supplied are valid. You could for example raise an
+ArgumentError when invalid options are supplied.</p>          </div>
+        
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('check_validity-21_source')"
+                 id="l_method-i-check_validity-21_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="check_validity-21_source">
+<pre>
+  <span class="ruby-comment"># File activemodel/lib/active_model/validator.rb, line 167</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">check_validity!</span>
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+          
+      <div class="method">
+        <div class="title">
+                      <a name="method-i-validate"></a>
+            <b>validate</b>(record)          
+        </div>
+
+                  <div class="description">
+            <p>Performs validation on the supplied record. By default this will call
+<tt>validates_each</tt> to determine validity therefore subclasses should
+override <tt>validates_each</tt> with validation logic.</p>          </div>
+        
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('validate_source')"
+                 id="l_method-i-validate_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="validate_source">
+<pre>
+  <span class="ruby-comment"># File activemodel/lib/active_model/validator.rb, line 150</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">validate</span>(<span class="ruby-identifier">record</span>)
+  <span class="ruby-identifier">attributes</span>.<span class="ruby-identifier">each</span> <span class="ruby-keyword">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">attribute</span><span class="ruby-operator">|</span>
+    <span class="ruby-identifier">value</span> = <span class="ruby-identifier">record</span>.<span class="ruby-identifier">read_attribute_for_validation</span>(<span class="ruby-identifier">attribute</span>)
+    <span class="ruby-keyword">next</span> <span class="ruby-keyword">if</span> (<span class="ruby-identifier">value</span>.<span class="ruby-identifier">nil?</span> <span class="ruby-operator">&amp;&amp;</span> <span class="ruby-identifier">options</span>[<span class="ruby-value">:allow_nil</span>]) <span class="ruby-operator">||</span> (<span class="ruby-identifier">value</span>.<span class="ruby-identifier">blank?</span> <span class="ruby-operator">&amp;&amp;</span> <span class="ruby-identifier">options</span>[<span class="ruby-value">:allow_blank</span>])
+    <span class="ruby-identifier">validate_each</span>(<span class="ruby-identifier">record</span>, <span class="ruby-identifier">attribute</span>, <span class="ruby-identifier">value</span>)
+  <span class="ruby-keyword">end</span>
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+          
+      <div class="method">
+        <div class="title">
+                      <a name="method-i-validate_each"></a>
+            <b>validate_each</b>(record, attribute, value)          
+        </div>
+
+                  <div class="description">
+            <p>Override this method in subclasses with the validation logic, adding errors
+to the records <tt>errors</tt> array where necessary.</p>          </div>
+        
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('validate_each_source')"
+                 id="l_method-i-validate_each_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="validate_each_source">
+<pre>
+  <span class="ruby-comment"># File activemodel/lib/active_model/validator.rb, line 160</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">validate_each</span>(<span class="ruby-identifier">record</span>, <span class="ruby-identifier">attribute</span>, <span class="ruby-identifier">value</span>)
+  <span class="ruby-identifier">raise</span> <span class="ruby-constant">NotImplementedError</span>
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+              </div>
+  </div>
+  </body>
+</html>

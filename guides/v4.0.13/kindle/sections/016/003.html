@@ -1,0 +1,257 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>4 Functional Tests for Your Controllers</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v4.0.13/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="functional-tests-for-your-controllers">4 Functional Tests for Your Controllers</h3>
+<p>In Rails, testing the various actions of a single controller is called writing functional tests for that controller. Controllers handle the incoming web requests to your application and eventually respond with a rendered view.</p>
+<h4 id="what-to-include-in-your-functional-tests">4.1 What to Include in your Functional Tests</h4>
+<p>You should test for things such as:</p>
+<ul>
+<li>was the web request successful?</li>
+<li>was the user redirected to the right page?</li>
+<li>was the user successfully authenticated?</li>
+<li>was the correct object stored in the response template?</li>
+<li>was the appropriate message displayed to the user in the view?</li>
+</ul>
+<p>Now that we have used Rails scaffold generator for our <code>Post</code> resource, it has already created the controller code and tests. You can take look at the file <code>posts_controller_test.rb</code> in the <code>test/controllers</code> directory.</p>
+<p>Let me take you through one such test, <code>test_should_get_index</code> from the file <code>posts_controller_test.rb</code>.</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class PostsControllerTest &lt; ActionController::TestCase
+  test "should get index" do
+    get :index
+    assert_response :success
+    assert_not_nil assigns(:posts)
+  end
+end
+
+</pre>
+</div>
+<p>In the <code>test_should_get_index</code> test, Rails simulates a request on the action called <code>index</code>, making sure the request was successful and also ensuring that it assigns a valid <code>posts</code> instance variable.</p>
+<p>The <code>get</code> method kicks off the web request and populates the results into the response. It accepts 4 arguments:</p>
+<ul>
+<li>The action of the controller you are requesting. This can be in the form of a string or a symbol.</li>
+<li>An optional hash of request parameters to pass into the action (eg. query string parameters or post variables).</li>
+<li>An optional hash of session variables to pass along with the request.</li>
+<li>An optional hash of flash values.</li>
+</ul>
+<p>Example: Calling the <code>:show</code> action, passing an <code>id</code> of 12 as the <code>params</code> and setting a <code>user_id</code> of 5 in the session:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+get(:show, {'id' =&gt; "12"}, {'user_id' =&gt; 5})
+
+</pre>
+</div>
+<p>Another example: Calling the <code>:view</code> action, passing an <code>id</code> of 12 as the <code>params</code>, this time with no session, but with a flash message.</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+get(:view, {'id' =&gt; '12'}, nil, {'message' =&gt; 'booya!'})
+
+</pre>
+</div>
+<div class="note"><p>If you try running <code>test_should_create_post</code> test from <code>posts_controller_test.rb</code> it will fail on account of the newly added model level validation and rightly so.</p></div>
+<p>Let us modify <code>test_should_create_post</code> test in <code>posts_controller_test.rb</code> so that all our test pass:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+test "should create post" do
+  assert_difference('Post.count') do
+    post :create, post: {title: 'Some title'}
+  end
+
+  assert_redirected_to post_path(assigns(:post))
+end
+
+</pre>
+</div>
+<p>Now you can try running all the tests and they should pass.</p>
+<h4 id="available-request-types-for-functional-tests">4.2 Available Request Types for Functional Tests</h4>
+<p>If you're familiar with the HTTP protocol, you'll know that <code>get</code> is a type of request. There are 6 request types supported in Rails functional tests:</p>
+<ul>
+<li><code>get</code></li>
+<li><code>post</code></li>
+<li><code>patch</code></li>
+<li><code>put</code></li>
+<li><code>head</code></li>
+<li><code>delete</code></li>
+</ul>
+<p>All of request types are methods that you can use, however, you'll probably end up using the first two more often than the others.</p>
+<div class="note"><p>Functional tests do not verify whether the specified request type should be accepted by the action. Request types in this context exist to make your tests more descriptive.</p></div>
+<h4 id="the-four-hashes-of-the-apocalypse">4.3 The Four Hashes of the Apocalypse</h4>
+<p>After a request has been made using one of the 6 methods (<code>get</code>, <code>post</code>, etc.) and processed, you will have 4 Hash objects ready for use:</p>
+<ul>
+<li>
+<code>assigns</code> - Any objects that are stored as instance variables in actions for use in views.</li>
+<li>
+<code>cookies</code> - Any cookies that are set.</li>
+<li>
+<code>flash</code> - Any objects living in the flash.</li>
+<li>
+<code>session</code> - Any object living in session variables.</li>
+</ul>
+<p>As is the case with normal Hash objects, you can access the values by referencing the keys by string. You can also reference them by symbol name, except for <code>assigns</code>. For example:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+flash["gordon"]               flash[:gordon]
+session["shmession"]          session[:shmession]
+cookies["are_good_for_u"]     cookies[:are_good_for_u]
+
+# Because you can't use assigns[:something] for historical reasons:
+assigns["something"]          assigns(:something)
+
+</pre>
+</div>
+<h4 id="instance-variables-available">4.4 Instance Variables Available</h4>
+<p>You also have access to three instance variables in your functional tests:</p>
+<ul>
+<li>
+<code>@controller</code> - The controller processing the request</li>
+<li>
+<code>@request</code> - The request</li>
+<li>
+<code>@response</code> - The response</li>
+</ul>
+<h4 id="setting-headers-and-cgi-variables">4.5 Setting Headers and CGI variables</h4>
+<p>Headers and cgi variables can be set directly on the <code>@request</code>
+instance variable:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+# setting a HTTP Header
+@request.headers["Accept"] = "text/plain, text/html"
+get :index # simulate the request with custom header
+
+# setting a CGI variable
+@request.headers["HTTP_REFERER"] = "http://example.com/home"
+post :create # simulate the request with custom env variable
+
+</pre>
+</div>
+<h4 id="testing-templates-and-layouts">4.6 Testing Templates and Layouts</h4>
+<p>If you want to make sure that the response rendered the correct template and layout, you can use the <code>assert_template</code>
+method:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+test "index should render correct template and layout" do
+  get :index
+  assert_template :index
+  assert_template layout: "layouts/application"
+end
+
+</pre>
+</div>
+<p>Note that you cannot test for template and layout at the same time, with one call to <code>assert_template</code> method.
+Also, for the <code>layout</code> test, you can give a regular expression instead of a string, but using the string, makes
+things clearer. On the other hand, you have to include the "layouts" directory name even if you save your layout
+file in this standard layout directory. Hence,</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+assert_template layout: "application"
+
+</pre>
+</div>
+<p>will not work.</p>
+<p>If your view renders any partial, when asserting for the layout, you have to assert for the partial at the same time.
+Otherwise, assertion will fail.</p>
+<p>Hence:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+test "new should render correct layout" do
+  get :new
+  assert_template layout: "layouts/application", partial: "_form"
+end
+
+</pre>
+</div>
+<p>is the correct way to assert for the layout when the view renders a partial with name <code>_form</code>. Omitting the <code>:partial</code> key in your <code>assert_template</code> call will complain.</p>
+<h4 id="a-fuller-functional-test-example">4.7 A Fuller Functional Test Example</h4>
+<p>Here's another example that uses <code>flash</code>, <code>assert_redirected_to</code>, and <code>assert_difference</code>:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+test "should create post" do
+  assert_difference('Post.count') do
+    post :create, post: {title: 'Hi', body: 'This is my first post.'}
+  end
+  assert_redirected_to post_path(assigns(:post))
+  assert_equal 'Post was successfully created.', flash[:notice]
+end
+
+</pre>
+</div>
+<h4 id="testing-views">4.8 Testing Views</h4>
+<p>Testing the response to your request by asserting the presence of key HTML elements and their content is a useful way to test the views of your application. The <code>assert_select</code> assertion allows you to do this by using a simple yet powerful syntax.</p>
+<div class="note"><p>You may find references to <code>assert_tag</code> in other documentation, but this is now deprecated in favor of <code>assert_select</code>.</p></div>
+<p>There are two forms of <code>assert_select</code>:</p>
+<p><code>assert_select(selector, [equality], [message])</code> ensures that the equality condition is met on the selected elements through the selector. The selector may be a CSS selector expression (String), an expression with substitution values, or an <code>HTML::Selector</code> object.</p>
+<p><code>assert_select(element, selector, [equality], [message])</code> ensures that the equality condition is met on all the selected elements through the selector starting from the <em>element</em> (instance of <code>HTML::Node</code>) and its descendants.</p>
+<p>For example, you could verify the contents on the title element in your response with:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+assert_select 'title', "Welcome to Rails Testing Guide"
+
+</pre>
+</div>
+<p>You can also use nested <code>assert_select</code> blocks. In this case the inner <code>assert_select</code> runs the assertion on the complete collection of elements selected by the outer <code>assert_select</code> block:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+assert_select 'ul.navigation' do
+  assert_select 'li.menu_item'
+end
+
+</pre>
+</div>
+<p>Alternatively the collection of elements selected by the outer <code>assert_select</code> may be iterated through so that <code>assert_select</code> may be called separately for each element. Suppose for example that the response contains two ordered lists, each with four list elements then the following tests will both pass.</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+assert_select "ol" do |elements|
+  elements.each do |element|
+    assert_select element, "li", 4
+  end
+end
+
+assert_select "ol" do
+  assert_select "li", 8
+end
+
+</pre>
+</div>
+<p>The <code>assert_select</code> assertion is quite powerful. For more advanced usage, refer to its <a href="http://api.rubyonrails.org/classes/ActionDispatch/Assertions/SelectorAssertions.html">documentation</a>.</p>
+<h5 id="additional-view-based-assertions">4.8.1 Additional View-Based Assertions</h5>
+<p>There are more assertions that are primarily used in testing views:</p>
+<table>
+<thead>
+<tr>
+<th>Assertion</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>assert_select_email</code></td>
+<td>Allows you to make assertions on the body of an e-mail.</td>
+</tr>
+<tr>
+<td><code>assert_select_encoded</code></td>
+<td>Allows you to make assertions on encoded HTML. It does this by un-encoding the contents of each element and then calling the block with all the un-encoded elements.</td>
+</tr>
+<tr>
+<td>
+<code>css_select(selector)</code>  or <code>css_select(element, selector)</code>
+</td>
+<td>Returns an array of all the elements selected by the <em>selector</em>. In the second variant it first matches the base <em>element</em> and tries to match the <em>selector</em> expression on any of its children. If there are no matches both variants return an empty array.</td>
+</tr>
+</tbody>
+</table>
+<p>Here's an example of using <code>assert_select_email</code>:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+assert_select_email do
+  assert_select 'small', 'Please click the "Unsubscribe" link if you want to opt-out.'
+end
+
+</pre>
+</div>
+</body>
+</html>

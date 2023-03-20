@@ -1,0 +1,342 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>15 Scopes</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v7.0.4.2/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="scopes"><a class="anchorlink" href="#scopes">15 Scopes</a></h3>
+<p>Scoping allows you to specify commonly-used queries which can be referenced as method calls on the association objects or models. With these scopes, you can use every method previously covered such as <code>where</code>, <code>joins</code> and <code>includes</code>. All scope bodies should return an <code>ActiveRecord::Relation</code> or <code>nil</code> to allow for further methods (such as other scopes) to be called on it.</p>
+
+<p>To define a simple scope, we use the <a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveRecord/Scoping/Named/ClassMethods.html#method-i-scope"><code>scope</code></a> method inside the class, passing the query that we'd like to run when this scope is called:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">Book</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="n">scope</span> <span class="ss">:out_of_print</span><span class="p">,</span> <span class="o">-&gt;</span> <span class="p">{</span> <span class="n">where</span><span class="p">(</span><span class="ss">out_of_print: </span><span class="kp">true</span><span class="p">)</span> <span class="p">}</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="class Book &lt; ApplicationRecord
+  scope :out_of_print, -&gt; { where(out_of_print: true) }
+end
+">Copy</button>
+</div>
+<p>To call this <code>out_of_print</code> scope we can call it on either the class:</p>
+
+<div class="code_container">
+<pre><code class="highlight irb"><span class="gp">irb&gt;</span><span class="w"> </span><span class="no">Book</span><span class="p">.</span><span class="nf">out_of_print</span>
+<span class="p">=&gt;</span> <span class="kt">#&lt;</span><span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Relation</span><span class="kt">&gt;</span> <span class="c1"># all out of print books</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="Book.out_of_print
+">Copy</button>
+</div>
+<p>Or on an association consisting of <code>Book</code> objects:</p>
+
+<div class="code_container">
+<pre><code class="highlight irb"><span class="gp">irb&gt;</span><span class="w"> </span><span class="n">author</span> <span class="o">=</span> <span class="no">Author</span><span class="p">.</span><span class="nf">first</span>
+<span class="gp">irb&gt;</span><span class="w"> </span><span class="n">author</span><span class="p">.</span><span class="nf">books</span><span class="p">.</span><span class="nf">out_of_print</span>
+<span class="p">=&gt;</span> <span class="kt">#&lt;</span><span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Relation</span><span class="kt">&gt;</span> <span class="c1"># all out of print books by `author`</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="author = Author.first
+author.books.out_of_print
+">Copy</button>
+</div>
+<p>Scopes are also chainable within scopes:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">Book</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="n">scope</span> <span class="ss">:out_of_print</span><span class="p">,</span> <span class="o">-&gt;</span> <span class="p">{</span> <span class="n">where</span><span class="p">(</span><span class="ss">out_of_print: </span><span class="kp">true</span><span class="p">)</span> <span class="p">}</span>
+  <span class="n">scope</span> <span class="ss">:out_of_print_and_expensive</span><span class="p">,</span> <span class="o">-&gt;</span> <span class="p">{</span> <span class="n">out_of_print</span><span class="p">.</span><span class="nf">where</span><span class="p">(</span><span class="s2">"price &gt; 500"</span><span class="p">)</span> <span class="p">}</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='class Book &lt; ApplicationRecord
+  scope :out_of_print, -&gt; { where(out_of_print: true) }
+  scope :out_of_print_and_expensive, -&gt; { out_of_print.where("price &gt; 500") }
+end
+'>Copy</button>
+</div>
+<h4 id="passing-in-arguments"><a class="anchorlink" href="#passing-in-arguments">15.1 Passing in arguments</a></h4>
+
+<p>Your scope can take arguments:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">Book</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="n">scope</span> <span class="ss">:costs_more_than</span><span class="p">,</span> <span class="o">-&gt;</span><span class="p">(</span><span class="n">amount</span><span class="p">)</span> <span class="p">{</span> <span class="n">where</span><span class="p">(</span><span class="s2">"price &gt; ?"</span><span class="p">,</span> <span class="n">amount</span><span class="p">)</span> <span class="p">}</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='class Book &lt; ApplicationRecord
+  scope :costs_more_than, -&gt;(amount) { where("price &gt; ?", amount) }
+end
+'>Copy</button>
+</div>
+<p>Call the scope as if it were a class method:</p>
+
+<div class="code_container">
+<pre><code class="highlight irb"><span class="gp">irb&gt;</span><span class="w"> </span><span class="no">Book</span><span class="p">.</span><span class="nf">costs_more_than</span><span class="p">(</span><span class="mf">100.10</span><span class="p">)</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="Book.costs_more_than(100.10)
+">Copy</button>
+</div>
+<p>However, this is just duplicating the functionality that would be provided to you by a class method.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">Book</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="k">def</span> <span class="nc">self</span><span class="o">.</span><span class="nf">costs_more_than</span><span class="p">(</span><span class="n">amount</span><span class="p">)</span>
+    <span class="n">where</span><span class="p">(</span><span class="s2">"price &gt; ?"</span><span class="p">,</span> <span class="n">amount</span><span class="p">)</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='class Book &lt; ApplicationRecord
+  def self.costs_more_than(amount)
+    where("price &gt; ?", amount)
+  end
+end
+'>Copy</button>
+</div>
+<p>These methods will still be accessible on the association objects:</p>
+
+<div class="code_container">
+<pre><code class="highlight irb"><span class="gp">irb&gt;</span><span class="w"> </span><span class="n">author</span><span class="p">.</span><span class="nf">books</span><span class="p">.</span><span class="nf">costs_more_than</span><span class="p">(</span><span class="mf">100.10</span><span class="p">)</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="author.books.costs_more_than(100.10)
+">Copy</button>
+</div>
+<h4 id="using-conditionals"><a class="anchorlink" href="#using-conditionals">15.2 Using conditionals</a></h4>
+
+<p>Your scope can utilize conditionals:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">Order</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="n">scope</span> <span class="ss">:created_before</span><span class="p">,</span> <span class="o">-&gt;</span><span class="p">(</span><span class="n">time</span><span class="p">)</span> <span class="p">{</span> <span class="n">where</span><span class="p">(</span><span class="s2">"created_at &lt; ?"</span><span class="p">,</span> <span class="n">time</span><span class="p">)</span> <span class="k">if</span> <span class="n">time</span><span class="p">.</span><span class="nf">present?</span> <span class="p">}</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='class Order &lt; ApplicationRecord
+  scope :created_before, -&gt;(time) { where("created_at &lt; ?", time) if time.present? }
+end
+'>Copy</button>
+</div>
+<p>Like the other examples, this will behave similarly to a class method.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">Order</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="k">def</span> <span class="nc">self</span><span class="o">.</span><span class="nf">created_before</span><span class="p">(</span><span class="n">time</span><span class="p">)</span>
+    <span class="n">where</span><span class="p">(</span><span class="s2">"created_at &lt; ?"</span><span class="p">,</span> <span class="n">time</span><span class="p">)</span> <span class="k">if</span> <span class="n">time</span><span class="p">.</span><span class="nf">present?</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='class Order &lt; ApplicationRecord
+  def self.created_before(time)
+    where("created_at &lt; ?", time) if time.present?
+  end
+end
+'>Copy</button>
+</div>
+<p>However, there is one important caveat: A scope will always return an <code>ActiveRecord::Relation</code> object, even if the conditional evaluates to <code>false</code>, whereas a class method, will return <code>nil</code>. This can cause <code>NoMethodError</code> when chaining class methods with conditionals, if any of the conditionals return <code>false</code>.</p>
+
+<h4 id="applying-a-default-scope"><a class="anchorlink" href="#applying-a-default-scope">15.3 Applying a default scope</a></h4>
+
+<p>If we wish for a scope to be applied across all queries to the model we can use the
+<a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveRecord/Scoping/Default/ClassMethods.html#method-i-default_scope"><code>default_scope</code></a> method within the model itself.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">Book</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="n">default_scope</span> <span class="p">{</span> <span class="n">where</span><span class="p">(</span><span class="ss">out_of_print: </span><span class="kp">false</span><span class="p">)</span> <span class="p">}</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="class Book &lt; ApplicationRecord
+  default_scope { where(out_of_print: false) }
+end
+">Copy</button>
+</div>
+<p>When queries are executed on this model, the SQL query will now look something like
+this:</p>
+
+<div class="code_container">
+<pre><code class="highlight sql"><span class="k">SELECT</span> <span class="o">*</span> <span class="k">FROM</span> <span class="n">books</span> <span class="k">WHERE</span> <span class="p">(</span><span class="n">out_of_print</span> <span class="o">=</span> <span class="k">false</span><span class="p">)</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="SELECT * FROM books WHERE (out_of_print = false)
+">Copy</button>
+</div>
+<p>If you need to do more complex things with a default scope, you can alternatively
+define it as a class method:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">Book</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="k">def</span> <span class="nc">self</span><span class="o">.</span><span class="nf">default_scope</span>
+    <span class="c1"># Should return an ActiveRecord::Relation.</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="class Book &lt; ApplicationRecord
+  def self.default_scope
+    # Should return an ActiveRecord::Relation.
+  end
+end
+">Copy</button>
+</div>
+<div class="note"><p>The <code>default_scope</code> is also applied while creating/building a record
+when the scope arguments are given as a <code>Hash</code>. It is not applied while
+updating a record. E.g.:</p></div>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">Book</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="n">default_scope</span> <span class="p">{</span> <span class="n">where</span><span class="p">(</span><span class="ss">out_of_print: </span><span class="kp">false</span><span class="p">)</span> <span class="p">}</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="class Book &lt; ApplicationRecord
+  default_scope { where(out_of_print: false) }
+end
+">Copy</button>
+</div>
+<div class="code_container">
+<pre><code class="highlight irb"><span class="gp">irb&gt;</span><span class="w"> </span><span class="no">Book</span><span class="p">.</span><span class="nf">new</span>
+<span class="p">=&gt;</span> <span class="kt">#&lt;</span><span class="no">Book</span> <span class="ss">id: </span><span class="kp">nil</span><span class="p">,</span> <span class="ss">out_of_print: </span><span class="kp">false</span><span class="kt">&gt;</span>
+<span class="gp">irb&gt;</span><span class="w"> </span><span class="no">Book</span><span class="p">.</span><span class="nf">unscoped</span><span class="p">.</span><span class="nf">new</span>
+<span class="p">=&gt;</span> <span class="kt">#&lt;</span><span class="no">Book</span> <span class="ss">id: </span><span class="kp">nil</span><span class="p">,</span> <span class="ss">out_of_print: </span><span class="kp">nil</span><span class="kt">&gt;</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="Book.new
+Book.unscoped.new
+">Copy</button>
+</div>
+<p>Be aware that, when given in the <code>Array</code> format, <code>default_scope</code> query arguments
+cannot be converted to a <code>Hash</code> for default attribute assignment. E.g.:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">Book</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="n">default_scope</span> <span class="p">{</span> <span class="n">where</span><span class="p">(</span><span class="s2">"out_of_print = ?"</span><span class="p">,</span> <span class="kp">false</span><span class="p">)</span> <span class="p">}</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='class Book &lt; ApplicationRecord
+  default_scope { where("out_of_print = ?", false) }
+end
+'>Copy</button>
+</div>
+<div class="code_container">
+<pre><code class="highlight irb"><span class="gp">irb&gt;</span><span class="w"> </span><span class="no">Book</span><span class="p">.</span><span class="nf">new</span>
+<span class="p">=&gt;</span> <span class="kt">#&lt;</span><span class="no">Book</span> <span class="ss">id: </span><span class="kp">nil</span><span class="p">,</span> <span class="ss">out_of_print: </span><span class="kp">nil</span><span class="kt">&gt;</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="Book.new
+">Copy</button>
+</div>
+<h4 id="merging-of-scopes"><a class="anchorlink" href="#merging-of-scopes">15.4 Merging of scopes</a></h4>
+
+<p>Just like <code>where</code> clauses, scopes are merged using <code>AND</code> conditions.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">Book</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="n">scope</span> <span class="ss">:in_print</span><span class="p">,</span> <span class="o">-&gt;</span> <span class="p">{</span> <span class="n">where</span><span class="p">(</span><span class="ss">out_of_print: </span><span class="kp">false</span><span class="p">)</span> <span class="p">}</span>
+  <span class="n">scope</span> <span class="ss">:out_of_print</span><span class="p">,</span> <span class="o">-&gt;</span> <span class="p">{</span> <span class="n">where</span><span class="p">(</span><span class="ss">out_of_print: </span><span class="kp">true</span><span class="p">)</span> <span class="p">}</span>
+
+  <span class="n">scope</span> <span class="ss">:recent</span><span class="p">,</span> <span class="o">-&gt;</span> <span class="p">{</span> <span class="n">where</span><span class="p">(</span><span class="s1">'year_published &gt;= ?'</span><span class="p">,</span> <span class="no">Date</span><span class="p">.</span><span class="nf">current</span><span class="p">.</span><span class="nf">year</span> <span class="o">-</span> <span class="mi">50</span> <span class="p">)}</span>
+  <span class="n">scope</span> <span class="ss">:old</span><span class="p">,</span> <span class="o">-&gt;</span> <span class="p">{</span> <span class="n">where</span><span class="p">(</span><span class="s1">'year_published &lt; ?'</span><span class="p">,</span> <span class="no">Date</span><span class="p">.</span><span class="nf">current</span><span class="p">.</span><span class="nf">year</span> <span class="o">-</span> <span class="mi">50</span> <span class="p">)}</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="class Book &lt; ApplicationRecord
+  scope :in_print, -&gt; { where(out_of_print: false) }
+  scope :out_of_print, -&gt; { where(out_of_print: true) }
+
+  scope :recent, -&gt; { where('year_published &gt;= ?', Date.current.year - 50 )}
+  scope :old, -&gt; { where('year_published &lt; ?', Date.current.year - 50 )}
+end
+">Copy</button>
+</div>
+<div class="code_container">
+<pre><code class="highlight irb"><span class="gp">irb&gt;</span><span class="w"> </span><span class="no">Book</span><span class="p">.</span><span class="nf">out_of_print</span><span class="p">.</span><span class="nf">old</span>
+<span class="go">SELECT books.* FROM books WHERE books.out_of_print = 'true' AND books.year_published &lt; 1969
+</span></code></pre>
+<button class="clipboard-button" data-clipboard-text="Book.out_of_print.old
+">Copy</button>
+</div>
+<p>We can mix and match <code>scope</code> and <code>where</code> conditions and the final SQL
+will have all conditions joined with <code>AND</code>.</p>
+
+<div class="code_container">
+<pre><code class="highlight irb"><span class="gp">irb&gt;</span><span class="w"> </span><span class="no">Book</span><span class="p">.</span><span class="nf">in_print</span><span class="p">.</span><span class="nf">where</span><span class="p">(</span><span class="s1">'price &lt; 100'</span><span class="p">)</span>
+<span class="go">SELECT books.* FROM books WHERE books.out_of_print = 'false' AND books.price &lt; 100
+</span></code></pre>
+<button class="clipboard-button" data-clipboard-text="Book.in_print.where('price &lt; 100')
+">Copy</button>
+</div>
+<p>If we do want the last <code>where</code> clause to win then <a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveRecord/SpawnMethods.html#method-i-merge"><code>merge</code></a> can
+be used.</p>
+
+<div class="code_container">
+<pre><code class="highlight irb"><span class="gp">irb&gt;</span><span class="w"> </span><span class="no">Book</span><span class="p">.</span><span class="nf">in_print</span><span class="p">.</span><span class="nf">merge</span><span class="p">(</span><span class="no">Book</span><span class="p">.</span><span class="nf">out_of_print</span><span class="p">)</span>
+<span class="go">SELECT books.* FROM books WHERE books.out_of_print = true
+</span></code></pre>
+<button class="clipboard-button" data-clipboard-text="Book.in_print.merge(Book.out_of_print)
+">Copy</button>
+</div>
+<p>One important caveat is that <code>default_scope</code> will be prepended in
+<code>scope</code> and <code>where</code> conditions.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">Book</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="n">default_scope</span> <span class="p">{</span> <span class="n">where</span><span class="p">(</span><span class="s1">'year_published &gt;= ?'</span><span class="p">,</span> <span class="no">Date</span><span class="p">.</span><span class="nf">current</span><span class="p">.</span><span class="nf">year</span> <span class="o">-</span> <span class="mi">50</span> <span class="p">)}</span>
+
+  <span class="n">scope</span> <span class="ss">:in_print</span><span class="p">,</span> <span class="o">-&gt;</span> <span class="p">{</span> <span class="n">where</span><span class="p">(</span><span class="ss">out_of_print: </span><span class="kp">false</span><span class="p">)</span> <span class="p">}</span>
+  <span class="n">scope</span> <span class="ss">:out_of_print</span><span class="p">,</span> <span class="o">-&gt;</span> <span class="p">{</span> <span class="n">where</span><span class="p">(</span><span class="ss">out_of_print: </span><span class="kp">true</span><span class="p">)</span> <span class="p">}</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="class Book &lt; ApplicationRecord
+  default_scope { where('year_published &gt;= ?', Date.current.year - 50 )}
+
+  scope :in_print, -&gt; { where(out_of_print: false) }
+  scope :out_of_print, -&gt; { where(out_of_print: true) }
+end
+">Copy</button>
+</div>
+<div class="code_container">
+<pre><code class="highlight irb"><span class="gp">irb&gt;</span><span class="w"> </span><span class="no">Book</span><span class="p">.</span><span class="nf">all</span>
+<span class="go">SELECT books.* FROM books WHERE (year_published &gt;= 1969)
+</span><span class="err">
+</span><span class="gp">irb&gt;</span><span class="w"> </span><span class="no">Book</span><span class="p">.</span><span class="nf">in_print</span>
+<span class="go">SELECT books.* FROM books WHERE (year_published &gt;= 1969) AND books.out_of_print = false
+</span><span class="err">
+</span><span class="gp">irb&gt;</span><span class="w"> </span><span class="no">Book</span><span class="p">.</span><span class="nf">where</span><span class="p">(</span><span class="s1">'price &gt; 50'</span><span class="p">)</span>
+<span class="go">SELECT books.* FROM books WHERE (year_published &gt;= 1969) AND (price &gt; 50)
+</span></code></pre>
+<button class="clipboard-button" data-clipboard-text="Book.all
+Book.in_print
+Book.where('price &gt; 50')
+">Copy</button>
+</div>
+<p>As you can see above the <code>default_scope</code> is being merged in both
+<code>scope</code> and <code>where</code> conditions.</p>
+
+<h4 id="removing-all-scoping"><a class="anchorlink" href="#removing-all-scoping">15.5 Removing All Scoping</a></h4>
+
+<p>If we wish to remove scoping for any reason we can use the <a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveRecord/Scoping/Default/ClassMethods.html#method-i-unscoped"><code>unscoped</code></a> method. This is
+especially useful if a <code>default_scope</code> is specified in the model and should not be
+applied for this particular query.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="no">Book</span><span class="p">.</span><span class="nf">unscoped</span><span class="p">.</span><span class="nf">load</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="Book.unscoped.load
+">Copy</button>
+</div>
+<p>This method removes all scoping and will do a normal query on the table.</p>
+
+<div class="code_container">
+<pre><code class="highlight irb"><span class="gp">irb&gt;</span><span class="w"> </span><span class="no">Book</span><span class="p">.</span><span class="nf">unscoped</span><span class="p">.</span><span class="nf">all</span>
+<span class="go">SELECT books.* FROM books
+</span><span class="err">
+</span><span class="gp">irb&gt;</span><span class="w"> </span><span class="no">Book</span><span class="p">.</span><span class="nf">where</span><span class="p">(</span><span class="ss">out_of_print: </span><span class="kp">true</span><span class="p">).</span><span class="nf">unscoped</span><span class="p">.</span><span class="nf">all</span>
+<span class="go">SELECT books.* FROM books
+</span></code></pre>
+<button class="clipboard-button" data-clipboard-text="Book.unscoped.all
+Book.where(out_of_print: true).unscoped.all
+">Copy</button>
+</div>
+<p><code>unscoped</code> can also accept a block:</p>
+
+<div class="code_container">
+<pre><code class="highlight irb"><span class="gp">irb&gt;</span><span class="w"> </span><span class="no">Book</span><span class="p">.</span><span class="nf">unscoped</span> <span class="p">{</span> <span class="no">Book</span><span class="p">.</span><span class="nf">out_of_print</span> <span class="p">}</span>
+<span class="go">SELECT books.* FROM books WHERE books.out_of_print
+</span></code></pre>
+<button class="clipboard-button" data-clipboard-text="Book.unscoped { Book.out_of_print }
+">Copy</button>
+</div>
+</body>
+</html>

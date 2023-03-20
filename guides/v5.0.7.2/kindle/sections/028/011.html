@@ -1,0 +1,38 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>12 Creating custom events</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v5.0.7.2/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="creating-custom-events">12 Creating custom events</h3>
+<p>Adding your own events is easy as well. <code>ActiveSupport::Notifications</code> will take care of
+all the heavy lifting for you. Simply call <code>instrument</code> with a <code>name</code>, <code>payload</code> and a block.
+The notification will be sent after the block returns. <code>ActiveSupport</code> will generate the start and end times
+as well as the unique ID. All data passed into the <code>instrument</code> call will make it into the payload.</p>
+
+<p>Here's an example:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+ActiveSupport::Notifications.instrument "my.custom.event", this: :data do
+  # do your custom stuff here
+end
+
+</pre>
+</div>
+<p>Now you can listen to this event with:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+ActiveSupport::Notifications.subscribe "my.custom.event" do |name, started, finished, unique_id, data|
+  puts data.inspect # {:this=&gt;:data}
+end
+
+</pre>
+</div>
+<p>You should follow Rails conventions when defining your own events. The format is: <code>event.library</code>.
+If you application is sending Tweets, you should create an event named <code>tweet.twitter</code>.</p>
+</body>
+</html>

@@ -1,0 +1,294 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>3 Tips, Tricks, and Warnings</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v6.0.6.1/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="tips-tricks-and-warnings"><a class="anchorlink" href="#tips-tricks-and-warnings">3 Tips, Tricks, and Warnings</a></h3>
+<p>Here are a few things you should know to make efficient use of Active Record associations in your Rails applications:</p>
+<ul>
+<li>Controlling caching</li>
+<li>Avoiding name collisions</li>
+<li>Updating the schema</li>
+<li>Controlling association scope</li>
+<li>Bi-directional associations</li>
+</ul>
+<h4 id="controlling-caching"><a class="anchorlink" href="#controlling-caching">3.1 Controlling Caching</a></h4>
+
+<p>All of the association methods are built around caching, which keeps the result of the most recent query available for further operations. The cache is even shared across methods. For example:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+author.books                 # retrieves books from the database
+author.books.size            # uses the cached copy of books
+author.books.empty?          # uses the cached copy of books
+
+</pre>
+</div>
+<p>But what if you want to reload the cache, because data might have been changed by some other part of the application? Just call <code>reload</code> on the association:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+author.books                 # retrieves books from the database
+author.books.size            # uses the cached copy of books
+author.books.reload.empty?   # discards the cached copy of books
+                             # and goes back to the database
+
+</pre>
+</div>
+<h4 id="avoiding-name-collisions"><a class="anchorlink" href="#avoiding-name-collisions">3.2 Avoiding Name Collisions</a></h4>
+
+<p>You are not free to use just any name for your associations. Because creating an association adds a method with that name to the model, it is a bad idea to give an association a name that is already used for an instance method of <code>ActiveRecord::Base</code>. The association method would override the base method and break things. For instance, <code>attributes</code> or <code>connection</code> are bad names for associations.</p>
+
+<h4 id="updating-the-schema"><a class="anchorlink" href="#updating-the-schema">3.3 Updating the Schema</a></h4>
+
+<p>Associations are extremely useful, but they are not magic. You are responsible for maintaining your database schema to match your associations. In practice, this means two things, depending on what sort of associations you are creating. For <code>belongs_to</code> associations you need to create foreign keys, and for <code>has_and_belongs_to_many</code> associations you need to create the appropriate join table.</p>
+
+<h5 id="creating-foreign-keys-for-belongs-to-associations"><a class="anchorlink" href="#creating-foreign-keys-for-belongs-to-associations">3.3.1 Creating Foreign Keys for <code>belongs_to</code> Associations</a></h5>
+
+<p>When you declare a <code>belongs_to</code> association, you need to create foreign keys as appropriate. For example, consider this model:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class Book &lt; ApplicationRecord
+  belongs_to :author
+end
+
+</pre>
+</div>
+<p>This declaration needs to be backed up by a corresponding foreign key column in the books table. For a brand new table, the migration might look something like this:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class CreateBooks &lt; ActiveRecord::Migration[5.0]
+  def change
+    create_table :books do |t|
+      t.datetime   :published_at
+      t.string     :book_number
+      t.references :author
+    end
+  end
+end
+
+</pre>
+</div>
+<p>Whereas for an existing table, it might look like this:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class AddAuthorToBooks &lt; ActiveRecord::Migration[5.0]
+  def change
+    add_reference :books, :author
+  end
+end
+
+</pre>
+</div>
+<div class="note"><p>If you wish to <a href="/active_record_migrations.html#foreign-keys">enforce referential integrity at the database level</a>, add the <code>foreign_key: true</code> option to the ‘reference’ column declarations above.</p></div>
+
+<h5 id="creating-join-tables-for-has-and-belongs-to-many-associations"><a class="anchorlink" href="#creating-join-tables-for-has-and-belongs-to-many-associations">3.3.2 Creating Join Tables for <code>has_and_belongs_to_many</code> Associations</a></h5>
+
+<p>If you create a <code>has_and_belongs_to_many</code> association, you need to explicitly create the joining table. Unless the name of the join table is explicitly specified by using the <code>:join_table</code> option, Active Record creates the name by using the lexical order of the class names. So a join between author and book models will give the default join table name of "authors_books" because "a" outranks "b" in lexical ordering.</p>
+
+<div class="warning"><p>The precedence between model names is calculated using the <code>&lt;=&gt;</code> operator for <code>String</code>. This means that if the strings are of different lengths, and the strings are equal when compared up to the shortest length, then the longer string is considered of higher lexical precedence than the shorter one. For example, one would expect the tables "paper_boxes" and "papers" to generate a join table name of "papers_paper_boxes" because of the length of the name "paper_boxes", but it in fact generates a join table name of "paper_boxes_papers" (because the underscore '_' is lexicographically <em>less</em> than 's' in common encodings).</p></div>
+
+<p>Whatever the name, you must manually generate the join table with an appropriate migration. For example, consider these associations:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class Assembly &lt; ApplicationRecord
+  has_and_belongs_to_many :parts
+end
+
+class Part &lt; ApplicationRecord
+  has_and_belongs_to_many :assemblies
+end
+
+</pre>
+</div>
+<p>These need to be backed up by a migration to create the <code>assemblies_parts</code> table. This table should be created without a primary key:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class CreateAssembliesPartsJoinTable &lt; ActiveRecord::Migration[5.2]
+  def change
+    create_table :assemblies_parts, id: false do |t|
+      t.bigint :assembly_id
+      t.bigint :part_id
+    end
+
+    add_index :assemblies_parts, :assembly_id
+    add_index :assemblies_parts, :part_id
+  end
+end
+
+</pre>
+</div>
+<p>We pass <code>id: false</code> to <code>create_table</code> because that table does not represent a model. That's required for the association to work properly. If you observe any strange behavior in a <code>has_and_belongs_to_many</code> association like mangled model IDs, or exceptions about conflicting IDs, chances are you forgot that bit.</p>
+
+<p>You can also use the method <code>create_join_table</code></p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class CreateAssembliesPartsJoinTable &lt; ActiveRecord::Migration[5.0]
+  def change
+    create_join_table :assemblies, :parts do |t|
+      t.index :assembly_id
+      t.index :part_id
+    end
+  end
+end
+
+</pre>
+</div>
+<h4 id="controlling-association-scope"><a class="anchorlink" href="#controlling-association-scope">3.4 Controlling Association Scope</a></h4>
+
+<p>By default, associations look for objects only within the current module's scope. This can be important when you declare Active Record models within a module. For example:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+module MyApplication
+  module Business
+    class Supplier &lt; ApplicationRecord
+      has_one :account
+    end
+
+    class Account &lt; ApplicationRecord
+      belongs_to :supplier
+    end
+  end
+end
+
+</pre>
+</div>
+<p>This will work fine, because both the <code>Supplier</code> and the <code>Account</code> class are defined within the same scope. But the following will <em>not</em> work, because <code>Supplier</code> and <code>Account</code> are defined in different scopes:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+module MyApplication
+  module Business
+    class Supplier &lt; ApplicationRecord
+      has_one :account
+    end
+  end
+
+  module Billing
+    class Account &lt; ApplicationRecord
+      belongs_to :supplier
+    end
+  end
+end
+
+</pre>
+</div>
+<p>To associate a model with a model in a different namespace, you must specify the complete class name in your association declaration:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+module MyApplication
+  module Business
+    class Supplier &lt; ApplicationRecord
+      has_one :account,
+        class_name: "MyApplication::Billing::Account"
+    end
+  end
+
+  module Billing
+    class Account &lt; ApplicationRecord
+      belongs_to :supplier,
+        class_name: "MyApplication::Business::Supplier"
+    end
+  end
+end
+
+</pre>
+</div>
+<h4 id="bi-directional-associations"><a class="anchorlink" href="#bi-directional-associations">3.5 Bi-directional Associations</a></h4>
+
+<p>It's normal for associations to work in two directions, requiring declaration on two different models:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class Author &lt; ApplicationRecord
+  has_many :books
+end
+
+class Book &lt; ApplicationRecord
+  belongs_to :author
+end
+
+</pre>
+</div>
+<p>Active Record will attempt to automatically identify that these two models share a bi-directional association based on the association name. In this way, Active Record will only load one copy of the <code>Author</code> object, making your application more efficient and preventing inconsistent data:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+a = Author.first
+b = a.books.first
+a.first_name == b.author.first_name # =&gt; true
+a.first_name = 'David'
+a.first_name == b.author.first_name # =&gt; true
+
+</pre>
+</div>
+<p>Active Record supports automatic identification for most associations with standard names. However, Active Record will not automatically identify bi-directional associations that contain a scope or any of the following options:</p>
+<ul>
+<li><code>:through</code></li>
+<li><code>:foreign_key</code></li>
+</ul>
+<p>For example, consider the following model declarations:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class Author &lt; ApplicationRecord
+  has_many :books
+end
+
+class Book &lt; ApplicationRecord
+  belongs_to :writer, class_name: 'Author', foreign_key: 'author_id'
+end
+
+</pre>
+</div>
+<p>Active Record will no longer automatically recognize the bi-directional association:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+a = Author.first
+b = a.books.first
+a.first_name == b.writer.first_name # =&gt; true
+a.first_name = 'David'
+a.first_name == b.writer.first_name # =&gt; false
+
+</pre>
+</div>
+<p>Active Record provides the <code>:inverse_of</code> option so you can explicitly declare bi-directional associations:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class Author &lt; ApplicationRecord
+  has_many :books, inverse_of: 'writer'
+end
+
+class Book &lt; ApplicationRecord
+  belongs_to :writer, class_name: 'Author', foreign_key: 'author_id'
+end
+
+</pre>
+</div>
+<p>By including the <code>:inverse_of</code> option in the <code>has_many</code> association declaration, Active Record will now recognize the bi-directional association:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+a = Author.first
+b = a.books.first
+a.first_name == b.writer.first_name # =&gt; true
+a.first_name = 'David'
+a.first_name == b.writer.first_name # =&gt; true
+
+</pre>
+</div>
+</body>
+</html>

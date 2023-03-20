@@ -1,0 +1,256 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>3 Providing engine functionality</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v4.0.13/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="providing-engine-functionality">3 Providing engine functionality</h3>
+<p>The engine that this guide covers provides posting and commenting functionality and follows a similar thread to the <a href="getting_started.html">Getting Started Guide</a>, with some new twists.</p>
+<h4 id="generating-a-post-resource">3.1 Generating a post resource</h4>
+<p>The first thing to generate for a blog engine is the <code>Post</code> model and related controller. To quickly generate this, you can use the Rails scaffold generator.</p>
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+$ rails generate scaffold post title:string text:text
+
+</pre>
+</div>
+<p>This command will output this information:</p>
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+invoke  active_record
+create    db/migrate/[timestamp]_create_blorgh_posts.rb
+create    app/models/blorgh/post.rb
+invoke    test_unit
+create      test/models/blorgh/post_test.rb
+create      test/fixtures/blorgh/posts.yml
+ route  resources :posts
+invoke  scaffold_controller
+create    app/controllers/blorgh/posts_controller.rb
+invoke    erb
+create      app/views/blorgh/posts
+create      app/views/blorgh/posts/index.html.erb
+create      app/views/blorgh/posts/edit.html.erb
+create      app/views/blorgh/posts/show.html.erb
+create      app/views/blorgh/posts/new.html.erb
+create      app/views/blorgh/posts/_form.html.erb
+invoke    test_unit
+create      test/controllers/blorgh/posts_controller_test.rb
+invoke    helper
+create      app/helpers/blorgh/posts_helper.rb
+invoke      test_unit
+create        test/helpers/blorgh/posts_helper_test.rb
+invoke  assets
+invoke    js
+create      app/assets/javascripts/blorgh/posts.js
+invoke    css
+create      app/assets/stylesheets/blorgh/posts.css
+invoke  css
+create    app/assets/stylesheets/scaffold.css
+
+</pre>
+</div>
+<p>The first thing that the scaffold generator does is invoke the <code>active_record</code> generator, which generates a migration and a model for the resource. Note here, however, that the migration is called <code>create_blorgh_posts</code> rather than the usual <code>create_posts</code>. This is due to the <code>isolate_namespace</code> method called in the <code>Blorgh::Engine</code> class's definition. The model here is also namespaced, being placed at <code>app/models/blorgh/post.rb</code> rather than <code>app/models/post.rb</code> due to the <code>isolate_namespace</code> call within the <code>Engine</code> class.</p>
+<p>Next, the <code>test_unit</code> generator is invoked for this model, generating a model test at <code>test/models/blorgh/post_test.rb</code> (rather than <code>test/models/post_test.rb</code>) and a fixture at <code>test/fixtures/blorgh/posts.yml</code> (rather than <code>test/fixtures/posts.yml</code>).</p>
+<p>After that, a line for the resource is inserted into the <code>config/routes.rb</code> file for the engine. This line is simply <code>resources :posts</code>, turning the <code>config/routes.rb</code> file for the engine into this:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+Blorgh::Engine.routes.draw do
+  resources :posts
+end
+
+</pre>
+</div>
+<p>Note here that the routes are drawn upon the <code>Blorgh::Engine</code> object rather than the <code>YourApp::Application</code> class. This is so that the engine routes are confined to the engine itself and can be mounted at a specific point as shown in the <a href="#test-directory">test directory</a> section. It also causes the engine's routes to be isolated from those routes that are within the application. The <a href="#routes">Routes</a> section of
+this guide describes it in details.</p>
+<p>Next, the <code>scaffold_controller</code> generator is invoked, generating a controller called <code>Blorgh::PostsController</code> (at <code>app/controllers/blorgh/posts_controller.rb</code>) and its related views at <code>app/views/blorgh/posts</code>. This generator also generates a test for the controller (<code>test/controllers/blorgh/posts_controller_test.rb</code>) and a helper (<code>app/helpers/blorgh/posts_controller.rb</code>).</p>
+<p>Everything this generator has created is neatly namespaced. The controller's class is defined within the <code>Blorgh</code> module:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+module Blorgh
+  class PostsController &lt; ApplicationController
+    ...
+  end
+end
+
+</pre>
+</div>
+<div class="note"><p>The <code>ApplicationController</code> class being inherited from here is the <code>Blorgh::ApplicationController</code>, not an application's <code>ApplicationController</code>.</p></div>
+<p>The helper inside <code>app/helpers/blorgh/posts_helper.rb</code> is also namespaced:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+module Blorgh
+  module PostsHelper
+    ...
+  end
+end
+
+</pre>
+</div>
+<p>This helps prevent conflicts with any other engine or application that may have a post resource as well.</p>
+<p>Finally, two files that are the assets for this resource are generated, <code>app/assets/javascripts/blorgh/posts.js</code> and <code>app/assets/stylesheets/blorgh/posts.css</code>. You'll see how to use these a little later.</p>
+<p>By default, the scaffold styling is not applied to the engine as the engine's layout file, <code>app/views/layouts/blorgh/application.html.erb</code> doesn't load it. To make this apply, insert this line into the <code>&lt;head&gt;</code> tag of this layout:</p>
+<div class="code_container">
+<pre class="brush: ruby; html-script: true; gutter: false; toolbar: false">
+&lt;%= stylesheet_link_tag "scaffold" %&gt;
+
+</pre>
+</div>
+<p>You can see what the engine has so far by running <code>rake db:migrate</code> at the root of our engine to run the migration generated by the scaffold generator, and then running <code>rails server</code> in <code>test/dummy</code>. When you open <code>http://localhost:3000/blorgh/posts</code> you will see the default scaffold that has been generated. Click around! You've just generated your first engine's first functions.</p>
+<p>If you'd rather play around in the console, <code>rails console</code> will also work just like a Rails application. Remember: the <code>Post</code> model is namespaced, so to reference it you must call it as <code>Blorgh::Post</code>.</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+&gt;&gt; Blorgh::Post.find(1)
+=&gt; #&lt;Blorgh::Post id: 1 ...&gt;
+
+</pre>
+</div>
+<p>One final thing is that the <code>posts</code> resource for this engine should be the root of the engine. Whenever someone goes to the root path where the engine is mounted, they should be shown a list of posts. This can be made to happen if this line is inserted into the <code>config/routes.rb</code> file inside the engine:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+root to: "posts#index"
+
+</pre>
+</div>
+<p>Now people will only need to go to the root of the engine to see all the posts, rather than visiting <code>/posts</code>. This means that instead of <code>http://localhost:3000/blorgh/posts</code>, you only need to go to <code>http://localhost:3000/blorgh</code> now.</p>
+<h4 id="generating-a-comments-resource">3.2 Generating a comments resource</h4>
+<p>Now that the engine can create new blog posts, it only makes sense to add commenting functionality as well. To do this, you'll need to generate a comment model, a comment controller and then modify the posts scaffold to display comments and allow people to create new ones.</p>
+<p>Run the model generator and tell it to generate a <code>Comment</code> model, with the related table having two columns: a <code>post_id</code> integer and <code>text</code> text column.</p>
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+$ rails generate model Comment post_id:integer text:text
+
+</pre>
+</div>
+<p>This will output the following:</p>
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+invoke  active_record
+create    db/migrate/[timestamp]_create_blorgh_comments.rb
+create    app/models/blorgh/comment.rb
+invoke    test_unit
+create      test/models/blorgh/comment_test.rb
+create      test/fixtures/blorgh/comments.yml
+
+</pre>
+</div>
+<p>This generator call will generate just the necessary model files it needs, namespacing the files under a <code>blorgh</code> directory and creating a model class called <code>Blorgh::Comment</code>.</p>
+<p>To show the comments on a post, edit <code>app/views/blorgh/posts/show.html.erb</code> and add this line before the "Edit" link:</p>
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+&lt;h3&gt;Comments&lt;/h3&gt;
+&lt;%= render @post.comments %&gt;
+
+</pre>
+</div>
+<p>This line will require there to be a <code>has_many</code> association for comments defined on the <code>Blorgh::Post</code> model, which there isn't right now. To define one, open <code>app/models/blorgh/post.rb</code> and add this line into the model:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+has_many :comments
+
+</pre>
+</div>
+<p>Turning the model into this:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+module Blorgh
+  class Post &lt; ActiveRecord::Base
+    has_many :comments
+  end
+end
+
+</pre>
+</div>
+<div class="note"><p>Because the <code>has_many</code> is defined inside a class that is inside the <code>Blorgh</code> module, Rails will know that you want to use the <code>Blorgh::Comment</code> model for these objects, so there's no need to specify that using the <code>:class_name</code> option here.</p></div>
+<p>Next, there needs to be a form so that comments can be created on a post. To add this, put this line underneath the call to <code>render @post.comments</code> in <code>app/views/blorgh/posts/show.html.erb</code>:</p>
+<div class="code_container">
+<pre class="brush: ruby; html-script: true; gutter: false; toolbar: false">
+&lt;%= render "blorgh/comments/form" %&gt;
+
+</pre>
+</div>
+<p>Next, the partial that this line will render needs to exist. Create a new directory at <code>app/views/blorgh/comments</code> and in it a new file called <code>_form.html.erb</code> which has this content to create the required partial:</p>
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+&lt;h3&gt;New comment&lt;/h3&gt;
+&lt;%= form_for [@post, @post.comments.build] do |f| %&gt;
+  &lt;p&gt;
+    &lt;%= f.label :text %&gt;&lt;br /&gt;
+    &lt;%= f.text_area :text %&gt;
+  &lt;/p&gt;
+  &lt;%= f.submit %&gt;
+&lt;% end %&gt;
+
+</pre>
+</div>
+<p>When this form is submitted, it is going to attempt to perform a <code>POST</code> request to a route of <code>/posts/:post_id/comments</code> within the engine. This route doesn't exist at the moment, but can be created by changing the <code>resources :posts</code> line inside <code>config/routes.rb</code> into these lines:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+resources :posts do
+  resources :comments
+end
+
+</pre>
+</div>
+<p>This creates a nested route for the comments, which is what the form requires.</p>
+<p>The route now exists, but the controller that this route goes to does not. To create it, run this command:</p>
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+$ rails g controller comments
+
+</pre>
+</div>
+<p>This will generate the following things:</p>
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+create  app/controllers/blorgh/comments_controller.rb
+invoke  erb
+ exist    app/views/blorgh/comments
+invoke  test_unit
+create    test/controllers/blorgh/comments_controller_test.rb
+invoke  helper
+create    app/helpers/blorgh/comments_helper.rb
+invoke    test_unit
+create      test/helpers/blorgh/comments_helper_test.rb
+invoke  assets
+invoke    js
+create      app/assets/javascripts/blorgh/comments.js
+invoke    css
+create      app/assets/stylesheets/blorgh/comments.css
+
+</pre>
+</div>
+<p>The form will be making a <code>POST</code> request to <code>/posts/:post_id/comments</code>, which will correspond with the <code>create</code> action in <code>Blorgh::CommentsController</code>. This action needs to be created and can be done by putting the following lines inside the class definition in <code>app/controllers/blorgh/comments_controller.rb</code>:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+def create
+  @post = Post.find(params[:post_id])
+  @comment = @post.comments.create(params[:comment])
+  flash[:notice] = "Comment has been created!"
+  redirect_to posts_path
+end
+
+</pre>
+</div>
+<p>This is the final part required to get the new comment form working. Displaying the comments however, is not quite right yet. If you were to create a comment right now you would see this error:</p>
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+Missing partial blorgh/comments/comment with {:handlers=&gt;[:erb, :builder], :formats=&gt;[:html], :locale=&gt;[:en, :en]}. Searched in:
+  * "/Users/ryan/Sites/side_projects/blorgh/test/dummy/app/views"
+  * "/Users/ryan/Sites/side_projects/blorgh/app/views"
+
+</pre>
+</div>
+<p>The engine is unable to find the partial required for rendering the comments. Rails looks first in the application's (<code>test/dummy</code>) <code>app/views</code> directory and then in the engine's <code>app/views</code> directory. When it can't find it, it will throw this error. The engine knows to look for <code>blorgh/comments/comment</code> because the model object it is receiving is from the <code>Blorgh::Comment</code> class.</p>
+<p>This partial will be responsible for rendering just the comment text, for now. Create a new file at <code>app/views/blorgh/comments/_comment.html.erb</code> and put this line inside it:</p>
+<div class="code_container">
+<pre class="brush: ruby; html-script: true; gutter: false; toolbar: false">
+&lt;%= comment_counter + 1 %&gt;. &lt;%= comment.text %&gt;
+
+</pre>
+</div>
+<p>The <code>comment_counter</code> local variable is given to us by the <code>&lt;%= render @post.comments %&gt;</code> call, as it will define this automatically and increment the counter as it iterates through each comment. It's used in this example to display a small number next to each comment when it's created.</p>
+<p>That completes the comment function of the blogging engine. Now it's time to use it within an application.</p>
+</body>
+</html>

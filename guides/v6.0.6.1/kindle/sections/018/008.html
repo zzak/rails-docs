@@ -1,0 +1,95 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>9 Supported types for arguments</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v6.0.6.1/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="supported-types-for-arguments"><a class="anchorlink" href="#supported-types-for-arguments">9 Supported types for arguments</a></h3>
+<p>ActiveJob supports the following types of arguments by default:</p>
+<ul>
+<li>Basic types (<code>NilClass</code>, <code>String</code>, <code>Integer</code>, <code>Float</code>, <code>BigDecimal</code>, <code>TrueClass</code>, <code>FalseClass</code>)</li>
+<li><code>Symbol</code></li>
+<li><code>Date</code></li>
+<li><code>Time</code></li>
+<li><code>DateTime</code></li>
+<li><code>ActiveSupport::TimeWithZone</code></li>
+<li><code>ActiveSupport::Duration</code></li>
+<li>
+<code>Hash</code> (Keys should be of <code>String</code> or <code>Symbol</code> type)</li>
+<li><code>ActiveSupport::HashWithIndifferentAccess</code></li>
+<li><code>Array</code></li>
+</ul>
+<h4 id="globalid"><a class="anchorlink" href="#globalid">9.1 GlobalID</a></h4>
+
+<p>Active Job supports GlobalID for parameters. This makes it possible to pass live
+Active Record objects to your job instead of class/id pairs, which you then have
+to manually deserialize. Before, jobs would look like this:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class TrashableCleanupJob &lt; ApplicationJob
+  def perform(trashable_class, trashable_id, depth)
+    trashable = trashable_class.constantize.find(trashable_id)
+    trashable.cleanup(depth)
+  end
+end
+
+</pre>
+</div>
+<p>Now you can simply do:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class TrashableCleanupJob &lt; ApplicationJob
+  def perform(trashable, depth)
+    trashable.cleanup(depth)
+  end
+end
+
+</pre>
+</div>
+<p>This works with any class that mixes in <code>GlobalID::Identification</code>, which
+by default has been mixed into Active Record classes.</p>
+
+<h4 id="serializers"><a class="anchorlink" href="#serializers">9.2 Serializers</a></h4>
+
+<p>You can extend the list of supported argument types. You just need to define your own serializer:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class MoneySerializer &lt; ActiveJob::Serializers::ObjectSerializer
+  # Checks if an argument should be serialized by this serializer.
+  def serialize?(argument)
+    argument.is_a? Money
+  end
+
+  # Converts an object to a simpler representative using supported object types.
+  # The recommended representative is a Hash with a specific key. Keys can be of basic types only.
+  # You should call `super` to add the custom serializer type to the hash.
+  def serialize(money)
+    super(
+      "amount" =&gt; money.amount,
+      "currency" =&gt; money.currency
+    )
+  end
+
+  # Converts serialized value into a proper object.
+  def deserialize(hash)
+    Money.new(hash["amount"], hash["currency"])
+  end
+end
+
+</pre>
+</div>
+<p>and add this serializer to the list:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+Rails.application.config.active_job.custom_serializers &lt;&lt; MoneySerializer
+
+</pre>
+</div>
+</body>
+</html>

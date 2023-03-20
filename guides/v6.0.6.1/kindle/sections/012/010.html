@@ -1,0 +1,53 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>11 HTTP Authentications</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v6.0.6.1/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="http-authentications"><a class="anchorlink" href="#http-authentications">11 HTTP Authentications</a></h3>
+<p>Rails comes with two built-in HTTP authentication mechanisms:</p>
+<ul>
+<li>Basic Authentication</li>
+<li>Digest Authentication</li>
+</ul>
+<h4 id="http-basic-authentication"><a class="anchorlink" href="#http-basic-authentication">11.1 HTTP Basic Authentication</a></h4>
+
+<p>HTTP basic authentication is an authentication scheme that is supported by the majority of browsers and other HTTP clients. As an example, consider an administration section which will only be available by entering a username and a password into the browser's HTTP basic dialog window. Using the built-in authentication is quite easy and only requires you to use one method, <code>http_basic_authenticate_with</code>.</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class AdminsController &lt; ApplicationController
+  http_basic_authenticate_with name: "humbaba", password: "5baa61e4"
+end
+
+</pre>
+</div>
+<p>With this in place, you can create namespaced controllers that inherit from <code>AdminsController</code>. The filter will thus be run for all actions in those controllers, protecting them with HTTP basic authentication.</p>
+
+<h4 id="http-digest-authentication"><a class="anchorlink" href="#http-digest-authentication">11.2 HTTP Digest Authentication</a></h4>
+
+<p>HTTP digest authentication is superior to the basic authentication as it does not require the client to send an unencrypted password over the network (though HTTP basic authentication is safe over HTTPS). Using digest authentication with Rails is quite easy and only requires using one method, <code>authenticate_or_request_with_http_digest</code>.</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class AdminsController &lt; ApplicationController
+  USERS = { "lifo" =&gt; "world" }
+
+  before_action :authenticate
+
+  private
+
+    def authenticate
+      authenticate_or_request_with_http_digest do |username|
+        USERS[username]
+      end
+    end
+end
+
+</pre>
+</div>
+<p>As seen in the example above, the <code>authenticate_or_request_with_http_digest</code> block takes only one argument - the username. And the block returns the password. Returning <code>false</code> or <code>nil</code> from the <code>authenticate_or_request_with_http_digest</code> will cause authentication failure.</p>
+</body>
+</html>

@@ -1,0 +1,182 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>6 Initialization events</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v6.0.6.1/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="initialization-events"><a class="anchorlink" href="#initialization-events">6 Initialization events</a></h3>
+<p>Rails has 5 initialization events which can be hooked into (listed in the order that they are run):</p>
+<ul>
+<li>
+<code>before_configuration</code>: This is run as soon as the application constant inherits from <code>Rails::Application</code>. The <code>config</code> calls are evaluated before this happens.</li>
+<li>
+<code>before_initialize</code>: This is run directly before the initialization process of the application occurs with the <code>:bootstrap_hook</code> initializer near the beginning of the Rails initialization process.</li>
+<li>
+<code>to_prepare</code>: Run after the initializers are run for all Railties (including the application itself), but before eager loading and the middleware stack is built. More importantly, will run upon every request in <code>development</code>, but only once (during boot-up) in <code>production</code> and <code>test</code>.</li>
+<li>
+<code>before_eager_load</code>: This is run directly before eager loading occurs, which is the default behavior for the <code>production</code> environment and not for the <code>development</code> environment.</li>
+<li>
+<code>after_initialize</code>: Run directly after the initialization of the application, after the application initializers in <code>config/initializers</code> are run.</li>
+</ul>
+<p>To define an event for these hooks, use the block syntax within a <code>Rails::Application</code>, <code>Rails::Railtie</code> or <code>Rails::Engine</code> subclass:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+module YourApp
+  class Application &lt; Rails::Application
+    config.before_initialize do
+      # initialization code goes here
+    end
+  end
+end
+
+</pre>
+</div>
+<p>Alternatively, you can also do it through the <code>config</code> method on the <code>Rails.application</code> object:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+Rails.application.config.before_initialize do
+  # initialization code goes here
+end
+
+</pre>
+</div>
+<div class="warning"><p>Some parts of your application, notably routing, are not yet set up at the point where the <code>after_initialize</code> block is called.</p></div>
+
+<h4 id="rails-railtie-initializer"><a class="anchorlink" href="#rails-railtie-initializer">6.1 <code>Rails::Railtie#initializer</code></a></h4>
+
+<p>Rails has several initializers that run on startup that are all defined by using the <code>initializer</code> method from <code>Rails::Railtie</code>. Here's an example of the <code>set_helpers_path</code> initializer from Action Controller:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+initializer "action_controller.set_helpers_path" do |app|
+  ActionController::Helpers.helpers_path = app.helpers_paths
+end
+
+</pre>
+</div>
+<p>The <code>initializer</code> method takes three arguments with the first being the name for the initializer and the second being an options hash (not shown here) and the third being a block. The <code>:before</code> key in the options hash can be specified to specify which initializer this new initializer must run before, and the <code>:after</code> key will specify which initializer to run this initializer <em>after</em>.</p>
+
+<p>Initializers defined using the <code>initializer</code> method will be run in the order they are defined in, with the exception of ones that use the <code>:before</code> or <code>:after</code> methods.</p>
+
+<div class="warning"><p>You may put your initializer before or after any other initializer in the chain, as long as it is logical. Say you have 4 initializers called "one" through "four" (defined in that order) and you define "four" to go <em>before</em> "four" but <em>after</em> "three", that just isn't logical and Rails will not be able to determine your initializer order.</p></div>
+
+<p>The block argument of the <code>initializer</code> method is the instance of the application itself, and so we can access the configuration on it by using the <code>config</code> method as done in the example.</p>
+
+<p>Because <code>Rails::Application</code> inherits from <code>Rails::Railtie</code> (indirectly), you can use the <code>initializer</code> method in <code>config/application.rb</code> to define initializers for the application.</p>
+
+<h4 id="initializers"><a class="anchorlink" href="#initializers">6.2 Initializers</a></h4>
+
+<p>Below is a comprehensive list of all the initializers found in Rails in the order that they are defined (and therefore run in, unless otherwise stated).</p>
+<ul>
+<li>
+<code>load_environment_hook</code>: Serves as a placeholder so that <code>:load_environment_config</code> can be defined to run before it.</li>
+<li>
+<code>load_active_support</code>: Requires <code>active_support/dependencies</code> which sets up the basis for Active Support. Optionally requires <code>active_support/all</code> if <code>config.active_support.bare</code> is un-truthful, which is the default.</li>
+<li>
+<code>initialize_logger</code>: Initializes the logger (an <code>ActiveSupport::Logger</code> object) for the application and makes it accessible at <code>Rails.logger</code>, provided that no initializer inserted before this point has defined <code>Rails.logger</code>.</li>
+<li>
+<code>initialize_cache</code>: If <code>Rails.cache</code> isn't set yet, initializes the cache by referencing the value in <code>config.cache_store</code> and stores the outcome as <code>Rails.cache</code>. If this object responds to the <code>middleware</code> method, its middleware is inserted before <code>Rack::Runtime</code> in the middleware stack.</li>
+<li>
+<code>set_clear_dependencies_hook</code>: This initializer - which runs only if <code>cache_classes</code> is set to <code>false</code> - uses <code>ActionDispatch::Callbacks.after</code> to remove the constants which have been referenced during the request from the object space so that they will be reloaded during the following request.</li>
+<li>
+<code>initialize_dependency_mechanism</code>: If <code>config.cache_classes</code> is true, configures <code>ActiveSupport::Dependencies.mechanism</code> to <code>require</code> dependencies rather than <code>load</code> them.</li>
+<li>
+<code>bootstrap_hook</code>: Runs all configured <code>before_initialize</code> blocks.</li>
+<li>
+<code>i18n.callbacks</code>: In the development environment, sets up a <code>to_prepare</code> callback which will call <code>I18n.reload!</code> if any of the locales have changed since the last request. In production mode this callback will only run on the first request.</li>
+<li>
+<code>active_support.deprecation_behavior</code>: Sets up deprecation reporting for environments, defaulting to <code>:log</code> for development, <code>:notify</code> for production, and <code>:stderr</code> for test. If a value isn't set for <code>config.active_support.deprecation</code> then this initializer will prompt the user to configure this line in the current environment's <code>config/environments</code> file. Can be set to an array of values.</li>
+<li>
+<code>active_support.initialize_time_zone</code>: Sets the default time zone for the application based on the <code>config.time_zone</code> setting, which defaults to "UTC".</li>
+<li>
+<code>active_support.initialize_beginning_of_week</code>: Sets the default beginning of week for the application based on <code>config.beginning_of_week</code> setting, which defaults to <code>:monday</code>.</li>
+<li>
+<code>active_support.set_configs</code>: Sets up Active Support by using the settings in <code>config.active_support</code> by <code>send</code>'ing the method names as setters to <code>ActiveSupport</code> and passing the values through.</li>
+<li>
+<code>action_dispatch.configure</code>: Configures the <code>ActionDispatch::Http::URL.tld_length</code> to be set to the value of <code>config.action_dispatch.tld_length</code>.</li>
+<li>
+<code>action_view.set_configs</code>: Sets up Action View by using the settings in <code>config.action_view</code> by <code>send</code>'ing the method names as setters to <code>ActionView::Base</code> and passing the values through.</li>
+<li>
+<code>action_controller.assets_config</code>: Initializes the <code>config.actions_controller.assets_dir</code> to the app's public directory if not explicitly configured.</li>
+<li>
+<code>action_controller.set_helpers_path</code>: Sets Action Controller's <code>helpers_path</code> to the application's <code>helpers_path</code>.</li>
+<li>
+<code>action_controller.parameters_config</code>: Configures strong parameters options for <code>ActionController::Parameters</code>.</li>
+<li>
+<code>action_controller.set_configs</code>: Sets up Action Controller by using the settings in <code>config.action_controller</code> by <code>send</code>'ing the method names as setters to <code>ActionController::Base</code> and passing the values through.</li>
+<li>
+<code>action_controller.compile_config_methods</code>: Initializes methods for the config settings specified so that they are quicker to access.</li>
+<li>
+<code>active_record.initialize_timezone</code>: Sets <code>ActiveRecord::Base.time_zone_aware_attributes</code> to <code>true</code>, as well as setting <code>ActiveRecord::Base.default_timezone</code> to UTC. When attributes are read from the database, they will be converted into the time zone specified by <code>Time.zone</code>.</li>
+<li>
+<code>active_record.logger</code>: Sets <code>ActiveRecord::Base.logger</code> - if it's not already set - to <code>Rails.logger</code>.</li>
+<li>
+<code>active_record.migration_error</code>: Configures middleware to check for pending migrations.</li>
+<li>
+<code>active_record.check_schema_cache_dump</code>: Loads the schema cache dump if configured and available.</li>
+<li>
+<code>active_record.warn_on_records_fetched_greater_than</code>: Enables warnings when queries return large numbers of records.</li>
+<li>
+<code>active_record.set_configs</code>: Sets up Active Record by using the settings in <code>config.active_record</code> by <code>send</code>'ing the method names as setters to <code>ActiveRecord::Base</code> and passing the values through.</li>
+<li>
+<code>active_record.initialize_database</code>: Loads the database configuration (by default) from <code>config/database.yml</code> and establishes a connection for the current environment.</li>
+<li>
+<code>active_record.log_runtime</code>: Includes <code>ActiveRecord::Railties::ControllerRuntime</code> which is responsible for reporting the time taken by Active Record calls for the request back to the logger.</li>
+<li>
+<code>active_record.set_reloader_hooks</code>: Resets all reloadable connections to the database if <code>config.cache_classes</code> is set to <code>false</code>.</li>
+<li>
+<code>active_record.add_watchable_files</code>: Adds <code>schema.rb</code> and <code>structure.sql</code> files to watchable files.</li>
+<li>
+<code>active_job.logger</code>: Sets <code>ActiveJob::Base.logger</code> - if it's not already set -
+to <code>Rails.logger</code>.</li>
+<li>
+<code>active_job.set_configs</code>: Sets up Active Job by using the settings in <code>config.active_job</code> by <code>send</code>'ing the method names as setters to <code>ActiveJob::Base</code> and passing the values through.</li>
+<li>
+<code>action_mailer.logger</code>: Sets <code>ActionMailer::Base.logger</code> - if it's not already set - to <code>Rails.logger</code>.</li>
+<li>
+<code>action_mailer.set_configs</code>: Sets up Action Mailer by using the settings in <code>config.action_mailer</code> by <code>send</code>'ing the method names as setters to <code>ActionMailer::Base</code> and passing the values through.</li>
+<li>
+<code>action_mailer.compile_config_methods</code>: Initializes methods for the config settings specified so that they are quicker to access.</li>
+<li>
+<code>set_load_path</code>: This initializer runs before <code>bootstrap_hook</code>. Adds paths specified by <code>config.load_paths</code> and all autoload paths to <code>$LOAD_PATH</code>.</li>
+<li>
+<code>set_autoload_paths</code>: This initializer runs before <code>bootstrap_hook</code>. Adds all sub-directories of <code>app</code> and paths specified by <code>config.autoload_paths</code>, <code>config.eager_load_paths</code> and <code>config.autoload_once_paths</code> to <code>ActiveSupport::Dependencies.autoload_paths</code>.</li>
+<li>
+<code>add_routing_paths</code>: Loads (by default) all <code>config/routes.rb</code> files (in the application and railties, including engines) and sets up the routes for the application.</li>
+<li>
+<code>add_locales</code>: Adds the files in <code>config/locales</code> (from the application, railties, and engines) to <code>I18n.load_path</code>, making available the translations in these files.</li>
+<li>
+<code>add_view_paths</code>: Adds the directory <code>app/views</code> from the application, railties, and engines to the lookup path for view files for the application.</li>
+<li>
+<code>load_environment_config</code>: Loads the <code>config/environments</code> file for the current environment.</li>
+<li>
+<code>prepend_helpers_path</code>: Adds the directory <code>app/helpers</code> from the application, railties, and engines to the lookup path for helpers for the application.</li>
+<li>
+<code>load_config_initializers</code>: Loads all Ruby files from <code>config/initializers</code> in the application, railties, and engines. The files in this directory can be used to hold configuration settings that should be made after all of the frameworks are loaded.</li>
+<li>
+<code>engines_blank_point</code>: Provides a point-in-initialization to hook into if you wish to do anything before engines are loaded. After this point, all railtie and engine initializers are run.</li>
+<li>
+<code>add_generator_templates</code>: Finds templates for generators at <code>lib/templates</code> for the application, railties, and engines and adds these to the <code>config.generators.templates</code> setting, which will make the templates available for all generators to reference.</li>
+<li>
+<code>ensure_autoload_once_paths_as_subset</code>: Ensures that the <code>config.autoload_once_paths</code> only contains paths from <code>config.autoload_paths</code>. If it contains extra paths, then an exception will be raised.</li>
+<li>
+<code>add_to_prepare_blocks</code>: The block for every <code>config.to_prepare</code> call in the application, a railtie, or engine is added to the <code>to_prepare</code> callbacks for Action Dispatch which will be run per request in development, or before the first request in production.</li>
+<li>
+<code>add_builtin_route</code>: If the application is running under the development environment then this will append the route for <code>rails/info/properties</code> to the application routes. This route provides the detailed information such as Rails and Ruby version for <code>public/index.html</code> in a default Rails application.</li>
+<li>
+<code>build_middleware_stack</code>: Builds the middleware stack for the application, returning an object which has a <code>call</code> method which takes a Rack environment object for the request.</li>
+<li>
+<code>eager_load!</code>: If <code>config.eager_load</code> is <code>true</code>, runs the <code>config.before_eager_load</code> hooks and then calls <code>eager_load!</code> which will load all <code>config.eager_load_namespaces</code>.</li>
+<li>
+<code>finisher_hook</code>: Provides a hook for after the initialization of process of the application is complete, as well as running all the <code>config.after_initialize</code> blocks for the application, railties, and engines.</li>
+<li>
+<code>set_routes_reloader_hook</code>: Configures Action Dispatch to reload the routes file using <code>ActiveSupport::Callbacks.to_run</code>.</li>
+<li>
+<code>disable_dependency_loading</code>: Disables the automatic dependency loading if the <code>config.eager_load</code> is set to <code>true</code>.</li>
+</ul>
+</body>
+</html>

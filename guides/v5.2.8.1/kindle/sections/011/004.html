@@ -1,0 +1,51 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>5 Uploading Files</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v5.2.8.1/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="uploading-files"><a class="anchorlink" href="#uploading-files">5 Uploading Files</a></h3>
+<p>A common task is uploading some sort of file, whether it's a picture of a person or a CSV file containing data to process. The most important thing to remember with file uploads is that the rendered form's encoding <strong>MUST</strong> be set to "multipart/form-data". If you use <code>form_for</code>, this is done automatically. If you use <code>form_tag</code>, you must set it yourself, as per the following example.</p>
+
+<p>The following two forms both upload a file.</p>
+
+<div class="code_container">
+<pre class="brush: ruby; html-script: true; gutter: false; toolbar: false">
+&lt;%= form_tag({action: :upload}, multipart: true) do %&gt;
+  &lt;%= file_field_tag 'picture' %&gt;
+&lt;% end %&gt;
+
+&lt;%= form_for @person do |f| %&gt;
+  &lt;%= f.file_field :picture %&gt;
+&lt;% end %&gt;
+
+</pre>
+</div>
+<p>Rails provides the usual pair of helpers: the barebones <code>file_field_tag</code> and the model oriented <code>file_field</code>. The only difference with other helpers is that you cannot set a default value for file inputs as this would have no meaning. As you would expect in the first case the uploaded file is in <code>params[:picture]</code> and in the second case in <code>params[:person][:picture]</code>.</p>
+
+<h4 id="what-gets-uploaded"><a class="anchorlink" href="#what-gets-uploaded">5.1 What Gets Uploaded</a></h4>
+
+<p>The object in the <code>params</code> hash is an instance of a subclass of <code>IO</code>. Depending on the size of the uploaded file it may in fact be a <code>StringIO</code> or an instance of <code>File</code> backed by a temporary file. In both cases the object will have an <code>original_filename</code> attribute containing the name the file had on the user's computer and a <code>content_type</code> attribute containing the MIME type of the uploaded file. The following snippet saves the uploaded content in <code>#{Rails.root}/public/uploads</code> under the same name as the original file (assuming the form was the one in the previous example).</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+def upload
+  uploaded_io = params[:person][:picture]
+  File.open(Rails.root.join('public', 'uploads', uploaded_io.original_filename), 'wb') do |file|
+    file.write(uploaded_io.read)
+  end
+end
+
+</pre>
+</div>
+<p>Once a file has been uploaded, there are a multitude of potential tasks, ranging from where to store the files (on disk, Amazon S3, etc) and associating them with models to resizing image files and generating thumbnails. The intricacies of this are beyond the scope of this guide, but there are several libraries designed to assist with these. Two of the better known ones are <a href="https://github.com/jnicklas/carrierwave">CarrierWave</a> and <a href="https://github.com/thoughtbot/paperclip">Paperclip</a>.</p>
+
+<div class="note"><p>If the user has not selected a file the corresponding parameter will be an empty string.</p></div>
+
+<h4 id="dealing-with-ajax"><a class="anchorlink" href="#dealing-with-ajax">5.2 Dealing with Ajax</a></h4>
+
+<p>Unlike other forms, making an asynchronous file upload form is not as simple as providing <code>form_for</code> with <code>remote: true</code>. With an Ajax form the serialization is done by JavaScript running inside the browser and since JavaScript cannot read files from your hard drive the file cannot be uploaded. The most common workaround is to use an invisible iframe that serves as the target for the form submission.</p>
+</body>
+</html>

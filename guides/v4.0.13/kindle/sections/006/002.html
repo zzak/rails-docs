@@ -1,0 +1,214 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>3 Tips, Tricks, and Warnings</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v4.0.13/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="tips-tricks-and-warnings">3 Tips, Tricks, and Warnings</h3>
+<p>Here are a few things you should know to make efficient use of Active Record associations in your Rails applications:</p>
+<ul>
+<li>Controlling caching</li>
+<li>Avoiding name collisions</li>
+<li>Updating the schema</li>
+<li>Controlling association scope</li>
+<li>Bi-directional associations</li>
+</ul>
+<h4 id="controlling-caching">3.1 Controlling Caching</h4>
+<p>All of the association methods are built around caching, which keeps the result of the most recent query available for further operations. The cache is even shared across methods. For example:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+customer.orders                 # retrieves orders from the database
+customer.orders.size            # uses the cached copy of orders
+customer.orders.empty?          # uses the cached copy of orders
+
+</pre>
+</div>
+<p>But what if you want to reload the cache, because data might have been changed by some other part of the application? Just pass <code>true</code> to the association call:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+customer.orders                 # retrieves orders from the database
+customer.orders.size            # uses the cached copy of orders
+customer.orders(true).empty?    # discards the cached copy of orders
+                                # and goes back to the database
+
+</pre>
+</div>
+<h4 id="avoiding-name-collisions">3.2 Avoiding Name Collisions</h4>
+<p>You are not free to use just any name for your associations. Because creating an association adds a method with that name to the model, it is a bad idea to give an association a name that is already used for an instance method of <code>ActiveRecord::Base</code>. The association method would override the base method and break things. For instance, <code>attributes</code> or <code>connection</code> are bad names for associations.</p>
+<h4 id="updating-the-schema">3.3 Updating the Schema</h4>
+<p>Associations are extremely useful, but they are not magic. You are responsible for maintaining your database schema to match your associations. In practice, this means two things, depending on what sort of associations you are creating. For <code>belongs_to</code> associations you need to create foreign keys, and for <code>has_and_belongs_to_many</code> associations you need to create the appropriate join table.</p>
+<h5 id="creating-foreign-keys-for-belongs-to-associations">3.3.1 Creating Foreign Keys for <code>belongs_to</code> Associations</h5>
+<p>When you declare a <code>belongs_to</code> association, you need to create foreign keys as appropriate. For example, consider this model:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class Order &lt; ActiveRecord::Base
+  belongs_to :customer
+end
+
+</pre>
+</div>
+<p>This declaration needs to be backed up by the proper foreign key declaration on the orders table:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class CreateOrders &lt; ActiveRecord::Migration
+  def change
+    create_table :orders do |t|
+      t.datetime :order_date
+      t.string   :order_number
+      t.integer  :customer_id
+    end
+  end
+end
+
+</pre>
+</div>
+<p>If you create an association some time after you build the underlying model, you need to remember to create an <code>add_column</code> migration to provide the necessary foreign key.</p>
+<h5 id="creating-join-tables-for-has-and-belongs-to-many-associations">3.3.2 Creating Join Tables for <code>has_and_belongs_to_many</code> Associations</h5>
+<p>If you create a <code>has_and_belongs_to_many</code> association, you need to explicitly create the joining table. Unless the name of the join table is explicitly specified by using the <code>:join_table</code> option, Active Record creates the name by using the lexical order of the class names. So a join between customer and order models will give the default join table name of "customers_orders" because "c" outranks "o" in lexical ordering.</p>
+<div class="warning"><p>The precedence between model names is calculated using the <code>&lt;</code> operator for <code>String</code>. This means that if the strings are of different lengths, and the strings are equal when compared up to the shortest length, then the longer string is considered of higher lexical precedence than the shorter one. For example, one would expect the tables "paper_boxes" and "papers" to generate a join table name of "papers_paper_boxes" because of the length of the name "paper_boxes", but it in fact generates a join table name of "paper_boxes_papers" (because the underscore '_' is lexicographically <em>less</em> than 's' in common encodings).</p></div>
+<p>Whatever the name, you must manually generate the join table with an appropriate migration. For example, consider these associations:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class Assembly &lt; ActiveRecord::Base
+  has_and_belongs_to_many :parts
+end
+
+class Part &lt; ActiveRecord::Base
+  has_and_belongs_to_many :assemblies
+end
+
+</pre>
+</div>
+<p>These need to be backed up by a migration to create the <code>assemblies_parts</code> table. This table should be created without a primary key:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class CreateAssembliesPartsJoinTable &lt; ActiveRecord::Migration
+  def change
+    create_table :assemblies_parts, id: false do |t|
+      t.integer :assembly_id
+      t.integer :part_id
+    end
+  end
+end
+
+</pre>
+</div>
+<p>We pass <code>id: false</code> to <code>create_table</code> because that table does not represent a model. That's required for the association to work properly. If you observe any strange behavior in a <code>has_and_belongs_to_many</code> association like mangled models IDs, or exceptions about conflicting IDs, chances are you forgot that bit.</p>
+<h4 id="controlling-association-scope">3.4 Controlling Association Scope</h4>
+<p>By default, associations look for objects only within the current module's scope. This can be important when you declare Active Record models within a module. For example:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+module MyApplication
+  module Business
+    class Supplier &lt; ActiveRecord::Base
+       has_one :account
+    end
+
+    class Account &lt; ActiveRecord::Base
+       belongs_to :supplier
+    end
+  end
+end
+
+</pre>
+</div>
+<p>This will work fine, because both the <code>Supplier</code> and the <code>Account</code> class are defined within the same scope. But the following will <em>not</em> work, because <code>Supplier</code> and <code>Account</code> are defined in different scopes:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+module MyApplication
+  module Business
+    class Supplier &lt; ActiveRecord::Base
+       has_one :account
+    end
+  end
+
+  module Billing
+    class Account &lt; ActiveRecord::Base
+       belongs_to :supplier
+    end
+  end
+end
+
+</pre>
+</div>
+<p>To associate a model with a model in a different namespace, you must specify the complete class name in your association declaration:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+module MyApplication
+  module Business
+    class Supplier &lt; ActiveRecord::Base
+       has_one :account,
+        class_name: "MyApplication::Billing::Account"
+    end
+  end
+
+  module Billing
+    class Account &lt; ActiveRecord::Base
+       belongs_to :supplier,
+        class_name: "MyApplication::Business::Supplier"
+    end
+  end
+end
+
+</pre>
+</div>
+<h4 id="bi-directional-associations">3.5 Bi-directional Associations</h4>
+<p>It's normal for associations to work in two directions, requiring declaration on two different models:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class Customer &lt; ActiveRecord::Base
+  has_many :orders
+end
+
+class Order &lt; ActiveRecord::Base
+  belongs_to :customer
+end
+
+</pre>
+</div>
+<p>By default, Active Record doesn't know about the connection between these associations. This can lead to two copies of an object getting out of sync:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+c = Customer.first
+o = c.orders.first
+c.first_name == o.customer.first_name # =&gt; true
+c.first_name = 'Manny'
+c.first_name == o.customer.first_name # =&gt; false
+
+</pre>
+</div>
+<p>This happens because c and o.customer are two different in-memory representations of the same data, and neither one is automatically refreshed from changes to the other. Active Record provides the <code>:inverse_of</code> option so that you can inform it of these relations:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class Customer &lt; ActiveRecord::Base
+  has_many :orders, inverse_of: :customer
+end
+
+class Order &lt; ActiveRecord::Base
+  belongs_to :customer, inverse_of: :orders
+end
+
+</pre>
+</div>
+<p>With these changes, Active Record will only load one copy of the customer object, preventing inconsistencies and making your application more efficient:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+c = Customer.first
+o = c.orders.first
+c.first_name == o.customer.first_name # =&gt; true
+c.first_name = 'Manny'
+c.first_name == o.customer.first_name # =&gt; true
+
+</pre>
+</div>
+<p>There are a few limitations to <code>inverse_of</code> support:</p>
+<ul>
+<li>They do not work with <code>:through</code> associations.</li>
+<li>They do not work with <code>:polymorphic</code> associations.</li>
+<li>They do not work with <code>:as</code> associations.</li>
+<li>For <code>belongs_to</code> associations, <code>has_many</code> inverse associations are ignored.</li>
+</ul>
+</body>
+</html>

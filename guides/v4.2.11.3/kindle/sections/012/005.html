@@ -1,0 +1,104 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>6 Cookies</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v4.2.11.3/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="cookies">6 Cookies</h3>
+<p>Your application can store small amounts of data on the client - called cookies - that will be persisted across requests and even sessions. Rails provides easy access to cookies via the <code>cookies</code> method, which - much like the <code>session</code> - works like a hash:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class CommentsController &lt; ApplicationController
+  def new
+    # Auto-fill the commenter's name if it has been stored in a cookie
+    @comment = Comment.new(author: cookies[:commenter_name])
+  end
+
+  def create
+    @comment = Comment.new(params[:comment])
+    if @comment.save
+      flash[:notice] = "Thanks for your comment!"
+      if params[:remember_name]
+        # Remember the commenter's name.
+        cookies[:commenter_name] = @comment.author
+      else
+        # Delete cookie for the commenter's name cookie, if any.
+        cookies.delete(:commenter_name)
+      end
+      redirect_to @comment.article
+    else
+      render action: "new"
+    end
+  end
+end
+
+</pre>
+</div>
+<p>Note that while for session values you set the key to <code>nil</code>, to delete a cookie value you should use <code>cookies.delete(:key)</code>.</p>
+
+<p>Rails also provides a signed cookie jar and an encrypted cookie jar for storing
+sensitive data. The signed cookie jar appends a cryptographic signature on the
+cookie values to protect their integrity. The encrypted cookie jar encrypts the
+values in addition to signing them, so that they cannot be read by the end user.
+Refer to the <a href="http://api.rubyonrails.org/classes/ActionDispatch/Cookies.html">API documentation</a>
+for more details.</p>
+
+<p>These special cookie jars use a serializer to serialize the assigned values into
+strings and deserializes them into Ruby objects on read.</p>
+
+<p>You can specify what serializer to use:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+Rails.application.config.action_dispatch.cookies_serializer = :json
+
+</pre>
+</div>
+<p>The default serializer for new applications is <code>:json</code>. For compatibility with
+old applications with existing cookies, <code>:marshal</code> is used when <code>serializer</code>
+option is not specified.</p>
+
+<p>You may also set this option to <code>:hybrid</code>, in which case Rails would transparently
+deserialize existing (<code>Marshal</code>-serialized) cookies on read and re-write them in
+the <code>JSON</code> format. This is useful for migrating existing applications to the
+<code>:json</code> serializer.</p>
+
+<p>It is also possible to pass a custom serializer that responds to <code>load</code> and
+<code>dump</code>:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+Rails.application.config.action_dispatch.cookies_serializer = MyCustomSerializer
+
+</pre>
+</div>
+<p>When using the <code>:json</code> or <code>:hybrid</code> serializer, you should beware that not all
+Ruby objects can be serialized as JSON. For example, <code>Date</code> and <code>Time</code> objects
+will be serialized as strings, and <code>Hash</code>es will have their keys stringified.</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class CookiesController &lt; ApplicationController
+  def set_cookie
+    cookies.encrypted[:expiration_date] = Date.tomorrow # =&gt; Thu, 20 Mar 2014
+    redirect_to action: 'read_cookie'
+  end
+
+  def read_cookie
+    cookies.encrypted[:expiration_date] # =&gt; "2014-03-20"
+  end
+end
+
+</pre>
+</div>
+<p>It's advisable that you only store simple data (strings and numbers) in cookies.
+If you have to store complex objects, you would need to handle the conversion
+manually when reading the values on subsequent requests.</p>
+
+<p>If you use the cookie session store, this would apply to the <code>session</code> and
+<code>flash</code> hash as well.</p>
+</body>
+</html>

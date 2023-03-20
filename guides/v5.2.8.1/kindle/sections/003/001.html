@@ -1,0 +1,264 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>2 Creating a Migration</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v5.2.8.1/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="creating-a-migration"><a class="anchorlink" href="#creating-a-migration">2 Creating a Migration</a></h3>
+<h4 id="creating-a-standalone-migration"><a class="anchorlink" href="#creating-a-standalone-migration">2.1 Creating a Standalone Migration</a></h4>
+
+<p>Migrations are stored as files in the <code>db/migrate</code> directory, one for each
+migration class. The name of the file is of the form
+<code>YYYYMMDDHHMMSS_create_products.rb</code>, that is to say a UTC timestamp
+identifying the migration followed by an underscore followed by the name
+of the migration. The name of the migration class (CamelCased version)
+should match the latter part of the file name. For example
+<code>20080906120000_create_products.rb</code> should define class <code>CreateProducts</code> and
+<code>20080906120001_add_details_to_products.rb</code> should define
+<code>AddDetailsToProducts</code>. Rails uses this timestamp to determine which migration
+should be run and in what order, so if you're copying a migration from another
+application or generate a file yourself, be aware of its position in the order.</p>
+
+<p>Of course, calculating timestamps is no fun, so Active Record provides a
+generator to handle making it for you:</p>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+$ bin/rails generate migration AddPartNumberToProducts
+
+</pre>
+</div>
+<p>This will create an empty but appropriately named migration:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class AddPartNumberToProducts &lt; ActiveRecord::Migration[5.0]
+  def change
+  end
+end
+
+</pre>
+</div>
+<p>If the migration name is of the form "AddXXXToYYY" or "RemoveXXXFromYYY" and is
+followed by a list of column names and types then a migration containing the
+appropriate <code>add_column</code> and <code>remove_column</code> statements will be created.</p>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+$ bin/rails generate migration AddPartNumberToProducts part_number:string
+
+</pre>
+</div>
+<p>will generate</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class AddPartNumberToProducts &lt; ActiveRecord::Migration[5.0]
+  def change
+    add_column :products, :part_number, :string
+  end
+end
+
+</pre>
+</div>
+<p>If you'd like to add an index on the new column, you can do that as well:</p>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+$ bin/rails generate migration AddPartNumberToProducts part_number:string:index
+
+</pre>
+</div>
+<p>will generate</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class AddPartNumberToProducts &lt; ActiveRecord::Migration[5.0]
+  def change
+    add_column :products, :part_number, :string
+    add_index :products, :part_number
+  end
+end
+
+</pre>
+</div>
+<p>Similarly, you can generate a migration to remove a column from the command line:</p>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+$ bin/rails generate migration RemovePartNumberFromProducts part_number:string
+
+</pre>
+</div>
+<p>generates</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class RemovePartNumberFromProducts &lt; ActiveRecord::Migration[5.0]
+  def change
+    remove_column :products, :part_number, :string
+  end
+end
+
+</pre>
+</div>
+<p>You are not limited to one magically generated column. For example:</p>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+$ bin/rails generate migration AddDetailsToProducts part_number:string price:decimal
+
+</pre>
+</div>
+<p>generates</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class AddDetailsToProducts &lt; ActiveRecord::Migration[5.0]
+  def change
+    add_column :products, :part_number, :string
+    add_column :products, :price, :decimal
+  end
+end
+
+</pre>
+</div>
+<p>If the migration name is of the form "CreateXXX" and is
+followed by a list of column names and types then a migration creating the table
+XXX with the columns listed will be generated. For example:</p>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+$ bin/rails generate migration CreateProducts name:string part_number:string
+
+</pre>
+</div>
+<p>generates</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class CreateProducts &lt; ActiveRecord::Migration[5.0]
+  def change
+    create_table :products do |t|
+      t.string :name
+      t.string :part_number
+    end
+  end
+end
+
+</pre>
+</div>
+<p>As always, what has been generated for you is just a starting point. You can add
+or remove from it as you see fit by editing the
+<code>db/migrate/YYYYMMDDHHMMSS_add_details_to_products.rb</code> file.</p>
+
+<p>Also, the generator accepts column type as <code>references</code> (also available as
+<code>belongs_to</code>). For instance:</p>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+$ bin/rails generate migration AddUserRefToProducts user:references
+
+</pre>
+</div>
+<p>generates</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class AddUserRefToProducts &lt; ActiveRecord::Migration[5.0]
+  def change
+    add_reference :products, :user, foreign_key: true
+  end
+end
+
+</pre>
+</div>
+<p>This migration will create a <code>user_id</code> column and appropriate index.
+For more <code>add_reference</code> options, visit the <a href="http://api.rubyonrails.org/v5.2.8.1/classes/ActiveRecord/ConnectionAdapters/SchemaStatements.html#method-i-add_reference">API documentation</a>.</p>
+
+<p>There is also a generator which will produce join tables if <code>JoinTable</code> is part of the name:</p>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+$ bin/rails g migration CreateJoinTableCustomerProduct customer product
+
+</pre>
+</div>
+<p>will produce the following migration:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class CreateJoinTableCustomerProduct &lt; ActiveRecord::Migration[5.0]
+  def change
+    create_join_table :customers, :products do |t|
+      # t.index [:customer_id, :product_id]
+      # t.index [:product_id, :customer_id]
+    end
+  end
+end
+
+</pre>
+</div>
+<h4 id="model-generators"><a class="anchorlink" href="#model-generators">2.2 Model Generators</a></h4>
+
+<p>The model and scaffold generators will create migrations appropriate for adding
+a new model. This migration will already contain instructions for creating the
+relevant table. If you tell Rails what columns you want, then statements for
+adding these columns will also be created. For example, running:</p>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+$ bin/rails generate model Product name:string description:text
+
+</pre>
+</div>
+<p>will create a migration that looks like this</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class CreateProducts &lt; ActiveRecord::Migration[5.0]
+  def change
+    create_table :products do |t|
+      t.string :name
+      t.text :description
+
+      t.timestamps
+    end
+  end
+end
+
+</pre>
+</div>
+<p>You can append as many column name/type pairs as you want.</p>
+
+<h4 id="passing-modifiers"><a class="anchorlink" href="#passing-modifiers">2.3 Passing Modifiers</a></h4>
+
+<p>Some commonly used <a href="#column-modifiers">type modifiers</a> can be passed directly on
+the command line. They are enclosed by curly braces and follow the field type:</p>
+
+<p>For instance, running:</p>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+$ bin/rails generate migration AddDetailsToProducts 'price:decimal{5,2}' supplier:references{polymorphic}
+
+</pre>
+</div>
+<p>will produce a migration that looks like this</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class AddDetailsToProducts &lt; ActiveRecord::Migration[5.0]
+  def change
+    add_column :products, :price, :decimal, precision: 5, scale: 2
+    add_reference :products, :supplier, polymorphic: true
+  end
+end
+
+</pre>
+</div>
+<div class="info"><p>Have a look at the generators help output for further details.</p></div>
+</body>
+</html>

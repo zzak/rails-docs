@@ -1,0 +1,146 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>12 Joining Tables</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v4.0.13/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="joining-tables">12 Joining Tables</h3>
+<p>Active Record provides a finder method called <code>joins</code> for specifying <code>JOIN</code> clauses on the resulting SQL. There are multiple ways to use the <code>joins</code> method.</p>
+<h4 id="using-a-string-sql-fragment">12.1 Using a String SQL Fragment</h4>
+<p>You can just supply the raw SQL specifying the <code>JOIN</code> clause to <code>joins</code>:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+Client.joins('LEFT OUTER JOIN addresses ON addresses.client_id = clients.id')
+
+</pre>
+</div>
+<p>This will result in the following SQL:</p>
+<div class="code_container">
+<pre class="brush: sql; gutter: false; toolbar: false">
+SELECT clients.* FROM clients LEFT OUTER JOIN addresses ON addresses.client_id = clients.id
+
+</pre>
+</div>
+<div class="note"><p>using <code>joins</code> might return readonly records. See <a href="active_record_querying.html#readonly-objects">readonly</a> for more details.</p></div>
+<h4 id="using-array-hash-of-named-associations">12.2 Using Array/Hash of Named Associations</h4>
+<div class="warning"><p>This method only works with <code>INNER JOIN</code>.</p></div>
+<p>Active Record lets you use the names of the <a href="association_basics.html">associations</a> defined on the model as a shortcut for specifying <code>JOIN</code> clause for those associations when using the <code>joins</code> method.</p>
+<p>For example, consider the following <code>Category</code>, <code>Post</code>, <code>Comments</code> and <code>Guest</code> models:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class Category &lt; ActiveRecord::Base
+  has_many :posts
+end
+
+class Post &lt; ActiveRecord::Base
+  belongs_to :category
+  has_many :comments
+  has_many :tags
+end
+
+class Comment &lt; ActiveRecord::Base
+  belongs_to :post
+  has_one :guest
+end
+
+class Guest &lt; ActiveRecord::Base
+  belongs_to :comment
+end
+
+class Tag &lt; ActiveRecord::Base
+  belongs_to :post
+end
+
+</pre>
+</div>
+<p>Now all of the following will produce the expected join queries using <code>INNER JOIN</code>:</p>
+<h5 id="joining-a-single-association">12.2.1 Joining a Single Association</h5>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+Category.joins(:posts)
+
+</pre>
+</div>
+<p>This produces:</p>
+<div class="code_container">
+<pre class="brush: sql; gutter: false; toolbar: false">
+SELECT categories.* FROM categories
+  INNER JOIN posts ON posts.category_id = categories.id
+
+</pre>
+</div>
+<p>Or, in English: "return a Category object for all categories with posts". Note that you will see duplicate categories if more than one post has the same category. If you want unique categories, you can use <code>Category.joins(:posts).uniq</code>.</p>
+<h5 id="joining-multiple-associations">12.2.2 Joining Multiple Associations</h5>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+Post.joins(:category, :comments)
+
+</pre>
+</div>
+<p>This produces:</p>
+<div class="code_container">
+<pre class="brush: sql; gutter: false; toolbar: false">
+SELECT posts.* FROM posts
+  INNER JOIN categories ON posts.category_id = categories.id
+  INNER JOIN comments ON comments.post_id = posts.id
+
+</pre>
+</div>
+<p>Or, in English: "return all posts that have a category and at least one comment". Note again that posts with multiple comments will show up multiple times.</p>
+<h5 id="joining-nested-associations-single-level">12.2.3 Joining Nested Associations (Single Level)</h5>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+Post.joins(comments: :guest)
+
+</pre>
+</div>
+<p>This produces:</p>
+<div class="code_container">
+<pre class="brush: sql; gutter: false; toolbar: false">
+SELECT posts.* FROM posts
+  INNER JOIN comments ON comments.post_id = posts.id
+  INNER JOIN guests ON guests.comment_id = comments.id
+
+</pre>
+</div>
+<p>Or, in English: "return all posts that have a comment made by a guest."</p>
+<h5 id="joining-nested-associations-multiple-level">12.2.4 Joining Nested Associations (Multiple Level)</h5>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+Category.joins(posts: [{comments: :guest}, :tags])
+
+</pre>
+</div>
+<p>This produces:</p>
+<div class="code_container">
+<pre class="brush: sql; gutter: false; toolbar: false">
+SELECT categories.* FROM categories
+  INNER JOIN posts ON posts.category_id = categories.id
+  INNER JOIN comments ON comments.post_id = posts.id
+  INNER JOIN guests ON guests.comment_id = comments.id
+  INNER JOIN tags ON tags.post_id = posts.id
+
+</pre>
+</div>
+<h4 id="specifying-conditions-on-the-joined-tables">12.3 Specifying Conditions on the Joined Tables</h4>
+<p>You can specify conditions on the joined tables using the regular <a href="#array-conditions">Array</a> and <a href="#pure-string-conditions">String</a> conditions. <a href="#hash-conditions">Hash conditions</a> provides a special syntax for specifying conditions for the joined tables:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+time_range = (Time.now.midnight - 1.day)..Time.now.midnight
+Client.joins(:orders).where('orders.created_at' =&gt; time_range)
+
+</pre>
+</div>
+<p>An alternative and cleaner syntax is to nest the hash conditions:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+time_range = (Time.now.midnight - 1.day)..Time.now.midnight
+Client.joins(:orders).where(orders: {created_at: time_range})
+
+</pre>
+</div>
+<p>This will find all clients who have orders that were created yesterday, again using a <code>BETWEEN</code> SQL expression.</p>
+</body>
+</html>

@@ -1,0 +1,347 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html 
+     PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+  <head>
+    <title>Module: ActionView::LookupContext::Details</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <link rel="stylesheet" href="../../../rdoc-style.css" type="text/css" media="screen" />
+
+    <script language="JavaScript" type="text/javascript">
+    // <![CDATA[
+
+        function toggleSource( id )
+        {
+          var elem
+          var link
+
+          if( document.getElementById )
+          {
+            elem = document.getElementById( id )
+            link = document.getElementById( "l_" + id )
+          }
+          else if ( document.all )
+          {
+            elem = eval( "document.all." + id )
+            link = eval( "document.all.l_" + id )
+          }
+          else
+            return false;
+
+          if( elem.style.display == "block" )
+          {
+            elem.style.display = "none"
+            link.innerHTML = "show source"
+          }
+          else
+          {
+            elem.style.display = "block"
+            link.innerHTML = "hide source"
+          }
+        }
+
+        function openCode( url )
+        {
+          window.open( url, "SOURCE_CODE", "resizable=yes,scrollbars=yes,toolbar=no,status=no,height=480,width=750" ).focus();
+        }
+      // ]]>
+    </script>
+  </head>
+
+  <body>
+    <table width="100%" border='0' cellpadding='0' cellspacing='0' class='banner'>
+    <tr><td>Ruby on Rails v3.0.9</td></tr>
+    <tr>
+  <td class="file-title"><span class="file-title-prefix">Module</span><br />ActionView::LookupContext::Details</td>
+  <td align="right">
+    <table cellspacing="0" cellpadding="2">
+      <tr valign="top">
+        <td>In:</td>
+        <td>
+<a href="../../../files/actionpack/lib/action_view/lookup_context_rb.html">actionpack/lib/action_view/lookup_context.rb</a>:
+        </td>
+      </tr>
+         </table>
+        </td>
+        </tr>
+      </table>
+  <div id="bodyContent">
+  <div id="content">
+
+  <div class="description"></div>
+
+
+  <div class="sectiontitle">Methods</div>
+  <ul>
+                <li><a href="#method-i-_set_detail">_set_detail</a></li>
+                <li><a href="#method-i-formats-3D">formats=</a></li>
+                <li><a href="#method-i-locale">locale</a></li>
+                <li><a href="#method-i-locale-3D">locale=</a></li>
+                <li><a href="#method-i-skip_default_locale-21">skip_default_locale!</a></li>
+                <li><a href="#method-i-update_details">update_details</a></li>
+                <li><a href="#method-i-with_layout_format">with_layout_format</a></li>
+      </ul>
+
+
+
+
+                        
+    <div class="sectiontitle">
+      Public      Instance      methods
+    </div>
+
+          
+      <div class="method">
+        <div class="title">
+                      <a name="method-i-formats-3D"></a>
+            <b>formats=</b>(values)          
+        </div>
+
+                  <div class="description">
+            <p>Overload formats= to reject [“<b>/</b>”] values.</p>          </div>
+        
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('formats-3D_source')"
+                 id="l_method-i-formats-3D_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="formats-3D_source">
+<pre>
+  <span class="ruby-comment"># File actionpack/lib/action_view/lookup_context.rb, line 149</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">formats=</span>(<span class="ruby-identifier">values</span>)
+  <span class="ruby-keyword">if</span> <span class="ruby-identifier">values</span> <span class="ruby-operator">&amp;&amp;</span> <span class="ruby-identifier">values</span>.<span class="ruby-identifier">size</span> <span class="ruby-operator">==</span> <span class="ruby-value">1</span>
+    <span class="ruby-identifier">value</span> = <span class="ruby-identifier">values</span>.<span class="ruby-identifier">first</span>
+    <span class="ruby-identifier">values</span> = <span class="ruby-keyword">nil</span>    <span class="ruby-keyword">if</span> <span class="ruby-identifier">value</span> <span class="ruby-operator">==</span> <span class="ruby-string">&quot;*/*&quot;</span>
+    <span class="ruby-identifier">values</span> <span class="ruby-operator">&lt;&lt;</span> <span class="ruby-value">:html</span> <span class="ruby-keyword">if</span> <span class="ruby-identifier">value</span> <span class="ruby-operator">==</span> <span class="ruby-value">:js</span>
+  <span class="ruby-keyword">end</span>
+  <span class="ruby-keyword">super</span>(<span class="ruby-identifier">values</span>)
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+          
+      <div class="method">
+        <div class="title">
+                      <a name="method-i-locale"></a>
+            <b>locale</b>()          
+        </div>
+
+                  <div class="description">
+            <p>Overload locale to return a symbol instead of array.</p>          </div>
+        
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('locale_source')"
+                 id="l_method-i-locale_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="locale_source">
+<pre>
+  <span class="ruby-comment"># File actionpack/lib/action_view/lookup_context.rb, line 165</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">locale</span>
+  <span class="ruby-ivar">@details</span>[<span class="ruby-value">:locale</span>].<span class="ruby-identifier">first</span>
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+          
+      <div class="method">
+        <div class="title">
+                      <a name="method-i-locale-3D"></a>
+            <b>locale=</b>(value)          
+        </div>
+
+                  <div class="description">
+            <p>Overload locale= to also set the I18n.locale. If the current I18n.config
+object responds to original_config, it means that it’s has a copy of the
+original <a href="../../I18n.html">I18n</a> configuration and it’s acting
+as proxy, which we need to skip.</p>          </div>
+        
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('locale-3D_source')"
+                 id="l_method-i-locale-3D_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="locale-3D_source">
+<pre>
+  <span class="ruby-comment"># File actionpack/lib/action_view/lookup_context.rb, line 172</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">locale=</span>(<span class="ruby-identifier">value</span>)
+  <span class="ruby-keyword">if</span> <span class="ruby-identifier">value</span>
+    <span class="ruby-identifier">config</span> = <span class="ruby-constant">I18n</span>.<span class="ruby-identifier">config</span>.<span class="ruby-identifier">respond_to?</span>(<span class="ruby-value">:original_config</span>) <span class="ruby-operator">?</span> <span class="ruby-constant">I18n</span>.<span class="ruby-identifier">config</span>.<span class="ruby-identifier">original_config</span> <span class="ruby-operator">:</span> <span class="ruby-constant">I18n</span>.<span class="ruby-identifier">config</span>
+    <span class="ruby-identifier">config</span>.<span class="ruby-identifier">locale</span> = <span class="ruby-identifier">value</span>
+  <span class="ruby-keyword">end</span>
+
+  <span class="ruby-keyword">super</span>(<span class="ruby-ivar">@skip_default_locale</span> <span class="ruby-operator">?</span> <span class="ruby-constant">I18n</span>.<span class="ruby-identifier">locale</span> <span class="ruby-operator">:</span> <span class="ruby-identifier">_locale_defaults</span>)
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+          
+      <div class="method">
+        <div class="title">
+                      <a name="method-i-skip_default_locale-21"></a>
+            <b>skip_default_locale!</b>()          
+        </div>
+
+                  <div class="description">
+            <p>Do not use the default locale on template lookup.</p>          </div>
+        
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('skip_default_locale-21_source')"
+                 id="l_method-i-skip_default_locale-21_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="skip_default_locale-21_source">
+<pre>
+  <span class="ruby-comment"># File actionpack/lib/action_view/lookup_context.rb, line 159</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">skip_default_locale!</span>
+  <span class="ruby-ivar">@skip_default_locale</span> = <span class="ruby-keyword">true</span>
+  <span class="ruby-keyword">self</span>.<span class="ruby-identifier">locale</span> = <span class="ruby-keyword">nil</span>
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+          
+      <div class="method">
+        <div class="title">
+                      <a name="method-i-update_details"></a>
+            <b>update_details</b>(new_details)          
+        </div>
+
+                  <div class="description">
+            <p>Update the details keys by merging the given hash into the current details
+hash. If a block is given, the details are modified just during the
+execution of the block and reverted to the previous value after.</p>          </div>
+        
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('update_details_source')"
+                 id="l_method-i-update_details_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="update_details_source">
+<pre>
+  <span class="ruby-comment"># File actionpack/lib/action_view/lookup_context.rb, line 201</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">update_details</span>(<span class="ruby-identifier">new_details</span>)
+  <span class="ruby-identifier">old_details</span> = <span class="ruby-ivar">@details</span>.<span class="ruby-identifier">dup</span>
+
+  <span class="ruby-identifier">registered_detail_setters</span>.<span class="ruby-identifier">each</span> <span class="ruby-keyword">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">key</span>, <span class="ruby-identifier">setter</span><span class="ruby-operator">|</span>
+    <span class="ruby-identifier">send</span>(<span class="ruby-identifier">setter</span>, <span class="ruby-identifier">new_details</span>[<span class="ruby-identifier">key</span>]) <span class="ruby-keyword">if</span> <span class="ruby-identifier">new_details</span>.<span class="ruby-identifier">key?</span>(<span class="ruby-identifier">key</span>)
+  <span class="ruby-keyword">end</span>
+
+  <span class="ruby-keyword">begin</span>
+    <span class="ruby-keyword">yield</span>
+  <span class="ruby-keyword">ensure</span>
+    <span class="ruby-ivar">@details_key</span> = <span class="ruby-keyword">nil</span>
+    <span class="ruby-ivar">@details</span> = <span class="ruby-identifier">old_details</span>
+  <span class="ruby-keyword">end</span>
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+          
+      <div class="method">
+        <div class="title">
+                      <a name="method-i-with_layout_format"></a>
+            <b>with_layout_format</b>()          
+        </div>
+
+                  <div class="description">
+            <p>A method which only uses the first format in the formats array for layout
+lookup. This method plays straight with instance variables for performance
+reasons.</p>          </div>
+        
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('with_layout_format_source')"
+                 id="l_method-i-with_layout_format_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="with_layout_format_source">
+<pre>
+  <span class="ruby-comment"># File actionpack/lib/action_view/lookup_context.rb, line 183</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">with_layout_format</span>
+  <span class="ruby-keyword">if</span> <span class="ruby-identifier">formats</span>.<span class="ruby-identifier">size</span> <span class="ruby-operator">==</span> <span class="ruby-value">1</span>
+    <span class="ruby-keyword">yield</span>
+  <span class="ruby-keyword">else</span>
+    <span class="ruby-identifier">old_formats</span> = <span class="ruby-identifier">formats</span>
+    <span class="ruby-identifier">_set_detail</span>(<span class="ruby-value">:formats</span>, <span class="ruby-identifier">formats</span>[<span class="ruby-value">0</span>,<span class="ruby-value">1</span>])
+
+    <span class="ruby-keyword">begin</span>
+      <span class="ruby-keyword">yield</span>
+    <span class="ruby-keyword">ensure</span>
+      <span class="ruby-identifier">_set_detail</span>(<span class="ruby-value">:formats</span>, <span class="ruby-identifier">old_formats</span>)
+    <span class="ruby-keyword">end</span>
+  <span class="ruby-keyword">end</span>
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+          
+    <div class="sectiontitle">
+      Protected      Instance      methods
+    </div>
+
+          
+      <div class="method">
+        <div class="title">
+                      <a name="method-i-_set_detail"></a>
+            <b>_set_detail</b>(key, value)          
+        </div>
+
+                  <div class="description">
+                      </div>
+        
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('_set_detail_source')"
+                 id="l_method-i-_set_detail_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="_set_detail_source">
+<pre>
+  <span class="ruby-comment"># File actionpack/lib/action_view/lookup_context.rb, line 218</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">_set_detail</span>(<span class="ruby-identifier">key</span>, <span class="ruby-identifier">value</span>)
+  <span class="ruby-ivar">@details_key</span> = <span class="ruby-keyword">nil</span>
+  <span class="ruby-ivar">@details</span> = <span class="ruby-ivar">@details</span>.<span class="ruby-identifier">dup</span> <span class="ruby-keyword">if</span> <span class="ruby-ivar">@details</span>.<span class="ruby-identifier">frozen?</span>
+  <span class="ruby-ivar">@details</span>[<span class="ruby-identifier">key</span>] = <span class="ruby-identifier">value</span>.<span class="ruby-identifier">freeze</span>
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+          </div>
+  </div>
+  </body>
+</html>

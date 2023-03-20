@@ -1,0 +1,77 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>17 Enums</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v6.1.7.3/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="enums"><a class="anchorlink" href="#enums">17 Enums</a></h3>
+<p>An enum lets you define an Array of values for an attribute and refer to them by name.  The actual value stored in the database is an integer that has been mapped to one of the values.</p>
+
+<p>Declaring an enum will:</p>
+<ul>
+<li>Create scopes that can be used to find all objects that have or do not have one of the enum values</li>
+<li>Create an instance method that can be used to determine if an object has a particular value for the enum</li>
+<li>Create an instance method that can be used to change the enum value of an object</li>
+</ul>
+<p>for all possible values of an enum.</p>
+
+<p>For example, given this <a href="https://api.rubyonrails.org/v6.1.7.3/classes/ActiveRecord/Enum.html#method-i-enum"><code>enum</code></a> declaration:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">Order</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="n">enum</span> <span class="ss">status: </span><span class="p">[</span><span class="ss">:shipped</span><span class="p">,</span> <span class="ss">:being_packaged</span><span class="p">,</span> <span class="ss">:complete</span><span class="p">,</span> <span class="ss">:cancelled</span><span class="p">]</span>
+<span class="k">end</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-79dac656e1fee937204564c42c8b63bc">class Order &lt; ApplicationRecord
+  enum status: [:shipped, :being_packaged, :complete, :cancelled]
+end
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-79dac656e1fee937204564c42c8b63bc">Copy</button>
+</div>
+<p>These <a href="#scopes">scopes</a> are created automatically and can be used to find all objects with or without a particular value for <code>status</code>:</p>
+
+<div class="code_container">
+<pre><code class="highlight irb"><span class="gp">irb&gt;</span><span class="w"> </span><span class="no">Order</span><span class="p">.</span><span class="nf">shipped</span>
+<span class="p">=&gt;</span> <span class="kt">#&lt;</span><span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Relation</span><span class="kt">&gt;</span> <span class="c1"># all orders with status == :shipped</span>
+<span class="gp">irb&gt;</span><span class="w"> </span><span class="no">Order</span><span class="p">.</span><span class="nf">not_shipped</span>
+<span class="p">=&gt;</span> <span class="kt">#&lt;</span><span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Relation</span><span class="kt">&gt;</span> <span class="c1"># all orders with status != :shipped</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-c8e8735ed535c46829666a6667cec80f">Order.shipped
+Order.not_shipped
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-c8e8735ed535c46829666a6667cec80f">Copy</button>
+</div>
+<p>These instance methods are created automatically and query whether the model has that value for the <code>status</code> enum:</p>
+
+<div class="code_container">
+<pre><code class="highlight irb"><span class="gp">irb&gt;</span><span class="w"> </span><span class="n">order</span> <span class="o">=</span> <span class="no">Order</span><span class="p">.</span><span class="nf">shipped</span><span class="p">.</span><span class="nf">first</span>
+<span class="gp">irb&gt;</span><span class="w"> </span><span class="n">order</span><span class="p">.</span><span class="nf">shipped?</span>
+<span class="p">=&gt;</span> <span class="kp">true</span>
+<span class="gp">irb&gt;</span><span class="w"> </span><span class="n">order</span><span class="p">.</span><span class="nf">complete?</span>
+<span class="p">=&gt;</span> <span class="kp">false</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-c4da14e9f166b522b9d832d32151c712">order = Order.shipped.first
+order.shipped?
+order.complete?
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-c4da14e9f166b522b9d832d32151c712">Copy</button>
+</div>
+<p>These instance methods are created automatically and will first update the value of <code>status</code> to the named value
+and then query whether or not the status has been successfully set to the value:</p>
+
+<div class="code_container">
+<pre><code class="highlight irb"><span class="gp">irb&gt;</span><span class="w"> </span><span class="n">order</span> <span class="o">=</span> <span class="no">Order</span><span class="p">.</span><span class="nf">first</span>
+<span class="gp">irb&gt;</span><span class="w"> </span><span class="n">order</span><span class="p">.</span><span class="nf">shipped!</span>
+<span class="go">UPDATE "orders" SET "status" = ?, "updated_at" = ? WHERE "orders"."id" = ?  [["status", 0], ["updated_at", "2019-01-24 07:13:08.524320"], ["id", 1]]
+</span><span class="p">=&gt;</span> <span class="kp">true</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-32c8aadab8736c869d05e96b000be12a">order = Order.first
+order.shipped!
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-32c8aadab8736c869d05e96b000be12a">Copy</button>
+</div>
+<p>Full documentation about enums can be found <a href="https://api.rubyonrails.org/v6.1.7.3/classes/ActiveRecord/Enum.html">here</a>.</p>
+</body>
+</html>

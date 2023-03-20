@@ -1,0 +1,32 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>3 Cache Keys</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v7.0.4.2/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="cache-keys"><a class="anchorlink" href="#cache-keys">3 Cache Keys</a></h3>
+<p>The keys used in a cache can be any object that responds to either <code>cache_key</code> or
+<code>to_param</code>. You can implement the <code>cache_key</code> method on your classes if you need
+to generate custom keys. Active Record will generate keys based on the class name
+and record id.</p>
+
+<p>You can use Hashes and Arrays of values as cache keys.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="c1"># This is a legal cache key</span>
+<span class="no">Rails</span><span class="p">.</span><span class="nf">cache</span><span class="p">.</span><span class="nf">read</span><span class="p">(</span><span class="ss">site: </span><span class="s2">"mysite"</span><span class="p">,</span> <span class="ss">owners: </span><span class="p">[</span><span class="n">owner_1</span><span class="p">,</span> <span class="n">owner_2</span><span class="p">])</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='# This is a legal cache key
+Rails.cache.read(site: "mysite", owners: [owner_1, owner_2])
+'>Copy</button>
+</div>
+<p>The keys you use on <code>Rails.cache</code> will not be the same as those actually used with
+the storage engine. They may be modified with a namespace or altered to fit
+technology backend constraints. This means, for instance, that you can't save
+values with <code>Rails.cache</code> and then try to pull them out with the <code>dalli</code> gem.
+However, you also don't need to worry about exceeding the memcached size limit or
+violating syntax rules.</p>
+</body>
+</html>

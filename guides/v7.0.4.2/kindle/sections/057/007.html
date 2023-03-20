@@ -1,0 +1,110 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>8 Active Support</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v7.0.4.2/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="active-support"><a class="anchorlink" href="#active-support">8 Active Support</a></h3>
+<p>Please refer to the
+<a href="https://github.com/rails/rails/blob/4-1-stable/activesupport/CHANGELOG.md">Changelog</a>
+for detailed changes.</p>
+
+<h4 id="active-support-removals"><a class="anchorlink" href="#active-support-removals">8.1 Removals</a></h4>
+<ul>
+<li>Removed <code>MultiJSON</code> dependency. As a result, <code>ActiveSupport::JSON.decode</code>
+no longer accepts an options hash for <code>MultiJSON</code>. (<a href="https://github.com/rails/rails/pull/10576">Pull Request</a> / <a href="upgrading_ruby_on_rails.html#changes-in-json-handling">More Details</a>)</li>
+<li>Removed support for the <code>encode_json</code> hook used for encoding custom objects into
+JSON. This feature has been extracted into the <a href="https://github.com/rails/activesupport-json_encoder">activesupport-json_encoder</a>
+gem.
+(<a href="https://github.com/rails/rails/pull/12183">Related Pull Request</a> /
+<a href="upgrading_ruby_on_rails.html#changes-in-json-handling">More Details</a>)</li>
+<li>Removed deprecated <code>ActiveSupport::JSON::Variable</code> with no replacement.</li>
+<li>Removed deprecated <code>String#encoding_aware?</code> core extensions (<code>core_ext/string/encoding</code>).</li>
+<li>Removed deprecated <code>Module#local_constant_names</code> in favor of <code>Module#local_constants</code>.</li>
+<li>Removed deprecated <code>DateTime.local_offset</code> in favor of <code>DateTime.civil_from_format</code>.</li>
+<li>Removed deprecated <code>Logger</code> core extensions (<code>core_ext/logger.rb</code>).</li>
+<li>Removed deprecated <code>Time#time_with_datetime_fallback</code>, <code>Time#utc_time</code> and
+<code>Time#local_time</code> in favor of <code>Time#utc</code> and <code>Time#local</code>.</li>
+<li>Removed deprecated <code>Hash#diff</code> with no replacement.</li>
+<li>Removed deprecated <code>Date#to_time_in_current_zone</code> in favor of <code>Date#in_time_zone</code>.</li>
+<li>Removed deprecated <code>Proc#bind</code> with no replacement.</li>
+<li>Removed deprecated <code>Array#uniq_by</code> and <code>Array#uniq_by!</code>, use native
+<code>Array#uniq</code> and <code>Array#uniq!</code> instead.</li>
+<li>Removed deprecated <code>ActiveSupport::BasicObject</code>, use
+<code>ActiveSupport::ProxyObject</code> instead.</li>
+<li>Removed deprecated <code>BufferedLogger</code>, use <code>ActiveSupport::Logger</code> instead.</li>
+<li>Removed deprecated <code>assert_present</code> and <code>assert_blank</code> methods, use <code>assert
+object.blank?</code> and <code>assert object.present?</code> instead.</li>
+<li>Remove deprecated <code>#filter</code> method for filter objects, use the corresponding
+method instead (e.g. <code>#before</code> for a before filter).</li>
+<li>Removed 'cow' =&gt; 'kine' irregular inflection from default
+inflections. (<a href="https://github.com/rails/rails/commit/c300dca9963bda78b8f358dbcb59cabcdc5e1dc9">Commit</a>)</li>
+</ul>
+<h4 id="deprecations"><a class="anchorlink" href="#deprecations">8.2 Deprecations</a></h4>
+<ul>
+<li>Deprecated <code>Numeric#{ago,until,since,from_now}</code>, the user is expected to
+explicitly convert the value into an AS::Duration, i.e. <code>5.ago</code> =&gt; <code>5.seconds.ago</code>
+(<a href="https://github.com/rails/rails/pull/12389">Pull Request</a>)</li>
+<li>Deprecated the require path <code>active_support/core_ext/object/to_json</code>. Require
+<code>active_support/core_ext/object/json</code> instead. (<a href="https://github.com/rails/rails/pull/12203">Pull Request</a>)</li>
+<li>Deprecated <code>ActiveSupport::JSON::Encoding::CircularReferenceError</code>. This feature
+has been extracted into the <a href="https://github.com/rails/activesupport-json_encoder">activesupport-json_encoder</a>
+gem.
+(<a href="https://github.com/rails/rails/pull/12785">Pull Request</a> /
+<a href="upgrading_ruby_on_rails.html#changes-in-json-handling">More Details</a>)</li>
+<li>Deprecated <code>ActiveSupport.encode_big_decimal_as_string</code> option. This feature has
+been extracted into the <a href="https://github.com/rails/activesupport-json_encoder">activesupport-json_encoder</a>
+gem.
+(<a href="https://github.com/rails/rails/pull/13060">Pull Request</a> /
+<a href="upgrading_ruby_on_rails.html#changes-in-json-handling">More Details</a>)</li>
+<li>Deprecate custom <code>BigDecimal</code>
+serialization. (<a href="https://github.com/rails/rails/pull/13911">Pull Request</a>)</li>
+</ul>
+<h4 id="active-support-notable-changes"><a class="anchorlink" href="#active-support-notable-changes">8.3 Notable changes</a></h4>
+<ul>
+<li>
+<code>ActiveSupport</code>'s JSON encoder has been rewritten to take advantage of the
+JSON gem rather than doing custom encoding in pure-Ruby.
+(<a href="https://github.com/rails/rails/pull/12183">Pull Request</a> /
+<a href="upgrading_ruby_on_rails.html#changes-in-json-handling">More Details</a>)</li>
+<li>Improved compatibility with the JSON gem.
+(<a href="https://github.com/rails/rails/pull/12862">Pull Request</a> /
+<a href="upgrading_ruby_on_rails.html#changes-in-json-handling">More Details</a>)</li>
+<li>Added <code>ActiveSupport::Testing::TimeHelpers#travel</code> and <code>#travel_to</code>. These
+methods change current time to the given time or duration by stubbing
+<code>Time.now</code> and <code>Date.today</code>.</li>
+<li>Added <code>ActiveSupport::Testing::TimeHelpers#travel_back</code>. This method returns
+the current time to the original state, by removing the stubs added by <code>travel</code>
+and <code>travel_to</code>. (<a href="https://github.com/rails/rails/pull/13884">Pull Request</a>)</li>
+<li>Added <code>Numeric#in_milliseconds</code>, like <code>1.hour.in_milliseconds</code>, so we can feed
+them to JavaScript functions like
+<code>getTime()</code>. (<a href="https://github.com/rails/rails/commit/423249504a2b468d7a273cbe6accf4f21cb0e643">Commit</a>)</li>
+<li>Added <code>Date#middle_of_day</code>, <code>DateTime#middle_of_day</code> and <code>Time#middle_of_day</code>
+methods. Also added <code>midday</code>, <code>noon</code>, <code>at_midday</code>, <code>at_noon</code> and
+<code>at_middle_of_day</code> as
+aliases. (<a href="https://github.com/rails/rails/pull/10879">Pull Request</a>)</li>
+<li>Added <code>Date#all_week/month/quarter/year</code> for generating date
+ranges. (<a href="https://github.com/rails/rails/pull/9685">Pull Request</a>)</li>
+<li>Added <code>Time.zone.yesterday</code> and
+<code>Time.zone.tomorrow</code>. (<a href="https://github.com/rails/rails/pull/12822">Pull Request</a>)</li>
+<li>Added <code>String#remove(pattern)</code> as a short-hand for the common pattern of
+<code>String#gsub(pattern,'')</code>. (<a href="https://github.com/rails/rails/commit/5da23a3f921f0a4a3139495d2779ab0d3bd4cb5f">Commit</a>)</li>
+<li>Added <code>Hash#compact</code> and <code>Hash#compact!</code> for removing items with nil value
+from hash. (<a href="https://github.com/rails/rails/pull/13632">Pull Request</a>)</li>
+<li>
+<code>blank?</code> and <code>present?</code> commit to return
+singletons. (<a href="https://github.com/rails/rails/commit/126dc47665c65cd129967cbd8a5926dddd0aa514">Commit</a>)</li>
+<li>Default the new <code>I18n.enforce_available_locales</code> config to <code>true</code>, meaning
+<code>I18n</code> will make sure that all locales passed to it must be declared in the
+<code>available_locales</code>
+list. (<a href="https://github.com/rails/rails/pull/13341">Pull Request</a>)</li>
+<li>Introduce <code>Module#concerning</code>: a natural, low-ceremony way to separate
+responsibilities within a
+class. (<a href="https://github.com/rails/rails/commit/1eee0ca6de975b42524105a59e0521d18b38ab81">Commit</a>)</li>
+<li>Added <code>Object#presence_in</code> to simplify adding values to a permitted list.
+(<a href="https://github.com/rails/rails/commit/4edca106daacc5a159289eae255207d160f22396">Commit</a>)</li>
+</ul>
+</body>
+</html>

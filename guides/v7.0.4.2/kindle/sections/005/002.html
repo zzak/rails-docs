@@ -1,0 +1,183 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>3 Available Callbacks</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v7.0.4.2/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="available-callbacks"><a class="anchorlink" href="#available-callbacks">3 Available Callbacks</a></h3>
+<p>Here is a list with all the available Active Record callbacks, listed in the same order in which they will get called during the respective operations:</p>
+
+<h4 id="creating-an-object"><a class="anchorlink" href="#creating-an-object">3.1 Creating an Object</a></h4>
+<ul>
+<li><a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveModel/Validations/Callbacks/ClassMethods.html#method-i-before_validation"><code>before_validation</code></a></li>
+<li><a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveModel/Validations/Callbacks/ClassMethods.html#method-i-after_validation"><code>after_validation</code></a></li>
+<li><a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveRecord/Callbacks/ClassMethods.html#method-i-before_save"><code>before_save</code></a></li>
+<li><a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveRecord/Callbacks/ClassMethods.html#method-i-around_save"><code>around_save</code></a></li>
+<li><a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveRecord/Callbacks/ClassMethods.html#method-i-before_create"><code>before_create</code></a></li>
+<li><a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveRecord/Callbacks/ClassMethods.html#method-i-around_create"><code>around_create</code></a></li>
+<li><a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveRecord/Callbacks/ClassMethods.html#method-i-after_create"><code>after_create</code></a></li>
+<li><a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveRecord/Callbacks/ClassMethods.html#method-i-after_save"><code>after_save</code></a></li>
+<li>
+<a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveRecord/Transactions/ClassMethods.html#method-i-after_commit"><code>after_commit</code></a> / <a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveRecord/Transactions/ClassMethods.html#method-i-after_rollback"><code>after_rollback</code></a>
+</li>
+</ul>
+<h4 id="updating-an-object"><a class="anchorlink" href="#updating-an-object">3.2 Updating an Object</a></h4>
+<ul>
+<li><a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveModel/Validations/Callbacks/ClassMethods.html#method-i-before_validation"><code>before_validation</code></a></li>
+<li><a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveModel/Validations/Callbacks/ClassMethods.html#method-i-after_validation"><code>after_validation</code></a></li>
+<li><a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveRecord/Callbacks/ClassMethods.html#method-i-before_save"><code>before_save</code></a></li>
+<li><a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveRecord/Callbacks/ClassMethods.html#method-i-around_save"><code>around_save</code></a></li>
+<li><a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveRecord/Callbacks/ClassMethods.html#method-i-before_update"><code>before_update</code></a></li>
+<li><a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveRecord/Callbacks/ClassMethods.html#method-i-around_update"><code>around_update</code></a></li>
+<li><a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveRecord/Callbacks/ClassMethods.html#method-i-after_update"><code>after_update</code></a></li>
+<li><a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveRecord/Callbacks/ClassMethods.html#method-i-after_save"><code>after_save</code></a></li>
+<li>
+<a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveRecord/Transactions/ClassMethods.html#method-i-after_commit"><code>after_commit</code></a> / <a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveRecord/Transactions/ClassMethods.html#method-i-after_rollback"><code>after_rollback</code></a>
+</li>
+</ul>
+<h4 id="destroying-an-object"><a class="anchorlink" href="#destroying-an-object">3.3 Destroying an Object</a></h4>
+<ul>
+<li><a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveRecord/Callbacks/ClassMethods.html#method-i-before_destroy"><code>before_destroy</code></a></li>
+<li><a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveRecord/Callbacks/ClassMethods.html#method-i-around_destroy"><code>around_destroy</code></a></li>
+<li><a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveRecord/Callbacks/ClassMethods.html#method-i-after_destroy"><code>after_destroy</code></a></li>
+<li>
+<a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveRecord/Transactions/ClassMethods.html#method-i-after_commit"><code>after_commit</code></a> / <a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveRecord/Transactions/ClassMethods.html#method-i-after_rollback"><code>after_rollback</code></a>
+</li>
+</ul>
+<div class="warning"><p><code>after_save</code> runs both on create and update, but always <em>after</em> the more specific callbacks <code>after_create</code> and <code>after_update</code>, no matter the order in which the macro calls were executed.</p></div>
+
+<div class="warning"><p>Avoid updating or saving attributes in callbacks. For example, don't call <code>update(attribute: "value")</code> within a callback. This can alter the state of the model and may result in unexpected side effects during commit. Instead, you can safely assign values directly (for example, <code>self.attribute = "value"</code>) in <code>before_create</code> / <code>before_update</code> or earlier callbacks.</p></div>
+
+<div class="note"><p><code>before_destroy</code> callbacks should be placed before <code>dependent: :destroy</code>
+associations (or use the <code>prepend: true</code> option), to ensure they execute before
+the records are deleted by <code>dependent: :destroy</code>.</p></div>
+
+<h4 id="after-initialize-and-after-find"><a class="anchorlink" href="#after-initialize-and-after-find">3.4 <code>after_initialize</code> and <code>after_find</code></a></h4>
+
+<p>The <a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveRecord/Callbacks/ClassMethods.html#method-i-after_initialize"><code>after_initialize</code></a> callback will be called whenever an Active Record object is instantiated, either by directly using <code>new</code> or when a record is loaded from the database. It can be useful to avoid the need to directly override your Active Record <code>initialize</code> method.</p>
+
+<p>The <a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveRecord/Callbacks/ClassMethods.html#method-i-after_find"><code>after_find</code></a> callback will be called whenever Active Record loads a record from the database. <code>after_find</code> is called before <code>after_initialize</code> if both are defined.</p>
+
+<p>The <code>after_initialize</code> and <code>after_find</code> callbacks have no <code>before_*</code> counterparts, but they can be registered just like the other Active Record callbacks.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">User</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="n">after_initialize</span> <span class="k">do</span> <span class="o">|</span><span class="n">user</span><span class="o">|</span>
+    <span class="nb">puts</span> <span class="s2">"You have initialized an object!"</span>
+  <span class="k">end</span>
+
+  <span class="n">after_find</span> <span class="k">do</span> <span class="o">|</span><span class="n">user</span><span class="o">|</span>
+    <span class="nb">puts</span> <span class="s2">"You have found an object!"</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='class User &lt; ApplicationRecord
+  after_initialize do |user|
+    puts "You have initialized an object!"
+  end
+
+  after_find do |user|
+    puts "You have found an object!"
+  end
+end
+'>Copy</button>
+</div>
+<div class="code_container">
+<pre><code class="highlight irb"><span class="gp">irb&gt;</span><span class="w"> </span><span class="no">User</span><span class="p">.</span><span class="nf">new</span>
+<span class="go">You have initialized an object!
+</span><span class="p">=&gt;</span> <span class="kt">#&lt;</span><span class="no">User</span> <span class="ss">id: </span><span class="kp">nil</span><span class="kt">&gt;</span>
+
+<span class="gp">irb&gt;</span><span class="w"> </span><span class="no">User</span><span class="p">.</span><span class="nf">first</span>
+<span class="go">You have found an object!
+You have initialized an object!
+</span><span class="p">=&gt;</span> <span class="kt">#&lt;</span><span class="no">User</span> <span class="ss">id: </span><span class="mi">1</span><span class="kt">&gt;</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="User.new
+User.first
+">Copy</button>
+</div>
+<h4 id="after-touch"><a class="anchorlink" href="#after-touch">3.5 <code>after_touch</code></a></h4>
+
+<p>The <a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveRecord/Callbacks/ClassMethods.html#method-i-after_touch"><code>after_touch</code></a> callback will be called whenever an Active Record object is touched.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">User</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="n">after_touch</span> <span class="k">do</span> <span class="o">|</span><span class="n">user</span><span class="o">|</span>
+    <span class="nb">puts</span> <span class="s2">"You have touched an object"</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='class User &lt; ApplicationRecord
+  after_touch do |user|
+    puts "You have touched an object"
+  end
+end
+'>Copy</button>
+</div>
+<div class="code_container">
+<pre><code class="highlight irb"><span class="gp">irb&gt;</span><span class="w"> </span><span class="n">u</span> <span class="o">=</span> <span class="no">User</span><span class="p">.</span><span class="nf">create</span><span class="p">(</span><span class="ss">name: </span><span class="s1">'Kuldeep'</span><span class="p">)</span>
+<span class="p">=&gt;</span> <span class="kt">#&lt;</span><span class="no">User</span> <span class="ss">id: </span><span class="mi">1</span><span class="p">,</span> <span class="ss">name: </span><span class="s2">"Kuldeep"</span><span class="p">,</span> <span class="ss">created_at: </span><span class="s2">"2013-11-25 12:17:49"</span><span class="p">,</span> <span class="ss">updated_at: </span><span class="s2">"2013-11-25 12:17:49"</span><span class="kt">&gt;</span>
+
+<span class="gp">irb&gt;</span><span class="w"> </span><span class="n">u</span><span class="p">.</span><span class="nf">touch</span>
+<span class="go">You have touched an object
+</span><span class="p">=&gt;</span> <span class="kp">true</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="u = User.create(name: 'Kuldeep')
+u.touch
+">Copy</button>
+</div>
+<p>It can be used along with <code>belongs_to</code>:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">Employee</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="n">belongs_to</span> <span class="ss">:company</span><span class="p">,</span> <span class="ss">touch: </span><span class="kp">true</span>
+  <span class="n">after_touch</span> <span class="k">do</span>
+    <span class="nb">puts</span> <span class="s1">'An Employee was touched'</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+
+<span class="k">class</span> <span class="nc">Company</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="n">has_many</span> <span class="ss">:employees</span>
+  <span class="n">after_touch</span> <span class="ss">:log_when_employees_or_company_touched</span>
+
+  <span class="kp">private</span>
+    <span class="k">def</span> <span class="nf">log_when_employees_or_company_touched</span>
+      <span class="nb">puts</span> <span class="s1">'Employee/Company was touched'</span>
+    <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="class Employee &lt; ApplicationRecord
+  belongs_to :company, touch: true
+  after_touch do
+    puts 'An Employee was touched'
+  end
+end
+
+class Company &lt; ApplicationRecord
+  has_many :employees
+  after_touch :log_when_employees_or_company_touched
+
+  private
+    def log_when_employees_or_company_touched
+      puts 'Employee/Company was touched'
+    end
+end
+">Copy</button>
+</div>
+<div class="code_container">
+<pre><code class="highlight irb"><span class="gp">irb&gt;</span><span class="w"> </span><span class="vi">@employee</span> <span class="o">=</span> <span class="no">Employee</span><span class="p">.</span><span class="nf">last</span>
+<span class="p">=&gt;</span> <span class="kt">#&lt;</span><span class="no">Employee</span> <span class="ss">id: </span><span class="mi">1</span><span class="p">,</span> <span class="ss">company_id: </span><span class="mi">1</span><span class="p">,</span> <span class="ss">created_at: </span><span class="s2">"2013-11-25 17:04:22"</span><span class="p">,</span> <span class="ss">updated_at: </span><span class="s2">"2013-11-25 17:05:05"</span><span class="kt">&gt;</span>
+
+<span class="gp">irb&gt;</span><span class="w"> </span><span class="vi">@employee</span><span class="p">.</span><span class="nf">touch</span> <span class="c1"># triggers @employee.company.touch</span>
+<span class="go">An Employee was touched
+Employee/Company was touched
+</span><span class="p">=&gt;</span> <span class="kp">true</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="@employee = Employee.last
+@employee.touch # triggers @employee.company.touch
+">Copy</button>
+</div>
+</body>
+</html>

@@ -1,0 +1,62 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>9 Callback Classes</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v5.1.7/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="callback-classes">9 Callback Classes</h3>
+<p>Sometimes the callback methods that you'll write will be useful enough to be reused by other models. Active Record makes it possible to create classes that encapsulate the callback methods, so it becomes very easy to reuse them.</p>
+
+<p>Here's an example where we create a class with an <code>after_destroy</code> callback for a <code>PictureFile</code> model:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class PictureFileCallbacks
+  def after_destroy(picture_file)
+    if File.exist?(picture_file.filepath)
+      File.delete(picture_file.filepath)
+    end
+  end
+end
+
+</pre>
+</div>
+<p>When declared inside a class, as above, the callback methods will receive the model object as a parameter. We can now use the callback class in the model:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class PictureFile &lt; ApplicationRecord
+  after_destroy PictureFileCallbacks.new
+end
+
+</pre>
+</div>
+<p>Note that we needed to instantiate a new <code>PictureFileCallbacks</code> object, since we declared our callback as an instance method. This is particularly useful if the callbacks make use of the state of the instantiated object. Often, however, it will make more sense to declare the callbacks as class methods:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class PictureFileCallbacks
+  def self.after_destroy(picture_file)
+    if File.exist?(picture_file.filepath)
+      File.delete(picture_file.filepath)
+    end
+  end
+end
+
+</pre>
+</div>
+<p>If the callback method is declared this way, it won't be necessary to instantiate a <code>PictureFileCallbacks</code> object.</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class PictureFile &lt; ApplicationRecord
+  after_destroy PictureFileCallbacks
+end
+
+</pre>
+</div>
+<p>You can declare as many callbacks as you want inside your callback classes.</p>
+</body>
+</html>

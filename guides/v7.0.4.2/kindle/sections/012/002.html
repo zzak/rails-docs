@@ -1,0 +1,182 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>3 Making Select Boxes with Ease</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v7.0.4.2/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="making-select-boxes-with-ease"><a class="anchorlink" href="#making-select-boxes-with-ease">3 Making Select Boxes with Ease</a></h3>
+<p>Select boxes in HTML require a significant amount of markup - one <code>&lt;option&gt;</code> element for each option to choose from. So Rails provides helper methods to reduce this burden.</p>
+
+<p>For example, let's say we have a list of cities for the user to choose from. We can use the <a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActionView/Helpers/FormBuilder.html#method-i-select"><code>select</code></a> helper like so:</p>
+
+<div class="code_container">
+<pre><code class="highlight erb"><span class="cp">&lt;%=</span> <span class="n">form</span><span class="p">.</span><span class="nf">select</span> <span class="ss">:city</span><span class="p">,</span> <span class="p">[</span><span class="s2">"Berlin"</span><span class="p">,</span> <span class="s2">"Chicago"</span><span class="p">,</span> <span class="s2">"Madrid"</span><span class="p">]</span> <span class="cp">%&gt;</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='&lt;%= form.select :city, ["Berlin", "Chicago", "Madrid"] %&gt;
+'>Copy</button>
+</div>
+<p>Output:</p>
+
+<div class="code_container">
+<pre><code class="highlight html"><span class="nt">&lt;select</span> <span class="na">name=</span><span class="s">"city"</span> <span class="na">id=</span><span class="s">"city"</span><span class="nt">&gt;</span>
+  <span class="nt">&lt;option</span> <span class="na">value=</span><span class="s">"Berlin"</span><span class="nt">&gt;</span>Berlin<span class="nt">&lt;/option&gt;</span>
+  <span class="nt">&lt;option</span> <span class="na">value=</span><span class="s">"Chicago"</span><span class="nt">&gt;</span>Chicago<span class="nt">&lt;/option&gt;</span>
+  <span class="nt">&lt;option</span> <span class="na">value=</span><span class="s">"Madrid"</span><span class="nt">&gt;</span>Madrid<span class="nt">&lt;/option&gt;</span>
+<span class="nt">&lt;/select&gt;</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='&lt;select name="city" id="city"&gt;
+  &lt;option value="Berlin"&gt;Berlin&lt;/option&gt;
+  &lt;option value="Chicago"&gt;Chicago&lt;/option&gt;
+  &lt;option value="Madrid"&gt;Madrid&lt;/option&gt;
+&lt;/select&gt;
+'>Copy</button>
+</div>
+<p>We can also designate <code>&lt;option&gt;</code> values that differ from their labels:</p>
+
+<div class="code_container">
+<pre><code class="highlight erb"><span class="cp">&lt;%=</span> <span class="n">form</span><span class="p">.</span><span class="nf">select</span> <span class="ss">:city</span><span class="p">,</span> <span class="p">[[</span><span class="s2">"Berlin"</span><span class="p">,</span> <span class="s2">"BE"</span><span class="p">],</span> <span class="p">[</span><span class="s2">"Chicago"</span><span class="p">,</span> <span class="s2">"CHI"</span><span class="p">],</span> <span class="p">[</span><span class="s2">"Madrid"</span><span class="p">,</span> <span class="s2">"MD"</span><span class="p">]]</span> <span class="cp">%&gt;</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='&lt;%= form.select :city, [["Berlin", "BE"], ["Chicago", "CHI"], ["Madrid", "MD"]] %&gt;
+'>Copy</button>
+</div>
+<p>Output:</p>
+
+<div class="code_container">
+<pre><code class="highlight html"><span class="nt">&lt;select</span> <span class="na">name=</span><span class="s">"city"</span> <span class="na">id=</span><span class="s">"city"</span><span class="nt">&gt;</span>
+  <span class="nt">&lt;option</span> <span class="na">value=</span><span class="s">"BE"</span><span class="nt">&gt;</span>Berlin<span class="nt">&lt;/option&gt;</span>
+  <span class="nt">&lt;option</span> <span class="na">value=</span><span class="s">"CHI"</span><span class="nt">&gt;</span>Chicago<span class="nt">&lt;/option&gt;</span>
+  <span class="nt">&lt;option</span> <span class="na">value=</span><span class="s">"MD"</span><span class="nt">&gt;</span>Madrid<span class="nt">&lt;/option&gt;</span>
+<span class="nt">&lt;/select&gt;</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='&lt;select name="city" id="city"&gt;
+  &lt;option value="BE"&gt;Berlin&lt;/option&gt;
+  &lt;option value="CHI"&gt;Chicago&lt;/option&gt;
+  &lt;option value="MD"&gt;Madrid&lt;/option&gt;
+&lt;/select&gt;
+'>Copy</button>
+</div>
+<p>This way, the user will see the full city name, but <code>params[:city]</code> will be one of <code>"BE"</code>, <code>"CHI"</code>, or <code>"MD"</code>.</p>
+
+<p>Lastly, we can specify a default choice for the select box with the <code>:selected</code> argument:</p>
+
+<div class="code_container">
+<pre><code class="highlight erb"><span class="cp">&lt;%=</span> <span class="n">form</span><span class="p">.</span><span class="nf">select</span> <span class="ss">:city</span><span class="p">,</span> <span class="p">[[</span><span class="s2">"Berlin"</span><span class="p">,</span> <span class="s2">"BE"</span><span class="p">],</span> <span class="p">[</span><span class="s2">"Chicago"</span><span class="p">,</span> <span class="s2">"CHI"</span><span class="p">],</span> <span class="p">[</span><span class="s2">"Madrid"</span><span class="p">,</span> <span class="s2">"MD"</span><span class="p">]],</span> <span class="ss">selected: </span><span class="s2">"CHI"</span> <span class="cp">%&gt;</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='&lt;%= form.select :city, [["Berlin", "BE"], ["Chicago", "CHI"], ["Madrid", "MD"]], selected: "CHI" %&gt;
+'>Copy</button>
+</div>
+<p>Output:</p>
+
+<div class="code_container">
+<pre><code class="highlight html"><span class="nt">&lt;select</span> <span class="na">name=</span><span class="s">"city"</span> <span class="na">id=</span><span class="s">"city"</span><span class="nt">&gt;</span>
+  <span class="nt">&lt;option</span> <span class="na">value=</span><span class="s">"BE"</span><span class="nt">&gt;</span>Berlin<span class="nt">&lt;/option&gt;</span>
+  <span class="nt">&lt;option</span> <span class="na">value=</span><span class="s">"CHI"</span> <span class="na">selected=</span><span class="s">"selected"</span><span class="nt">&gt;</span>Chicago<span class="nt">&lt;/option&gt;</span>
+  <span class="nt">&lt;option</span> <span class="na">value=</span><span class="s">"MD"</span><span class="nt">&gt;</span>Madrid<span class="nt">&lt;/option&gt;</span>
+<span class="nt">&lt;/select&gt;</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='&lt;select name="city" id="city"&gt;
+  &lt;option value="BE"&gt;Berlin&lt;/option&gt;
+  &lt;option value="CHI" selected="selected"&gt;Chicago&lt;/option&gt;
+  &lt;option value="MD"&gt;Madrid&lt;/option&gt;
+&lt;/select&gt;
+'>Copy</button>
+</div>
+<h4 id="option-groups"><a class="anchorlink" href="#option-groups">3.1 Option Groups</a></h4>
+
+<p>In some cases we may want to improve the user experience by grouping related options together. We can do so by passing a <code>Hash</code> (or comparable <code>Array</code>) to <code>select</code>:</p>
+
+<div class="code_container">
+<pre><code class="highlight erb"><span class="cp">&lt;%=</span> <span class="n">form</span><span class="p">.</span><span class="nf">select</span> <span class="ss">:city</span><span class="p">,</span>
+      <span class="p">{</span>
+        <span class="s2">"Europe"</span> <span class="o">=&gt;</span> <span class="p">[</span> <span class="p">[</span><span class="s2">"Berlin"</span><span class="p">,</span> <span class="s2">"BE"</span><span class="p">],</span> <span class="p">[</span><span class="s2">"Madrid"</span><span class="p">,</span> <span class="s2">"MD"</span><span class="p">]</span> <span class="p">],</span>
+        <span class="s2">"North America"</span> <span class="o">=&gt;</span> <span class="p">[</span> <span class="p">[</span><span class="s2">"Chicago"</span><span class="p">,</span> <span class="s2">"CHI"</span><span class="p">]</span> <span class="p">],</span>
+      <span class="p">},</span>
+      <span class="ss">selected: </span><span class="s2">"CHI"</span> <span class="cp">%&gt;</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='&lt;%= form.select :city,
+      {
+        "Europe" =&gt; [ ["Berlin", "BE"], ["Madrid", "MD"] ],
+        "North America" =&gt; [ ["Chicago", "CHI"] ],
+      },
+      selected: "CHI" %&gt;
+'>Copy</button>
+</div>
+<p>Output:</p>
+
+<div class="code_container">
+<pre><code class="highlight html"><span class="nt">&lt;select</span> <span class="na">name=</span><span class="s">"city"</span> <span class="na">id=</span><span class="s">"city"</span><span class="nt">&gt;</span>
+  <span class="nt">&lt;optgroup</span> <span class="na">label=</span><span class="s">"Europe"</span><span class="nt">&gt;</span>
+    <span class="nt">&lt;option</span> <span class="na">value=</span><span class="s">"BE"</span><span class="nt">&gt;</span>Berlin<span class="nt">&lt;/option&gt;</span>
+    <span class="nt">&lt;option</span> <span class="na">value=</span><span class="s">"MD"</span><span class="nt">&gt;</span>Madrid<span class="nt">&lt;/option&gt;</span>
+  <span class="nt">&lt;/optgroup&gt;</span>
+  <span class="nt">&lt;optgroup</span> <span class="na">label=</span><span class="s">"North America"</span><span class="nt">&gt;</span>
+    <span class="nt">&lt;option</span> <span class="na">value=</span><span class="s">"CHI"</span> <span class="na">selected=</span><span class="s">"selected"</span><span class="nt">&gt;</span>Chicago<span class="nt">&lt;/option&gt;</span>
+  <span class="nt">&lt;/optgroup&gt;</span>
+<span class="nt">&lt;/select&gt;</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='&lt;select name="city" id="city"&gt;
+  &lt;optgroup label="Europe"&gt;
+    &lt;option value="BE"&gt;Berlin&lt;/option&gt;
+    &lt;option value="MD"&gt;Madrid&lt;/option&gt;
+  &lt;/optgroup&gt;
+  &lt;optgroup label="North America"&gt;
+    &lt;option value="CHI" selected="selected"&gt;Chicago&lt;/option&gt;
+  &lt;/optgroup&gt;
+&lt;/select&gt;
+'>Copy</button>
+</div>
+<h4 id="select-boxes-and-model-objects"><a class="anchorlink" href="#select-boxes-and-model-objects">3.2 Select Boxes and Model Objects</a></h4>
+
+<p>Like other form controls, a select box can be bound to a model attribute. For example, if we have a <code>@person</code> model object like:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="vi">@person</span> <span class="o">=</span> <span class="no">Person</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="ss">city: </span><span class="s2">"MD"</span><span class="p">)</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='@person = Person.new(city: "MD")
+'>Copy</button>
+</div>
+<p>The following form:</p>
+
+<div class="code_container">
+<pre><code class="highlight erb"><span class="cp">&lt;%=</span> <span class="n">form_with</span> <span class="ss">model: </span><span class="vi">@person</span> <span class="k">do</span> <span class="o">|</span><span class="n">form</span><span class="o">|</span> <span class="cp">%&gt;</span>
+  <span class="cp">&lt;%=</span> <span class="n">form</span><span class="p">.</span><span class="nf">select</span> <span class="ss">:city</span><span class="p">,</span> <span class="p">[[</span><span class="s2">"Berlin"</span><span class="p">,</span> <span class="s2">"BE"</span><span class="p">],</span> <span class="p">[</span><span class="s2">"Chicago"</span><span class="p">,</span> <span class="s2">"CHI"</span><span class="p">],</span> <span class="p">[</span><span class="s2">"Madrid"</span><span class="p">,</span> <span class="s2">"MD"</span><span class="p">]]</span> <span class="cp">%&gt;</span>
+<span class="cp">&lt;%</span> <span class="k">end</span> <span class="cp">%&gt;</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='&lt;%= form_with model: @person do |form| %&gt;
+  &lt;%= form.select :city, [["Berlin", "BE"], ["Chicago", "CHI"], ["Madrid", "MD"]] %&gt;
+&lt;% end %&gt;
+'>Copy</button>
+</div>
+<p>Outputs a select box like:</p>
+
+<div class="code_container">
+<pre><code class="highlight html"><span class="nt">&lt;select</span> <span class="na">name=</span><span class="s">"person[city]"</span> <span class="na">id=</span><span class="s">"person_city"</span><span class="nt">&gt;</span>
+  <span class="nt">&lt;option</span> <span class="na">value=</span><span class="s">"BE"</span><span class="nt">&gt;</span>Berlin<span class="nt">&lt;/option&gt;</span>
+  <span class="nt">&lt;option</span> <span class="na">value=</span><span class="s">"CHI"</span><span class="nt">&gt;</span>Chicago<span class="nt">&lt;/option&gt;</span>
+  <span class="nt">&lt;option</span> <span class="na">value=</span><span class="s">"MD"</span> <span class="na">selected=</span><span class="s">"selected"</span><span class="nt">&gt;</span>Madrid<span class="nt">&lt;/option&gt;</span>
+<span class="nt">&lt;/select&gt;</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='&lt;select name="person[city]" id="person_city"&gt;
+  &lt;option value="BE"&gt;Berlin&lt;/option&gt;
+  &lt;option value="CHI"&gt;Chicago&lt;/option&gt;
+  &lt;option value="MD" selected="selected"&gt;Madrid&lt;/option&gt;
+&lt;/select&gt;
+'>Copy</button>
+</div>
+<p>Notice that the appropriate option was automatically marked <code>selected="selected"</code>. Since this select box was bound to a model, we didn't need to specify a <code>:selected</code> argument!</p>
+
+<h4 id="time-zone-and-country-select"><a class="anchorlink" href="#time-zone-and-country-select">3.3 Time Zone and Country Select</a></h4>
+
+<p>To leverage time zone support in Rails, you have to ask your users what time zone they are in. Doing so would require generating select options from a list of pre-defined <a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveSupport/TimeZone.html"><code>ActiveSupport::TimeZone</code></a> objects, but you can simply use the <a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActionView/Helpers/FormBuilder.html#method-i-time_zone_select"><code>time_zone_select</code></a> helper that already wraps this:</p>
+
+<div class="code_container">
+<pre><code class="highlight erb"><span class="cp">&lt;%=</span> <span class="n">form</span><span class="p">.</span><span class="nf">time_zone_select</span> <span class="ss">:time_zone</span> <span class="cp">%&gt;</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="&lt;%= form.time_zone_select :time_zone %&gt;
+">Copy</button>
+</div>
+<p>Rails <em>used</em> to have a <code>country_select</code> helper for choosing countries, but this has been extracted to the <a href="https://github.com/stefanpenner/country_select">country_select plugin</a>.</p>
+</body>
+</html>

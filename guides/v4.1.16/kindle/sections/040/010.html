@@ -1,0 +1,45 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>11 Deprecated</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v4.1.16/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="deprecated">11 Deprecated</h3>
+<p>A few pieces of older code are deprecated in this release:</p>
+<ul>
+<li>
+<code>Rails::SecretKeyGenerator</code> has been replaced by <code>ActiveSupport::SecureRandom</code>
+</li>
+<li>
+<code>render_component</code> is deprecated. There's a <a href="http://github.com/rails/render_component/tree/master">render_components plugin</a> available if you need this functionality.</li>
+<li>
+Implicit local assignments when rendering partials has been deprecated.
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+def partial_with_implicit_local_assignment
+  @customer = Customer.new("Marcel")
+  render :partial =&gt; "customer"
+end
+
+</pre>
+</div>
+Previously the above code made available a local variable called <code>customer</code> inside the partial 'customer'. You should explicitly pass all the variables via :locals hash now.
+</li>
+<li>
+<code>country_select</code> has been removed. See the <a href="http://www.rubyonrails.org/deprecation/list-of-countries">deprecation page</a> for more information and a plugin replacement.</li>
+<li>
+<code>ActiveRecord::Base.allow_concurrency</code> no longer has any effect.</li>
+<li>
+<code>ActiveRecord::Errors.default_error_messages</code> has been deprecated in favor of <code>I18n.translate('activerecord.errors.messages')</code>
+</li>
+<li>The <code>%s</code> and <code>%d</code> interpolation syntax for internationalization is deprecated.</li>
+<li>
+<code>String#chars</code> has been deprecated in favor of <code>String#mb_chars</code>.</li>
+<li>Durations of fractional months or fractional years are deprecated. Use Ruby's core <code>Date</code> and <code>Time</code> class arithmetic instead.</li>
+<li>
+<code>Request#relative_url_root</code> is deprecated. Use <code>ActionController::Base.relative_url_root</code> instead.</li>
+</ul>
+</body>
+</html>

@@ -1,0 +1,100 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>3 Parallel Testing</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v6.0.6.1/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="parallel-testing"><a class="anchorlink" href="#parallel-testing">3 Parallel Testing</a></h3>
+<p>Parallel testing allows you to parallelize your test suite. While forking processes is the
+default method, threading is supported as well. Running tests in parallel reduces the time it
+takes your entire test suite to run.</p>
+
+<h4 id="parallel-testing-with-processes"><a class="anchorlink" href="#parallel-testing-with-processes">3.1 Parallel testing with processes</a></h4>
+
+<p>The default parallelization method is to fork processes using Ruby's DRb system. The processes
+are forked based on the number of workers provided. The default number is the actual core count
+on the machine you are on, but can be changed by the number passed to the parallelize method.</p>
+
+<p>To enable parallelization add the following to your <code>test_helper.rb</code>:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class ActiveSupport::TestCase
+  parallelize(workers: 2)
+end
+
+</pre>
+</div>
+<p>The number of workers passed is the number of times the process will be forked. You may want to
+parallelize your local test suite differently from your CI, so an environment variable is provided
+to be able to easily change the number of workers a test run should use:</p>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+PARALLEL_WORKERS=15 rails test
+
+</pre>
+</div>
+<p>When parallelizing tests, Active Record automatically handles creating a database and loading the schema into the database for each
+process. The databases will be suffixed with the number corresponding to the worker. For example, if you
+have 2 workers the tests will create <code>test-database-0</code> and <code>test-database-1</code> respectively.</p>
+
+<p>If the number of workers passed is 1 or fewer the processes will not be forked and the tests will not
+be parallelized and the tests will use the original <code>test-database</code> database.</p>
+
+<p>Two hooks are provided, one runs when the process is forked, and one runs before the forked process is closed.
+These can be useful if your app uses multiple databases or perform other tasks that depend on the number of
+workers.</p>
+
+<p>The <code>parallelize_setup</code> method is called right after the processes are forked. The <code>parallelize_teardown</code> method
+is called right before the processes are closed.</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class ActiveSupport::TestCase
+  parallelize_setup do |worker|
+    # setup databases
+  end
+
+  parallelize_teardown do |worker|
+    # cleanup databases
+  end
+
+  parallelize(workers: :number_of_processors)
+end
+
+</pre>
+</div>
+<p>These methods are not needed or available when using parallel testing with threads.</p>
+
+<h4 id="parallel-testing-with-threads"><a class="anchorlink" href="#parallel-testing-with-threads">3.2 Parallel testing with threads</a></h4>
+
+<p>If you prefer using threads or are using JRuby, a threaded parallelization option is provided. The threaded
+parallelizer is backed by Minitest's <code>Parallel::Executor</code>.</p>
+
+<p>To change the parallelization method to use threads over forks put the following in your <code>test_helper.rb</code></p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class ActiveSupport::TestCase
+  parallelize(workers: :number_of_processors, with: :threads)
+end
+
+</pre>
+</div>
+<p>Rails applications generated from JRuby will automatically include the <code>with: :threads</code> option.</p>
+
+<p>The number of workers passed to <code>parallelize</code> determines the number of threads the tests will use. You may
+want to parallelize your local test suite differently from your CI, so an environment variable is provided
+to be able to easily change the number of workers a test run should use:</p>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+PARALLEL_WORKERS=15 rails test
+
+</pre>
+</div>
+</body>
+</html>

@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>ActiveSupport::Duration::ISO8601Serializer</title>
+    <meta charset="UTF-8" />
+    <link rel="stylesheet" href="../../../css/reset.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="../../../css/main.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="../../../css/github.css" type="text/css" media="screen" />
+<script src="../../../js/jquery-1.3.2.min.js" type="text/javascript" charset="utf-8"></script>
+<script src="../../../js/main.js" type="text/javascript" charset="utf-8"></script>
+<script src="../../../js/highlight.pack.js" type="text/javascript" charset="utf-8"></script>
+
+
+    <meta property="og:title" value="ActiveSupport::Duration::ISO8601Serializer">
+
+  
+    
+    <meta name="description" content="Serializes duration to string according to ISO 8601 Duration format.">
+    <meta property="og:description" content="Serializes duration to string according to ISO 8601 Duration format.">
+  
+
+    <meta name="keywords" content="ActiveSupport::Duration::ISO8601Serializer class">
+  
+    <meta name="keywords" content="new, serialize">
+  
+</head>
+
+<body>
+    <div class="banner">
+        
+            <span>Ruby on Rails 5.0.7.2</span><br />
+        
+        <h1>
+            <span class="type">Class</span>
+            ActiveSupport::Duration::ISO8601Serializer
+            
+                <span class="parent">&lt;
+                    
+                    <a href="../../Object.html">Object</a>
+                    
+                </span>
+            
+        </h1>
+        <ul class="files">
+            
+            <li><a href="../../../files/activesupport/lib/active_support/duration/iso8601_serializer_rb.html">activesupport/lib/active_support/duration/iso8601_serializer.rb</a></li>
+            
+        </ul>
+    </div>
+    <div id="bodyContent">
+        <div id="content">
+  
+    <div class="description">
+      
+<p>Serializes duration to string according to ISO 8601 <a
+href="../Duration.html">Duration</a> format.</p>
+
+    </div>
+  
+
+
+  
+
+
+  
+  
+
+
+  
+
+
+  
+    <!-- Method ref -->
+    <div class="sectiontitle">Methods</div>
+    <dl class="methods">
+      
+        <dt>N</dt>
+        <dd>
+          <ul>
+            
+              
+              <li>
+                <a href="#method-c-new">new</a>
+              </li>
+            
+          </ul>
+        </dd>
+      
+        <dt>S</dt>
+        <dd>
+          <ul>
+            
+              
+              <li>
+                <a href="#method-i-serialize">serialize</a>
+              </li>
+            
+          </ul>
+        </dd>
+      
+    </dl>
+  
+
+  
+
+
+
+  
+
+    
+
+    
+
+    
+
+
+    
+
+
+    <!-- Methods -->
+    
+      <div class="sectiontitle">Class Public methods</div>
+      
+        <div class="method">
+          <div class="title method-title" id="method-c-new">
+            
+              <b>new</b>(duration, precision: nil)
+            
+            <a href="../../../classes/ActiveSupport/Duration/ISO8601Serializer.html#method-c-new" name="method-c-new" class="permalink">Link</a>
+          </div>
+
+          
+            <div class="description">
+              
+            </div>
+          
+
+          
+
+          
+
+          
+            
+            <div class="sourcecode">
+              
+              <p class="source-link">
+                Source:
+                <a href="javascript:toggleSource('method-c-new_source')" id="l_method-c-new_source">show</a>
+                
+                  | <a href="https://github.com/rails/rails/blob/04c512da1247a54474cfd8bef17a9e9019c34004/activesupport/lib/active_support/duration/iso8601_serializer.rb#L8" target="_blank" class="github_url">on GitHub</a>
+                
+              </p>
+              <div id="method-c-new_source" class="dyn-source">
+                <pre><span class="ruby-comment"># File activesupport/lib/active_support/duration/iso8601_serializer.rb, line 8</span>
+<span class="ruby-keyword">def</span> <span class="ruby-keyword ruby-title">initialize</span>(<span class="ruby-identifier">duration</span>, <span class="ruby-identifier">precision</span><span class="ruby-operator">:</span> <span class="ruby-keyword">nil</span>)
+  <span class="ruby-ivar">@duration</span> = <span class="ruby-identifier">duration</span>
+  <span class="ruby-ivar">@precision</span> = <span class="ruby-identifier">precision</span>
+<span class="ruby-keyword">end</span></pre>
+              </div>
+            </div>
+            
+          </div>
+                  
+      <div class="sectiontitle">Instance Public methods</div>
+      
+        <div class="method">
+          <div class="title method-title" id="method-i-serialize">
+            
+              <b>serialize</b>()
+            
+            <a href="../../../classes/ActiveSupport/Duration/ISO8601Serializer.html#method-i-serialize" name="method-i-serialize" class="permalink">Link</a>
+          </div>
+
+          
+            <div class="description">
+              <p>Builds and returns output string.</p>
+            </div>
+          
+
+          
+
+          
+
+          
+            
+            <div class="sourcecode">
+              
+              <p class="source-link">
+                Source:
+                <a href="javascript:toggleSource('method-i-serialize_source')" id="l_method-i-serialize_source">show</a>
+                
+                  | <a href="https://github.com/rails/rails/blob/04c512da1247a54474cfd8bef17a9e9019c34004/activesupport/lib/active_support/duration/iso8601_serializer.rb#L14" target="_blank" class="github_url">on GitHub</a>
+                
+              </p>
+              <div id="method-i-serialize_source" class="dyn-source">
+                <pre><span class="ruby-comment"># File activesupport/lib/active_support/duration/iso8601_serializer.rb, line 14</span>
+<span class="ruby-keyword">def</span> <span class="ruby-keyword ruby-title">serialize</span>
+  <span class="ruby-identifier">output</span> = <span class="ruby-string">&#39;P&#39;</span>
+  <span class="ruby-identifier">parts</span>, <span class="ruby-identifier">sign</span> = <span class="ruby-identifier">normalize</span>
+  <span class="ruby-identifier">output</span> <span class="ruby-operator">&lt;&lt;</span> <span class="ruby-node">&quot;#{parts[:years]}Y&quot;</span>   <span class="ruby-keyword">if</span> <span class="ruby-identifier">parts</span>.<span class="ruby-identifier">key?</span>(<span class="ruby-value">:years</span>)
+  <span class="ruby-identifier">output</span> <span class="ruby-operator">&lt;&lt;</span> <span class="ruby-node">&quot;#{parts[:months]}M&quot;</span>  <span class="ruby-keyword">if</span> <span class="ruby-identifier">parts</span>.<span class="ruby-identifier">key?</span>(<span class="ruby-value">:months</span>)
+  <span class="ruby-identifier">output</span> <span class="ruby-operator">&lt;&lt;</span> <span class="ruby-node">&quot;#{parts[:weeks]}W&quot;</span>   <span class="ruby-keyword">if</span> <span class="ruby-identifier">parts</span>.<span class="ruby-identifier">key?</span>(<span class="ruby-value">:weeks</span>)
+  <span class="ruby-identifier">output</span> <span class="ruby-operator">&lt;&lt;</span> <span class="ruby-node">&quot;#{parts[:days]}D&quot;</span>    <span class="ruby-keyword">if</span> <span class="ruby-identifier">parts</span>.<span class="ruby-identifier">key?</span>(<span class="ruby-value">:days</span>)
+  <span class="ruby-identifier">time</span> = <span class="ruby-string">&#39;&#39;</span>
+  <span class="ruby-identifier">time</span> <span class="ruby-operator">&lt;&lt;</span> <span class="ruby-node">&quot;#{parts[:hours]}H&quot;</span>     <span class="ruby-keyword">if</span> <span class="ruby-identifier">parts</span>.<span class="ruby-identifier">key?</span>(<span class="ruby-value">:hours</span>)
+  <span class="ruby-identifier">time</span> <span class="ruby-operator">&lt;&lt;</span> <span class="ruby-node">&quot;#{parts[:minutes]}M&quot;</span>   <span class="ruby-keyword">if</span> <span class="ruby-identifier">parts</span>.<span class="ruby-identifier">key?</span>(<span class="ruby-value">:minutes</span>)
+  <span class="ruby-keyword">if</span> <span class="ruby-identifier">parts</span>.<span class="ruby-identifier">key?</span>(<span class="ruby-value">:seconds</span>)
+    <span class="ruby-identifier">time</span> <span class="ruby-operator">&lt;&lt;</span> <span class="ruby-node">&quot;#{sprintf(@precision ? &quot;%0.0#{@precision}f&quot; : &#39;%g&#39;, parts[:seconds])}S&quot;</span>
+  <span class="ruby-keyword">end</span>
+  <span class="ruby-identifier">output</span> <span class="ruby-operator">&lt;&lt;</span> <span class="ruby-node">&quot;T#{time}&quot;</span>  <span class="ruby-keyword">if</span> <span class="ruby-identifier">time</span>.<span class="ruby-identifier">present?</span>
+  <span class="ruby-node">&quot;#{sign}#{output}&quot;</span>
+<span class="ruby-keyword">end</span></pre>
+              </div>
+            </div>
+            
+          </div>
+                    </div>
+
+    </div>
+  </body>
+</html>

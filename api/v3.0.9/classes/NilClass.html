@@ -1,0 +1,268 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html 
+     PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+  <head>
+    <title>Class: NilClass</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <link rel="stylesheet" href="../rdoc-style.css" type="text/css" media="screen" />
+
+    <script language="JavaScript" type="text/javascript">
+    // <![CDATA[
+
+        function toggleSource( id )
+        {
+          var elem
+          var link
+
+          if( document.getElementById )
+          {
+            elem = document.getElementById( id )
+            link = document.getElementById( "l_" + id )
+          }
+          else if ( document.all )
+          {
+            elem = eval( "document.all." + id )
+            link = eval( "document.all.l_" + id )
+          }
+          else
+            return false;
+
+          if( elem.style.display == "block" )
+          {
+            elem.style.display = "none"
+            link.innerHTML = "show source"
+          }
+          else
+          {
+            elem.style.display = "block"
+            link.innerHTML = "hide source"
+          }
+        }
+
+        function openCode( url )
+        {
+          window.open( url, "SOURCE_CODE", "resizable=yes,scrollbars=yes,toolbar=no,status=no,height=480,width=750" ).focus();
+        }
+      // ]]>
+    </script>
+  </head>
+
+  <body>
+    <table width="100%" border='0' cellpadding='0' cellspacing='0' class='banner'>
+    <tr><td>Ruby on Rails v3.0.9</td></tr>
+    <tr>
+  <td class="file-title"><span class="file-title-prefix">Class</span><br />NilClass</td>
+  <td align="right">
+    <table cellspacing="0" cellpadding="2">
+      <tr valign="top">
+        <td>In:</td>
+        <td>
+<a href="../files/activesupport/lib/active_support/json/encoding_rb.html">activesupport/lib/active_support/json/encoding.rb</a>:
+<a href="../files/activesupport/lib/active_support/core_ext/object/to_param_rb.html">activesupport/lib/active_support/core_ext/object/to_param.rb</a>:
+<a href="../files/activesupport/lib/active_support/core_ext/object/try_rb.html">activesupport/lib/active_support/core_ext/object/try.rb</a>:
+<a href="../files/activesupport/lib/active_support/core_ext/object/duplicable_rb.html">activesupport/lib/active_support/core_ext/object/duplicable.rb</a>:
+<a href="../files/activesupport/lib/active_support/core_ext/object/blank_rb.html">activesupport/lib/active_support/core_ext/object/blank.rb</a>:
+<a href="../files/activesupport/lib/active_support/whiny_nil_rb.html">activesupport/lib/active_support/whiny_nil.rb</a>:
+        </td>
+      </tr>
+      <tr>
+        <td>Parent:</td>
+        <td>
+
+      <a href="Object.html">Object</a>         </td>
+     </tr>
+         </table>
+        </td>
+        </tr>
+      </table>
+  <div id="bodyContent">
+  <div id="content">
+
+  <div class="description">
+<p>Extensions to <tt>nil</tt> which allow for more helpful error messages for
+people who are new to <a href="Rails.html">Rails</a>.</p>
+
+<p>Ruby raises NoMethodError if you invoke a method on an object that does not
+respond to it:</p>
+
+<pre>$ ruby -e nil.destroy
+-e:1: undefined method `destroy' for nil:NilClass (NoMethodError)</pre>
+
+<p>With these extensions, if the method belongs to the public interface of the
+classes in NilClass::WHINERS the error message suggests which could be the
+actual intended class:</p>
+
+<pre>$ rails runner nil.destroy
+...
+You might have expected an instance of ActiveRecord::Base.
+...</pre>
+
+<p><a href="NilClass.html#method-i-id">NilClass#id</a> exists in Ruby 1.8
+(though it is deprecated). Since <tt>id</tt> is a fundamental method of
+Active Record models <a href="NilClass.html#method-i-id">NilClass#id</a> is
+redefined as well to raise a RuntimeError and warn the user. She probably
+wanted a model database identifier and the 4 returned by the original
+method could result in obscure bugs.</p>
+
+<p>The flag <tt>config.whiny_nils</tt> determines whether this feature is
+enabled. By default it is on in development and test modes, and it is off
+in production mode.</p>
+</div>
+
+
+  <div class="sectiontitle">Methods</div>
+  <ul>
+                <li><a href="#method-c-add_whiner">add_whiner</a></li>
+                <li><a href="#method-i-as_json">as_json</a></li>
+                <li><a href="#method-i-id">id</a></li>
+                <li><a href="#method-i-to_param">to_param</a></li>
+      </ul>
+
+
+  <div class="sectiontitle">Constants</div>
+  <table border='0' cellpadding='5'>
+  <tr valign='top'>
+    <td class="attr-name">AS_JSON</td>
+    <td>=</td>
+    <td class="attr-value">ActiveSupport::JSON::Variable.new('null').freeze</td>
+  </tr>
+  <tr valign='top'>
+    <td class="attr-name">METHOD_CLASS_MAP</td>
+    <td>=</td>
+    <td class="attr-value">Hash.new</td>
+  </tr>
+  </table>
+
+
+        
+    <div class="sectiontitle">
+      Public      Class      methods
+    </div>
+
+          
+      <div class="method">
+        <div class="title">
+                      <a name="method-c-add_whiner"></a>
+            <b>add_whiner</b>(klass)          
+        </div>
+
+                  <div class="description">
+                      </div>
+        
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('add_whiner_source')"
+                 id="l_method-c-add_whiner_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="add_whiner_source">
+<pre>
+  <span class="ruby-comment"># File activesupport/lib/active_support/whiny_nil.rb, line 30</span>
+<span class="ruby-keyword">def</span> <span class="ruby-keyword">self</span>.<span class="ruby-identifier">add_whiner</span>(<span class="ruby-identifier">klass</span>)
+  <span class="ruby-identifier">methods</span> = <span class="ruby-identifier">klass</span>.<span class="ruby-identifier">public_instance_methods</span> <span class="ruby-operator">-</span> <span class="ruby-identifier">public_instance_methods</span>
+  <span class="ruby-identifier">class_name</span> = <span class="ruby-identifier">klass</span>.<span class="ruby-identifier">name</span>
+  <span class="ruby-identifier">methods</span>.<span class="ruby-identifier">each</span> { <span class="ruby-operator">|</span><span class="ruby-identifier">method</span><span class="ruby-operator">|</span> <span class="ruby-constant">METHOD_CLASS_MAP</span>[<span class="ruby-identifier">method</span>.<span class="ruby-identifier">to_sym</span>] = <span class="ruby-identifier">class_name</span> }
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+                      
+    <div class="sectiontitle">
+      Public      Instance      methods
+    </div>
+
+          
+      <div class="method">
+        <div class="title">
+                      <a name="method-i-as_json"></a>
+            <b>as_json</b>(options = nil)          
+        </div>
+
+                  <div class="description">
+                      </div>
+        
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('as_json_source')"
+                 id="l_method-i-as_json_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="as_json_source">
+<pre>
+  <span class="ruby-comment"># File activesupport/lib/active_support/json/encoding.rb, line 168</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">as_json</span>(<span class="ruby-identifier">options</span> = <span class="ruby-keyword">nil</span>) <span class="ruby-constant">AS_JSON</span> <span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+          
+      <div class="method">
+        <div class="title">
+                      <a name="method-i-id"></a>
+            <b>id</b>()          
+        </div>
+
+                  <div class="description">
+            <p>Raises a RuntimeError when you attempt to call <tt>id</tt> on <tt>nil</tt>.</p>          </div>
+        
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('id_source')"
+                 id="l_method-i-id_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="id_source">
+<pre>
+  <span class="ruby-comment"># File activesupport/lib/active_support/whiny_nil.rb, line 39</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">id</span>
+  <span class="ruby-identifier">raise</span> <span class="ruby-constant">RuntimeError</span>, <span class="ruby-node">&quot;Called id for nil, which would mistakenly be #{object_id} -- if you really wanted the id of nil, use object_id&quot;</span>, <span class="ruby-identifier">caller</span>
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+          
+      <div class="method">
+        <div class="title">
+                      <a name="method-i-to_param"></a>
+            <b>to_param</b>()          
+        </div>
+
+                  <div class="description">
+                      </div>
+        
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('to_param_source')"
+                 id="l_method-i-to_param_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="to_param_source">
+<pre>
+  <span class="ruby-comment"># File activesupport/lib/active_support/core_ext/object/to_param.rb, line 11</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">to_param</span>
+  <span class="ruby-keyword">self</span>
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+              </div>
+  </div>
+  </body>
+</html>

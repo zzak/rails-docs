@@ -1,0 +1,108 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>5 Queues</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v6.0.6.1/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="queues"><a class="anchorlink" href="#queues">5 Queues</a></h3>
+<p>Most of the adapters support multiple queues. With Active Job you can schedule
+the job to run on a specific queue:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class GuestsCleanupJob &lt; ApplicationJob
+  queue_as :low_priority
+  #....
+end
+
+</pre>
+</div>
+<p>You can prefix the queue name for all your jobs using
+<code>config.active_job.queue_name_prefix</code> in <code>application.rb</code>:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+# config/application.rb
+module YourApp
+  class Application &lt; Rails::Application
+    config.active_job.queue_name_prefix = Rails.env
+  end
+end
+
+# app/jobs/guests_cleanup_job.rb
+class GuestsCleanupJob &lt; ApplicationJob
+  queue_as :low_priority
+  #....
+end
+
+# Now your job will run on queue production_low_priority on your
+# production environment and on staging_low_priority
+# on your staging environment
+
+</pre>
+</div>
+<p>The default queue name prefix delimiter is '_'.  This can be changed by setting
+<code>config.active_job.queue_name_delimiter</code> in <code>application.rb</code>:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+# config/application.rb
+module YourApp
+  class Application &lt; Rails::Application
+    config.active_job.queue_name_prefix = Rails.env
+    config.active_job.queue_name_delimiter = '.'
+  end
+end
+
+# app/jobs/guests_cleanup_job.rb
+class GuestsCleanupJob &lt; ApplicationJob
+  queue_as :low_priority
+  #....
+end
+
+# Now your job will run on queue production.low_priority on your
+# production environment and on staging.low_priority
+# on your staging environment
+
+</pre>
+</div>
+<p>If you want more control on what queue a job will be run you can pass a <code>:queue</code>
+option to <code>#set</code>:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+MyJob.set(queue: :another_queue).perform_later(record)
+
+</pre>
+</div>
+<p>To control the queue from the job level you can pass a block to <code>#queue_as</code>. The
+block will be executed in the job context (so you can access <code>self.arguments</code>)
+and you must return the queue name:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class ProcessVideoJob &lt; ApplicationJob
+  queue_as do
+    video = self.arguments.first
+    if video.owner.premium?
+      :premium_videojobs
+    else
+      :videojobs
+    end
+  end
+
+  def perform(video)
+    # Do process video
+  end
+end
+
+ProcessVideoJob.perform_later(Video.last)
+
+</pre>
+</div>
+<div class="note"><p>Make sure your queuing backend "listens" on your queue name. For some
+backends you need to specify the queues to listen to.</p></div>
+</body>
+</html>

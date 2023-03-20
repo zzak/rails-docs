@@ -1,0 +1,139 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>8 Single Table Inheritance</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v6.1.7.3/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="single-table-inheritance"><a class="anchorlink" href="#single-table-inheritance">8 Single Table Inheritance</a></h3>
+<p>Single Table Inheritance is a feature that doesn't play well with lazy loading. Reason is, its API generally needs to be able to enumerate the STI hierarchy to work correctly, whereas lazy loading defers loading classes until they are referenced. You can't enumerate what you haven't referenced yet.</p>
+
+<p>In a sense, applications need to eager load STI hierarchies regardless of the loading mode.</p>
+
+<p>Of course, if the application eager loads on boot, that is already accomplished. When it does not, it is in practice enough to instantiate the existing types in the database, which in development or test modes is usually fine. One way to do that is to throw this module into the <code>lib</code> directory:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">module</span> <span class="nn">StiPreload</span>
+  <span class="k">unless</span> <span class="no">Rails</span><span class="p">.</span><span class="nf">application</span><span class="p">.</span><span class="nf">config</span><span class="p">.</span><span class="nf">eager_load</span>
+    <span class="kp">extend</span> <span class="no">ActiveSupport</span><span class="o">::</span><span class="no">Concern</span>
+
+    <span class="n">included</span> <span class="k">do</span>
+      <span class="n">cattr_accessor</span> <span class="ss">:preloaded</span><span class="p">,</span> <span class="ss">instance_accessor: </span><span class="kp">false</span>
+    <span class="k">end</span>
+
+    <span class="n">class_methods</span> <span class="k">do</span>
+      <span class="k">def</span> <span class="nf">descendants</span>
+        <span class="n">preload_sti</span> <span class="k">unless</span> <span class="n">preloaded</span>
+        <span class="k">super</span>
+      <span class="k">end</span>
+
+      <span class="c1"># Constantizes all types present in the database. There might be more on</span>
+      <span class="c1"># disk, but that does not matter in practice as far as the STI API is</span>
+      <span class="c1"># concerned.</span>
+      <span class="c1">#</span>
+      <span class="c1"># Assumes store_full_sti_class is true, the default.</span>
+      <span class="k">def</span> <span class="nf">preload_sti</span>
+        <span class="n">types_in_db</span> <span class="o">=</span> <span class="p">\</span>
+          <span class="n">base_class</span><span class="p">.</span>
+            <span class="nf">unscoped</span><span class="p">.</span>
+            <span class="nf">select</span><span class="p">(</span><span class="n">inheritance_column</span><span class="p">).</span>
+            <span class="nf">distinct</span><span class="p">.</span>
+            <span class="nf">pluck</span><span class="p">(</span><span class="n">inheritance_column</span><span class="p">).</span>
+            <span class="nf">compact</span>
+
+        <span class="n">types_in_db</span><span class="p">.</span><span class="nf">each</span> <span class="k">do</span> <span class="o">|</span><span class="n">type</span><span class="o">|</span>
+          <span class="n">logger</span><span class="p">.</span><span class="nf">debug</span><span class="p">(</span><span class="s2">"Preloading STI type </span><span class="si">#{</span><span class="n">type</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+          <span class="n">type</span><span class="p">.</span><span class="nf">constantize</span>
+        <span class="k">end</span>
+
+        <span class="nb">self</span><span class="p">.</span><span class="nf">preloaded</span> <span class="o">=</span> <span class="kp">true</span>
+      <span class="k">end</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-a080c6bb29d2e74ec7c0d7fa002a61b9">module StiPreload
+  unless Rails.application.config.eager_load
+    extend ActiveSupport::Concern
+
+    included do
+      cattr_accessor :preloaded, instance_accessor: false
+    end
+
+    class_methods do
+      def descendants
+        preload_sti unless preloaded
+        super
+      end
+
+      # Constantizes all types present in the database. There might be more on
+      # disk, but that does not matter in practice as far as the STI API is
+      # concerned.
+      #
+      # Assumes store_full_sti_class is true, the default.
+      def preload_sti
+        types_in_db = \
+          base_class.
+            unscoped.
+            select(inheritance_column).
+            distinct.
+            pluck(inheritance_column).
+            compact
+
+        types_in_db.each do |type|
+          logger.debug("Preloading STI type #{type}")
+          type.constantize
+        end
+
+        self.preloaded = true
+      end
+    end
+  end
+end
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-a080c6bb29d2e74ec7c0d7fa002a61b9">Copy</button>
+</div>
+<p>and then include it in the STI root classes of your project:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="c1"># app/models/shape.rb</span>
+<span class="nb">require</span> <span class="s2">"sti_preload"</span>
+
+<span class="k">class</span> <span class="nc">Shape</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="kp">include</span> <span class="no">StiPreload</span> <span class="c1"># Only in the root class.</span>
+<span class="k">end</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-1b1926730c9aa2ae38686a39533099f4"># app/models/shape.rb
+require "sti_preload"
+
+class Shape &lt; ApplicationRecord
+  include StiPreload # Only in the root class.
+end
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-1b1926730c9aa2ae38686a39533099f4">Copy</button>
+</div>
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="c1"># app/models/polygon.rb</span>
+<span class="k">class</span> <span class="nc">Polygon</span> <span class="o">&lt;</span> <span class="no">Shape</span>
+<span class="k">end</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-17491fda1a03c087968536126ef1b85a"># app/models/polygon.rb
+class Polygon &lt; Shape
+end
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-17491fda1a03c087968536126ef1b85a">Copy</button>
+</div>
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="c1"># app/models/triangle.rb</span>
+<span class="k">class</span> <span class="nc">Triangle</span> <span class="o">&lt;</span> <span class="no">Polygon</span>
+<span class="k">end</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-8f723af95fe3941ec6d02cfd57c1c22e"># app/models/triangle.rb
+class Triangle &lt; Polygon
+end
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-8f723af95fe3941ec6d02cfd57c1c22e">Copy</button>
+</div>
+</body>
+</html>

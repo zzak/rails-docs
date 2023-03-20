@@ -1,0 +1,655 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>2 Introduction to Testing</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v7.0.4.2/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="introduction-to-testing"><a class="anchorlink" href="#introduction-to-testing">2 Introduction to Testing</a></h3>
+<p>Testing support was woven into the Rails fabric from the beginning. It wasn't an "oh! let's bolt on support for running tests because they're new and cool" epiphany.</p>
+
+<h4 id="rails-sets-up-for-testing-from-the-word-go"><a class="anchorlink" href="#rails-sets-up-for-testing-from-the-word-go">2.1 Rails Sets up for Testing from the Word Go</a></h4>
+
+<p>Rails creates a <code>test</code> directory for you as soon as you create a Rails project using <code>rails new</code> <em>application_name</em>. If you list the contents of this directory then you shall see:</p>
+
+<div class="code_container">
+<pre><code class="highlight console"><span class="gp">$</span><span class="w"> </span><span class="nb">ls</span> <span class="nt">-F</span> <span class="nb">test</span>
+<span class="go">application_system_test_case.rb  controllers/                     helpers/                         mailers/                         system/
+channels/                        fixtures/                        integration/                     models/                          test_helper.rb
+</span></code></pre>
+<button class="clipboard-button" data-clipboard-text="ls -F test
+">Copy</button>
+</div>
+<p>The <code>helpers</code>, <code>mailers</code>, and <code>models</code> directories are meant to hold tests for view helpers, mailers, and models, respectively. The <code>channels</code> directory is meant to hold tests for Action Cable connection and channels. The <code>controllers</code> directory is meant to hold tests for controllers, routes, and views. The <code>integration</code> directory is meant to hold tests for interactions between controllers.</p>
+
+<p>The system test directory holds system tests, which are used for full browser
+testing of your application. System tests allow you to test your application
+the way your users experience it and help you test your JavaScript as well.
+System tests inherit from Capybara and perform in browser tests for your
+application.</p>
+
+<p>Fixtures are a way of organizing test data; they reside in the <code>fixtures</code> directory.</p>
+
+<p>A <code>jobs</code> directory will also be created when an associated test is first generated.</p>
+
+<p>The <code>test_helper.rb</code> file holds the default configuration for your tests.</p>
+
+<p>The <code>application_system_test_case.rb</code> holds the default configuration for your system
+tests.</p>
+
+<h4 id="the-test-environment"><a class="anchorlink" href="#the-test-environment">2.2 The Test Environment</a></h4>
+
+<p>By default, every Rails application has three environments: development, test, and production.</p>
+
+<p>Each environment's configuration can be modified similarly. In this case, we can modify our test environment by changing the options found in <code>config/environments/test.rb</code>.</p>
+
+<div class="note"><p>Your tests are run under <code>RAILS_ENV=test</code>.</p></div>
+
+<h4 id="rails-meets-minitest"><a class="anchorlink" href="#rails-meets-minitest">2.3 Rails meets Minitest</a></h4>
+
+<p>If you remember, we used the <code>bin/rails generate model</code> command in the
+<a href="getting_started.html">Getting Started with Rails</a> guide. We created our first
+model, and among other things it created test stubs in the <code>test</code> directory:</p>
+
+<div class="code_container">
+<pre><code class="highlight console"><span class="gp">$</span><span class="w"> </span><span class="nb">bin/rails </span>generate model article title:string body:text
+<span class="c">...
+</span><span class="go">create  app/models/article.rb
+create  test/models/article_test.rb
+create  test/fixtures/articles.yml
+</span><span class="c">...
+</span></code></pre>
+<button class="clipboard-button" data-clipboard-text="bin/rails generate model article title:string body:text
+">Copy</button>
+</div>
+<p>The default test stub in <code>test/models/article_test.rb</code> looks like this:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="nb">require</span> <span class="s2">"test_helper"</span>
+
+<span class="k">class</span> <span class="nc">ArticleTest</span> <span class="o">&lt;</span> <span class="no">ActiveSupport</span><span class="o">::</span><span class="no">TestCase</span>
+  <span class="c1"># test "the truth" do</span>
+  <span class="c1">#   assert true</span>
+  <span class="c1"># end</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='require "test_helper"
+
+class ArticleTest &lt; ActiveSupport::TestCase
+  # test "the truth" do
+  #   assert true
+  # end
+end
+'>Copy</button>
+</div>
+<p>A line by line examination of this file will help get you oriented to Rails testing code and terminology.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="nb">require</span> <span class="s2">"test_helper"</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='require "test_helper"
+'>Copy</button>
+</div>
+<p>By requiring this file, <code>test_helper.rb</code> the default configuration to run our tests is loaded. We will include this with all the tests we write, so any methods added to this file are available to all our tests.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">ArticleTest</span> <span class="o">&lt;</span> <span class="no">ActiveSupport</span><span class="o">::</span><span class="no">TestCase</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="class ArticleTest &lt; ActiveSupport::TestCase
+">Copy</button>
+</div>
+<p>The <code>ArticleTest</code> class defines a <em>test case</em> because it inherits from <code>ActiveSupport::TestCase</code>. <code>ArticleTest</code> thus has all the methods available from <code>ActiveSupport::TestCase</code>. Later in this guide, we'll see some of the methods it gives us.</p>
+
+<p>Any method defined within a class inherited from <code>Minitest::Test</code>
+(which is the superclass of <code>ActiveSupport::TestCase</code>) that begins with <code>test_</code> is simply called a test. So, methods defined as <code>test_password</code> and <code>test_valid_password</code> are legal test names and are run automatically when the test case is run.</p>
+
+<p>Rails also adds a <code>test</code> method that takes a test name and a block. It generates a normal <code>Minitest::Unit</code> test with method names prefixed with <code>test_</code>. So you don't have to worry about naming the methods, and you can write something like:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="nb">test</span> <span class="s2">"the truth"</span> <span class="k">do</span>
+  <span class="n">assert</span> <span class="kp">true</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='test "the truth" do
+  assert true
+end
+'>Copy</button>
+</div>
+<p>Which is approximately the same as writing this:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">def</span> <span class="nf">test_the_truth</span>
+  <span class="n">assert</span> <span class="kp">true</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="def test_the_truth
+  assert true
+end
+">Copy</button>
+</div>
+<p>Although you can still use regular method definitions, using the <code>test</code> macro allows for a more readable test name.</p>
+
+<div class="note"><p>The method name is generated by replacing spaces with underscores. The result does not need to be a valid Ruby identifier though — the name may contain punctuation characters, etc. That's because in Ruby technically any string may be a method name. This may require use of <code>define_method</code> and <code>send</code> calls to function properly, but formally there's little restriction on the name.</p></div>
+
+<p>Next, let's look at our first assertion:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">assert</span> <span class="kp">true</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="assert true
+">Copy</button>
+</div>
+<p>An assertion is a line of code that evaluates an object (or expression) for expected results. For example, an assertion can check:</p>
+<ul>
+<li>does this value = that value?</li>
+<li>is this object nil?</li>
+<li>does this line of code throw an exception?</li>
+<li>is the user's password greater than 5 characters?</li>
+</ul>
+<p>Every test may contain one or more assertions, with no restriction as to how many assertions are allowed. Only when all the assertions are successful will the test pass.</p>
+
+<h5 id="your-first-failing-test"><a class="anchorlink" href="#your-first-failing-test">2.3.1 Your first failing test</a></h5>
+
+<p>To see how a test failure is reported, you can add a failing test to the <code>article_test.rb</code> test case.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="nb">test</span> <span class="s2">"should not save article without title"</span> <span class="k">do</span>
+  <span class="n">article</span> <span class="o">=</span> <span class="no">Article</span><span class="p">.</span><span class="nf">new</span>
+  <span class="n">assert_not</span> <span class="n">article</span><span class="p">.</span><span class="nf">save</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='test "should not save article without title" do
+  article = Article.new
+  assert_not article.save
+end
+'>Copy</button>
+</div>
+<p>Let us run this newly added test (where <code>6</code> is the number of line where the test is defined).</p>
+
+<div class="code_container">
+<pre><code class="highlight console"><span class="gp">$</span><span class="w"> </span><span class="nb">bin/rails test test</span>/models/article_test.rb:6
+<span class="go">Run options: --seed 44656
+
+</span><span class="gp">#</span><span class="w"> </span>Running:
+<span class="go">
+F
+
+Failure:
+</span><span class="gp">ArticleTest#</span>test_should_not_save_article_without_title <span class="o">[</span>/path/to/blog/test/models/article_test.rb:6]:
+<span class="go">Expected true to be nil or false
+
+
+rails test test/models/article_test.rb:6
+
+
+
+Finished in 0.023918s, 41.8090 runs/s, 41.8090 assertions/s.
+
+1 runs, 1 assertions, 1 failures, 0 errors, 0 skips
+</span></code></pre>
+<button class="clipboard-button" data-clipboard-text="bin/rails test test/models/article_test.rb:6
+">Copy</button>
+</div>
+<p>In the output, <code>F</code> denotes a failure. You can see the corresponding trace shown under <code>Failure</code> along with the name of the failing test. The next few lines contain the stack trace followed by a message that mentions the actual value and the expected value by the assertion. The default assertion messages provide just enough information to help pinpoint the error. To make the assertion failure message more readable, every assertion provides an optional message parameter, as shown here:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="nb">test</span> <span class="s2">"should not save article without title"</span> <span class="k">do</span>
+  <span class="n">article</span> <span class="o">=</span> <span class="no">Article</span><span class="p">.</span><span class="nf">new</span>
+  <span class="n">assert_not</span> <span class="n">article</span><span class="p">.</span><span class="nf">save</span><span class="p">,</span> <span class="s2">"Saved the article without a title"</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='test "should not save article without title" do
+  article = Article.new
+  assert_not article.save, "Saved the article without a title"
+end
+'>Copy</button>
+</div>
+<p>Running this test shows the friendlier assertion message:</p>
+
+<div class="code_container">
+<pre><code class="highlight plaintext">Failure:
+ArticleTest#test_should_not_save_article_without_title [/path/to/blog/test/models/article_test.rb:6]:
+Saved the article without a title
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="Failure:
+ArticleTest#test_should_not_save_article_without_title [/path/to/blog/test/models/article_test.rb:6]:
+Saved the article without a title
+">Copy</button>
+</div>
+<p>Now to get this test to pass we can add a model level validation for the <em>title</em> field.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">Article</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="n">validates</span> <span class="ss">:title</span><span class="p">,</span> <span class="ss">presence: </span><span class="kp">true</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="class Article &lt; ApplicationRecord
+  validates :title, presence: true
+end
+">Copy</button>
+</div>
+<p>Now the test should pass. Let us verify by running the test again:</p>
+
+<div class="code_container">
+<pre><code class="highlight console"><span class="gp">$</span><span class="w"> </span><span class="nb">bin/rails test test</span>/models/article_test.rb:6
+<span class="go">Run options: --seed 31252
+
+</span><span class="gp">#</span><span class="w"> </span>Running:
+<span class="go">
+</span><span class="c">.
+</span><span class="go">
+Finished in 0.027476s, 36.3952 runs/s, 36.3952 assertions/s.
+
+1 runs, 1 assertions, 0 failures, 0 errors, 0 skips
+</span></code></pre>
+<button class="clipboard-button" data-clipboard-text="bin/rails test test/models/article_test.rb:6
+">Copy</button>
+</div>
+<p>Now, if you noticed, we first wrote a test which fails for a desired
+functionality, then we wrote some code which adds the functionality and finally
+we ensured that our test passes. This approach to software development is
+referred to as
+<a href="http://c2.com/cgi/wiki?TestDrivenDevelopment"><em>Test-Driven Development</em> (TDD)</a>.</p>
+
+<h5 id="what-an-error-looks-like"><a class="anchorlink" href="#what-an-error-looks-like">2.3.2 What an Error Looks Like</a></h5>
+
+<p>To see how an error gets reported, here's a test containing an error:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="nb">test</span> <span class="s2">"should report error"</span> <span class="k">do</span>
+  <span class="c1"># some_undefined_variable is not defined elsewhere in the test case</span>
+  <span class="n">some_undefined_variable</span>
+  <span class="n">assert</span> <span class="kp">true</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='test "should report error" do
+  # some_undefined_variable is not defined elsewhere in the test case
+  some_undefined_variable
+  assert true
+end
+'>Copy</button>
+</div>
+<p>Now you can see even more output in the console from running the tests:</p>
+
+<div class="code_container">
+<pre><code class="highlight console"><span class="gp">$</span><span class="w"> </span><span class="nb">bin/rails test test</span>/models/article_test.rb
+<span class="go">Run options: --seed 1808
+
+</span><span class="gp">#</span><span class="w"> </span>Running:
+<span class="go">
+.E
+
+Error:
+</span><span class="gp">ArticleTest#</span>test_should_report_error:
+<span class="gp">NameError: undefined local variable or method 'some_undefined_variable' for #</span>&lt;ArticleTest:0x007fee3aa71798&gt;
+<span class="gp">    test/models/article_test.rb:11:in 'block in &lt;class:ArticleTest&gt;</span><span class="s1">'
+</span><span class="go">
+
+rails test test/models/article_test.rb:9
+
+
+
+Finished in 0.040609s, 49.2500 runs/s, 24.6250 assertions/s.
+
+2 runs, 1 assertions, 0 failures, 1 errors, 0 skips
+</span></code></pre>
+<button class="clipboard-button" data-clipboard-text="bin/rails test test/models/article_test.rb
+">Copy</button>
+</div>
+<p>Notice the 'E' in the output. It denotes a test with error.</p>
+
+<div class="note"><p>The execution of each test method stops as soon as any error or an
+assertion failure is encountered, and the test suite continues with the next
+method. All test methods are executed in random order. The
+<a href="configuring.html#config-active-support-test-order"><code>config.active_support.test_order</code></a> option can be used to configure test order.</p></div>
+
+<p>When a test fails you are presented with the corresponding backtrace. By default
+Rails filters that backtrace and will only print lines relevant to your
+application. This eliminates the framework noise and helps to focus on your
+code. However there are situations when you want to see the full
+backtrace. Set the <code>-b</code> (or <code>--backtrace</code>) argument to enable this behavior:</p>
+
+<div class="code_container">
+<pre><code class="highlight console"><span class="gp">$</span><span class="w"> </span><span class="nb">bin/rails test</span> <span class="nt">-b</span> <span class="nb">test</span>/models/article_test.rb
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="bin/rails test -b test/models/article_test.rb
+">Copy</button>
+</div>
+<p>If we want this test to pass we can modify it to use <code>assert_raises</code> like so:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="nb">test</span> <span class="s2">"should report error"</span> <span class="k">do</span>
+  <span class="c1"># some_undefined_variable is not defined elsewhere in the test case</span>
+  <span class="n">assert_raises</span><span class="p">(</span><span class="no">NameError</span><span class="p">)</span> <span class="k">do</span>
+    <span class="n">some_undefined_variable</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='test "should report error" do
+  # some_undefined_variable is not defined elsewhere in the test case
+  assert_raises(NameError) do
+    some_undefined_variable
+  end
+end
+'>Copy</button>
+</div>
+<p>This test should now pass.</p>
+
+<h4 id="available-assertions"><a class="anchorlink" href="#available-assertions">2.4 Available Assertions</a></h4>
+
+<p>By now you've caught a glimpse of some of the assertions that are available. Assertions are the worker bees of testing. They are the ones that actually perform the checks to ensure that things are going as planned.</p>
+
+<p>Here's an extract of the assertions you can use with
+<a href="https://github.com/seattlerb/minitest"><code>Minitest</code></a>, the default testing library
+used by Rails. The <code>[msg]</code> parameter is an optional string message you can
+specify to make your test failure messages clearer.</p>
+<table>
+<thead>
+<tr>
+<th>Assertion</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>assert( test, [msg] )</code></td>
+<td>Ensures that <code>test</code> is true.</td>
+</tr>
+<tr>
+<td><code>assert_not( test, [msg] )</code></td>
+<td>Ensures that <code>test</code> is false.</td>
+</tr>
+<tr>
+<td><code>assert_equal( expected, actual, [msg] )</code></td>
+<td>Ensures that <code>expected == actual</code> is true.</td>
+</tr>
+<tr>
+<td><code>assert_not_equal( expected, actual, [msg] )</code></td>
+<td>Ensures that <code>expected != actual</code> is true.</td>
+</tr>
+<tr>
+<td><code>assert_same( expected, actual, [msg] )</code></td>
+<td>Ensures that <code>expected.equal?(actual)</code> is true.</td>
+</tr>
+<tr>
+<td><code>assert_not_same( expected, actual, [msg] )</code></td>
+<td>Ensures that <code>expected.equal?(actual)</code> is false.</td>
+</tr>
+<tr>
+<td><code>assert_nil( obj, [msg] )</code></td>
+<td>Ensures that <code>obj.nil?</code> is true.</td>
+</tr>
+<tr>
+<td><code>assert_not_nil( obj, [msg] )</code></td>
+<td>Ensures that <code>obj.nil?</code> is false.</td>
+</tr>
+<tr>
+<td><code>assert_empty( obj, [msg] )</code></td>
+<td>Ensures that <code>obj</code> is <code>empty?</code>.</td>
+</tr>
+<tr>
+<td><code>assert_not_empty( obj, [msg] )</code></td>
+<td>Ensures that <code>obj</code> is not <code>empty?</code>.</td>
+</tr>
+<tr>
+<td><code>assert_match( regexp, string, [msg] )</code></td>
+<td>Ensures that a string matches the regular expression.</td>
+</tr>
+<tr>
+<td><code>assert_no_match( regexp, string, [msg] )</code></td>
+<td>Ensures that a string doesn't match the regular expression.</td>
+</tr>
+<tr>
+<td><code>assert_includes( collection, obj, [msg] )</code></td>
+<td>Ensures that <code>obj</code> is in <code>collection</code>.</td>
+</tr>
+<tr>
+<td><code>assert_not_includes( collection, obj, [msg] )</code></td>
+<td>Ensures that <code>obj</code> is not in <code>collection</code>.</td>
+</tr>
+<tr>
+<td><code>assert_in_delta( expected, actual, [delta], [msg] )</code></td>
+<td>Ensures that the numbers <code>expected</code> and <code>actual</code> are within <code>delta</code> of each other.</td>
+</tr>
+<tr>
+<td><code>assert_not_in_delta( expected, actual, [delta], [msg] )</code></td>
+<td>Ensures that the numbers <code>expected</code> and <code>actual</code> are not within <code>delta</code> of each other.</td>
+</tr>
+<tr>
+<td><code>assert_in_epsilon ( expected, actual, [epsilon], [msg] )</code></td>
+<td>Ensures that the numbers <code>expected</code> and <code>actual</code> have a relative error less than <code>epsilon</code>.</td>
+</tr>
+<tr>
+<td><code>assert_not_in_epsilon ( expected, actual, [epsilon], [msg] )</code></td>
+<td>Ensures that the numbers <code>expected</code> and <code>actual</code> have a relative error not less than <code>epsilon</code>.</td>
+</tr>
+<tr>
+<td><code>assert_throws( symbol, [msg] ) { block }</code></td>
+<td>Ensures that the given block throws the symbol.</td>
+</tr>
+<tr>
+<td><code>assert_raises( exception1, exception2, ... ) { block }</code></td>
+<td>Ensures that the given block raises one of the given exceptions.</td>
+</tr>
+<tr>
+<td><code>assert_instance_of( class, obj, [msg] )</code></td>
+<td>Ensures that <code>obj</code> is an instance of <code>class</code>.</td>
+</tr>
+<tr>
+<td><code>assert_not_instance_of( class, obj, [msg] )</code></td>
+<td>Ensures that <code>obj</code> is not an instance of <code>class</code>.</td>
+</tr>
+<tr>
+<td><code>assert_kind_of( class, obj, [msg] )</code></td>
+<td>Ensures that <code>obj</code> is an instance of <code>class</code> or is descending from it.</td>
+</tr>
+<tr>
+<td><code>assert_not_kind_of( class, obj, [msg] )</code></td>
+<td>Ensures that <code>obj</code> is not an instance of <code>class</code> and is not descending from it.</td>
+</tr>
+<tr>
+<td><code>assert_respond_to( obj, symbol, [msg] )</code></td>
+<td>Ensures that <code>obj</code> responds to <code>symbol</code>.</td>
+</tr>
+<tr>
+<td><code>assert_not_respond_to( obj, symbol, [msg] )</code></td>
+<td>Ensures that <code>obj</code> does not respond to <code>symbol</code>.</td>
+</tr>
+<tr>
+<td><code>assert_operator( obj1, operator, [obj2], [msg] )</code></td>
+<td>Ensures that <code>obj1.operator(obj2)</code> is true.</td>
+</tr>
+<tr>
+<td><code>assert_not_operator( obj1, operator, [obj2], [msg] )</code></td>
+<td>Ensures that <code>obj1.operator(obj2)</code> is false.</td>
+</tr>
+<tr>
+<td><code>assert_predicate ( obj, predicate, [msg] )</code></td>
+<td>Ensures that <code>obj.predicate</code> is true, e.g. <code>assert_predicate str, :empty?</code>
+</td>
+</tr>
+<tr>
+<td><code>assert_not_predicate ( obj, predicate, [msg] )</code></td>
+<td>Ensures that <code>obj.predicate</code> is false, e.g. <code>assert_not_predicate str, :empty?</code>
+</td>
+</tr>
+<tr>
+<td><code>flunk( [msg] )</code></td>
+<td>Ensures failure. This is useful to explicitly mark a test that isn't finished yet.</td>
+</tr>
+</tbody>
+</table>
+<p>The above are a subset of assertions that minitest supports. For an exhaustive &amp;
+more up-to-date list, please check
+<a href="http://docs.seattlerb.org/minitest/">Minitest API documentation</a>, specifically
+<a href="http://docs.seattlerb.org/minitest/Minitest/Assertions.html"><code>Minitest::Assertions</code></a>.</p>
+
+<p>Because of the modular nature of the testing framework, it is possible to create your own assertions. In fact, that's exactly what Rails does. It includes some specialized assertions to make your life easier.</p>
+
+<div class="note"><p>Creating your own assertions is an advanced topic that we won't cover in this tutorial.</p></div>
+
+<h4 id="rails-specific-assertions"><a class="anchorlink" href="#rails-specific-assertions">2.5 Rails Specific Assertions</a></h4>
+
+<p>Rails adds some custom assertions of its own to the <code>minitest</code> framework:</p>
+<table>
+<thead>
+<tr>
+<th>Assertion</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveSupport/Testing/Assertions.html#method-i-assert_difference"><code>assert_difference(expressions, difference = 1, message = nil) {...}</code></a></td>
+<td>Test numeric difference between the return value of an expression as a result of what is evaluated in the yielded block.</td>
+</tr>
+<tr>
+<td><a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveSupport/Testing/Assertions.html#method-i-assert_no_difference"><code>assert_no_difference(expressions, message = nil, &amp;block)</code></a></td>
+<td>Asserts that the numeric result of evaluating an expression is not changed before and after invoking the passed in block.</td>
+</tr>
+<tr>
+<td><a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveSupport/Testing/Assertions.html#method-i-assert_changes"><code>assert_changes(expressions, message = nil, from:, to:, &amp;block)</code></a></td>
+<td>Test that the result of evaluating an expression is changed after invoking the passed in block.</td>
+</tr>
+<tr>
+<td><a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveSupport/Testing/Assertions.html#method-i-assert_no_changes"><code>assert_no_changes(expressions, message = nil, &amp;block)</code></a></td>
+<td>Test the result of evaluating an expression is not changed after invoking the passed in block.</td>
+</tr>
+<tr>
+<td><a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveSupport/Testing/Assertions.html#method-i-assert_nothing_raised"><code>assert_nothing_raised { block }</code></a></td>
+<td>Ensures that the given block doesn't raise any exceptions.</td>
+</tr>
+<tr>
+<td><a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActionDispatch/Assertions/RoutingAssertions.html#method-i-assert_recognizes"><code>assert_recognizes(expected_options, path, extras={}, message=nil)</code></a></td>
+<td>Asserts that the routing of the given path was handled correctly and that the parsed options (given in the expected_options hash) match path. Basically, it asserts that Rails recognizes the route given by expected_options.</td>
+</tr>
+<tr>
+<td><a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActionDispatch/Assertions/RoutingAssertions.html#method-i-assert_generates"><code>assert_generates(expected_path, options, defaults={}, extras = {}, message=nil)</code></a></td>
+<td>Asserts that the provided options can be used to generate the provided path. This is the inverse of assert_recognizes. The extras parameter is used to tell the request the names and values of additional request parameters that would be in a query string. The message parameter allows you to specify a custom error message for assertion failures.</td>
+</tr>
+<tr>
+<td><a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActionDispatch/Assertions/ResponseAssertions.html#method-i-assert_response"><code>assert_response(type, message = nil)</code></a></td>
+<td>Asserts that the response comes with a specific status code. You can specify <code>:success</code> to indicate 200-299, <code>:redirect</code> to indicate 300-399, <code>:missing</code> to indicate 404, or <code>:error</code> to match the 500-599 range. You can also pass an explicit status number or its symbolic equivalent. For more information, see <a href="https://rubydoc.info/gems/rack/Rack/Utils#HTTP_STATUS_CODES-constant">full list of status codes</a> and how their <a href="https://rubydoc.info/gems/rack/Rack/Utils#SYMBOL_TO_STATUS_CODE-constant">mapping</a> works.</td>
+</tr>
+<tr>
+<td><a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActionDispatch/Assertions/ResponseAssertions.html#method-i-assert_redirected_to"><code>assert_redirected_to(options = {}, message=nil)</code></a></td>
+<td>Asserts that the response is a redirect to a URL matching the given options. You can also pass named routes such as <code>assert_redirected_to root_path</code> and Active Record objects such as <code>assert_redirected_to @article</code>.</td>
+</tr>
+</tbody>
+</table>
+<p>You'll see the usage of some of these assertions in the next chapter.</p>
+
+<h4 id="a-brief-note-about-test-cases"><a class="anchorlink" href="#a-brief-note-about-test-cases">2.6 A Brief Note About Test Cases</a></h4>
+
+<p>All the basic assertions such as <code>assert_equal</code> defined in <code>Minitest::Assertions</code> are also available in the classes we use in our own test cases. In fact, Rails provides the following classes for you to inherit from:</p>
+<ul>
+<li><a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveSupport/TestCase.html"><code>ActiveSupport::TestCase</code></a></li>
+<li><a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActionMailer/TestCase.html"><code>ActionMailer::TestCase</code></a></li>
+<li><a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActionView/TestCase.html"><code>ActionView::TestCase</code></a></li>
+<li><a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveJob/TestCase.html"><code>ActiveJob::TestCase</code></a></li>
+<li><a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActionDispatch/IntegrationTest.html"><code>ActionDispatch::IntegrationTest</code></a></li>
+<li><a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActionDispatch/SystemTestCase.html"><code>ActionDispatch::SystemTestCase</code></a></li>
+<li><a href="https://api.rubyonrails.org/v7.0.4.2/classes/Rails/Generators/TestCase.html"><code>Rails::Generators::TestCase</code></a></li>
+</ul>
+<p>Each of these classes include <code>Minitest::Assertions</code>, allowing us to use all of the basic assertions in our tests.</p>
+
+<div class="note"><p>For more information on <code>Minitest</code>, refer to <a href="http://docs.seattlerb.org/minitest">its
+documentation</a>.</p></div>
+
+<h4 id="the-rails-test-runner"><a class="anchorlink" href="#the-rails-test-runner">2.7 The Rails Test Runner</a></h4>
+
+<p>We can run all of our tests at once by using the <code>bin/rails test</code> command.</p>
+
+<p>Or we can run a single test file by passing the <code>bin/rails test</code> command the filename containing the test cases.</p>
+
+<div class="code_container">
+<pre><code class="highlight console"><span class="gp">$</span><span class="w"> </span><span class="nb">bin/rails test test</span>/models/article_test.rb
+<span class="go">Run options: --seed 1559
+
+</span><span class="gp">#</span><span class="w"> </span>Running:
+<span class="go">
+</span><span class="c">..
+</span><span class="go">
+Finished in 0.027034s, 73.9810 runs/s, 110.9715 assertions/s.
+
+2 runs, 3 assertions, 0 failures, 0 errors, 0 skips
+</span></code></pre>
+<button class="clipboard-button" data-clipboard-text="bin/rails test test/models/article_test.rb
+">Copy</button>
+</div>
+<p>This will run all test methods from the test case.</p>
+
+<p>You can also run a particular test method from the test case by providing the
+<code>-n</code> or <code>--name</code> flag and the test's method name.</p>
+
+<div class="code_container">
+<pre><code class="highlight console"><span class="gp">$</span><span class="w"> </span><span class="nb">bin/rails test test</span>/models/article_test.rb <span class="nt">-n</span> test_the_truth
+<span class="go">Run options: -n test_the_truth --seed 43583
+
+</span><span class="gp">#</span><span class="w"> </span>Running:
+<span class="go">
+</span><span class="c">.
+</span><span class="go">
+Finished tests in 0.009064s, 110.3266 tests/s, 110.3266 assertions/s.
+
+1 tests, 1 assertions, 0 failures, 0 errors, 0 skips
+</span></code></pre>
+<button class="clipboard-button" data-clipboard-text="bin/rails test test/models/article_test.rb -n test_the_truth
+">Copy</button>
+</div>
+<p>You can also run a test at a specific line by providing the line number.</p>
+
+<div class="code_container">
+<pre><code class="highlight console"><span class="gp">$</span><span class="w"> </span><span class="nb">bin/rails test test</span>/models/article_test.rb:6 <span class="c"># run specific test and line</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="bin/rails test test/models/article_test.rb:6 # run specific test and line
+">Copy</button>
+</div>
+<p>You can also run an entire directory of tests by providing the path to the directory.</p>
+
+<div class="code_container">
+<pre><code class="highlight console"><span class="gp">$</span><span class="w"> </span><span class="nb">bin/rails test test</span>/controllers <span class="c"># run all tests from specific directory</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="bin/rails test test/controllers # run all tests from specific directory
+">Copy</button>
+</div>
+<p>The test runner also provides a lot of other features like failing fast, deferring test output
+at the end of the test run and so on. Check the documentation of the test runner as follows:</p>
+
+<div class="code_container">
+<pre><code class="highlight console"><span class="gp">$</span><span class="w"> </span><span class="nb">bin/rails test</span> <span class="nt">-h</span>
+<span class="go">Usage: rails test [options] [files or directories]
+
+You can run a single test by appending a line number to a filename:
+
+    bin/rails test test/models/user_test.rb:27
+
+You can run multiple files and directories at the same time:
+
+    bin/rails test test/controllers test/integration/login_test.rb
+
+By default test failures and errors are reported inline during a run.
+
+minitest options:
+    -h, --help                       Display this help.
+</span><span class="gp">        --no-plugins                 Bypass minitest plugin auto-loading (or set $</span>MT_NO_PLUGINS<span class="o">)</span><span class="nb">.</span>
+<span class="go">    -s, --seed SEED                  Sets random seed. Also via env. Eg: SEED=n rake
+    -v, --verbose                    Verbose. Show progress processing files.
+    -n, --name PATTERN               Filter run on /regexp/ or string.
+        --exclude PATTERN            Exclude /regexp/ or string from run.
+
+Known extensions: rails, pride
+    -w, --warnings                   Run with Ruby warnings enabled
+    -e, --environment ENV            Run tests in the ENV environment
+    -b, --backtrace                  Show the complete backtrace
+    -d, --defer-output               Output test failures and errors after the test run
+    -f, --fail-fast                  Abort test run on first failure or error
+    -c, --[no-]color                 Enable color in the output
+    -p, --pride                      Pride. Show your testing pride!
+</span></code></pre>
+<button class="clipboard-button" data-clipboard-text="bin/rails test -h
+">Copy</button>
+</div>
+</body>
+</html>

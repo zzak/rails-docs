@@ -1,0 +1,125 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>8 Active Record</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v5.0.7.2/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="active-record">8 Active Record</h3>
+<p>Please refer to the <a href="https://github.com/rails/rails/blob/4-2-stable/activerecord/CHANGELOG.md">Changelog</a> for detailed changes.</p>
+
+<h4 id="active-record-removals">8.1 Removals</h4>
+<ul>
+<li>  Removed <code>cache_attributes</code> and friends. All attributes are cached.
+(<a href="https://github.com/rails/rails/pull/15429">Pull Request</a>)</li>
+<li>  Removed deprecated method <code>ActiveRecord::Base.quoted_locking_column</code>.
+(<a href="https://github.com/rails/rails/pull/15612">Pull Request</a>)</li>
+<li>  Removed deprecated <code>ActiveRecord::Migrator.proper_table_name</code>. Use the
+<code>proper_table_name</code> instance method on <code>ActiveRecord::Migration</code> instead.
+(<a href="https://github.com/rails/rails/pull/15512">Pull Request</a>)</li>
+<li>  Removed unused <code>:timestamp</code> type. Transparently alias it to <code>:datetime</code>
+in all cases. Fixes inconsistencies when column types are sent outside of
+Active Record, such as for XML serialization.
+(<a href="https://github.com/rails/rails/pull/15184">Pull Request</a>)</li>
+</ul>
+<h4 id="active-record-deprecations">8.2 Deprecations</h4>
+<ul>
+<li>  Deprecated swallowing of errors inside <code>after_commit</code> and <code>after_rollback</code>.
+(<a href="https://github.com/rails/rails/pull/16537">Pull Request</a>)</li>
+<li>  Deprecated broken support for automatic detection of counter caches on
+<code>has_many :through</code> associations. You should instead manually specify the
+counter cache on the <code>has_many</code> and <code>belongs_to</code> associations for the
+through records.
+(<a href="https://github.com/rails/rails/pull/15754">Pull Request</a>)</li>
+<li>  Deprecated passing Active Record objects to <code>.find</code> or <code>.exists?</code>. Call
+<code>id</code> on the objects first.
+(Commit <a href="https://github.com/rails/rails/commit/d92ae6ccca3bcfd73546d612efaea011270bd270">1</a>,
+<a href="https://github.com/rails/rails/commit/d35f0033c7dec2b8d8b52058fb8db495d49596f7">2</a>)</li>
+<li>
+  Deprecated half-baked support for PostgreSQL range values with excluding
+beginnings. We currently map PostgreSQL ranges to Ruby ranges. This conversion
+is not fully possible because Ruby ranges do not support excluded beginnings.
+The current solution of incrementing the beginning is not correct
+and is now deprecated. For subtypes where we don't know how to increment
+(e.g. <code>succ</code> is not defined) it will raise an <code>ArgumentError</code> for ranges
+with excluding beginnings.
+(<a href="https://github.com/rails/rails/commit/91949e48cf41af9f3e4ffba3e5eecf9b0a08bfc3">Commit</a>)
+</li>
+<li>  Deprecated calling <code>DatabaseTasks.load_schema</code> without a connection. Use
+<code>DatabaseTasks.load_schema_current</code> instead.
+(<a href="https://github.com/rails/rails/commit/f15cef67f75e4b52fd45655d7c6ab6b35623c608">Commit</a>)</li>
+<li>  Deprecated <code>sanitize_sql_hash_for_conditions</code> without replacement. Using a
+<code>Relation</code> for performing queries and updates is the preferred API.
+(<a href="https://github.com/rails/rails/commit/d5902c9e">Commit</a>)</li>
+<li>  Deprecated <code>add_timestamps</code> and <code>t.timestamps</code> without passing the <code>:null</code>
+option. The default of <code>null: true</code> will change in Rails 5 to <code>null: false</code>.
+(<a href="https://github.com/rails/rails/pull/16481">Pull Request</a>)</li>
+<li>  Deprecated <code>Reflection#source_macro</code> without replacement as it is no longer
+needed in Active Record.
+(<a href="https://github.com/rails/rails/pull/16373">Pull Request</a>)</li>
+<li>  Deprecated <code>serialized_attributes</code> without replacement.
+(<a href="https://github.com/rails/rails/pull/15704">Pull Request</a>)</li>
+<li>  Deprecated returning <code>nil</code> from <code>column_for_attribute</code> when no column
+exists. It will return a null object in Rails 5.0.
+(<a href="https://github.com/rails/rails/pull/15878">Pull Request</a>)</li>
+<li>  Deprecated using <code>.joins</code>, <code>.preload</code> and <code>.eager_load</code> with associations
+that depend on the instance state (i.e. those defined with a scope that
+takes an argument) without replacement.
+(<a href="https://github.com/rails/rails/commit/ed56e596a0467390011bc9d56d462539776adac1">Commit</a>)</li>
+</ul>
+<h4 id="active-record-notable-changes">8.3 Notable changes</h4>
+<ul>
+<li>  <code>SchemaDumper</code> uses <code>force: :cascade</code> on <code>create_table</code>. This makes it
+possible to reload a schema when foreign keys are in place.</li>
+<li>  Added a <code>:required</code> option to singular associations, which defines a
+presence validation on the association.
+(<a href="https://github.com/rails/rails/pull/16056">Pull Request</a>)</li>
+<li>  <code>ActiveRecord::Dirty</code> now detects in-place changes to mutable values.
+Serialized attributes on Active Record models are no longer saved when
+unchanged. This also works with other types such as string columns and json
+columns on PostgreSQL.
+(Pull Requests <a href="https://github.com/rails/rails/pull/15674">1</a>,
+<a href="https://github.com/rails/rails/pull/15786">2</a>,
+<a href="https://github.com/rails/rails/pull/15788">3</a>)</li>
+<li>  Introduced the <code>db:purge</code> Rake task to empty the database for the
+current environment.
+(<a href="https://github.com/rails/rails/commit/e2f232aba15937a4b9d14bd91e0392c6d55be58d">Commit</a>)</li>
+<li>  Introduced <code>ActiveRecord::Base#validate!</code> that raises
+<code>ActiveRecord::RecordInvalid</code> if the record is invalid.
+(<a href="https://github.com/rails/rails/pull/8639">Pull Request</a>)</li>
+<li>  Introduced <code>validate</code> as an alias for <code>valid?</code>.
+(<a href="https://github.com/rails/rails/pull/14456">Pull Request</a>)</li>
+<li>  <code>touch</code> now accepts multiple attributes to be touched at once.
+(<a href="https://github.com/rails/rails/pull/14423">Pull Request</a>)</li>
+<li>  The PostgreSQL adapter now supports the <code>jsonb</code> datatype in PostgreSQL 9.4+.
+(<a href="https://github.com/rails/rails/pull/16220">Pull Request</a>)</li>
+<li>  The PostgreSQL and SQLite adapters no longer add a default limit of 255
+characters on string columns.
+(<a href="https://github.com/rails/rails/pull/14579">Pull Request</a>)</li>
+<li>  Added support for the <code>citext</code> column type in the PostgreSQL adapter.
+(<a href="https://github.com/rails/rails/pull/12523">Pull Request</a>)</li>
+<li>  Added support for user-created range types in the PostgreSQL adapter.
+(<a href="https://github.com/rails/rails/commit/4cb47167e747e8f9dc12b0ddaf82bdb68c03e032">Commit</a>)</li>
+<li>  <code>sqlite3:///some/path</code> now resolves to the absolute system path
+<code>/some/path</code>. For relative paths, use <code>sqlite3:some/path</code> instead.
+(Previously, <code>sqlite3:///some/path</code> resolved to the relative path
+<code>some/path</code>. This behavior was deprecated on Rails 4.1).
+(<a href="https://github.com/rails/rails/pull/14569">Pull Request</a>)</li>
+<li>  Added support for fractional seconds for MySQL 5.6 and above.
+(Pull Request <a href="https://github.com/rails/rails/pull/8240">1</a>,
+<a href="https://github.com/rails/rails/pull/14359">2</a>)</li>
+<li>  Added <code>ActiveRecord::Base#pretty_print</code> to pretty print models.
+(<a href="https://github.com/rails/rails/pull/15172">Pull Request</a>)</li>
+<li>  <code>ActiveRecord::Base#reload</code> now behaves the same as <code>m = Model.find(m.id)</code>,
+meaning that it no longer retains the extra attributes from custom
+<code>SELECT</code>s.
+(<a href="https://github.com/rails/rails/pull/15866">Pull Request</a>)</li>
+<li>  <code>ActiveRecord::Base#reflections</code> now returns a hash with string keys instead
+of symbol keys. (<a href="https://github.com/rails/rails/pull/17718">Pull Request</a>)</li>
+<li>  The <code>references</code> method in migrations now supports a <code>type</code> option for
+specifying the type of the foreign key (e.g. <code>:uuid</code>).
+(<a href="https://github.com/rails/rails/pull/16231">Pull Request</a>)</li>
+</ul>
+</body>
+</html>

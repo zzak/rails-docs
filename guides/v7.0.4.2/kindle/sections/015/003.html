@@ -1,0 +1,292 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>4 Extensions to Class</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v7.0.4.2/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="extensions-to-class"><a class="anchorlink" href="#extensions-to-class">4 Extensions to <code>Class</code></a></h3>
+<h4 id="class-attributes"><a class="anchorlink" href="#class-attributes">4.1 Class Attributes</a></h4>
+
+<h5 id="class-attribute"><a class="anchorlink" href="#class-attribute">4.1.1 <code>class_attribute</code></a></h5>
+
+<p>The method <a href="https://api.rubyonrails.org/v7.0.4.2/classes/Class.html#method-i-class_attribute"><code>class_attribute</code></a> declares one or more inheritable class attributes that can be overridden at any level down the hierarchy.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">A</span>
+  <span class="n">class_attribute</span> <span class="ss">:x</span>
+<span class="k">end</span>
+
+<span class="k">class</span> <span class="nc">B</span> <span class="o">&lt;</span> <span class="no">A</span><span class="p">;</span> <span class="k">end</span>
+
+<span class="k">class</span> <span class="nc">C</span> <span class="o">&lt;</span> <span class="no">B</span><span class="p">;</span> <span class="k">end</span>
+
+<span class="no">A</span><span class="p">.</span><span class="nf">x</span> <span class="o">=</span> <span class="ss">:a</span>
+<span class="no">B</span><span class="p">.</span><span class="nf">x</span> <span class="c1"># =&gt; :a</span>
+<span class="no">C</span><span class="p">.</span><span class="nf">x</span> <span class="c1"># =&gt; :a</span>
+
+<span class="no">B</span><span class="p">.</span><span class="nf">x</span> <span class="o">=</span> <span class="ss">:b</span>
+<span class="no">A</span><span class="p">.</span><span class="nf">x</span> <span class="c1"># =&gt; :a</span>
+<span class="no">C</span><span class="p">.</span><span class="nf">x</span> <span class="c1"># =&gt; :b</span>
+
+<span class="no">C</span><span class="p">.</span><span class="nf">x</span> <span class="o">=</span> <span class="ss">:c</span>
+<span class="no">A</span><span class="p">.</span><span class="nf">x</span> <span class="c1"># =&gt; :a</span>
+<span class="no">B</span><span class="p">.</span><span class="nf">x</span> <span class="c1"># =&gt; :b</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="class A
+  class_attribute :x
+end
+
+class B &lt; A; end
+
+class C &lt; B; end
+
+A.x = :a
+B.x # =&gt; :a
+C.x # =&gt; :a
+
+B.x = :b
+A.x # =&gt; :a
+C.x # =&gt; :b
+
+C.x = :c
+A.x # =&gt; :a
+B.x # =&gt; :b
+">Copy</button>
+</div>
+<p>For example <code>ActionMailer::Base</code> defines:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">class_attribute</span> <span class="ss">:default_params</span>
+<span class="nb">self</span><span class="p">.</span><span class="nf">default_params</span> <span class="o">=</span> <span class="p">{</span>
+  <span class="ss">mime_version: </span><span class="s2">"1.0"</span><span class="p">,</span>
+  <span class="ss">charset: </span><span class="s2">"UTF-8"</span><span class="p">,</span>
+  <span class="ss">content_type: </span><span class="s2">"text/plain"</span><span class="p">,</span>
+  <span class="ss">parts_order: </span><span class="p">[</span> <span class="s2">"text/plain"</span><span class="p">,</span> <span class="s2">"text/enriched"</span><span class="p">,</span> <span class="s2">"text/html"</span> <span class="p">]</span>
+<span class="p">}.</span><span class="nf">freeze</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='class_attribute :default_params
+self.default_params = {
+  mime_version: "1.0",
+  charset: "UTF-8",
+  content_type: "text/plain",
+  parts_order: [ "text/plain", "text/enriched", "text/html" ]
+}.freeze
+'>Copy</button>
+</div>
+<p>They can also be accessed and overridden at the instance level.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="no">A</span><span class="p">.</span><span class="nf">x</span> <span class="o">=</span> <span class="mi">1</span>
+
+<span class="n">a1</span> <span class="o">=</span> <span class="no">A</span><span class="p">.</span><span class="nf">new</span>
+<span class="n">a2</span> <span class="o">=</span> <span class="no">A</span><span class="p">.</span><span class="nf">new</span>
+<span class="n">a2</span><span class="p">.</span><span class="nf">x</span> <span class="o">=</span> <span class="mi">2</span>
+
+<span class="n">a1</span><span class="p">.</span><span class="nf">x</span> <span class="c1"># =&gt; 1, comes from A</span>
+<span class="n">a2</span><span class="p">.</span><span class="nf">x</span> <span class="c1"># =&gt; 2, overridden in a2</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="A.x = 1
+
+a1 = A.new
+a2 = A.new
+a2.x = 2
+
+a1.x # =&gt; 1, comes from A
+a2.x # =&gt; 2, overridden in a2
+">Copy</button>
+</div>
+<p>The generation of the writer instance method can be prevented by setting the option <code>:instance_writer</code> to <code>false</code>.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">module</span> <span class="nn">ActiveRecord</span>
+  <span class="k">class</span> <span class="nc">Base</span>
+    <span class="n">class_attribute</span> <span class="ss">:table_name_prefix</span><span class="p">,</span> <span class="ss">instance_writer: </span><span class="kp">false</span><span class="p">,</span> <span class="ss">default: </span><span class="s2">"my"</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='module ActiveRecord
+  class Base
+    class_attribute :table_name_prefix, instance_writer: false, default: "my"
+  end
+end
+'>Copy</button>
+</div>
+<p>A model may find that option useful as a way to prevent mass-assignment from setting the attribute.</p>
+
+<p>The generation of the reader instance method can be prevented by setting the option <code>:instance_reader</code> to <code>false</code>.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">A</span>
+  <span class="n">class_attribute</span> <span class="ss">:x</span><span class="p">,</span> <span class="ss">instance_reader: </span><span class="kp">false</span>
+<span class="k">end</span>
+
+<span class="no">A</span><span class="p">.</span><span class="nf">new</span><span class="p">.</span><span class="nf">x</span> <span class="o">=</span> <span class="mi">1</span>
+<span class="no">A</span><span class="p">.</span><span class="nf">new</span><span class="p">.</span><span class="nf">x</span> <span class="c1"># NoMethodError</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="class A
+  class_attribute :x, instance_reader: false
+end
+
+A.new.x = 1
+A.new.x # NoMethodError
+">Copy</button>
+</div>
+<p>For convenience <code>class_attribute</code> also defines an instance predicate which is the double negation of what the instance reader returns. In the examples above it would be called <code>x?</code>.</p>
+
+<p>When <code>:instance_reader</code> is <code>false</code>, the instance predicate returns a <code>NoMethodError</code> just like the reader method.</p>
+
+<p>If you do not want the instance predicate, pass <code>instance_predicate: false</code> and it will not be defined.</p>
+
+<div class="note"><p>Defined in <code><a href="https://github.com/rails/rails/tree/v7.0.4.2/activesupport/lib/active_support/core_ext/class/attribute.rb">active_support/core_ext/class/attribute.rb</a></code>.</p></div>
+
+<h5 id="cattr-reader-cattr-writer-and-cattr-accessor"><a class="anchorlink" href="#cattr-reader-cattr-writer-and-cattr-accessor">4.1.2 <code>cattr_reader</code>, <code>cattr_writer</code>, and <code>cattr_accessor</code></a></h5>
+
+<p>The macros <a href="https://api.rubyonrails.org/v7.0.4.2/classes/Module.html#method-i-cattr_reader"><code>cattr_reader</code></a>, <a href="https://api.rubyonrails.org/v7.0.4.2/classes/Module.html#method-i-cattr_writer"><code>cattr_writer</code></a>, and <a href="https://api.rubyonrails.org/v7.0.4.2/classes/Module.html#method-i-cattr_accessor"><code>cattr_accessor</code></a> are analogous to their <code>attr_*</code> counterparts but for classes. They initialize a class variable to <code>nil</code> unless it already exists, and generate the corresponding class methods to access it:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">MysqlAdapter</span> <span class="o">&lt;</span> <span class="no">AbstractAdapter</span>
+  <span class="c1"># Generates class methods to access @@emulate_booleans.</span>
+  <span class="n">cattr_accessor</span> <span class="ss">:emulate_booleans</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="class MysqlAdapter &lt; AbstractAdapter
+  # Generates class methods to access @@emulate_booleans.
+  cattr_accessor :emulate_booleans
+end
+">Copy</button>
+</div>
+<p>Also, you can pass a block to <code>cattr_*</code> to set up the attribute with a default value:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">MysqlAdapter</span> <span class="o">&lt;</span> <span class="no">AbstractAdapter</span>
+  <span class="c1"># Generates class methods to access @@emulate_booleans with default value of true.</span>
+  <span class="n">cattr_accessor</span> <span class="ss">:emulate_booleans</span><span class="p">,</span> <span class="ss">default: </span><span class="kp">true</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="class MysqlAdapter &lt; AbstractAdapter
+  # Generates class methods to access @@emulate_booleans with default value of true.
+  cattr_accessor :emulate_booleans, default: true
+end
+">Copy</button>
+</div>
+<p>Instance methods are created as well for convenience, they are just proxies to the class attribute. So, instances can change the class attribute, but cannot override it as it happens with <code>class_attribute</code> (see above). For example given</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">module</span> <span class="nn">ActionView</span>
+  <span class="k">class</span> <span class="nc">Base</span>
+    <span class="n">cattr_accessor</span> <span class="ss">:field_error_proc</span><span class="p">,</span> <span class="ss">default: </span><span class="no">Proc</span><span class="p">.</span><span class="nf">new</span> <span class="p">{</span> <span class="o">...</span> <span class="p">}</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="module ActionView
+  class Base
+    cattr_accessor :field_error_proc, default: Proc.new { ... }
+  end
+end
+">Copy</button>
+</div>
+<p>we can access <code>field_error_proc</code> in views.</p>
+
+<p>The generation of the reader instance method can be prevented by setting <code>:instance_reader</code> to <code>false</code> and the generation of the writer instance method can be prevented by setting <code>:instance_writer</code> to <code>false</code>. Generation of both methods can be prevented by setting <code>:instance_accessor</code> to <code>false</code>. In all cases, the value must be exactly <code>false</code> and not any false value.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">module</span> <span class="nn">A</span>
+  <span class="k">class</span> <span class="nc">B</span>
+    <span class="c1"># No first_name instance reader is generated.</span>
+    <span class="n">cattr_accessor</span> <span class="ss">:first_name</span><span class="p">,</span> <span class="ss">instance_reader: </span><span class="kp">false</span>
+    <span class="c1"># No last_name= instance writer is generated.</span>
+    <span class="n">cattr_accessor</span> <span class="ss">:last_name</span><span class="p">,</span> <span class="ss">instance_writer: </span><span class="kp">false</span>
+    <span class="c1"># No surname instance reader or surname= writer is generated.</span>
+    <span class="n">cattr_accessor</span> <span class="ss">:surname</span><span class="p">,</span> <span class="ss">instance_accessor: </span><span class="kp">false</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="module A
+  class B
+    # No first_name instance reader is generated.
+    cattr_accessor :first_name, instance_reader: false
+    # No last_name= instance writer is generated.
+    cattr_accessor :last_name, instance_writer: false
+    # No surname instance reader or surname= writer is generated.
+    cattr_accessor :surname, instance_accessor: false
+  end
+end
+">Copy</button>
+</div>
+<p>A model may find it useful to set <code>:instance_accessor</code> to <code>false</code> as a way to prevent mass-assignment from setting the attribute.</p>
+
+<div class="note"><p>Defined in <code><a href="https://github.com/rails/rails/tree/v7.0.4.2/activesupport/lib/active_support/core_ext/module/attribute_accessors.rb">active_support/core_ext/module/attribute_accessors.rb</a></code>.</p></div>
+
+<h4 id="subclasses-and-descendants"><a class="anchorlink" href="#subclasses-and-descendants">4.2 Subclasses and Descendants</a></h4>
+
+<h5 id="subclasses"><a class="anchorlink" href="#subclasses">4.2.1 <code>subclasses</code></a></h5>
+
+<p>The <a href="https://api.rubyonrails.org/v7.0.4.2/classes/Class.html#method-i-subclasses"><code>subclasses</code></a> method returns the subclasses of the receiver:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">C</span><span class="p">;</span> <span class="k">end</span>
+<span class="no">C</span><span class="p">.</span><span class="nf">subclasses</span> <span class="c1"># =&gt; []</span>
+
+<span class="k">class</span> <span class="nc">B</span> <span class="o">&lt;</span> <span class="no">C</span><span class="p">;</span> <span class="k">end</span>
+<span class="no">C</span><span class="p">.</span><span class="nf">subclasses</span> <span class="c1"># =&gt; [B]</span>
+
+<span class="k">class</span> <span class="nc">A</span> <span class="o">&lt;</span> <span class="no">B</span><span class="p">;</span> <span class="k">end</span>
+<span class="no">C</span><span class="p">.</span><span class="nf">subclasses</span> <span class="c1"># =&gt; [B]</span>
+
+<span class="k">class</span> <span class="nc">D</span> <span class="o">&lt;</span> <span class="no">C</span><span class="p">;</span> <span class="k">end</span>
+<span class="no">C</span><span class="p">.</span><span class="nf">subclasses</span> <span class="c1"># =&gt; [B, D]</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="class C; end
+C.subclasses # =&gt; []
+
+class B &lt; C; end
+C.subclasses # =&gt; [B]
+
+class A &lt; B; end
+C.subclasses # =&gt; [B]
+
+class D &lt; C; end
+C.subclasses # =&gt; [B, D]
+">Copy</button>
+</div>
+<p>The order in which these classes are returned is unspecified.</p>
+
+<div class="note"><p>Defined in <code><a href="https://github.com/rails/rails/tree/v7.0.4.2/activesupport/lib/active_support/core_ext/class/subclasses.rb">active_support/core_ext/class/subclasses.rb</a></code>.</p></div>
+
+<h5 id="descendants"><a class="anchorlink" href="#descendants">4.2.2 <code>descendants</code></a></h5>
+
+<p>The <a href="https://api.rubyonrails.org/v7.0.4.2/classes/Class.html#method-i-descendants"><code>descendants</code></a> method returns all classes that are <code>&lt;</code> than its receiver:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">C</span><span class="p">;</span> <span class="k">end</span>
+<span class="no">C</span><span class="p">.</span><span class="nf">descendants</span> <span class="c1"># =&gt; []</span>
+
+<span class="k">class</span> <span class="nc">B</span> <span class="o">&lt;</span> <span class="no">C</span><span class="p">;</span> <span class="k">end</span>
+<span class="no">C</span><span class="p">.</span><span class="nf">descendants</span> <span class="c1"># =&gt; [B]</span>
+
+<span class="k">class</span> <span class="nc">A</span> <span class="o">&lt;</span> <span class="no">B</span><span class="p">;</span> <span class="k">end</span>
+<span class="no">C</span><span class="p">.</span><span class="nf">descendants</span> <span class="c1"># =&gt; [B, A]</span>
+
+<span class="k">class</span> <span class="nc">D</span> <span class="o">&lt;</span> <span class="no">C</span><span class="p">;</span> <span class="k">end</span>
+<span class="no">C</span><span class="p">.</span><span class="nf">descendants</span> <span class="c1"># =&gt; [B, A, D]</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="class C; end
+C.descendants # =&gt; []
+
+class B &lt; C; end
+C.descendants # =&gt; [B]
+
+class A &lt; B; end
+C.descendants # =&gt; [B, A]
+
+class D &lt; C; end
+C.descendants # =&gt; [B, A, D]
+">Copy</button>
+</div>
+<p>The order in which these classes are returned is unspecified.</p>
+
+<div class="note"><p>Defined in <code><a href="https://github.com/rails/rails/tree/v7.0.4.2/activesupport/lib/active_support/core_ext/class/subclasses.rb">active_support/core_ext/class/subclasses.rb</a></code>.</p></div>
+</body>
+</html>

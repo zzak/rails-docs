@@ -1,0 +1,163 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>10 Transaction Callbacks</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v6.1.7.3/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="transaction-callbacks"><a class="anchorlink" href="#transaction-callbacks">10 Transaction Callbacks</a></h3>
+<p>There are two additional callbacks that are triggered by the completion of a database transaction: <a href="https://api.rubyonrails.org/v6.1.7.3/classes/ActiveRecord/Transactions/ClassMethods.html#method-i-after_commit"><code>after_commit</code></a> and <a href="https://api.rubyonrails.org/v6.1.7.3/classes/ActiveRecord/Transactions/ClassMethods.html#method-i-after_rollback"><code>after_rollback</code></a>. These callbacks are very similar to the <code>after_save</code> callback except that they don't execute until after database changes have either been committed or rolled back. They are most useful when your active record models need to interact with external systems which are not part of the database transaction.</p>
+
+<p>Consider, for example, the previous example where the <code>PictureFile</code> model needs to delete a file after the corresponding record is destroyed. If anything raises an exception after the <code>after_destroy</code> callback is called and the transaction rolls back, the file will have been deleted and the model will be left in an inconsistent state. For example, suppose that <code>picture_file_2</code> in the code below is not valid and the <code>save!</code> method raises an error.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="no">PictureFile</span><span class="p">.</span><span class="nf">transaction</span> <span class="k">do</span>
+  <span class="n">picture_file_1</span><span class="p">.</span><span class="nf">destroy</span>
+  <span class="n">picture_file_2</span><span class="p">.</span><span class="nf">save!</span>
+<span class="k">end</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-ed8fed63c08885c81145e2e5742dabc9">PictureFile.transaction do
+  picture_file_1.destroy
+  picture_file_2.save!
+end
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-ed8fed63c08885c81145e2e5742dabc9">Copy</button>
+</div>
+<p>By using the <code>after_commit</code> callback we can account for this case.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">PictureFile</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="n">after_commit</span> <span class="ss">:delete_picture_file_from_disk</span><span class="p">,</span> <span class="ss">on: :destroy</span>
+
+  <span class="k">def</span> <span class="nf">delete_picture_file_from_disk</span>
+    <span class="k">if</span> <span class="no">File</span><span class="p">.</span><span class="nf">exist?</span><span class="p">(</span><span class="n">filepath</span><span class="p">)</span>
+      <span class="no">File</span><span class="p">.</span><span class="nf">delete</span><span class="p">(</span><span class="n">filepath</span><span class="p">)</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-3971d3766527a093e48f5c8488ba068e">class PictureFile &lt; ApplicationRecord
+  after_commit :delete_picture_file_from_disk, on: :destroy
+
+  def delete_picture_file_from_disk
+    if File.exist?(filepath)
+      File.delete(filepath)
+    end
+  end
+end
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-3971d3766527a093e48f5c8488ba068e">Copy</button>
+</div>
+<div class="note"><p>The <code>:on</code> option specifies when a callback will be fired. If you
+don't supply the <code>:on</code> option the callback will fire for every action.</p></div>
+
+<p>Since using the <code>after_commit</code> callback only on create, update, or delete is
+common, there are aliases for those operations:</p>
+<ul>
+<li><a href="https://api.rubyonrails.org/v6.1.7.3/classes/ActiveRecord/Transactions/ClassMethods.html#method-i-after_create_commit"><code>after_create_commit</code></a></li>
+<li><a href="https://api.rubyonrails.org/v6.1.7.3/classes/ActiveRecord/Transactions/ClassMethods.html#method-i-after_update_commit"><code>after_update_commit</code></a></li>
+<li><a href="https://api.rubyonrails.org/v6.1.7.3/classes/ActiveRecord/Transactions/ClassMethods.html#method-i-after_destroy_commit"><code>after_destroy_commit</code></a></li>
+</ul>
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">PictureFile</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="n">after_destroy_commit</span> <span class="ss">:delete_picture_file_from_disk</span>
+
+  <span class="k">def</span> <span class="nf">delete_picture_file_from_disk</span>
+    <span class="k">if</span> <span class="no">File</span><span class="p">.</span><span class="nf">exist?</span><span class="p">(</span><span class="n">filepath</span><span class="p">)</span>
+      <span class="no">File</span><span class="p">.</span><span class="nf">delete</span><span class="p">(</span><span class="n">filepath</span><span class="p">)</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-a0076d05528337752bec0e5894e9c89b">class PictureFile &lt; ApplicationRecord
+  after_destroy_commit :delete_picture_file_from_disk
+
+  def delete_picture_file_from_disk
+    if File.exist?(filepath)
+      File.delete(filepath)
+    end
+  end
+end
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-a0076d05528337752bec0e5894e9c89b">Copy</button>
+</div>
+<div class="warning"><p>When a transaction completes, the <code>after_commit</code> or <code>after_rollback</code> callbacks are called for all models created, updated, or destroyed within that transaction. However, if an exception is raised within one of these callbacks, the exception will bubble up and any remaining <code>after_commit</code> or <code>after_rollback</code> methods will <em>not</em> be executed. As such, if your callback code could raise an exception, you'll need to rescue it and handle it within the callback in order to allow other callbacks to run.</p></div>
+
+<div class="warning"><p>The code executed within <code>after_commit</code> or <code>after_rollback</code> callbacks is itself not enclosed within a transaction.</p></div>
+
+<div class="warning"><p>Using both <code>after_create_commit</code> and <code>after_update_commit</code> in the same model will only allow the last callback defined to take effect, and will override all others.</p></div>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">User</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="n">after_create_commit</span> <span class="ss">:log_user_saved_to_db</span>
+  <span class="n">after_update_commit</span> <span class="ss">:log_user_saved_to_db</span>
+
+  <span class="kp">private</span>
+  <span class="k">def</span> <span class="nf">log_user_saved_to_db</span>
+    <span class="nb">puts</span> <span class="s1">'User was saved to database'</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-10c2585724ffde899712edd1b721a725">class User &lt; ApplicationRecord
+  after_create_commit :log_user_saved_to_db
+  after_update_commit :log_user_saved_to_db
+
+  private
+  def log_user_saved_to_db
+    puts 'User was saved to database'
+  end
+end
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-10c2585724ffde899712edd1b721a725">Copy</button>
+</div>
+<div class="code_container">
+<pre><code class="highlight irb"><span class="gp">irb&gt;</span><span class="w"> </span><span class="vi">@user</span> <span class="o">=</span> <span class="no">User</span><span class="p">.</span><span class="nf">create</span> <span class="c1"># prints nothing</span>
+<span class="err">
+</span><span class="gp">irb&gt;</span><span class="w"> </span><span class="vi">@user</span><span class="p">.</span><span class="nf">save</span> <span class="c1"># updating @user</span>
+<span class="go">User was saved to database
+</span></code></pre>
+<textarea class="clipboard-content" id="clipboard-a1e32475bae0dcf7c1570b0fb17efd2d">@user = User.create # prints nothing
+@user.save # updating @user
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-a1e32475bae0dcf7c1570b0fb17efd2d">Copy</button>
+</div>
+<p>There is also an alias for using the <code>after_commit</code> callback for both create and update together:</p>
+<ul>
+<li><a href="https://api.rubyonrails.org/v6.1.7.3/classes/ActiveRecord/Transactions/ClassMethods.html#method-i-after_save_commit"><code>after_save_commit</code></a></li>
+</ul>
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">User</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="n">after_save_commit</span> <span class="ss">:log_user_saved_to_db</span>
+
+  <span class="kp">private</span>
+  <span class="k">def</span> <span class="nf">log_user_saved_to_db</span>
+    <span class="nb">puts</span> <span class="s1">'User was saved to database'</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-47080808af029ea988c377657da9cff6">class User &lt; ApplicationRecord
+  after_save_commit :log_user_saved_to_db
+
+  private
+  def log_user_saved_to_db
+    puts 'User was saved to database'
+  end
+end
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-47080808af029ea988c377657da9cff6">Copy</button>
+</div>
+<div class="code_container">
+<pre><code class="highlight irb"><span class="gp">irb&gt;</span><span class="w"> </span><span class="vi">@user</span> <span class="o">=</span> <span class="no">User</span><span class="p">.</span><span class="nf">create</span> <span class="c1"># creating a User</span>
+<span class="go">User was saved to database
+</span><span class="err">
+</span><span class="gp">irb&gt;</span><span class="w"> </span><span class="vi">@user</span><span class="p">.</span><span class="nf">save</span> <span class="c1"># updating @user</span>
+<span class="go">User was saved to database
+</span></code></pre>
+<textarea class="clipboard-content" id="clipboard-d4dcf9860cd61c4cb38d8366eafd9c1e">@user = User.create # creating a User
+@user.save # updating @user
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-d4dcf9860cd61c4cb38d8366eafd9c1e">Copy</button>
+</div>
+</body>
+</html>

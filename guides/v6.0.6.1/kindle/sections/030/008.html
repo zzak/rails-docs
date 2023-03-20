@@ -1,0 +1,58 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>9 Customizing Inflections</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v6.0.6.1/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="customizing-inflections"><a class="anchorlink" href="#customizing-inflections">9 Customizing Inflections</a></h3>
+<p>By default, Rails uses <code>String#camelize</code> to know which constant should a given file or directory name define. For example, <code>posts_controller.rb</code> should define <code>PostsController</code> because that is what <code>"posts_controller".camelize</code> returns.</p>
+
+<p>It could be the case that some particular file or directory name does not get inflected as you want. For instance, <code>html_parser.rb</code> is expected to define <code>HtmlParser</code> by default. What if you prefer the class to be <code>HTMLParser</code>? There are a few ways to customize this.</p>
+
+<p>The easiest way is to define acronyms in <code>config/initializers/inflections.rb</code>:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+ActiveSupport::Inflector.inflections(:en) do |inflect|
+  inflect.acronym "HTML"
+  inflect.acronym "SSL"
+end
+
+</pre>
+</div>
+<p>Doing so affects how Active Support inflects globally. That may be fine in some applications, but you can also customize how to camelize individual basenames independently from Active Support by passing a collection of overrides to the default inflectors:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+# config/initializers/zeitwerk.rb
+Rails.autoloaders.each do |autoloader|
+  autoloader.inflector.inflect(
+    "html_parser" =&gt; "HTMLParser",
+    "ssl_error"   =&gt; "SSLError"
+  )
+end
+
+</pre>
+</div>
+<p>That technique still depends on <code>String#camelize</code>, though, because that is what the default inflectors use as fallback. If you instead prefer not to depend on Active Support inflections at all and have absolute control over inflections, configure the inflectors to be instances of <code>Zeitwerk::Inflector</code>:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+# config/initializers/zeitwerk.rb
+Rails.autoloaders.each do |autoloader|
+  autoloader.inflector = Zeitwerk::Inflector.new
+  autoloader.inflector.inflect(
+    "html_parser" =&gt; "HTMLParser",
+    "ssl_error"   =&gt; "SSLError"
+  )
+end
+
+</pre>
+</div>
+<p>There is no global configuration that can affect said instances, they are deterministic.</p>
+
+<p>You can even define a custom inflector for full flexibility. Please, check the <a href="https://github.com/fxn/zeitwerk#custom-inflector">Zeitwerk documentation</a> for further details.</p>
+</body>
+</html>

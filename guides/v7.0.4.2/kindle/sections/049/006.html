@@ -1,0 +1,424 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>7 Upgrading from Rails 4.2 to Rails 5.0</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v7.0.4.2/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="upgrading-from-rails-4-2-to-rails-5-0"><a class="anchorlink" href="#upgrading-from-rails-4-2-to-rails-5-0">7 Upgrading from Rails 4.2 to Rails 5.0</a></h3>
+<p>For more information on changes made to Rails 5.0 please see the <a href="5_0_release_notes.html">release notes</a>.</p>
+
+<h4 id="ruby-2-2-2-required"><a class="anchorlink" href="#ruby-2-2-2-required">7.1 Ruby 2.2.2+ required</a></h4>
+
+<p>From Ruby on Rails 5.0 onwards, Ruby 2.2.2+ is the only supported Ruby version.
+Make sure you are on Ruby 2.2.2 version or greater, before you proceed.</p>
+
+<h4 id="active-record-models-now-inherit-from-applicationrecord-by-default"><a class="anchorlink" href="#active-record-models-now-inherit-from-applicationrecord-by-default">7.2 Active Record Models Now Inherit from ApplicationRecord by Default</a></h4>
+
+<p>In Rails 4.2, an Active Record model inherits from <code>ActiveRecord::Base</code>. In Rails 5.0,
+all models inherit from <code>ApplicationRecord</code>.</p>
+
+<p><code>ApplicationRecord</code> is a new superclass for all app models, analogous to app
+controllers subclassing <code>ApplicationController</code> instead of
+<code>ActionController::Base</code>. This gives apps a single spot to configure app-wide
+model behavior.</p>
+
+<p>When upgrading from Rails 4.2 to Rails 5.0, you need to create an
+<code>application_record.rb</code> file in <code>app/models/</code> and add the following content:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">ApplicationRecord</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Base</span>
+  <span class="nb">self</span><span class="p">.</span><span class="nf">abstract_class</span> <span class="o">=</span> <span class="kp">true</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="class ApplicationRecord &lt; ActiveRecord::Base
+  self.abstract_class = true
+end
+">Copy</button>
+</div>
+<p>Then make sure that all your models inherit from it.</p>
+
+<h4 id="halting-callback-chains-via-throw-abort"><a class="anchorlink" href="#halting-callback-chains-via-throw-abort">7.3 Halting Callback Chains via <code>throw(:abort)</code></a></h4>
+
+<p>In Rails 4.2, when a 'before' callback returns <code>false</code> in Active Record
+and Active Model, then the entire callback chain is halted. In other words,
+successive 'before' callbacks are not executed, and neither is the action wrapped
+in callbacks.</p>
+
+<p>In Rails 5.0, returning <code>false</code> in an Active Record or Active Model callback
+will not have this side effect of halting the callback chain. Instead, callback
+chains must be explicitly halted by calling <code>throw(:abort)</code>.</p>
+
+<p>When you upgrade from Rails 4.2 to Rails 5.0, returning <code>false</code> in those kind of
+callbacks will still halt the callback chain, but you will receive a deprecation
+warning about this upcoming change.</p>
+
+<p>When you are ready, you can opt into the new behavior and remove the deprecation
+warning by adding the following configuration to your <code>config/application.rb</code>:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="no">ActiveSupport</span><span class="p">.</span><span class="nf">halt_callback_chains_on_return_false</span> <span class="o">=</span> <span class="kp">false</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="ActiveSupport.halt_callback_chains_on_return_false = false
+">Copy</button>
+</div>
+<p>Note that this option will not affect Active Support callbacks since they never
+halted the chain when any value was returned.</p>
+
+<p>See <a href="https://github.com/rails/rails/pull/17227">#17227</a> for more details.</p>
+
+<h4 id="activejob-now-inherits-from-applicationjob-by-default"><a class="anchorlink" href="#activejob-now-inherits-from-applicationjob-by-default">7.4 ActiveJob Now Inherits from ApplicationJob by Default</a></h4>
+
+<p>In Rails 4.2, an Active Job inherits from <code>ActiveJob::Base</code>. In Rails 5.0, this
+behavior has changed to now inherit from <code>ApplicationJob</code>.</p>
+
+<p>When upgrading from Rails 4.2 to Rails 5.0, you need to create an
+<code>application_job.rb</code> file in <code>app/jobs/</code> and add the following content:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">ApplicationJob</span> <span class="o">&lt;</span> <span class="no">ActiveJob</span><span class="o">::</span><span class="no">Base</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="class ApplicationJob &lt; ActiveJob::Base
+end
+">Copy</button>
+</div>
+<p>Then make sure that all your job classes inherit from it.</p>
+
+<p>See <a href="https://github.com/rails/rails/pull/19034">#19034</a> for more details.</p>
+
+<h4 id="rails-controller-testing"><a class="anchorlink" href="#rails-controller-testing">7.5 Rails Controller Testing</a></h4>
+
+<h5 id="extraction-of-some-helper-methods-to-rails-controller-testing"><a class="anchorlink" href="#extraction-of-some-helper-methods-to-rails-controller-testing">7.5.1 Extraction of some helper methods to <code>rails-controller-testing</code></a></h5>
+
+<p><code>assigns</code> and <code>assert_template</code> have been extracted to the <code>rails-controller-testing</code> gem. To
+continue using these methods in your controller tests, add <code>gem 'rails-controller-testing'</code> to
+your <code>Gemfile</code>.</p>
+
+<p>If you are using RSpec for testing, please see the extra configuration required in the gem's
+documentation.</p>
+
+<h5 id="new-behavior-when-uploading-files"><a class="anchorlink" href="#new-behavior-when-uploading-files">7.5.2 New behavior when uploading files</a></h5>
+
+<p>If you are using <code>ActionDispatch::Http::UploadedFile</code> in your tests to
+upload files, you will need to change to use the similar <code>Rack::Test::UploadedFile</code>
+class instead.</p>
+
+<p>See <a href="https://github.com/rails/rails/issues/26404">#26404</a> for more details.</p>
+
+<h4 id="autoloading-is-disabled-after-booting-in-the-production-environment"><a class="anchorlink" href="#autoloading-is-disabled-after-booting-in-the-production-environment">7.6 Autoloading is Disabled After Booting in the Production Environment</a></h4>
+
+<p>Autoloading is now disabled after booting in the production environment by
+default.</p>
+
+<p>Eager loading the application is part of the boot process, so top-level
+constants are fine and are still autoloaded, no need to require their files.</p>
+
+<p>Constants in deeper places only executed at runtime, like regular method bodies,
+are also fine because the file defining them will have been eager loaded while booting.</p>
+
+<p>For the vast majority of applications this change needs no action. But in the
+very rare event that your application needs autoloading while running in
+production, set <code>Rails.application.config.enable_dependency_loading</code> to true.</p>
+
+<h4 id="xml-serialization"><a class="anchorlink" href="#xml-serialization">7.7 XML Serialization</a></h4>
+
+<p><code>ActiveModel::Serializers::Xml</code> has been extracted from Rails to the <code>activemodel-serializers-xml</code>
+gem. To continue using XML serialization in your application, add <code>gem 'activemodel-serializers-xml'</code>
+to your <code>Gemfile</code>.</p>
+
+<h4 id="removed-support-for-legacy-mysql-database-adapter"><a class="anchorlink" href="#removed-support-for-legacy-mysql-database-adapter">7.8 Removed Support for Legacy <code>mysql</code> Database Adapter</a></h4>
+
+<p>Rails 5 removes support for the legacy <code>mysql</code> database adapter. Most users should be able to
+use <code>mysql2</code> instead. It will be converted to a separate gem when we find someone to maintain
+it.</p>
+
+<h4 id="removed-support-for-debugger"><a class="anchorlink" href="#removed-support-for-debugger">7.9 Removed Support for Debugger</a></h4>
+
+<p><code>debugger</code> is not supported by Ruby 2.2 which is required by Rails 5. Use <code>byebug</code> instead.</p>
+
+<h4 id="use-bin-rails-for-running-tasks-and-tests"><a class="anchorlink" href="#use-bin-rails-for-running-tasks-and-tests">7.10 Use <code>bin/rails</code> for running tasks and tests</a></h4>
+
+<p>Rails 5 adds the ability to run tasks and tests through <code>bin/rails</code> instead of rake. Generally
+these changes are in parallel with rake, but some were ported over altogether.</p>
+
+<p>To use the new test runner simply type <code>bin/rails test</code>.</p>
+
+<p><code>rake dev:cache</code> is now <code>bin/rails dev:cache</code>.</p>
+
+<p>Run <code>bin/rails</code> inside your application's root directory to see the list of commands available.</p>
+
+<h4 id="actioncontroller-parameters-no-longer-inherits-from-hashwithindifferentaccess"><a class="anchorlink" href="#actioncontroller-parameters-no-longer-inherits-from-hashwithindifferentaccess">7.11 <code>ActionController::Parameters</code> No Longer Inherits from <code>HashWithIndifferentAccess</code></a></h4>
+
+<p>Calling <code>params</code> in your application will now return an object instead of a hash. If your
+parameters are already permitted, then you will not need to make any changes. If you are using <code>map</code>
+and other methods that depend on being able to read the hash regardless of <code>permitted?</code> you will
+need to upgrade your application to first permit and then convert to a hash.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">params</span><span class="p">.</span><span class="nf">permit</span><span class="p">([</span><span class="ss">:proceed_to</span><span class="p">,</span> <span class="ss">:return_to</span><span class="p">]).</span><span class="nf">to_h</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="params.permit([:proceed_to, :return_to]).to_h
+">Copy</button>
+</div>
+<h4 id="protect-from-forgery-now-defaults-to-prepend-false"><a class="anchorlink" href="#protect-from-forgery-now-defaults-to-prepend-false">7.12 <code>protect_from_forgery</code> Now Defaults to <code>prepend: false</code></a></h4>
+
+<p><code>protect_from_forgery</code> defaults to <code>prepend: false</code> which means that it will be inserted into
+the callback chain at the point in which you call it in your application. If you want
+<code>protect_from_forgery</code> to always run first, then you should change your application to use
+<code>protect_from_forgery prepend: true</code>.</p>
+
+<h4 id="default-template-handler-is-now-raw"><a class="anchorlink" href="#default-template-handler-is-now-raw">7.13 Default Template Handler is Now RAW</a></h4>
+
+<p>Files without a template handler in their extension will be rendered using the raw handler.
+Previously Rails would render files using the ERB template handler.</p>
+
+<p>If you do not want your file to be handled via the raw handler, you should add an extension
+to your file that can be parsed by the appropriate template handler.</p>
+
+<h4 id="added-wildcard-matching-for-template-dependencies"><a class="anchorlink" href="#added-wildcard-matching-for-template-dependencies">7.14 Added Wildcard Matching for Template Dependencies</a></h4>
+
+<p>You can now use wildcard matching for your template dependencies. For example, if you were
+defining your templates as such:</p>
+
+<div class="code_container">
+<pre><code class="highlight erb"><span class="cp">&lt;%</span> <span class="c1"># Template Dependency: recordings/threads/events/subscribers_changed </span><span class="cp">%&gt;</span>
+<span class="cp">&lt;%</span> <span class="c1"># Template Dependency: recordings/threads/events/completed </span><span class="cp">%&gt;</span>
+<span class="cp">&lt;%</span> <span class="c1"># Template Dependency: recordings/threads/events/uncompleted </span><span class="cp">%&gt;</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="&lt;% # Template Dependency: recordings/threads/events/subscribers_changed %&gt;
+&lt;% # Template Dependency: recordings/threads/events/completed %&gt;
+&lt;% # Template Dependency: recordings/threads/events/uncompleted %&gt;
+">Copy</button>
+</div>
+<p>You can now just call the dependency once with a wildcard.</p>
+
+<div class="code_container">
+<pre><code class="highlight erb"><span class="cp">&lt;%</span> <span class="c1"># Template Dependency: recordings/threads/events/* </span><span class="cp">%&gt;</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="&lt;% # Template Dependency: recordings/threads/events/* %&gt;
+">Copy</button>
+</div>
+<h4 id="actionview-helpers-recordtaghelper-moved-to-external-gem-record-tag-helper"><a class="anchorlink" href="#actionview-helpers-recordtaghelper-moved-to-external-gem-record-tag-helper">7.15 <code>ActionView::Helpers::RecordTagHelper</code> moved to external gem (record_tag_helper)</a></h4>
+
+<p><code>content_tag_for</code> and <code>div_for</code> have been removed in favor of just using <code>content_tag</code>. To continue using the older methods, add the <code>record_tag_helper</code> gem to your <code>Gemfile</code>:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">gem</span> <span class="s1">'record_tag_helper'</span><span class="p">,</span> <span class="s1">'~&gt; 1.0'</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="gem 'record_tag_helper', '~&gt; 1.0'
+">Copy</button>
+</div>
+<p>See <a href="https://github.com/rails/rails/pull/18411">#18411</a> for more details.</p>
+
+<h4 id="removed-support-for-protected-attributes-gem"><a class="anchorlink" href="#removed-support-for-protected-attributes-gem">7.16 Removed Support for <code>protected_attributes</code> Gem</a></h4>
+
+<p>The <code>protected_attributes</code> gem is no longer supported in Rails 5.</p>
+
+<h4 id="removed-support-for-activerecord-deprecated-finders-gem"><a class="anchorlink" href="#removed-support-for-activerecord-deprecated-finders-gem">7.17 Removed support for <code>activerecord-deprecated_finders</code> gem</a></h4>
+
+<p>The <code>activerecord-deprecated_finders</code> gem is no longer supported in Rails 5.</p>
+
+<h4 id="activesupport-testcase-default-test-order-is-now-random"><a class="anchorlink" href="#activesupport-testcase-default-test-order-is-now-random">7.18 <code>ActiveSupport::TestCase</code> Default Test Order is Now Random</a></h4>
+
+<p>When tests are run in your application, the default order is now <code>:random</code>
+instead of <code>:sorted</code>. Use the following config option to set it back to <code>:sorted</code>.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="c1"># config/environments/test.rb</span>
+<span class="no">Rails</span><span class="p">.</span><span class="nf">application</span><span class="p">.</span><span class="nf">configure</span> <span class="k">do</span>
+  <span class="n">config</span><span class="p">.</span><span class="nf">active_support</span><span class="p">.</span><span class="nf">test_order</span> <span class="o">=</span> <span class="ss">:sorted</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="# config/environments/test.rb
+Rails.application.configure do
+  config.active_support.test_order = :sorted
+end
+">Copy</button>
+</div>
+<h4 id="actioncontroller-live-became-a-concern"><a class="anchorlink" href="#actioncontroller-live-became-a-concern">7.19 <code>ActionController::Live</code> became a <code>Concern</code></a></h4>
+
+<p>If you include <code>ActionController::Live</code> in another module that is included in your controller, then you
+should also extend the module with <code>ActiveSupport::Concern</code>. Alternatively, you can use the <code>self.included</code> hook
+to include <code>ActionController::Live</code> directly to the controller once the <code>StreamingSupport</code> is included.</p>
+
+<p>This means that if your application used to have its own streaming module, the following code
+would break in production:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="c1"># This is a work-around for streamed controllers performing authentication with Warden/Devise.</span>
+<span class="c1"># See https://github.com/plataformatec/devise/issues/2332</span>
+<span class="c1"># Authenticating in the router is another solution as suggested in that issue</span>
+<span class="k">class</span> <span class="nc">StreamingSupport</span>
+  <span class="kp">include</span> <span class="no">ActionController</span><span class="o">::</span><span class="no">Live</span> <span class="c1"># this won't work in production for Rails 5</span>
+  <span class="c1"># extend ActiveSupport::Concern # unless you uncomment this line.</span>
+
+  <span class="k">def</span> <span class="nf">process</span><span class="p">(</span><span class="nb">name</span><span class="p">)</span>
+    <span class="k">super</span><span class="p">(</span><span class="nb">name</span><span class="p">)</span>
+  <span class="k">rescue</span> <span class="no">ArgumentError</span> <span class="o">=&gt;</span> <span class="n">e</span>
+    <span class="k">if</span> <span class="n">e</span><span class="p">.</span><span class="nf">message</span> <span class="o">==</span> <span class="s1">'uncaught throw :warden'</span>
+      <span class="kp">throw</span> <span class="ss">:warden</span>
+    <span class="k">else</span>
+      <span class="k">raise</span> <span class="n">e</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="# This is a work-around for streamed controllers performing authentication with Warden/Devise.
+# See https://github.com/plataformatec/devise/issues/2332
+# Authenticating in the router is another solution as suggested in that issue
+class StreamingSupport
+  include ActionController::Live # this won't work in production for Rails 5
+  # extend ActiveSupport::Concern # unless you uncomment this line.
+
+  def process(name)
+    super(name)
+  rescue ArgumentError =&gt; e
+    if e.message == 'uncaught throw :warden'
+      throw :warden
+    else
+      raise e
+    end
+  end
+end
+">Copy</button>
+</div>
+<h4 id="new-framework-defaults"><a class="anchorlink" href="#new-framework-defaults">7.20 New Framework Defaults</a></h4>
+
+<h5 id="active-record-belongs-to-required-by-default-option"><a class="anchorlink" href="#active-record-belongs-to-required-by-default-option">7.20.1 Active Record <code>belongs_to</code> Required by Default Option</a></h5>
+
+<p><code>belongs_to</code> will now trigger a validation error by default if the association is not present.</p>
+
+<p>This can be turned off per-association with <code>optional: true</code>.</p>
+
+<p>This default will be automatically configured in new applications. If an existing application
+wants to add this feature it will need to be turned on in an initializer:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">config</span><span class="p">.</span><span class="nf">active_record</span><span class="p">.</span><span class="nf">belongs_to_required_by_default</span> <span class="o">=</span> <span class="kp">true</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="config.active_record.belongs_to_required_by_default = true
+">Copy</button>
+</div>
+<p>The configuration is by default global for all your models, but you can
+override it on a per model basis. This should help you migrate all your models to have their
+associations required by default.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">Book</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="c1"># model is not yet ready to have its association required by default</span>
+
+  <span class="nb">self</span><span class="p">.</span><span class="nf">belongs_to_required_by_default</span> <span class="o">=</span> <span class="kp">false</span>
+  <span class="n">belongs_to</span><span class="p">(</span><span class="ss">:author</span><span class="p">)</span>
+<span class="k">end</span>
+
+<span class="k">class</span> <span class="nc">Car</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="c1"># model is ready to have its association required by default</span>
+
+  <span class="nb">self</span><span class="p">.</span><span class="nf">belongs_to_required_by_default</span> <span class="o">=</span> <span class="kp">true</span>
+  <span class="n">belongs_to</span><span class="p">(</span><span class="ss">:pilot</span><span class="p">)</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="class Book &lt; ApplicationRecord
+  # model is not yet ready to have its association required by default
+
+  self.belongs_to_required_by_default = false
+  belongs_to(:author)
+end
+
+class Car &lt; ApplicationRecord
+  # model is ready to have its association required by default
+
+  self.belongs_to_required_by_default = true
+  belongs_to(:pilot)
+end
+">Copy</button>
+</div>
+<h5 id="per-form-csrf-tokens"><a class="anchorlink" href="#per-form-csrf-tokens">7.20.2 Per-form CSRF Tokens</a></h5>
+
+<p>Rails 5 now supports per-form CSRF tokens to mitigate against code-injection attacks with forms
+created by JavaScript. With this option turned on, forms in your application will each have their
+own CSRF token that is specific to the action and method for that form.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">config</span><span class="p">.</span><span class="nf">action_controller</span><span class="p">.</span><span class="nf">per_form_csrf_tokens</span> <span class="o">=</span> <span class="kp">true</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="config.action_controller.per_form_csrf_tokens = true
+">Copy</button>
+</div>
+<h5 id="forgery-protection-with-origin-check"><a class="anchorlink" href="#forgery-protection-with-origin-check">7.20.3 Forgery Protection with Origin Check</a></h5>
+
+<p>You can now configure your application to check if the HTTP <code>Origin</code> header should be checked
+against the site's origin as an additional CSRF defense. Set the following in your config to
+true:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">config</span><span class="p">.</span><span class="nf">action_controller</span><span class="p">.</span><span class="nf">forgery_protection_origin_check</span> <span class="o">=</span> <span class="kp">true</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="config.action_controller.forgery_protection_origin_check = true
+">Copy</button>
+</div>
+<h5 id="allow-configuration-of-action-mailer-queue-name"><a class="anchorlink" href="#allow-configuration-of-action-mailer-queue-name">7.20.4 Allow Configuration of Action Mailer Queue Name</a></h5>
+
+<p>The default mailer queue name is <code>mailers</code>. This configuration option allows you to globally change
+the queue name. Set the following in your config:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">config</span><span class="p">.</span><span class="nf">action_mailer</span><span class="p">.</span><span class="nf">deliver_later_queue_name</span> <span class="o">=</span> <span class="ss">:new_queue_name</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="config.action_mailer.deliver_later_queue_name = :new_queue_name
+">Copy</button>
+</div>
+<h5 id="support-fragment-caching-in-action-mailer-views"><a class="anchorlink" href="#support-fragment-caching-in-action-mailer-views">7.20.5 Support Fragment Caching in Action Mailer Views</a></h5>
+
+<p>Set <a href="configuring.html#config-action-mailer-perform-caching"><code>config.action_mailer.perform_caching</code></a> in your config to determine whether your Action Mailer views
+should support caching.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">config</span><span class="p">.</span><span class="nf">action_mailer</span><span class="p">.</span><span class="nf">perform_caching</span> <span class="o">=</span> <span class="kp">true</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="config.action_mailer.perform_caching = true
+">Copy</button>
+</div>
+<h5 id="configure-the-output-of-db-structure-dump"><a class="anchorlink" href="#configure-the-output-of-db-structure-dump">7.20.6 Configure the Output of <code>db:structure:dump</code></a></h5>
+
+<p>If you're using <code>schema_search_path</code> or other PostgreSQL extensions, you can control how the schema is
+dumped. Set to <code>:all</code> to generate all dumps, or to <code>:schema_search_path</code> to generate from schema search path.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">config</span><span class="p">.</span><span class="nf">active_record</span><span class="p">.</span><span class="nf">dump_schemas</span> <span class="o">=</span> <span class="ss">:all</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="config.active_record.dump_schemas = :all
+">Copy</button>
+</div>
+<h5 id="configure-ssl-options-to-enable-hsts-with-subdomains"><a class="anchorlink" href="#configure-ssl-options-to-enable-hsts-with-subdomains">7.20.7 Configure SSL Options to Enable HSTS with Subdomains</a></h5>
+
+<p>Set the following in your config to enable HSTS when using subdomains:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">config</span><span class="p">.</span><span class="nf">ssl_options</span> <span class="o">=</span> <span class="p">{</span> <span class="ss">hsts: </span><span class="p">{</span> <span class="ss">subdomains: </span><span class="kp">true</span> <span class="p">}</span> <span class="p">}</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="config.ssl_options = { hsts: { subdomains: true } }
+">Copy</button>
+</div>
+<h5 id="preserve-timezone-of-the-receiver"><a class="anchorlink" href="#preserve-timezone-of-the-receiver">7.20.8 Preserve Timezone of the Receiver</a></h5>
+
+<p>When using Ruby 2.4, you can preserve the timezone of the receiver when calling <code>to_time</code>.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="no">ActiveSupport</span><span class="p">.</span><span class="nf">to_time_preserves_timezone</span> <span class="o">=</span> <span class="kp">false</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="ActiveSupport.to_time_preserves_timezone = false
+">Copy</button>
+</div>
+<h4 id="changes-with-json-jsonb-serialization"><a class="anchorlink" href="#changes-with-json-jsonb-serialization">7.21 Changes with JSON/JSONB serialization</a></h4>
+
+<p>In Rails 5.0, how JSON/JSONB attributes are serialized and deserialized changed. Now, if
+you set a column equal to a <code>String</code>, Active Record will no longer turn that string
+into a <code>Hash</code>, and will instead only return the string. This is not limited to code
+interacting with models, but also affects <code>:default</code> column settings in <code>db/schema.rb</code>.
+It is recommended that you do not set columns equal to a <code>String</code>, but pass a <code>Hash</code>
+instead, which will be converted to and from a JSON string automatically.</p>
+</body>
+</html>

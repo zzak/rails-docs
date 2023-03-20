@@ -1,0 +1,88 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>2 Basic Usage</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v7.0.4.2/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="basic-usage"><a class="anchorlink" href="#basic-usage">2 Basic Usage</a></h3>
+<h4 id="setup"><a class="anchorlink" href="#setup">2.1 Setup</a></h4>
+
+<p>First, you need to add some keys to your <a href="/security.html#custom-credentials">Rails credentials</a>. Run <code>bin/rails db:encryption:init</code> to generate a random key set:</p>
+
+<div class="code_container">
+<pre><code class="highlight console"><span class="gp">$</span><span class="w"> </span><span class="nb">bin/rails </span>db:encryption:init
+<span class="go">Add this entry to the credentials of the target environment:
+
+active_record_encryption:
+  primary_key: EGY8WhulUOXixybod7ZWwMIL68R9o5kC
+  deterministic_key: aPA5XyALhf75NNnMzaspW7akTfZp0lPY
+  key_derivation_salt: xEY0dt6TZcAMg52K7O84wYzkjvbA62Hz
+</span></code></pre>
+<button class="clipboard-button" data-clipboard-text="bin/rails db:encryption:init
+">Copy</button>
+</div>
+<div class="note"><p>These generated values are 32 bytes in length. If you generate these yourself, the minimum lengths you should use are 12 bytes for the primary key (this will be used to derive the AES 32 bytes key) and 20 bytes for the salt.</p></div>
+
+<h4 id="declaration-of-encrypted-attributes"><a class="anchorlink" href="#declaration-of-encrypted-attributes">2.2 Declaration of Encrypted Attributes</a></h4>
+
+<p>Encryptable attributes are defined at the model level. These are regular Active Record attributes backed by a column with the same name.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">Article</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="n">encrypts</span> <span class="ss">:title</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="class Article &lt; ApplicationRecord
+  encrypts :title
+end
+">Copy</button>
+</div>
+<p>The library will transparently encrypt these attributes before saving them in the database and will decrypt them upon retrieval:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">article</span> <span class="o">=</span> <span class="no">Article</span><span class="p">.</span><span class="nf">create</span> <span class="ss">title: </span><span class="s2">"Encrypt it all!"</span>
+<span class="n">article</span><span class="p">.</span><span class="nf">title</span> <span class="c1"># =&gt; "Encrypt it all!"</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='article = Article.create title: "Encrypt it all!"
+article.title # =&gt; "Encrypt it all!"
+'>Copy</button>
+</div>
+<p>But, under the hood, the executed SQL looks like this:</p>
+
+<div class="code_container">
+<pre><code class="highlight sql"><span class="k">INSERT</span> <span class="k">INTO</span> <span class="nv">`articles`</span> <span class="p">(</span><span class="nv">`title`</span><span class="p">)</span> <span class="k">VALUES</span> <span class="p">(</span><span class="s1">'{</span><span class="se">\"</span><span class="s1">p</span><span class="se">\"</span><span class="s1">:</span><span class="se">\"</span><span class="s1">n7J0/ol+a7DRMeaE</span><span class="se">\"</span><span class="s1">,</span><span class="se">\"</span><span class="s1">h</span><span class="se">\"</span><span class="s1">:{</span><span class="se">\"</span><span class="s1">iv</span><span class="se">\"</span><span class="s1">:</span><span class="se">\"</span><span class="s1">DXZMDWUKfp3bg/Yu</span><span class="se">\"</span><span class="s1">,</span><span class="se">\"</span><span class="s1">at</span><span class="se">\"</span><span class="s1">:</span><span class="se">\"</span><span class="s1">X1/YjMHbHD4talgF9dt61A==</span><span class="se">\"</span><span class="s1">}}'</span><span class="p">)</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="INSERT INTO `articles` (`title`) VALUES ('{\&quot;p\&quot;:\&quot;n7J0/ol+a7DRMeaE\&quot;,\&quot;h\&quot;:{\&quot;iv\&quot;:\&quot;DXZMDWUKfp3bg/Yu\&quot;,\&quot;at\&quot;:\&quot;X1/YjMHbHD4talgF9dt61A==\&quot;}}')
+">Copy</button>
+</div>
+<p>Because Base 64 encoding and metadata are stored with the values, encryption requires extra space in the column. You can estimate the worst-case overload at around 250 bytes when the built-in envelope encryption key provider is used. This overload is negligible for medium and large text columns, but for <code>string</code> columns of 255 bytes, you should increase their limit accordingly (510 bytes is recommended).</p>
+
+<h4 id="deterministic-and-non-deterministic-encryption"><a class="anchorlink" href="#deterministic-and-non-deterministic-encryption">2.3 Deterministic and Non-deterministic Encryption</a></h4>
+
+<p>By default, Active Record Encryption uses a non-deterministic approach to encryption. Non-deterministic, in this context, means that encrypting the same content with the same password twice will result in different ciphertexts. This approach improves security by making crypto-analysis of ciphertexts harder, and querying the database impossible.</p>
+
+<p>You can use the <code>deterministic:</code>  option to generate initialization vectors in a deterministic way, effectively enabling querying encrypted data.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">Author</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="n">encrypts</span> <span class="ss">:email</span><span class="p">,</span> <span class="ss">deterministic: </span><span class="kp">true</span>
+<span class="k">end</span>
+
+<span class="no">Author</span><span class="p">.</span><span class="nf">find_by_email</span><span class="p">(</span><span class="s2">"some@email.com"</span><span class="p">)</span> <span class="c1"># You can query the model normally</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='class Author &lt; ApplicationRecord
+  encrypts :email, deterministic: true
+end
+
+Author.find_by_email("some@email.com") # You can query the model normally
+'>Copy</button>
+</div>
+<p>The non-deterministic approach is recommended unless you need to query the data.</p>
+
+<div class="note"><p>In non-deterministic mode, Active Record uses AES-GCM with a 256-bits key and a random initialization vector. In deterministic mode, it also uses AES-GCM, but the initialization vector is generated as an HMAC-SHA-256 digest of the key and contents to encrypt.</p></div>
+
+<div class="note"><p>You can disable deterministic encryption by omitting a <code>deterministic_key</code>.</p></div>
+</body>
+</html>

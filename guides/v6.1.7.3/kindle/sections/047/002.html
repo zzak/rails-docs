@@ -1,0 +1,575 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>3 Upgrading from Rails 5.2 to Rails 6.0</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v6.1.7.3/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="upgrading-from-rails-5-2-to-rails-6-0"><a class="anchorlink" href="#upgrading-from-rails-5-2-to-rails-6-0">3 Upgrading from Rails 5.2 to Rails 6.0</a></h3>
+<p>For more information on changes made to Rails 6.0 please see the <a href="6_0_release_notes.html">release notes</a>.</p>
+
+<h4 id="using-webpacker"><a class="anchorlink" href="#using-webpacker">3.1 Using Webpacker</a></h4>
+
+<p><a href="https://github.com/rails/webpacker">Webpacker</a>
+is the default JavaScript compiler for Rails 6. But if you are upgrading the app, it is not activated by default.
+If you want to use Webpacker, then include it in your Gemfile and install it:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">gem</span> <span class="s2">"webpacker"</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-0d0c27e47c1082a7228cb4c446354a37">gem "webpacker"
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-0d0c27e47c1082a7228cb4c446354a37">Copy</button>
+</div>
+<div class="code_container">
+<pre><code class="highlight console"><span class="gp">$</span><span class="w"> </span><span class="nb">bin/rails </span>webpacker:install
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-d9f1e483e0db02efd52801721896089f">bin/rails webpacker:install
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-d9f1e483e0db02efd52801721896089f">Copy</button>
+</div>
+<h4 id="force-ssl"><a class="anchorlink" href="#force-ssl">3.2 Force SSL</a></h4>
+
+<p>The <code>force_ssl</code> method on controllers has been deprecated and will be removed in
+Rails 6.1. You are encouraged to enable <code>config.force_ssl</code> to enforce HTTPS
+connections throughout your application. If you need to exempt certain endpoints
+from redirection, you can use <code>config.ssl_options</code> to configure that behavior.</p>
+
+<h4 id="purpose-and-expiry-metadata-is-now-embedded-inside-signed-and-encrypted-cookies-for-increased-security"><a class="anchorlink" href="#purpose-and-expiry-metadata-is-now-embedded-inside-signed-and-encrypted-cookies-for-increased-security">3.3 Purpose and expiry metadata is now embedded inside signed and encrypted cookies for increased security</a></h4>
+
+<p>To improve security, Rails embeds the purpose and expiry metadata inside encrypted or signed cookies value.</p>
+
+<p>Rails can then thwart attacks that attempt to copy the signed/encrypted value
+of a cookie and use it as the value of another cookie.</p>
+
+<p>This new embed metadata make those cookies incompatible with versions of Rails older than 6.0.</p>
+
+<p>If you require your cookies to be read by Rails 5.2 and older, or you are still validating your 6.0 deploy and want
+to be able to rollback set
+<code>Rails.application.config.action_dispatch.use_cookies_with_metadata</code> to <code>false</code>.</p>
+
+<h4 id="all-npm-packages-have-been-moved-to-the-@rails-scope"><a class="anchorlink" href="#all-npm-packages-have-been-moved-to-the-@rails-scope">3.4 All npm packages have been moved to the <code>@rails</code> scope</a></h4>
+
+<p>If you were previously loading any of the <code>actioncable</code>, <code>activestorage</code>,
+or <code>rails-ujs</code> packages through npm/yarn, you must update the names of these
+dependencies before you can upgrade them to <code>6.0.0</code>:</p>
+
+<div class="code_container">
+<pre><code class="highlight plaintext">actioncable   → @rails/actioncable
+activestorage → @rails/activestorage
+rails-ujs     → @rails/ujs
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-436eb85de46620826c34ef6138cb0d94">actioncable   → @rails/actioncable
+activestorage → @rails/activestorage
+rails-ujs     → @rails/ujs
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-436eb85de46620826c34ef6138cb0d94">Copy</button>
+</div>
+<h4 id="action-cable-javascript-api-changes"><a class="anchorlink" href="#action-cable-javascript-api-changes">3.5 Action Cable JavaScript API Changes</a></h4>
+
+<p>The Action Cable JavaScript package has been converted from CoffeeScript
+to ES2015, and we now publish the source code in the npm distribution.</p>
+
+<p>This release includes some breaking changes to optional parts of the
+Action Cable JavaScript API:</p>
+<ul>
+<li>
+Configuration of the WebSocket adapter and logger adapter have been moved
+from properties of <code>ActionCable</code> to properties of <code>ActionCable.adapters</code>.
+If you are configuring these adapters you will need to make
+these changes:
+<div class="code_container">
+<pre><code class="highlight diff"><span class="gd">-    ActionCable.WebSocket = MyWebSocket
+</span><span class="gi">+    ActionCable.adapters.WebSocket = MyWebSocket
+</span></code></pre>
+<textarea class="clipboard-content" id="clipboard-23d3d046ee9d0cbb5566c2810d013241">-    ActionCable.WebSocket = MyWebSocket
++    ActionCable.adapters.WebSocket = MyWebSocket
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-23d3d046ee9d0cbb5566c2810d013241">Copy</button>
+</div>
+<div class="code_container">
+<pre><code class="highlight diff"><span class="gd">-    ActionCable.logger = myLogger
+</span><span class="gi">+    ActionCable.adapters.logger = myLogger
+</span></code></pre>
+<textarea class="clipboard-content" id="clipboard-077ae8a66d7fa8c78ba05ceb586c189c">-    ActionCable.logger = myLogger
++    ActionCable.adapters.logger = myLogger
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-077ae8a66d7fa8c78ba05ceb586c189c">Copy</button>
+</div>
+</li>
+<li>
+The <code>ActionCable.startDebugging()</code> and <code>ActionCable.stopDebugging()</code>
+methods have been removed and replaced with the property
+<code>ActionCable.logger.enabled</code>. If you are using these methods you
+will need to make these changes:
+<div class="code_container">
+<pre><code class="highlight diff"><span class="gd">-    ActionCable.startDebugging()
+</span><span class="gi">+    ActionCable.logger.enabled = true
+</span></code></pre>
+<textarea class="clipboard-content" id="clipboard-28dd10782c5518f083cb06bf25e3aaaf">-    ActionCable.startDebugging()
++    ActionCable.logger.enabled = true
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-28dd10782c5518f083cb06bf25e3aaaf">Copy</button>
+</div>
+<div class="code_container">
+<pre><code class="highlight diff"><span class="gd">-    ActionCable.stopDebugging()
+</span><span class="gi">+    ActionCable.logger.enabled = false
+</span></code></pre>
+<textarea class="clipboard-content" id="clipboard-fd3807091dc1b8c047b70f4e64d1e6c9">-    ActionCable.stopDebugging()
++    ActionCable.logger.enabled = false
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-fd3807091dc1b8c047b70f4e64d1e6c9">Copy</button>
+</div>
+</li>
+</ul>
+<h4 id="actiondispatch-response-content-type-now-returns-the-content-type-header-without-modification"><a class="anchorlink" href="#actiondispatch-response-content-type-now-returns-the-content-type-header-without-modification">3.6 <code>ActionDispatch::Response#content_type</code> now returns the Content-Type header without modification</a></h4>
+
+<p>Previously, the return value of <code>ActionDispatch::Response#content_type</code> did NOT contain the charset part.
+This behavior has changed to include the previously omitted charset part as well.</p>
+
+<p>If you want just the MIME type, please use <code>ActionDispatch::Response#media_type</code> instead.</p>
+
+<p>Before:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">resp</span> <span class="o">=</span> <span class="no">ActionDispatch</span><span class="o">::</span><span class="no">Response</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="mi">200</span><span class="p">,</span> <span class="s2">"Content-Type"</span> <span class="o">=&gt;</span> <span class="s2">"text/csv; header=present; charset=utf-16"</span><span class="p">)</span>
+<span class="n">resp</span><span class="p">.</span><span class="nf">content_type</span> <span class="c1">#=&gt; "text/csv; header=present"</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-661b23905859d3373bdd5af14b3877fc">resp = ActionDispatch::Response.new(200, "Content-Type" =&gt; "text/csv; header=present; charset=utf-16")
+resp.content_type #=&gt; "text/csv; header=present"
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-661b23905859d3373bdd5af14b3877fc">Copy</button>
+</div>
+<p>After:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">resp</span> <span class="o">=</span> <span class="no">ActionDispatch</span><span class="o">::</span><span class="no">Response</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="mi">200</span><span class="p">,</span> <span class="s2">"Content-Type"</span> <span class="o">=&gt;</span> <span class="s2">"text/csv; header=present; charset=utf-16"</span><span class="p">)</span>
+<span class="n">resp</span><span class="p">.</span><span class="nf">content_type</span> <span class="c1">#=&gt; "text/csv; header=present; charset=utf-16"</span>
+<span class="n">resp</span><span class="p">.</span><span class="nf">media_type</span>   <span class="c1">#=&gt; "text/csv"</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-8636f5f847861015707c3c406fef3ca2">resp = ActionDispatch::Response.new(200, "Content-Type" =&gt; "text/csv; header=present; charset=utf-16")
+resp.content_type #=&gt; "text/csv; header=present; charset=utf-16"
+resp.media_type   #=&gt; "text/csv"
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-8636f5f847861015707c3c406fef3ca2">Copy</button>
+</div>
+<h4 id="autoloading"><a class="anchorlink" href="#autoloading">3.7 Autoloading</a></h4>
+
+<p>The default configuration for Rails 6</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="c1"># config/application.rb</span>
+
+<span class="n">config</span><span class="p">.</span><span class="nf">load_defaults</span> <span class="mf">6.0</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-501a3808817972ac8bdc865a36d17646"># config/application.rb
+
+config.load_defaults 6.0
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-501a3808817972ac8bdc865a36d17646">Copy</button>
+</div>
+<p>enables <code>zeitwerk</code> autoloading mode on CRuby. In that mode, autoloading, reloading, and eager loading are managed by <a href="https://github.com/fxn/zeitwerk">Zeitwerk</a>.</p>
+
+<h5 id="public-api"><a class="anchorlink" href="#public-api">3.7.1 Public API</a></h5>
+
+<p>In general, applications do not need to use the API of Zeitwerk directly. Rails sets things up according to the existing contract: <code>config.autoload_paths</code>, <code>config.cache_classes</code>, etc.</p>
+
+<p>While applications should stick to that interface, the actual Zeitwerk loader object can be accessed as</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="no">Rails</span><span class="p">.</span><span class="nf">autoloaders</span><span class="p">.</span><span class="nf">main</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-5875659ae9c3e46b142ba2ada1522644">Rails.autoloaders.main
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-5875659ae9c3e46b142ba2ada1522644">Copy</button>
+</div>
+<p>That may be handy if you need to preload STIs or configure a custom inflector, for example.</p>
+
+<h5 id="project-structure"><a class="anchorlink" href="#project-structure">3.7.2 Project Structure</a></h5>
+
+<p>If the application being upgraded autoloads correctly, the project structure should be already mostly compatible.</p>
+
+<p>However, <code>classic</code> mode infers file names from missing constant names (<code>underscore</code>), whereas <code>zeitwerk</code> mode infers constant names from file names (<code>camelize</code>). These helpers are not always inverse of each other, in particular if acronyms are involved. For instance, <code>"FOO".underscore</code> is <code>"foo"</code>, but <code>"foo".camelize</code> is <code>"Foo"</code>, not <code>"FOO"</code>.</p>
+
+<p>Compatibility can be checked with the <code>zeitwerk:check</code> task:</p>
+
+<div class="code_container">
+<pre><code class="highlight console"><span class="gp">$</span><span class="w"> </span><span class="nb">bin/rails </span>zeitwerk:check
+<span class="go">Hold on, I am eager loading the application.
+All is good!
+</span></code></pre>
+<textarea class="clipboard-content" id="clipboard-84c5d2b0bc2b156d0d33d65873649f03">bin/rails zeitwerk:check
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-84c5d2b0bc2b156d0d33d65873649f03">Copy</button>
+</div>
+<h5 id="require-dependency"><a class="anchorlink" href="#require-dependency">3.7.3 require_dependency</a></h5>
+
+<p>All known use cases of <code>require_dependency</code> have been eliminated, you should grep the project and delete them.</p>
+
+<p>If your application has STIs, please check their section in the guide <a href="autoloading_and_reloading_constants.html#single-table-inheritance">Autoloading and Reloading Constants (Zeitwerk Mode)</a>.</p>
+
+<h5 id="qualified-names-in-class-and-module-definitions"><a class="anchorlink" href="#qualified-names-in-class-and-module-definitions">3.7.4 Qualified names in class and module definitions</a></h5>
+
+<p>You can now robustly use constant paths in class and module definitions:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="c1"># Autoloading in this class' body matches Ruby semantics now.</span>
+<span class="k">class</span> <span class="nc">Admin::UsersController</span> <span class="o">&lt;</span> <span class="no">ApplicationController</span>
+  <span class="c1"># ...</span>
+<span class="k">end</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-cfee353969c0e726b7769a19ccc087f9"># Autoloading in this class' body matches Ruby semantics now.
+class Admin::UsersController &lt; ApplicationController
+  # ...
+end
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-cfee353969c0e726b7769a19ccc087f9">Copy</button>
+</div>
+<p>A gotcha to be aware of is that, depending on the order of execution, the classic autoloader could sometimes be able to autoload <code>Foo::Wadus</code> in</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">Foo::Bar</span>
+  <span class="nc">Wadus</span>
+<span class="k">end</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-ff0c677962014cd5da09b9a56f862928">class Foo::Bar
+  Wadus
+end
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-ff0c677962014cd5da09b9a56f862928">Copy</button>
+</div>
+<p>That does not match Ruby semantics because <code>Foo</code> is not in the nesting, and won't work at all in <code>zeitwerk</code> mode. If you find such corner case you can use the qualified name <code>Foo::Wadus</code>:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">Foo::Bar</span>
+  <span class="nc">Foo::Wadus</span>
+<span class="k">end</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-e7dbc5007ae8ca96a562c8ef64cc8667">class Foo::Bar
+  Foo::Wadus
+end
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-e7dbc5007ae8ca96a562c8ef64cc8667">Copy</button>
+</div>
+<p>or add <code>Foo</code> to the nesting:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">module</span> <span class="nn">Foo</span>
+  <span class="k">class</span> <span class="nc">Bar</span>
+    <span class="no">Wadus</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-a32431f21ee03e5131e1136c66059519">module Foo
+  class Bar
+    Wadus
+  end
+end
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-a32431f21ee03e5131e1136c66059519">Copy</button>
+</div>
+<h5 id="concerns"><a class="anchorlink" href="#concerns">3.7.5 Concerns</a></h5>
+
+<p>You can autoload and eager load from a standard structure like</p>
+
+<div class="code_container">
+<pre><code class="highlight plaintext">app/models
+app/models/concerns
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-6a19582dd629f628915394490bb5b812">app/models
+app/models/concerns
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-6a19582dd629f628915394490bb5b812">Copy</button>
+</div>
+<p>In that case, <code>app/models/concerns</code> is assumed to be a root directory (because it belongs to the autoload paths), and it is ignored as namespace. So, <code>app/models/concerns/foo.rb</code> should define <code>Foo</code>, not <code>Concerns::Foo</code>.</p>
+
+<p>The <code>Concerns::</code> namespace worked with the classic autoloader as a side-effect of the implementation, but it was not really an intended behavior. An application using <code>Concerns::</code> needs to rename those classes and modules to be able to run in <code>zeitwerk</code> mode.</p>
+
+<h5 id="having-app-in-the-autoload-paths"><a class="anchorlink" href="#having-app-in-the-autoload-paths">3.7.6 Having <code>app</code> in the autoload paths</a></h5>
+
+<p>Some projects want something like <code>app/api/base.rb</code> to define <code>API::Base</code>, and add <code>app</code> to the autoload paths to accomplish that in <code>classic</code> mode. Since Rails adds all subdirectories of <code>app</code> to the autoload paths automatically, we have another situation in which there are nested root directories, so that setup no longer works. Similar principle we explained above with <code>concerns</code>.</p>
+
+<p>If you want to keep that structure, you'll need to delete the subdirectory from the autoload paths in an initializer:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="no">ActiveSupport</span><span class="o">::</span><span class="no">Dependencies</span><span class="p">.</span><span class="nf">autoload_paths</span><span class="p">.</span><span class="nf">delete</span><span class="p">(</span><span class="s2">"</span><span class="si">#{</span><span class="no">Rails</span><span class="p">.</span><span class="nf">root</span><span class="si">}</span><span class="s2">/app/api"</span><span class="p">)</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-ca52ef3a2ed680a5bd1f910e961de94b">ActiveSupport::Dependencies.autoload_paths.delete("#{Rails.root}/app/api")
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-ca52ef3a2ed680a5bd1f910e961de94b">Copy</button>
+</div>
+<h5 id="autoloaded-constants-and-explicit-namespaces"><a class="anchorlink" href="#autoloaded-constants-and-explicit-namespaces">3.7.7 Autoloaded Constants and Explicit Namespaces</a></h5>
+
+<p>If a namespace is defined in a file, as <code>Hotel</code> is here:</p>
+
+<div class="code_container">
+<pre><code class="highlight plaintext">app/models/hotel.rb         # Defines Hotel.
+app/models/hotel/pricing.rb # Defines Hotel::Pricing.
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-9f1ffa4fed1850c71d434e9b6e08fae0">app/models/hotel.rb         # Defines Hotel.
+app/models/hotel/pricing.rb # Defines Hotel::Pricing.
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-9f1ffa4fed1850c71d434e9b6e08fae0">Copy</button>
+</div>
+<p>the <code>Hotel</code> constant has to be set using the <code>class</code> or <code>module</code> keywords. For example:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">Hotel</span>
+<span class="k">end</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-9264234701d0e7f5f4828783104ec948">class Hotel
+end
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-9264234701d0e7f5f4828783104ec948">Copy</button>
+</div>
+<p>is good.</p>
+
+<p>Alternatives like</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="no">Hotel</span> <span class="o">=</span> <span class="no">Class</span><span class="p">.</span><span class="nf">new</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-a4d7cfe9efe0bdf53c2802b52171b1cc">Hotel = Class.new
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-a4d7cfe9efe0bdf53c2802b52171b1cc">Copy</button>
+</div>
+<p>or</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="no">Hotel</span> <span class="o">=</span> <span class="no">Struct</span><span class="p">.</span><span class="nf">new</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-e527e57d3169d58233afb79105e2830b">Hotel = Struct.new
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-e527e57d3169d58233afb79105e2830b">Copy</button>
+</div>
+<p>won't work, child objects like <code>Hotel::Pricing</code> won't be found.</p>
+
+<p>This restriction only applies to explicit namespaces. Classes and modules not defining a namespace can be defined using those idioms.</p>
+
+<h5 id="one-file-one-constant-at-the-same-top-level"><a class="anchorlink" href="#one-file-one-constant-at-the-same-top-level">3.7.8 One file, one constant (at the same top-level)</a></h5>
+
+<p>In <code>classic</code> mode you could technically define several constants at the same top-level and have them all reloaded. For example, given</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="c1"># app/models/foo.rb</span>
+
+<span class="k">class</span> <span class="nc">Foo</span>
+<span class="k">end</span>
+
+<span class="k">class</span> <span class="nc">Bar</span>
+<span class="k">end</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-4d759662c608eb11d87dcdd5d02bdae5"># app/models/foo.rb
+
+class Foo
+end
+
+class Bar
+end
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-4d759662c608eb11d87dcdd5d02bdae5">Copy</button>
+</div>
+<p>while <code>Bar</code> could not be autoloaded, autoloading <code>Foo</code> would mark <code>Bar</code> as autoloaded too. This is not the case in <code>zeitwerk</code> mode, you need to move <code>Bar</code> to its own file <code>bar.rb</code>. One file, one constant.</p>
+
+<p>This affects only to constants at the same top-level as in the example above. Inner classes and modules are fine. For example, consider</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="c1"># app/models/foo.rb</span>
+
+<span class="k">class</span> <span class="nc">Foo</span>
+  <span class="k">class</span> <span class="nc">InnerClass</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-47124d3a4955497a73335df04df4143c"># app/models/foo.rb
+
+class Foo
+  class InnerClass
+  end
+end
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-47124d3a4955497a73335df04df4143c">Copy</button>
+</div>
+<p>If the application reloads <code>Foo</code>, it will reload <code>Foo::InnerClass</code> too.</p>
+
+<h5 id="spring-and-the-test-environment"><a class="anchorlink" href="#spring-and-the-test-environment">3.7.9 Spring and the <code>test</code> Environment</a></h5>
+
+<p>Spring reloads the application code if something changes. In the <code>test</code> environment you need to enable reloading for that to work:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="c1"># config/environments/test.rb</span>
+
+<span class="n">config</span><span class="p">.</span><span class="nf">cache_classes</span> <span class="o">=</span> <span class="kp">false</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-4cdc76e0bdb579940b174d2dc7dccdd9"># config/environments/test.rb
+
+config.cache_classes = false
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-4cdc76e0bdb579940b174d2dc7dccdd9">Copy</button>
+</div>
+<p>Otherwise you'll get this error:</p>
+
+<div class="code_container">
+<pre><code class="highlight plaintext">reloading is disabled because config.cache_classes is true
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-de569700822dac795b6f811174f04ead">reloading is disabled because config.cache_classes is true
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-de569700822dac795b6f811174f04ead">Copy</button>
+</div>
+<h5 id="autoloading-bootsnap"><a class="anchorlink" href="#autoloading-bootsnap">3.7.10 Bootsnap</a></h5>
+
+<p>Bootsnap should be at least version 1.4.2.</p>
+
+<p>In addition to that, Bootsnap needs to disable the iseq cache due to a bug in the interpreter if running Ruby 2.5. Please make sure to depend on at least Bootsnap 1.4.4 in that case.</p>
+
+<h5 id="config-add-autoload-paths-to-load-path"><a class="anchorlink" href="#config-add-autoload-paths-to-load-path">3.7.11 <code>config.add_autoload_paths_to_load_path</code></a></h5>
+
+<p>The new configuration point</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">config</span><span class="p">.</span><span class="nf">add_autoload_paths_to_load_path</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-11933b18a4c601bd8c1602caec90c635">config.add_autoload_paths_to_load_path
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-11933b18a4c601bd8c1602caec90c635">Copy</button>
+</div>
+<p>is <code>true</code> by default for backwards compatibility, but allows you to opt-out from adding the autoload paths to <code>$LOAD_PATH</code>.</p>
+
+<p>This makes sense in most applications, since you never should require a file in <code>app/models</code>, for example, and Zeitwerk only uses absolute file names internally.</p>
+
+<p>By opting-out you optimize <code>$LOAD_PATH</code> lookups (less directories to check), and save Bootsnap work and memory consumption, since it does not need to build an index for these directories.</p>
+
+<h5 id="thread-safety"><a class="anchorlink" href="#thread-safety">3.7.12 Thread-safety</a></h5>
+
+<p>In classic mode, constant autoloading is not thread-safe, though Rails has locks in place for example to make web requests thread-safe when autoloading is enabled, as it is common in the development environment.</p>
+
+<p>Constant autoloading is thread-safe in <code>zeitwerk</code> mode. For example, you can now autoload in multi-threaded scripts executed by the <code>runner</code> command.</p>
+
+<h5 id="globs-in-config-autoload-paths"><a class="anchorlink" href="#globs-in-config-autoload-paths">3.7.13 Globs in config.autoload_paths</a></h5>
+
+<p>Beware of configurations like</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">config</span><span class="p">.</span><span class="nf">autoload_paths</span> <span class="o">+=</span> <span class="no">Dir</span><span class="p">[</span><span class="s2">"</span><span class="si">#{</span><span class="n">config</span><span class="p">.</span><span class="nf">root</span><span class="si">}</span><span class="s2">/lib/**/"</span><span class="p">]</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-7cd2f17625c127dcc2569cab72097c6a">config.autoload_paths += Dir["#{config.root}/lib/**/"]
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-7cd2f17625c127dcc2569cab72097c6a">Copy</button>
+</div>
+<p>Every element of <code>config.autoload_paths</code> should represent the top-level namespace (<code>Object</code>) and they cannot be nested in consequence (with the exception of <code>concerns</code> directories explained above).</p>
+
+<p>To fix this, just remove the wildcards:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">config</span><span class="p">.</span><span class="nf">autoload_paths</span> <span class="o">&lt;&lt;</span> <span class="s2">"</span><span class="si">#{</span><span class="n">config</span><span class="p">.</span><span class="nf">root</span><span class="si">}</span><span class="s2">/lib"</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-621409ca1cc99b30a61040ae21912abf">config.autoload_paths &lt;&lt; "#{config.root}/lib"
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-621409ca1cc99b30a61040ae21912abf">Copy</button>
+</div>
+<h5 id="eager-loading-and-autoloading-are-consistent"><a class="anchorlink" href="#eager-loading-and-autoloading-are-consistent">3.7.14 Eager loading and autoloading are consistent</a></h5>
+
+<p>In <code>classic</code> mode, if <code>app/models/foo.rb</code> defines <code>Bar</code>, you won't be able to autoload that file, but eager loading will work because it loads files recursively blindly. This can be a source of errors if you test things first eager loading, execution may fail later autoloading.</p>
+
+<p>In <code>zeitwerk</code> mode both loading modes are consistent, they fail and err in the same files.</p>
+
+<h5 id="how-to-use-the-classic-autoloader-in-rails-6"><a class="anchorlink" href="#how-to-use-the-classic-autoloader-in-rails-6">3.7.15 How to Use the Classic Autoloader in Rails 6</a></h5>
+
+<p>Applications can load Rails 6 defaults and still use the classic autoloader by setting <code>config.autoloader</code> this way:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="c1"># config/application.rb</span>
+
+<span class="n">config</span><span class="p">.</span><span class="nf">load_defaults</span> <span class="mf">6.0</span>
+<span class="n">config</span><span class="p">.</span><span class="nf">autoloader</span> <span class="o">=</span> <span class="ss">:classic</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-0da22b048f46f6b3dc6bf158e73c0c5b"># config/application.rb
+
+config.load_defaults 6.0
+config.autoloader = :classic
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-0da22b048f46f6b3dc6bf158e73c0c5b">Copy</button>
+</div>
+<p>When using the Classic Autoloader in Rails 6 application it is recommended to set concurrency level to 1 in development environment, for the web servers and background processors, due to the thread-safety concerns.</p>
+
+<h4 id="active-storage-assignment-behavior-change"><a class="anchorlink" href="#active-storage-assignment-behavior-change">3.8 Active Storage assignment behavior change</a></h4>
+
+<p>With the configuration defaults for Rails 5.2, assigning to a collection of attachments declared with <code>has_many_attached</code> appends new files:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">User</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="n">has_many_attached</span> <span class="ss">:highlights</span>
+<span class="k">end</span>
+
+<span class="n">user</span><span class="p">.</span><span class="nf">highlights</span><span class="p">.</span><span class="nf">attach</span><span class="p">(</span><span class="ss">filename: </span><span class="s2">"funky.jpg"</span><span class="p">,</span> <span class="o">...</span><span class="p">)</span>
+<span class="n">user</span><span class="p">.</span><span class="nf">highlights</span><span class="p">.</span><span class="nf">count</span> <span class="c1"># =&gt; 1</span>
+
+<span class="n">blob</span> <span class="o">=</span> <span class="no">ActiveStorage</span><span class="o">::</span><span class="no">Blob</span><span class="p">.</span><span class="nf">create_after_upload!</span><span class="p">(</span><span class="ss">filename: </span><span class="s2">"town.jpg"</span><span class="p">,</span> <span class="o">...</span><span class="p">)</span>
+<span class="n">user</span><span class="p">.</span><span class="nf">update!</span><span class="p">(</span><span class="ss">highlights: </span><span class="p">[</span> <span class="n">blob</span> <span class="p">])</span>
+
+<span class="n">user</span><span class="p">.</span><span class="nf">highlights</span><span class="p">.</span><span class="nf">count</span> <span class="c1"># =&gt; 2</span>
+<span class="n">user</span><span class="p">.</span><span class="nf">highlights</span><span class="p">.</span><span class="nf">first</span><span class="p">.</span><span class="nf">filename</span> <span class="c1"># =&gt; "funky.jpg"</span>
+<span class="n">user</span><span class="p">.</span><span class="nf">highlights</span><span class="p">.</span><span class="nf">second</span><span class="p">.</span><span class="nf">filename</span> <span class="c1"># =&gt; "town.jpg"</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-7b894a04ca34169b22cccd302a6a38f6">class User &lt; ApplicationRecord
+  has_many_attached :highlights
+end
+
+user.highlights.attach(filename: "funky.jpg", ...)
+user.highlights.count # =&gt; 1
+
+blob = ActiveStorage::Blob.create_after_upload!(filename: "town.jpg", ...)
+user.update!(highlights: [ blob ])
+
+user.highlights.count # =&gt; 2
+user.highlights.first.filename # =&gt; "funky.jpg"
+user.highlights.second.filename # =&gt; "town.jpg"
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-7b894a04ca34169b22cccd302a6a38f6">Copy</button>
+</div>
+<p>With the configuration defaults for Rails 6.0, assigning to a collection of attachments replaces existing files instead of appending to them. This matches Active Record behavior when assigning to a collection association:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">user</span><span class="p">.</span><span class="nf">highlights</span><span class="p">.</span><span class="nf">attach</span><span class="p">(</span><span class="ss">filename: </span><span class="s2">"funky.jpg"</span><span class="p">,</span> <span class="o">...</span><span class="p">)</span>
+<span class="n">user</span><span class="p">.</span><span class="nf">highlights</span><span class="p">.</span><span class="nf">count</span> <span class="c1"># =&gt; 1</span>
+
+<span class="n">blob</span> <span class="o">=</span> <span class="no">ActiveStorage</span><span class="o">::</span><span class="no">Blob</span><span class="p">.</span><span class="nf">create_after_upload!</span><span class="p">(</span><span class="ss">filename: </span><span class="s2">"town.jpg"</span><span class="p">,</span> <span class="o">...</span><span class="p">)</span>
+<span class="n">user</span><span class="p">.</span><span class="nf">update!</span><span class="p">(</span><span class="ss">highlights: </span><span class="p">[</span> <span class="n">blob</span> <span class="p">])</span>
+
+<span class="n">user</span><span class="p">.</span><span class="nf">highlights</span><span class="p">.</span><span class="nf">count</span> <span class="c1"># =&gt; 1</span>
+<span class="n">user</span><span class="p">.</span><span class="nf">highlights</span><span class="p">.</span><span class="nf">first</span><span class="p">.</span><span class="nf">filename</span> <span class="c1"># =&gt; "town.jpg"</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-37d6dfe5344ec6e3c94c7a647aeb44ce">user.highlights.attach(filename: "funky.jpg", ...)
+user.highlights.count # =&gt; 1
+
+blob = ActiveStorage::Blob.create_after_upload!(filename: "town.jpg", ...)
+user.update!(highlights: [ blob ])
+
+user.highlights.count # =&gt; 1
+user.highlights.first.filename # =&gt; "town.jpg"
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-37d6dfe5344ec6e3c94c7a647aeb44ce">Copy</button>
+</div>
+<p><code>#attach</code> can be used to add new attachments without removing the existing ones:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">blob</span> <span class="o">=</span> <span class="no">ActiveStorage</span><span class="o">::</span><span class="no">Blob</span><span class="p">.</span><span class="nf">create_after_upload!</span><span class="p">(</span><span class="ss">filename: </span><span class="s2">"town.jpg"</span><span class="p">,</span> <span class="o">...</span><span class="p">)</span>
+<span class="n">user</span><span class="p">.</span><span class="nf">highlights</span><span class="p">.</span><span class="nf">attach</span><span class="p">(</span><span class="n">blob</span><span class="p">)</span>
+
+<span class="n">user</span><span class="p">.</span><span class="nf">highlights</span><span class="p">.</span><span class="nf">count</span> <span class="c1"># =&gt; 2</span>
+<span class="n">user</span><span class="p">.</span><span class="nf">highlights</span><span class="p">.</span><span class="nf">first</span><span class="p">.</span><span class="nf">filename</span> <span class="c1"># =&gt; "funky.jpg"</span>
+<span class="n">user</span><span class="p">.</span><span class="nf">highlights</span><span class="p">.</span><span class="nf">second</span><span class="p">.</span><span class="nf">filename</span> <span class="c1"># =&gt; "town.jpg"</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-a3e8fc99a3b3a5ea3fc372e387fb2b06">blob = ActiveStorage::Blob.create_after_upload!(filename: "town.jpg", ...)
+user.highlights.attach(blob)
+
+user.highlights.count # =&gt; 2
+user.highlights.first.filename # =&gt; "funky.jpg"
+user.highlights.second.filename # =&gt; "town.jpg"
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-a3e8fc99a3b3a5ea3fc372e387fb2b06">Copy</button>
+</div>
+<p>Existing applications can opt in to this new behavior by setting <code>config.active_storage.replace_on_assign_to_many</code> to <code>true</code>. The old behavior will be deprecated in Rails 6.1 and removed in a subsequent release.</p>
+</body>
+</html>

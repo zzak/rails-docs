@@ -1,0 +1,259 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>10 Testing</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v7.0.4.2/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="testing"><a class="anchorlink" href="#testing">10 Testing</a></h3>
+<p>Use <a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActionDispatch/TestProcess/FixtureFile.html"><code>fixture_file_upload</code></a> to test uploading a file in an integration or controller test.
+Rails handles files like any other parameter.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">SignupController</span> <span class="o">&lt;</span> <span class="no">ActionDispatch</span><span class="o">::</span><span class="no">IntegrationTest</span>
+  <span class="nb">test</span> <span class="s2">"can sign up"</span> <span class="k">do</span>
+    <span class="n">post</span> <span class="n">signup_path</span><span class="p">,</span> <span class="ss">params: </span><span class="p">{</span>
+      <span class="ss">name: </span><span class="s2">"David"</span><span class="p">,</span>
+      <span class="ss">avatar: </span><span class="n">fixture_file_upload</span><span class="p">(</span><span class="s2">"david.png"</span><span class="p">,</span> <span class="s2">"image/png"</span><span class="p">)</span>
+    <span class="p">}</span>
+
+    <span class="n">user</span> <span class="o">=</span> <span class="no">User</span><span class="p">.</span><span class="nf">order</span><span class="p">(</span><span class="ss">:created_at</span><span class="p">).</span><span class="nf">last</span>
+    <span class="n">assert</span> <span class="n">user</span><span class="p">.</span><span class="nf">avatar</span><span class="p">.</span><span class="nf">attached?</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='class SignupController &lt; ActionDispatch::IntegrationTest
+  test "can sign up" do
+    post signup_path, params: {
+      name: "David",
+      avatar: fixture_file_upload("david.png", "image/png")
+    }
+
+    user = User.order(:created_at).last
+    assert user.avatar.attached?
+  end
+end
+'>Copy</button>
+</div>
+<h4 id="discarding-files-created-during-tests"><a class="anchorlink" href="#discarding-files-created-during-tests">10.1 Discarding files created during tests</a></h4>
+
+<h5 id="system-tests"><a class="anchorlink" href="#system-tests">10.1.1 System tests</a></h5>
+
+<p>System tests clean up test data by rolling back a transaction. Because <code>destroy</code>
+is never called on an object, the attached files are never cleaned up. If you
+want to clear the files, you can do it in an <code>after_teardown</code> callback. Doing it
+here ensures that all connections created during the test are complete and
+you won't receive an error from Active Storage saying it can't find a file.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">ApplicationSystemTestCase</span> <span class="o">&lt;</span> <span class="no">ActionDispatch</span><span class="o">::</span><span class="no">SystemTestCase</span>
+  <span class="c1"># ...</span>
+  <span class="k">def</span> <span class="nf">after_teardown</span>
+    <span class="k">super</span>
+    <span class="no">FileUtils</span><span class="p">.</span><span class="nf">rm_rf</span><span class="p">(</span><span class="no">ActiveStorage</span><span class="o">::</span><span class="no">Blob</span><span class="p">.</span><span class="nf">service</span><span class="p">.</span><span class="nf">root</span><span class="p">)</span>
+  <span class="k">end</span>
+  <span class="c1"># ...</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="class ApplicationSystemTestCase &lt; ActionDispatch::SystemTestCase
+  # ...
+  def after_teardown
+    super
+    FileUtils.rm_rf(ActiveStorage::Blob.service.root)
+  end
+  # ...
+end
+">Copy</button>
+</div>
+<p>If you're using <a href="testing.html#parallel-testing">parallel tests</a> and the <code>DiskService</code>, you should configure each process to use its own
+folder for Active Storage. This way, the <code>teardown</code> callback will only delete files from the relevant process'
+tests.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">ApplicationSystemTestCase</span> <span class="o">&lt;</span> <span class="no">ActionDispatch</span><span class="o">::</span><span class="no">SystemTestCase</span>
+  <span class="c1"># ...</span>
+  <span class="n">parallelize_setup</span> <span class="k">do</span> <span class="o">|</span><span class="n">i</span><span class="o">|</span>
+    <span class="no">ActiveStorage</span><span class="o">::</span><span class="no">Blob</span><span class="p">.</span><span class="nf">service</span><span class="p">.</span><span class="nf">root</span> <span class="o">=</span> <span class="s2">"</span><span class="si">#{</span><span class="no">ActiveStorage</span><span class="o">::</span><span class="no">Blob</span><span class="p">.</span><span class="nf">service</span><span class="p">.</span><span class="nf">root</span><span class="si">}</span><span class="s2">-</span><span class="si">#{</span><span class="n">i</span><span class="si">}</span><span class="s2">"</span>
+  <span class="k">end</span>
+  <span class="c1"># ...</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='class ApplicationSystemTestCase &lt; ActionDispatch::SystemTestCase
+  # ...
+  parallelize_setup do |i|
+    ActiveStorage::Blob.service.root = "#{ActiveStorage::Blob.service.root}-#{i}"
+  end
+  # ...
+end
+'>Copy</button>
+</div>
+<p>If your system tests verify the deletion of a model with attachments and you're
+using Active Job, set your test environment to use the inline queue adapter so
+the purge job is executed immediately rather at an unknown time in the future.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="c1"># Use inline job processing to make things happen immediately</span>
+<span class="n">config</span><span class="p">.</span><span class="nf">active_job</span><span class="p">.</span><span class="nf">queue_adapter</span> <span class="o">=</span> <span class="ss">:inline</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="# Use inline job processing to make things happen immediately
+config.active_job.queue_adapter = :inline
+">Copy</button>
+</div>
+<h5 id="integration-tests"><a class="anchorlink" href="#integration-tests">10.1.2 Integration tests</a></h5>
+
+<p>Similarly to System Tests, files uploaded during Integration Tests will not be
+automatically cleaned up. If you want to clear the files, you can do it in an
+<code>teardown</code> callback.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">ActionDispatch::IntegrationTest</span>
+  <span class="k">def</span> <span class="nf">after_teardown</span>
+    <span class="k">super</span>
+    <span class="no">FileUtils</span><span class="p">.</span><span class="nf">rm_rf</span><span class="p">(</span><span class="no">ActiveStorage</span><span class="o">::</span><span class="no">Blob</span><span class="p">.</span><span class="nf">service</span><span class="p">.</span><span class="nf">root</span><span class="p">)</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="class ActionDispatch::IntegrationTest
+  def after_teardown
+    super
+    FileUtils.rm_rf(ActiveStorage::Blob.service.root)
+  end
+end
+">Copy</button>
+</div>
+<p>If you're using <a href="testing.html#parallel-testing">parallel tests</a> and the Disk service, you should configure each process to use its own
+folder for Active Storage. This way, the <code>teardown</code> callback will only delete files from the relevant process'
+tests.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">ActionDispatch::IntegrationTest</span>
+  <span class="n">parallelize_setup</span> <span class="k">do</span> <span class="o">|</span><span class="n">i</span><span class="o">|</span>
+    <span class="no">ActiveStorage</span><span class="o">::</span><span class="no">Blob</span><span class="p">.</span><span class="nf">service</span><span class="p">.</span><span class="nf">root</span> <span class="o">=</span> <span class="s2">"</span><span class="si">#{</span><span class="no">ActiveStorage</span><span class="o">::</span><span class="no">Blob</span><span class="p">.</span><span class="nf">service</span><span class="p">.</span><span class="nf">root</span><span class="si">}</span><span class="s2">-</span><span class="si">#{</span><span class="n">i</span><span class="si">}</span><span class="s2">"</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='class ActionDispatch::IntegrationTest
+  parallelize_setup do |i|
+    ActiveStorage::Blob.service.root = "#{ActiveStorage::Blob.service.root}-#{i}"
+  end
+end
+'>Copy</button>
+</div>
+<h4 id="adding-attachments-to-fixtures"><a class="anchorlink" href="#adding-attachments-to-fixtures">10.2 Adding attachments to fixtures</a></h4>
+
+<p>You can add attachments to your existing <a href="testing.html#the-low-down-on-fixtures">fixtures</a>. First, you'll want to create a separate storage service:</p>
+
+<div class="code_container">
+<pre><code class="highlight yml"><span class="c1"># config/storage.yml</span>
+
+<span class="na">test_fixtures</span><span class="pi">:</span>
+  <span class="na">service</span><span class="pi">:</span> <span class="s">Disk</span>
+  <span class="na">root</span><span class="pi">:</span> <span class="s">&lt;%= Rails.root.join("tmp/storage_fixtures") %&gt;</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='# config/storage.yml
+
+test_fixtures:
+  service: Disk
+  root: &lt;%= Rails.root.join("tmp/storage_fixtures") %&gt;
+'>Copy</button>
+</div>
+<p>This tells Active Storage where to "upload" fixture files to, so it should be a temporary directory. By making it
+a different directory to your regular <code>test</code> service, you can separate fixture files from files uploaded during a
+test.</p>
+
+<p>Next, create fixture files for the Active Storage classes:</p>
+
+<div class="code_container">
+<pre><code class="highlight yml"><span class="c1"># active_storage/attachments.yml</span>
+<span class="na">david_avatar</span><span class="pi">:</span>
+  <span class="na">name</span><span class="pi">:</span> <span class="s">avatar</span>
+  <span class="na">record</span><span class="pi">:</span> <span class="s">david (User)</span>
+  <span class="na">blob</span><span class="pi">:</span> <span class="s">david_avatar_blob</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="# active_storage/attachments.yml
+david_avatar:
+  name: avatar
+  record: david (User)
+  blob: david_avatar_blob
+">Copy</button>
+</div>
+<div class="code_container">
+<pre><code class="highlight yml"><span class="c1"># active_storage/blobs.yml</span>
+<span class="na">david_avatar_blob</span><span class="pi">:</span> <span class="s">&lt;%= ActiveStorage::FixtureSet.blob filename</span><span class="err">:</span> <span class="s2">"</span><span class="s">david.png"</span><span class="err">,</span> <span class="na">service_name</span><span class="pi">:</span> <span class="s2">"</span><span class="s">test_fixtures"</span> <span class="err">%</span><span class="pi">&gt;</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='# active_storage/blobs.yml
+david_avatar_blob: &lt;%= ActiveStorage::FixtureSet.blob filename: "david.png", service_name: "test_fixtures" %&gt;
+'>Copy</button>
+</div>
+<p>Then put a file in your fixtures directory (the default path is <code>test/fixtures/files</code>) with the corresponding filename.
+See the <a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveStorage/FixtureSet.html"><code>ActiveStorage::FixtureSet</code></a> docs for more information.</p>
+
+<p>Once everything is set up, you'll be able to access attachments in your tests:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">UserTest</span> <span class="o">&lt;</span> <span class="no">ActiveSupport</span><span class="o">::</span><span class="no">TestCase</span>
+  <span class="k">def</span> <span class="nf">test_avatar</span>
+    <span class="n">avatar</span> <span class="o">=</span> <span class="n">users</span><span class="p">(</span><span class="ss">:david</span><span class="p">).</span><span class="nf">avatar</span>
+
+    <span class="n">assert</span> <span class="n">avatar</span><span class="p">.</span><span class="nf">attached?</span>
+    <span class="n">assert_not_nil</span> <span class="n">avatar</span><span class="p">.</span><span class="nf">download</span>
+    <span class="n">assert_equal</span> <span class="mi">1000</span><span class="p">,</span> <span class="n">avatar</span><span class="p">.</span><span class="nf">byte_size</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="class UserTest &lt; ActiveSupport::TestCase
+  def test_avatar
+    avatar = users(:david).avatar
+
+    assert avatar.attached?
+    assert_not_nil avatar.download
+    assert_equal 1000, avatar.byte_size
+  end
+end
+">Copy</button>
+</div>
+<h5 id="cleaning-up-fixtures"><a class="anchorlink" href="#cleaning-up-fixtures">10.2.1 Cleaning up fixtures</a></h5>
+
+<p>While files uploaded in tests are cleaned up <a href="#discarding-files-created-during-tests">at the end of each test</a>,
+you only need to clean up fixture files once: when all your tests complete.</p>
+
+<p>If you're using parallel tests, call <code>parallelize_teardown</code>:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">ActiveSupport::TestCase</span>
+  <span class="c1"># ...</span>
+  <span class="n">parallelize_teardown</span> <span class="k">do</span> <span class="o">|</span><span class="n">i</span><span class="o">|</span>
+    <span class="no">FileUtils</span><span class="p">.</span><span class="nf">rm_rf</span><span class="p">(</span><span class="no">ActiveStorage</span><span class="o">::</span><span class="no">Blob</span><span class="p">.</span><span class="nf">services</span><span class="p">.</span><span class="nf">fetch</span><span class="p">(</span><span class="ss">:test_fixtures</span><span class="p">).</span><span class="nf">root</span><span class="p">)</span>
+  <span class="k">end</span>
+  <span class="c1"># ...</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="class ActiveSupport::TestCase
+  # ...
+  parallelize_teardown do |i|
+    FileUtils.rm_rf(ActiveStorage::Blob.services.fetch(:test_fixtures).root)
+  end
+  # ...
+end
+">Copy</button>
+</div>
+<p>If you're not running parallel tests, use <code>Minitest.after_run</code> or the equivalent for your test
+framework (e.g. <code>after(:suite)</code> for RSpec):</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="c1"># test_helper.rb</span>
+
+<span class="no">Minitest</span><span class="p">.</span><span class="nf">after_run</span> <span class="k">do</span>
+  <span class="no">FileUtils</span><span class="p">.</span><span class="nf">rm_rf</span><span class="p">(</span><span class="no">ActiveStorage</span><span class="o">::</span><span class="no">Blob</span><span class="p">.</span><span class="nf">services</span><span class="p">.</span><span class="nf">fetch</span><span class="p">(</span><span class="ss">:test_fixtures</span><span class="p">).</span><span class="nf">root</span><span class="p">)</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="# test_helper.rb
+
+Minitest.after_run do
+  FileUtils.rm_rf(ActiveStorage::Blob.services.fetch(:test_fixtures).root)
+end
+">Copy</button>
+</div>
+</body>
+</html>

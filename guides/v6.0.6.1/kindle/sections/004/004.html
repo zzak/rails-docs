@@ -1,0 +1,98 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>5 Conditional Validation</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v6.0.6.1/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="conditional-validation"><a class="anchorlink" href="#conditional-validation">5 Conditional Validation</a></h3>
+<p>Sometimes it will make sense to validate an object only when a given predicate
+is satisfied. You can do that by using the <code>:if</code> and <code>:unless</code> options, which
+can take a symbol, a <code>Proc</code> or an <code>Array</code>. You may use the <code>:if</code>
+option when you want to specify when the validation <strong>should</strong> happen. If you
+want to specify when the validation <strong>should not</strong> happen, then you may use the
+<code>:unless</code> option.</p>
+
+<h4 id="using-a-symbol-with-if-and-unless"><a class="anchorlink" href="#using-a-symbol-with-if-and-unless">5.1 Using a Symbol with <code>:if</code> and <code>:unless</code></a></h4>
+
+<p>You can associate the <code>:if</code> and <code>:unless</code> options with a symbol corresponding
+to the name of a method that will get called right before validation happens.
+This is the most commonly used option.</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class Order &lt; ApplicationRecord
+  validates :card_number, presence: true, if: :paid_with_card?
+
+  def paid_with_card?
+    payment_type == "card"
+  end
+end
+
+</pre>
+</div>
+<h4 id="using-a-proc-with-if-and-unless"><a class="anchorlink" href="#using-a-proc-with-if-and-unless">5.2 Using a Proc with <code>:if</code> and <code>:unless</code></a></h4>
+
+<p>It is possible to associate <code>:if</code> and <code>:unless</code> with a <code>Proc</code> object
+which will be called. Using a <code>Proc</code> object gives you the ability to write an
+inline condition instead of a separate method. This option is best suited for
+one-liners.</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class Account &lt; ApplicationRecord
+  validates :password, confirmation: true,
+    unless: Proc.new { |a| a.password.blank? }
+end
+
+</pre>
+</div>
+<p>As <code>Lambdas</code> are a type of <code>Proc</code>, they can also be used to write inline
+conditions in a shorter way.</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+validates :password, confirmation: true, unless: -&gt; { password.blank? }
+
+</pre>
+</div>
+<h4 id="grouping-conditional-validations"><a class="anchorlink" href="#grouping-conditional-validations">5.3 Grouping Conditional validations</a></h4>
+
+<p>Sometimes it is useful to have multiple validations use one condition. It can
+be easily achieved using <code>with_options</code>.</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class User &lt; ApplicationRecord
+  with_options if: :is_admin? do |admin|
+    admin.validates :password, length: { minimum: 10 }
+    admin.validates :email, presence: true
+  end
+end
+
+</pre>
+</div>
+<p>All validations inside of the <code>with_options</code> block will have automatically
+passed the condition <code>if: :is_admin?</code></p>
+
+<h4 id="combining-validation-conditions"><a class="anchorlink" href="#combining-validation-conditions">5.4 Combining Validation Conditions</a></h4>
+
+<p>On the other hand, when multiple conditions define whether or not a validation
+should happen, an <code>Array</code> can be used. Moreover, you can apply both <code>:if</code> and
+<code>:unless</code> to the same validation.</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class Computer &lt; ApplicationRecord
+  validates :mouse, presence: true,
+                    if: [Proc.new { |c| c.market.retail? }, :desktop?],
+                    unless: Proc.new { |c| c.trackpad.present? }
+end
+
+</pre>
+</div>
+<p>The validation only runs when all the <code>:if</code> conditions and none of the
+<code>:unless</code> conditions are evaluated to <code>true</code>.</p>
+</body>
+</html>

@@ -1,0 +1,58 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>3 In Development</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v4.0.13/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="in-development">3 In Development</h3>
+<p>In development mode, assets are served as separate files in the order they are specified in the manifest file.</p>
+<p>This manifest <code>app/assets/javascripts/application.js</code>:</p>
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+//= require core
+//= require projects
+//= require tickets
+
+</pre>
+</div>
+<p>would generate this HTML:</p>
+<div class="code_container">
+<pre class="brush: xml; gutter: false; toolbar: false">
+&lt;script src="/assets/core.js?body=1"&gt;&lt;/script&gt;
+&lt;script src="/assets/projects.js?body=1"&gt;&lt;/script&gt;
+&lt;script src="/assets/tickets.js?body=1"&gt;&lt;/script&gt;
+
+</pre>
+</div>
+<p>The <code>body</code> param is required by Sprockets.</p>
+<h4 id="turning-debugging-off">3.1 Turning Debugging Off</h4>
+<p>You can turn off debug mode by updating <code>config/environments/development.rb</code> to include:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+config.assets.debug = false
+
+</pre>
+</div>
+<p>When debug mode is off, Sprockets concatenates and runs the necessary preprocessors on all files. With debug mode turned off the manifest above would generate instead:</p>
+<div class="code_container">
+<pre class="brush: xml; gutter: false; toolbar: false">
+&lt;script src="/assets/application.js"&gt;&lt;/script&gt;
+
+</pre>
+</div>
+<p>Assets are compiled and cached on the first request after the server is started. Sprockets sets a <code>must-revalidate</code> Cache-Control HTTP header to reduce request overhead on subsequent requests — on these the browser gets a 304 (Not Modified) response.</p>
+<p>If any of the files in the manifest have changed between requests, the server responds with a new compiled file.</p>
+<p>Debug mode can also be enabled in the Rails helper methods:</p>
+<div class="code_container">
+<pre class="brush: ruby; html-script: true; gutter: false; toolbar: false">
+&lt;%= stylesheet_link_tag "application", debug: true %&gt;
+&lt;%= javascript_include_tag "application", debug: true %&gt;
+
+</pre>
+</div>
+<p>The <code>:debug</code> option is redundant if debug mode is on.</p>
+<p>You could potentially also enable compression in development mode as a sanity check, and disable it on-demand as required for debugging.</p>
+</body>
+</html>

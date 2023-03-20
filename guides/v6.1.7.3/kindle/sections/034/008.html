@@ -1,0 +1,209 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>9 Active Support</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v6.1.7.3/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="active-support"><a class="anchorlink" href="#active-support">9 Active Support</a></h3>
+<h4 id="cache-read-active-support"><a class="anchorlink" href="#cache-read-active-support">9.1 cache_read.active_support</a></h4>
+<table>
+<thead>
+<tr>
+<th>Key</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>:key</code></td>
+<td>Key used in the store</td>
+</tr>
+<tr>
+<td><code>:store</code></td>
+<td>Name of the store class</td>
+</tr>
+<tr>
+<td><code>:hit</code></td>
+<td>If this read is a hit</td>
+</tr>
+<tr>
+<td><code>:super_operation</code></td>
+<td>:fetch is added when a read is used with <code>#fetch</code>
+</td>
+</tr>
+</tbody>
+</table>
+<h4 id="cache-generate-active-support"><a class="anchorlink" href="#cache-generate-active-support">9.2 cache_generate.active_support</a></h4>
+
+<p>This event is only used when <code>#fetch</code> is called with a block.</p>
+<table>
+<thead>
+<tr>
+<th>Key</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>:key</code></td>
+<td>Key used in the store</td>
+</tr>
+<tr>
+<td><code>:store</code></td>
+<td>Name of the store class</td>
+</tr>
+</tbody>
+</table>
+<div class="info"><p>Options passed to fetch will be merged with the payload when writing to the store</p></div>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="p">{</span>
+  <span class="ss">key: </span><span class="s2">"name-of-complicated-computation"</span><span class="p">,</span>
+  <span class="ss">store: </span><span class="s2">"ActiveSupport::Cache::MemCacheStore"</span>
+<span class="p">}</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-907b0fc54b29fa9dd0fbe7ca2bbd4d8d">{
+  key: "name-of-complicated-computation",
+  store: "ActiveSupport::Cache::MemCacheStore"
+}
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-907b0fc54b29fa9dd0fbe7ca2bbd4d8d">Copy</button>
+</div>
+<h4 id="cache-fetch-hit-active-support"><a class="anchorlink" href="#cache-fetch-hit-active-support">9.3 cache_fetch_hit.active_support</a></h4>
+
+<p>This event is only used when <code>#fetch</code> is called with a block.</p>
+<table>
+<thead>
+<tr>
+<th>Key</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>:key</code></td>
+<td>Key used in the store</td>
+</tr>
+<tr>
+<td><code>:store</code></td>
+<td>Name of the store class</td>
+</tr>
+</tbody>
+</table>
+<div class="info"><p>Options passed to fetch will be merged with the payload.</p></div>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="p">{</span>
+  <span class="ss">key: </span><span class="s2">"name-of-complicated-computation"</span><span class="p">,</span>
+  <span class="ss">store: </span><span class="s2">"ActiveSupport::Cache::MemCacheStore"</span>
+<span class="p">}</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-53fdf0e53c8aa335cce6ffb6416812e0">{
+  key: "name-of-complicated-computation",
+  store: "ActiveSupport::Cache::MemCacheStore"
+}
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-53fdf0e53c8aa335cce6ffb6416812e0">Copy</button>
+</div>
+<h4 id="cache-write-active-support"><a class="anchorlink" href="#cache-write-active-support">9.4 cache_write.active_support</a></h4>
+<table>
+<thead>
+<tr>
+<th>Key</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>:key</code></td>
+<td>Key used in the store</td>
+</tr>
+<tr>
+<td><code>:store</code></td>
+<td>Name of the store class</td>
+</tr>
+</tbody>
+</table>
+<div class="info"><p>Cache stores may add their own keys</p></div>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="p">{</span>
+  <span class="ss">key: </span><span class="s2">"name-of-complicated-computation"</span><span class="p">,</span>
+  <span class="ss">store: </span><span class="s2">"ActiveSupport::Cache::MemCacheStore"</span>
+<span class="p">}</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-e205b7790d5afd6e0966ba8ebd7c65cd">{
+  key: "name-of-complicated-computation",
+  store: "ActiveSupport::Cache::MemCacheStore"
+}
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-e205b7790d5afd6e0966ba8ebd7c65cd">Copy</button>
+</div>
+<h4 id="cache-delete-active-support"><a class="anchorlink" href="#cache-delete-active-support">9.5 cache_delete.active_support</a></h4>
+<table>
+<thead>
+<tr>
+<th>Key</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>:key</code></td>
+<td>Key used in the store</td>
+</tr>
+<tr>
+<td><code>:store</code></td>
+<td>Name of the store class</td>
+</tr>
+</tbody>
+</table>
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="p">{</span>
+  <span class="ss">key: </span><span class="s2">"name-of-complicated-computation"</span><span class="p">,</span>
+  <span class="ss">store: </span><span class="s2">"ActiveSupport::Cache::MemCacheStore"</span>
+<span class="p">}</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-1f597092acdb4ba865a12a4bce61c1d2">{
+  key: "name-of-complicated-computation",
+  store: "ActiveSupport::Cache::MemCacheStore"
+}
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-1f597092acdb4ba865a12a4bce61c1d2">Copy</button>
+</div>
+<h4 id="cache-exist-questionmark-active-support"><a class="anchorlink" href="#cache-exist-questionmark-active-support">9.6 cache_exist?.active_support</a></h4>
+<table>
+<thead>
+<tr>
+<th>Key</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>:key</code></td>
+<td>Key used in the store</td>
+</tr>
+<tr>
+<td><code>:store</code></td>
+<td>Name of the store class</td>
+</tr>
+</tbody>
+</table>
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="p">{</span>
+  <span class="ss">key: </span><span class="s2">"name-of-complicated-computation"</span><span class="p">,</span>
+  <span class="ss">store: </span><span class="s2">"ActiveSupport::Cache::MemCacheStore"</span>
+<span class="p">}</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-c1b914b7b724f967c4c97a933746fc52">{
+  key: "name-of-complicated-computation",
+  store: "ActiveSupport::Cache::MemCacheStore"
+}
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-c1b914b7b724f967c4c97a933746fc52">Copy</button>
+</div>
+</body>
+</html>

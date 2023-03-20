@@ -1,0 +1,360 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html 
+     PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+  <head>
+    <title>Class: ActionDispatch::MiddlewareStack</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <link rel="stylesheet" href="../../rdoc-style.css" type="text/css" media="screen" />
+
+    <script language="JavaScript" type="text/javascript">
+    // <![CDATA[
+
+        function toggleSource( id )
+        {
+          var elem
+          var link
+
+          if( document.getElementById )
+          {
+            elem = document.getElementById( id )
+            link = document.getElementById( "l_" + id )
+          }
+          else if ( document.all )
+          {
+            elem = eval( "document.all." + id )
+            link = eval( "document.all.l_" + id )
+          }
+          else
+            return false;
+
+          if( elem.style.display == "block" )
+          {
+            elem.style.display = "none"
+            link.innerHTML = "show source"
+          }
+          else
+          {
+            elem.style.display = "block"
+            link.innerHTML = "hide source"
+          }
+        }
+
+        function openCode( url )
+        {
+          window.open( url, "SOURCE_CODE", "resizable=yes,scrollbars=yes,toolbar=no,status=no,height=480,width=750" ).focus();
+        }
+      // ]]>
+    </script>
+  </head>
+
+  <body>
+    <table width="100%" border='0' cellpadding='0' cellspacing='0' class='banner'>
+    <tr><td>Ruby on Rails v3.0.9</td></tr>
+    <tr>
+  <td class="file-title"><span class="file-title-prefix">Class</span><br />ActionDispatch::MiddlewareStack</td>
+  <td align="right">
+    <table cellspacing="0" cellpadding="2">
+      <tr valign="top">
+        <td>In:</td>
+        <td>
+<a href="../../files/actionpack/lib/action_dispatch/middleware/stack_rb.html">actionpack/lib/action_dispatch/middleware/stack.rb</a>:
+        </td>
+      </tr>
+      <tr>
+        <td>Parent:</td>
+        <td>
+
+      <a href="../Array.html">Array</a>         </td>
+     </tr>
+         </table>
+        </td>
+        </tr>
+      </table>
+  <div id="bodyContent">
+  <div id="content">
+
+  <div class="description"></div>
+
+
+  <div class="sectiontitle">Methods</div>
+  <ul>
+                <li><a href="#method-i-active">active</a></li>
+                <li><a href="#method-i-assert_index">assert_index</a></li>
+                <li><a href="#method-i-build">build</a></li>
+                <li><a href="#method-i-insert">insert</a></li>
+                <li><a href="#method-i-insert_after">insert_after</a></li>
+                      <li><a href="#method-c-new">new</a></li>
+                <li><a href="#method-i-swap">swap</a></li>
+                <li><a href="#method-i-use">use</a></li>
+      </ul>
+
+
+
+
+        
+    <div class="sectiontitle">
+      Public      Class      methods
+    </div>
+
+          
+      <div class="method">
+        <div class="title">
+                      <a name="method-c-new"></a>
+            <b>new</b>(*args, &block)          
+        </div>
+
+                  <div class="description">
+                      </div>
+        
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('new_source')"
+                 id="l_method-c-new_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="new_source">
+<pre>
+  <span class="ruby-comment"># File actionpack/lib/action_dispatch/middleware/stack.rb, line 43</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">initialize</span>(*<span class="ruby-identifier">args</span>, &amp;<span class="ruby-identifier">block</span>)
+  <span class="ruby-keyword">super</span>(*<span class="ruby-identifier">args</span>)
+  <span class="ruby-identifier">block</span>.<span class="ruby-identifier">call</span>(<span class="ruby-keyword">self</span>) <span class="ruby-keyword">if</span> <span class="ruby-identifier">block_given?</span>
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+                      
+    <div class="sectiontitle">
+      Public      Instance      methods
+    </div>
+
+          
+      <div class="method">
+        <div class="title">
+                      <a name="method-i-active"></a>
+            <b>active</b>()          
+        </div>
+
+                  <div class="description">
+                      </div>
+        
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('active_source')"
+                 id="l_method-i-active_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="active_source">
+<pre>
+  <span class="ruby-comment"># File actionpack/lib/action_dispatch/middleware/stack.rb, line 71</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">active</span>
+  <span class="ruby-constant">ActiveSupport</span><span class="ruby-operator">::</span><span class="ruby-constant">Deprecation</span>.<span class="ruby-identifier">warn</span> <span class="ruby-string">&quot;All middlewares in the chain are active since the laziness &quot;</span> <span class="ruby-operator">&lt;&lt;</span>
+    <span class="ruby-string">&quot;was removed from the middleware stack&quot;</span>, <span class="ruby-identifier">caller</span>
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+          
+      <div class="method">
+        <div class="title">
+                      <a name="method-i-build"></a>
+            <b>build</b>(app = nil, &block)          
+        </div>
+
+                  <div class="description">
+                      </div>
+        
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('build_source')"
+                 id="l_method-i-build_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="build_source">
+<pre>
+  <span class="ruby-comment"># File actionpack/lib/action_dispatch/middleware/stack.rb, line 76</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">build</span>(<span class="ruby-identifier">app</span> = <span class="ruby-keyword">nil</span>, &amp;<span class="ruby-identifier">block</span>)
+  <span class="ruby-identifier">app</span> <span class="ruby-operator">||=</span> <span class="ruby-identifier">block</span>
+  <span class="ruby-identifier">raise</span> <span class="ruby-node">&quot;MiddlewareStack#build requires an app&quot;</span> <span class="ruby-keyword">unless</span> <span class="ruby-identifier">app</span>
+  <span class="ruby-identifier">reverse</span>.<span class="ruby-identifier">inject</span>(<span class="ruby-identifier">app</span>) { <span class="ruby-operator">|</span><span class="ruby-identifier">a</span>, <span class="ruby-identifier">e</span><span class="ruby-operator">|</span> <span class="ruby-identifier">e</span>.<span class="ruby-identifier">build</span>(<span class="ruby-identifier">a</span>) }
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+          
+      <div class="method">
+        <div class="title">
+                      <a name="method-i-insert"></a>
+            <b>insert</b>(index, *args, &block)          
+        </div>
+
+                  <div class="description">
+                      </div>
+        
+                  <div class="aka">
+            This method is also aliased as
+                          <a href="MiddlewareStack.html#method-i-insert_before">insert_before</a>                      </div>
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('insert_source')"
+                 id="l_method-i-insert_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="insert_source">
+<pre>
+  <span class="ruby-comment"># File actionpack/lib/action_dispatch/middleware/stack.rb, line 48</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">insert</span>(<span class="ruby-identifier">index</span>, *<span class="ruby-identifier">args</span>, &amp;<span class="ruby-identifier">block</span>)
+  <span class="ruby-identifier">index</span> = <span class="ruby-identifier">assert_index</span>(<span class="ruby-identifier">index</span>, <span class="ruby-value">:before</span>)
+  <span class="ruby-identifier">middleware</span> = <span class="ruby-keyword">self</span>.<span class="ruby-identifier">class</span><span class="ruby-operator">::</span><span class="ruby-constant">Middleware</span>.<span class="ruby-identifier">new</span>(*<span class="ruby-identifier">args</span>, &amp;<span class="ruby-identifier">block</span>)
+  <span class="ruby-keyword">super</span>(<span class="ruby-identifier">index</span>, <span class="ruby-identifier">middleware</span>)
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+          
+      <div class="method">
+        <div class="title">
+                      <a name="method-i-insert_after"></a>
+            <b>insert_after</b>(index, *args, &block)          
+        </div>
+
+                  <div class="description">
+                      </div>
+        
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('insert_after_source')"
+                 id="l_method-i-insert_after_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="insert_after_source">
+<pre>
+  <span class="ruby-comment"># File actionpack/lib/action_dispatch/middleware/stack.rb, line 56</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">insert_after</span>(<span class="ruby-identifier">index</span>, *<span class="ruby-identifier">args</span>, &amp;<span class="ruby-identifier">block</span>)
+  <span class="ruby-identifier">index</span> = <span class="ruby-identifier">assert_index</span>(<span class="ruby-identifier">index</span>, <span class="ruby-value">:after</span>)
+  <span class="ruby-identifier">insert</span>(<span class="ruby-identifier">index</span> <span class="ruby-operator">+</span> <span class="ruby-value">1</span>, *<span class="ruby-identifier">args</span>, &amp;<span class="ruby-identifier">block</span>)
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+                
+      <div class="method">
+        <div class="title">
+                      <a name="method-i-swap"></a>
+            <b>swap</b>(target, *args, &block)          
+        </div>
+
+                  <div class="description">
+                      </div>
+        
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('swap_source')"
+                 id="l_method-i-swap_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="swap_source">
+<pre>
+  <span class="ruby-comment"># File actionpack/lib/action_dispatch/middleware/stack.rb, line 61</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">swap</span>(<span class="ruby-identifier">target</span>, *<span class="ruby-identifier">args</span>, &amp;<span class="ruby-identifier">block</span>)
+  <span class="ruby-identifier">insert_before</span>(<span class="ruby-identifier">target</span>, *<span class="ruby-identifier">args</span>, &amp;<span class="ruby-identifier">block</span>)
+  <span class="ruby-identifier">delete</span>(<span class="ruby-identifier">target</span>)
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+          
+      <div class="method">
+        <div class="title">
+                      <a name="method-i-use"></a>
+            <b>use</b>(*args, &block)          
+        </div>
+
+                  <div class="description">
+                      </div>
+        
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('use_source')"
+                 id="l_method-i-use_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="use_source">
+<pre>
+  <span class="ruby-comment"># File actionpack/lib/action_dispatch/middleware/stack.rb, line 66</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">use</span>(*<span class="ruby-identifier">args</span>, &amp;<span class="ruby-identifier">block</span>)
+  <span class="ruby-identifier">middleware</span> = <span class="ruby-keyword">self</span>.<span class="ruby-identifier">class</span><span class="ruby-operator">::</span><span class="ruby-constant">Middleware</span>.<span class="ruby-identifier">new</span>(*<span class="ruby-identifier">args</span>, &amp;<span class="ruby-identifier">block</span>)
+  <span class="ruby-identifier">push</span>(<span class="ruby-identifier">middleware</span>)
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+          
+    <div class="sectiontitle">
+      Protected      Instance      methods
+    </div>
+
+          
+      <div class="method">
+        <div class="title">
+                      <a name="method-i-assert_index"></a>
+            <b>assert_index</b>(index, where)          
+        </div>
+
+                  <div class="description">
+                      </div>
+        
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('assert_index_source')"
+                 id="l_method-i-assert_index_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="assert_index_source">
+<pre>
+  <span class="ruby-comment"># File actionpack/lib/action_dispatch/middleware/stack.rb, line 84</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">assert_index</span>(<span class="ruby-identifier">index</span>, <span class="ruby-identifier">where</span>)
+  <span class="ruby-identifier">i</span> = <span class="ruby-identifier">index</span>.<span class="ruby-identifier">is_a?</span>(<span class="ruby-constant">Integer</span>) <span class="ruby-operator">?</span> <span class="ruby-identifier">index</span> <span class="ruby-operator">:</span> <span class="ruby-keyword">self</span>.<span class="ruby-identifier">index</span>(<span class="ruby-identifier">index</span>)
+  <span class="ruby-identifier">raise</span> <span class="ruby-node">&quot;No such middleware to insert #{where}: #{index.inspect}&quot;</span> <span class="ruby-keyword">unless</span> <span class="ruby-identifier">i</span>
+  <span class="ruby-identifier">i</span>
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+          </div>
+  </div>
+  </body>
+</html>

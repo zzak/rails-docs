@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html 
+     PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+  <head>
+    <title>Class: ActionView::Template::EagerPath</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <link rel="stylesheet" href="../../.././rdoc-style.css" type="text/css" media="screen" />
+
+    <script language="JavaScript" type="text/javascript">
+    // <![CDATA[
+
+        function toggleSource( id )
+        {
+          var elem
+          var link
+
+          if( document.getElementById )
+          {
+            elem = document.getElementById( id )
+            link = document.getElementById( "l_" + id )
+          }
+          else if ( document.all )
+          {
+            elem = eval( "document.all." + id )
+            link = eval( "document.all.l_" + id )
+          }
+          else
+            return false;
+
+          if( elem.style.display == "block" )
+          {
+            elem.style.display = "none"
+            link.innerHTML = "show source"
+          }
+          else
+          {
+            elem.style.display = "block"
+            link.innerHTML = "hide source"
+          }
+        }
+
+        function openCode( url )
+        {
+          window.open( url, "SOURCE_CODE", "resizable=yes,scrollbars=yes,toolbar=no,status=no,height=480,width=750" ).focus();
+        }
+      // ]]>
+    </script>
+  </head>
+
+  <body>
+  <table width="100%" border='0' cellpadding='0' cellspacing='0' class='banner'><tr>
+  <td class="file-title"><span class="file-title-prefix">Class</span><br />ActionView::Template::EagerPath</td>
+  <td align="right">
+    <table cellspacing="0" cellpadding="2">
+      <tr valign="top">
+        <td>In:</td>
+        <td>
+<a href="../../../files/actionpack/lib/action_view/template_rb.html">actionpack/lib/action_view/template.rb</a>
+        </td>
+      </tr>
+    <tr>
+      <td>Parent:</td>
+      <td>
+        <a href="Path.html">
+Path
+         </a>
+     </td>
+   </tr>
+         </table>
+        </td>
+        </tr>
+      </table>
+ <!-- banner header -->
+
+  <div id="bodyContent">
+      <div id="content">
+
+
+
+
+  <div class="sectiontitle">Methods</div>
+  <ul>
+  <li><a href="#M000396">[]</a></li>
+  <li><a href="#M000395">load!</a></li>
+  <li><a href="#M000394">new</a></li>
+  </ul>
+
+
+
+
+
+
+<div class="sectiontitle">Public Class methods</div>
+<div class="method">
+  <div class="title">
+    <a name="M000394"></a><b>new</b>(path)
+  </div>
+<div class="sourcecode">
+  <p class="source-link">[ <a href="javascript:toggleSource('M000394_source')" id="l_M000394_source">show source</a> ]</p>
+  <div id="M000394_source" class="dyn-source">
+<pre>
+    <span class="ruby-comment cmt"># File actionpack/lib/action_view/template.rb, line 60</span>
+60:       <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">initialize</span>(<span class="ruby-identifier">path</span>)
+61:         <span class="ruby-keyword kw">super</span>
+62:         <span class="ruby-ivar">@loaded</span> = <span class="ruby-keyword kw">false</span>
+63:       <span class="ruby-keyword kw">end</span>
+</pre>
+  </div>
+</div>
+</div>
+<div class="sectiontitle">Public Instance methods</div>
+<div class="method">
+  <div class="title">
+    <a name="M000396"></a><b>[]</b>(path)
+  </div>
+<div class="sourcecode">
+  <p class="source-link">[ <a href="javascript:toggleSource('M000396_source')" id="l_M000396_source">show source</a> ]</p>
+  <div id="M000396_source" class="dyn-source">
+<pre>
+    <span class="ruby-comment cmt"># File actionpack/lib/action_view/template.rb, line 79</span>
+79:       <span class="ruby-keyword kw">def</span> <span class="ruby-operator">[]</span>(<span class="ruby-identifier">path</span>)
+80:         <span class="ruby-identifier">load!</span> <span class="ruby-keyword kw">unless</span> <span class="ruby-ivar">@loaded</span>
+81:         <span class="ruby-ivar">@paths</span>[<span class="ruby-identifier">path</span>]
+82:       <span class="ruby-keyword kw">end</span>
+</pre>
+  </div>
+</div>
+</div>
+<div class="method">
+  <div class="title">
+    <a name="M000395"></a><b>load!</b>()
+  </div>
+<div class="sourcecode">
+  <p class="source-link">[ <a href="javascript:toggleSource('M000395_source')" id="l_M000395_source">show source</a> ]</p>
+  <div id="M000395_source" class="dyn-source">
+<pre>
+    <span class="ruby-comment cmt"># File actionpack/lib/action_view/template.rb, line 65</span>
+65:       <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">load!</span>
+66:         <span class="ruby-keyword kw">return</span> <span class="ruby-keyword kw">if</span> <span class="ruby-ivar">@loaded</span>
+67: 
+68:         <span class="ruby-ivar">@paths</span> = {}
+69:         <span class="ruby-identifier">templates_in_path</span> <span class="ruby-keyword kw">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">template</span><span class="ruby-operator">|</span>
+70:           <span class="ruby-identifier">template</span>.<span class="ruby-identifier">load!</span>
+71:           <span class="ruby-identifier">template</span>.<span class="ruby-identifier">accessible_paths</span>.<span class="ruby-identifier">each</span> <span class="ruby-keyword kw">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">path</span><span class="ruby-operator">|</span>
+72:             <span class="ruby-ivar">@paths</span>[<span class="ruby-identifier">path</span>] = <span class="ruby-identifier">template</span>
+73:           <span class="ruby-keyword kw">end</span>
+74:         <span class="ruby-keyword kw">end</span>
+75:         <span class="ruby-ivar">@paths</span>.<span class="ruby-identifier">freeze</span>
+76:         <span class="ruby-ivar">@loaded</span> = <span class="ruby-keyword kw">true</span>
+77:       <span class="ruby-keyword kw">end</span>
+</pre>
+  </div>
+</div>
+</div>
+</div>
+
+  </div>
+
+    </body>
+</html>

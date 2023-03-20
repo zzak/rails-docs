@@ -1,0 +1,74 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>6 Callbacks</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v7.0.4.2/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="callbacks"><a class="anchorlink" href="#callbacks">6 Callbacks</a></h3>
+<p>Active Job provides hooks to trigger logic during the life cycle of a job. Like
+other callbacks in Rails, you can implement the callbacks as ordinary methods
+and use a macro-style class method to register them as callbacks:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">GuestsCleanupJob</span> <span class="o">&lt;</span> <span class="no">ApplicationJob</span>
+  <span class="n">queue_as</span> <span class="ss">:default</span>
+
+  <span class="n">around_perform</span> <span class="ss">:around_cleanup</span>
+
+  <span class="k">def</span> <span class="nf">perform</span>
+    <span class="c1"># Do something later</span>
+  <span class="k">end</span>
+
+  <span class="kp">private</span>
+    <span class="k">def</span> <span class="nf">around_cleanup</span>
+      <span class="c1"># Do something before perform</span>
+      <span class="k">yield</span>
+      <span class="c1"># Do something after perform</span>
+    <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="class GuestsCleanupJob &lt; ApplicationJob
+  queue_as :default
+
+  around_perform :around_cleanup
+
+  def perform
+    # Do something later
+  end
+
+  private
+    def around_cleanup
+      # Do something before perform
+      yield
+      # Do something after perform
+    end
+end
+">Copy</button>
+</div>
+<p>The macro-style class methods can also receive a block. Consider using this
+style if the code inside your block is so short that it fits in a single line.
+For example, you could send metrics for every job enqueued:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">ApplicationJob</span> <span class="o">&lt;</span> <span class="no">ActiveJob</span><span class="o">::</span><span class="no">Base</span>
+  <span class="n">before_enqueue</span> <span class="p">{</span> <span class="o">|</span><span class="n">job</span><span class="o">|</span> <span class="vg">$statsd</span><span class="p">.</span><span class="nf">increment</span> <span class="s2">"</span><span class="si">#{</span><span class="n">job</span><span class="p">.</span><span class="nf">class</span><span class="p">.</span><span class="nf">name</span><span class="p">.</span><span class="nf">underscore</span><span class="si">}</span><span class="s2">.enqueue"</span> <span class="p">}</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='class ApplicationJob &lt; ActiveJob::Base
+  before_enqueue { |job| $statsd.increment "#{job.class.name.underscore}.enqueue" }
+end
+'>Copy</button>
+</div>
+<h4 id="available-callbacks"><a class="anchorlink" href="#available-callbacks">6.1 Available callbacks</a></h4>
+<ul>
+<li><a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveJob/Callbacks/ClassMethods.html#method-i-before_enqueue"><code>before_enqueue</code></a></li>
+<li><a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveJob/Callbacks/ClassMethods.html#method-i-around_enqueue"><code>around_enqueue</code></a></li>
+<li><a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveJob/Callbacks/ClassMethods.html#method-i-after_enqueue"><code>after_enqueue</code></a></li>
+<li><a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveJob/Callbacks/ClassMethods.html#method-i-before_perform"><code>before_perform</code></a></li>
+<li><a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveJob/Callbacks/ClassMethods.html#method-i-around_perform"><code>around_perform</code></a></li>
+<li><a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveJob/Callbacks/ClassMethods.html#method-i-after_perform"><code>after_perform</code></a></li>
+</ul>
+</body>
+</html>

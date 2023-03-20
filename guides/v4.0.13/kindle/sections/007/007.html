@@ -1,0 +1,127 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>8 Overriding Conditions</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v4.0.13/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="overriding-conditions">8 Overriding Conditions</h3>
+<h4 id="except">8.1 <code>except</code>
+</h4>
+<p>You can specify certain conditions to be excepted by using the <code>except</code> method. For example:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+Post.where('id &gt; 10').limit(20).order('id asc').except(:order)
+
+</pre>
+</div>
+<p>The SQL that would be executed:</p>
+<div class="code_container">
+<pre class="brush: sql; gutter: false; toolbar: false">
+SELECT * FROM posts WHERE id &gt; 10 LIMIT 20
+
+</pre>
+</div>
+<h4 id="unscope">8.2 <code>unscope</code>
+</h4>
+<p>The <code>except</code> method does not work when the relation is merged. For example:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+Post.comments.except(:order)
+
+</pre>
+</div>
+<p>will still have an order if the order comes from a default scope on Comment. In order to remove all ordering, even from relations which are merged in, use unscope as follows:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+Post.order('id DESC').limit(20).unscope(:order) = Post.limit(20)
+Post.order('id DESC').limit(20).unscope(:order, :limit) = Post.all
+
+</pre>
+</div>
+<p>You can additionally unscope specific where clauses. For example:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+Post.where(:id =&gt; 10).limit(1).unscope(where: :id, :limit).order('id DESC') = Post.order('id DESC')
+
+</pre>
+</div>
+<h4 id="only">8.3 <code>only</code>
+</h4>
+<p>You can also override conditions using the <code>only</code> method. For example:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+Post.where('id &gt; 10').limit(20).order('id desc').only(:order, :where)
+
+</pre>
+</div>
+<p>The SQL that would be executed:</p>
+<div class="code_container">
+<pre class="brush: sql; gutter: false; toolbar: false">
+SELECT * FROM posts WHERE id &gt; 10 ORDER BY id DESC
+
+</pre>
+</div>
+<h4 id="reorder">8.4 <code>reorder</code>
+</h4>
+<p>The <code>reorder</code> method overrides the default scope order. For example:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class Post &lt; ActiveRecord::Base
+  ..
+  ..
+  has_many :comments, order: 'posted_at DESC'
+end
+
+Post.find(10).comments.reorder('name')
+
+</pre>
+</div>
+<p>The SQL that would be executed:</p>
+<div class="code_container">
+<pre class="brush: sql; gutter: false; toolbar: false">
+SELECT * FROM posts WHERE id = 10 ORDER BY name
+
+</pre>
+</div>
+<p>In case the <code>reorder</code> clause is not used, the SQL executed would be:</p>
+<div class="code_container">
+<pre class="brush: sql; gutter: false; toolbar: false">
+SELECT * FROM posts WHERE id = 10 ORDER BY posted_at DESC
+
+</pre>
+</div>
+<h4 id="reverse-order">8.5 <code>reverse_order</code>
+</h4>
+<p>The <code>reverse_order</code> method reverses the ordering clause if specified.</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+Client.where("orders_count &gt; 10").order(:name).reverse_order
+
+</pre>
+</div>
+<p>The SQL that would be executed:</p>
+<div class="code_container">
+<pre class="brush: sql; gutter: false; toolbar: false">
+SELECT * FROM clients WHERE orders_count &gt; 10 ORDER BY name DESC
+
+</pre>
+</div>
+<p>If no ordering clause is specified in the query, the <code>reverse_order</code> orders by the primary key in reverse order.</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+Client.where("orders_count &gt; 10").reverse_order
+
+</pre>
+</div>
+<p>The SQL that would be executed:</p>
+<div class="code_container">
+<pre class="brush: sql; gutter: false; toolbar: false">
+SELECT * FROM clients WHERE orders_count &gt; 10 ORDER BY clients.id DESC
+
+</pre>
+</div>
+<p>This method accepts <strong>no</strong> arguments.</p>
+</body>
+</html>

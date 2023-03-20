@@ -1,0 +1,37 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>5 Caveats</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v6.0.6.1/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="caveats"><a class="anchorlink" href="#caveats">5 Caveats</a></h3>
+<h4 id="sharding"><a class="anchorlink" href="#sharding">5.1 Sharding</a></h4>
+
+<p>As noted at the top, Rails doesn't (yet) support sharding. We had to do a lot of work
+to support multiple databases for Rails 6.0. The lack of support for sharding isn't
+an oversight, but does require additional work that didn't make it in for 6.0. For now
+if you need sharding it may be advisable to continue using one of the many gems
+that supports this.</p>
+
+<h4 id="load-balancing-replicas"><a class="anchorlink" href="#load-balancing-replicas">5.2 Load Balancing Replicas</a></h4>
+
+<p>Rails also doesn't support automatic load balancing of replicas. This is very
+dependent on your infrastructure. We may implement basic, primitive load balancing
+in the future, but for an application at scale this should be something your application
+handles outside of Rails.</p>
+
+<h4 id="joining-across-databases"><a class="anchorlink" href="#joining-across-databases">5.3 Joining Across Databases</a></h4>
+
+<p>Applications cannot join across databases. At the moment applications will need to
+manually write two selects and split the joins themselves. In a future version Rails
+will split the joins for you.</p>
+
+<h4 id="schema-cache"><a class="anchorlink" href="#schema-cache">5.4 Schema Cache</a></h4>
+
+<p>If you use a schema cache and multiple databases you'll need to write an initializer
+that loads the schema cache from your app. This wasn't an issue we could resolve in
+time for Rails 6.0 but hope to have it in a future version soon.</p>
+</body>
+</html>

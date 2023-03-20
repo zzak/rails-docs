@@ -1,0 +1,77 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>1 General Advice</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v7.0.4.2/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="general-advice"><a class="anchorlink" href="#general-advice">1 General Advice</a></h3>
+<p>Before attempting to upgrade an existing application, you should be sure you have a good reason to upgrade. You need to balance several factors: the need for new features, the increasing difficulty of finding support for old code, and your available time and skills, to name a few.</p>
+
+<h4 id="test-coverage"><a class="anchorlink" href="#test-coverage">1.1 Test Coverage</a></h4>
+
+<p>The best way to be sure that your application still works after upgrading is to have good test coverage before you start the process. If you don't have automated tests that exercise the bulk of your application, you'll need to spend time manually exercising all the parts that have changed. In the case of a Rails upgrade, that will mean every single piece of functionality in the application. Do yourself a favor and make sure your test coverage is good <em>before</em> you start an upgrade.</p>
+
+<h4 id="ruby-versions"><a class="anchorlink" href="#ruby-versions">1.2 Ruby Versions</a></h4>
+
+<p>Rails generally stays close to the latest released Ruby version when it's released:</p>
+<ul>
+<li>Rails 7 requires Ruby 2.7.0 or newer.</li>
+<li>Rails 6 requires Ruby 2.5.0 or newer.</li>
+<li>Rails 5 requires Ruby 2.2.2 or newer.</li>
+</ul>
+<p>It's a good idea to upgrade Ruby and Rails separately. Upgrade to the latest Ruby you can first, and then upgrade Rails.</p>
+
+<h4 id="the-upgrade-process"><a class="anchorlink" href="#the-upgrade-process">1.3 The Upgrade Process</a></h4>
+
+<p>When changing Rails versions, it's best to move slowly, one minor version at a time, in order to make good use of the deprecation warnings. Rails version numbers are in the form Major.Minor.Patch. Major and Minor versions are allowed to make changes to the public API, so this may cause errors in your application. Patch versions only include bug fixes, and don't change any public API.</p>
+
+<p>The process should go as follows:</p>
+<ol>
+<li>Write tests and make sure they pass.</li>
+<li>Move to the latest patch version after your current version.</li>
+<li>Fix tests and deprecated features.</li>
+<li>Move to the latest patch version of the next minor version.</li>
+</ol>
+<p>Repeat this process until you reach your target Rails version.</p>
+
+<h5 id="moving-between-versions"><a class="anchorlink" href="#moving-between-versions">1.3.1 Moving between versions</a></h5>
+
+<p>To move between versions:</p>
+<ol>
+<li>Change the Rails version number in the <code>Gemfile</code> and run <code>bundle update</code>.</li>
+<li>Change the versions for Rails JavaScript packages in <code>package.json</code> and run <code>yarn install</code>, if running on Webpacker.</li>
+<li>Run the <a href="#the-update-task">Update task</a>.</li>
+<li>Run your tests.</li>
+</ol>
+<p>You can find a list of all released Rails gems <a href="https://rubygems.org/gems/rails/versions">here</a>.</p>
+
+<h4 id="the-update-task"><a class="anchorlink" href="#the-update-task">1.4 The Update Task</a></h4>
+
+<p>Rails provides the <code>rails app:update</code> command. After updating the Rails version
+in the <code>Gemfile</code>, run this command.
+This will help you with the creation of new files and changes of old files in an
+interactive session.</p>
+
+<div class="code_container">
+<pre><code class="highlight console"><span class="gp">$</span><span class="w"> </span><span class="nb">bin/rails </span>app:update
+<span class="go">       exist  config
+    conflict  config/application.rb
+Overwrite /myapp/config/application.rb? (enter "h" for help) [Ynaqdh]
+       force  config/application.rb
+      create  config/initializers/new_framework_defaults_7_0.rb
+</span><span class="c">...
+</span></code></pre>
+<button class="clipboard-button" data-clipboard-text="bin/rails app:update
+">Copy</button>
+</div>
+<p>Don't forget to review the difference, to see if there were any unexpected changes.</p>
+
+<h4 id="configure-framework-defaults"><a class="anchorlink" href="#configure-framework-defaults">1.5 Configure Framework Defaults</a></h4>
+
+<p>The new Rails version might have different configuration defaults than the previous version. However, after following the steps described above, your application would still run with configuration defaults from the <em>previous</em> Rails version. That's because the value for <code>config.load_defaults</code> in <code>config/application.rb</code> has not been changed yet.</p>
+
+<p>To allow you to upgrade to new defaults one by one, the update task has created a file <code>config/initializers/new_framework_defaults_X.Y.rb</code> (with the desired Rails version in the filename). You should enable the new configuration defaults by uncommenting them in the file; this can be done gradually over several deployments. Once your application is ready to run with new defaults, you can remove this file and flip the <code>config.load_defaults</code> value.</p>
+</body>
+</html>

@@ -1,0 +1,20 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>5 $LOAD_PATH</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v6.0.6.1/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="$load-path"><a class="anchorlink" href="#%24load-path">5 $LOAD_PATH</a></h3>
+<p>Autoload paths are added to <code>$LOAD_PATH</code> by default. However, Zeitwerk uses absolute file names internally, and your application should not issue <code>require</code> calls for autoloadable files, so those directories are actually not needed there. You can opt-out with this flag:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+config.add_autoload_paths_to_load_path = false
+
+</pre>
+</div>
+<p>That may speed legit <code>require</code> calls a bit, since there are less lookups. Also, if your application uses <a href="https://github.com/Shopify/bootsnap">Bootsnap</a>, that saves the library from building unnecessary indexes, and saves the RAM they would need.</p>
+</body>
+</html>

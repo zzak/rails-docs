@@ -1,0 +1,51 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>8 Forms to External Resources</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v4.2.11.3/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="forms-to-external-resources">8 Forms to External Resources</h3>
+<p>Rails' form helpers can also be used to build a form for posting data to an external resource. However, at times it can be necessary to set an <code>authenticity_token</code> for the resource; this can be done by passing an <code>authenticity_token: 'your_external_token'</code> parameter to the <code>form_tag</code> options:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; html-script: true; gutter: false; toolbar: false">
+&lt;%= form_tag 'http://farfar.away/form', authenticity_token: 'external_token' do %&gt;
+  Form contents
+&lt;% end %&gt;
+
+</pre>
+</div>
+<p>Sometimes when submitting data to an external resource, like a payment gateway, the fields that can be used in the form are limited by an external API and it may be undesirable to generate an <code>authenticity_token</code>. To not send a token, simply pass <code>false</code> to the <code>:authenticity_token</code> option:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; html-script: true; gutter: false; toolbar: false">
+&lt;%= form_tag 'http://farfar.away/form', authenticity_token: false do %&gt;
+  Form contents
+&lt;% end %&gt;
+
+</pre>
+</div>
+<p>The same technique is also available for <code>form_for</code>:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; html-script: true; gutter: false; toolbar: false">
+&lt;%= form_for @invoice, url: external_url, authenticity_token: 'external_token' do |f| %&gt;
+  Form contents
+&lt;% end %&gt;
+
+</pre>
+</div>
+<p>Or if you don't want to render an <code>authenticity_token</code> field:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; html-script: true; gutter: false; toolbar: false">
+&lt;%= form_for @invoice, url: external_url, authenticity_token: false do |f| %&gt;
+  Form contents
+&lt;% end %&gt;
+
+</pre>
+</div>
+</body>
+</html>

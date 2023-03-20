@@ -1,0 +1,57 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>2 Terminology</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v6.1.7.3/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="terminology"><a class="anchorlink" href="#terminology">2 Terminology</a></h3>
+<p>Action Cable uses WebSockets instead of the HTTP request-response protocol.
+Both Action Cable and WebSockets introduce some less familiar terminology:</p>
+
+<h4 id="terminology-connections"><a class="anchorlink" href="#terminology-connections">2.1 Connections</a></h4>
+
+<p><em>Connections</em> form the foundation of the client-server relationship.
+A single Action Cable server can handle multiple connection instances. It has one
+connection instance per WebSocket connection. A single user may have multiple
+WebSockets open to your application if they use multiple browser tabs or devices.</p>
+
+<h4 id="consumers"><a class="anchorlink" href="#consumers">2.2 Consumers</a></h4>
+
+<p>The client of a WebSocket connection is called the <em>consumer</em>. In Action Cable
+the consumer is created by the client-side JavaScript framework.</p>
+
+<h4 id="terminology-channels"><a class="anchorlink" href="#terminology-channels">2.3 Channels</a></h4>
+
+<p>Each consumer can in turn subscribe to multiple <em>channels</em>. Each channel
+encapsulates a logical unit of work, similar to what a controller does in
+a regular MVC setup. For example, you could have a <code>ChatChannel</code> and
+an <code>AppearancesChannel</code>, and a consumer could be subscribed to either
+or to both of these channels. At the very least, a consumer should be subscribed
+to one channel.</p>
+
+<h4 id="subscribers"><a class="anchorlink" href="#subscribers">2.4 Subscribers</a></h4>
+
+<p>When the consumer is subscribed to a channel, they act as a <em>subscriber</em>.
+The connection between the subscriber and the channel is, surprise-surprise,
+called a subscription. A consumer can act as a subscriber to a given channel
+any number of times. For example, a consumer could subscribe to multiple chat rooms
+at the same time. (And remember that a physical user may have multiple consumers,
+one per tab/device open to your connection).</p>
+
+<h4 id="pub-sub"><a class="anchorlink" href="#pub-sub">2.5 Pub/Sub</a></h4>
+
+<p><a href="https://en.wikipedia.org/wiki/Publish%E2%80%93subscribe_pattern">Pub/Sub</a>, or
+Publish-Subscribe, refers to a message queue paradigm whereby senders of
+information (publishers), send data to an abstract class of recipients
+(subscribers), without specifying individual recipients. Action Cable uses this
+approach to communicate between the server and many clients.</p>
+
+<h4 id="terminology-broadcastings"><a class="anchorlink" href="#terminology-broadcastings">2.6 Broadcastings</a></h4>
+
+<p>A broadcasting is a pub/sub link where anything transmitted by the broadcaster is
+sent directly to the channel subscribers who are streaming that named broadcasting.
+Each channel can be streaming zero or more broadcastings.</p>
+</body>
+</html>

@@ -1,0 +1,193 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>4 Extensions to Class
+</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v4.1.16/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="extensions-to-class">4 Extensions to <code>Class</code>
+</h3>
+<h4 id="class-attributes">4.1 Class Attributes</h4>
+<h5 id="class-attribute">4.1.1 <code>class_attribute</code>
+</h5>
+<p>The method <code>class_attribute</code> declares one or more inheritable class attributes that can be overridden at any level down the hierarchy.</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class A
+  class_attribute :x
+end
+
+class B &lt; A; end
+
+class C &lt; B; end
+
+A.x = :a
+B.x # =&gt; :a
+C.x # =&gt; :a
+
+B.x = :b
+A.x # =&gt; :a
+C.x # =&gt; :b
+
+C.x = :c
+A.x # =&gt; :a
+B.x # =&gt; :b
+
+</pre>
+</div>
+<p>For example <code>ActionMailer::Base</code> defines:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class_attribute :default_params
+self.default_params = {
+  mime_version: "1.0",
+  charset: "UTF-8",
+  content_type: "text/plain",
+  parts_order: [ "text/plain", "text/enriched", "text/html" ]
+}.freeze
+
+</pre>
+</div>
+<p>They can be also accessed and overridden at the instance level.</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+A.x = 1
+
+a1 = A.new
+a2 = A.new
+a2.x = 2
+
+a1.x # =&gt; 1, comes from A
+a2.x # =&gt; 2, overridden in a2
+
+</pre>
+</div>
+<p>The generation of the writer instance method can be prevented by setting the option <code>:instance_writer</code> to <code>false</code>.</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+module ActiveRecord
+  class Base
+    class_attribute :table_name_prefix, instance_writer: false
+    self.table_name_prefix = ""
+  end
+end
+
+</pre>
+</div>
+<p>A model may find that option useful as a way to prevent mass-assignment from setting the attribute.</p>
+<p>The generation of the reader instance method can be prevented by setting the option <code>:instance_reader</code> to <code>false</code>.</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class A
+  class_attribute :x, instance_reader: false
+end
+
+A.new.x = 1 # NoMethodError
+
+</pre>
+</div>
+<p>For convenience <code>class_attribute</code> also defines an instance predicate which is the double negation of what the instance reader returns. In the examples above it would be called <code>x?</code>.</p>
+<p>When <code>:instance_reader</code> is <code>false</code>, the instance predicate returns a <code>NoMethodError</code> just like the reader method.</p>
+<p>If you do not want the instance predicate, pass <code>instance_predicate: false</code> and it will not be defined.</p>
+<div class="note"><p>Defined in <code>active_support/core_ext/class/attribute.rb</code></p></div>
+<h5 id="cattr-reader-cattr-writer-and-cattr-accessor">4.1.2 <code>cattr_reader</code>, <code>cattr_writer</code>, and <code>cattr_accessor</code>
+</h5>
+<p>The macros <code>cattr_reader</code>, <code>cattr_writer</code>, and <code>cattr_accessor</code> are analogous to their <code>attr_*</code> counterparts but for classes. They initialize a class variable to <code>nil</code> unless it already exists, and generate the corresponding class methods to access it:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class MysqlAdapter &lt; AbstractAdapter
+  # Generates class methods to access @@emulate_booleans.
+  cattr_accessor :emulate_booleans
+  self.emulate_booleans = true
+end
+
+</pre>
+</div>
+<p>Instance methods are created as well for convenience, they are just proxies to the class attribute. So, instances can change the class attribute, but cannot override it as it happens with <code>class_attribute</code> (see above). For example given</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+module ActionView
+  class Base
+    cattr_accessor :field_error_proc
+    @@field_error_proc = Proc.new{ ... }
+  end
+end
+
+</pre>
+</div>
+<p>we can access <code>field_error_proc</code> in views.</p>
+<p>Also, you can pass a block to <code>cattr_*</code> to set up the attribute with a default value:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class MysqlAdapter &lt; AbstractAdapter
+  # Generates class methods to access @@emulate_booleans with default value of true.
+  cattr_accessor(:emulate_booleans) { true }
+end
+
+</pre>
+</div>
+<p>The generation of the reader instance method can be prevented by setting <code>:instance_reader</code> to <code>false</code> and the generation of the writer instance method can be prevented by setting <code>:instance_writer</code> to <code>false</code>. Generation of both methods can be prevented by setting <code>:instance_accessor</code> to <code>false</code>. In all cases, the value must be exactly <code>false</code> and not any false value.</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+module A
+  class B
+    # No first_name instance reader is generated.
+    cattr_accessor :first_name, instance_reader: false
+    # No last_name= instance writer is generated.
+    cattr_accessor :last_name, instance_writer: false
+    # No surname instance reader or surname= writer is generated.
+    cattr_accessor :surname, instance_accessor: false
+  end
+end
+
+</pre>
+</div>
+<p>A model may find it useful to set <code>:instance_accessor</code> to <code>false</code> as a way to prevent mass-assignment from setting the attribute.</p>
+<div class="note"><p>Defined in <code>active_support/core_ext/module/attribute_accessors.rb</code>.</p></div>
+<h4 id="subclasses-descendants">4.2 Subclasses &amp; Descendants</h4>
+<h5 id="subclasses">4.2.1 <code>subclasses</code>
+</h5>
+<p>The <code>subclasses</code> method returns the subclasses of the receiver:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class C; end
+C.subclasses # =&gt; []
+
+class B &lt; C; end
+C.subclasses # =&gt; [B]
+
+class A &lt; B; end
+C.subclasses # =&gt; [B]
+
+class D &lt; C; end
+C.subclasses # =&gt; [B, D]
+
+</pre>
+</div>
+<p>The order in which these classes are returned is unspecified.</p>
+<div class="note"><p>Defined in <code>active_support/core_ext/class/subclasses.rb</code>.</p></div>
+<h5 id="descendants">4.2.2 <code>descendants</code>
+</h5>
+<p>The <code>descendants</code> method returns all classes that are <code>&lt;</code> than its receiver:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class C; end
+C.descendants # =&gt; []
+
+class B &lt; C; end
+C.descendants # =&gt; [B]
+
+class A &lt; B; end
+C.descendants # =&gt; [B, A]
+
+class D &lt; C; end
+C.descendants # =&gt; [B, A, D]
+
+</pre>
+</div>
+<p>The order in which these classes are returned is unspecified.</p>
+<div class="note"><p>Defined in <code>active_support/core_ext/class/subclasses.rb</code>.</p></div>
+</body>
+</html>

@@ -1,0 +1,99 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>6 Active Record</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v6.0.6.1/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="active-record"><a class="anchorlink" href="#active-record">6 Active Record</a></h3>
+<h4 id="sql-active-record"><a class="anchorlink" href="#sql-active-record">6.1 sql.active_record</a></h4>
+<table>
+<thead>
+<tr>
+<th>Key</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>:sql</code></td>
+<td>SQL statement</td>
+</tr>
+<tr>
+<td><code>:name</code></td>
+<td>Name of the operation</td>
+</tr>
+<tr>
+<td><code>:connection_id</code></td>
+<td>Object ID of the connection object</td>
+</tr>
+<tr>
+<td><code>:connection</code></td>
+<td>Connection object</td>
+</tr>
+<tr>
+<td><code>:binds</code></td>
+<td>Bind parameters</td>
+</tr>
+<tr>
+<td><code>:type_casted_binds</code></td>
+<td>Typecasted bind parameters</td>
+</tr>
+<tr>
+<td><code>:statement_name</code></td>
+<td>SQL Statement name</td>
+</tr>
+<tr>
+<td><code>:cached</code></td>
+<td>
+<code>true</code> is added when cached queries used</td>
+</tr>
+</tbody>
+</table>
+<div class="info"><p>The adapters will add their own data as well.</p></div>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+{
+  sql: "SELECT \"posts\".* FROM \"posts\" ",
+  name: "Post Load",
+  connection_id: 70307250813140,
+  connection: #&lt;ActiveRecord::ConnectionAdapters::SQLite3Adapter:0x00007f9f7a838850&gt;,
+  binds: [#&lt;ActiveModel::Attribute::WithCastValue:0x00007fe19d15dc00&gt;],
+  type_casted_binds: [11],
+  statement_name: nil
+}
+
+</pre>
+</div>
+<h4 id="instantiation-active-record"><a class="anchorlink" href="#instantiation-active-record">6.2 instantiation.active_record</a></h4>
+<table>
+<thead>
+<tr>
+<th>Key</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>:record_count</code></td>
+<td>Number of records that instantiated</td>
+</tr>
+<tr>
+<td><code>:class_name</code></td>
+<td>Record's class</td>
+</tr>
+</tbody>
+</table>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+{
+  record_count: 1,
+  class_name: "User"
+}
+
+</pre>
+</div>
+</body>
+</html>

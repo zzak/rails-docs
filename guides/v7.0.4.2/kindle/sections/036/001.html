@@ -1,0 +1,97 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>2 Why Use Rails for JSON APIs?</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v7.0.4.2/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="why-use-rails-for-json-apis-questionmark"><a class="anchorlink" href="#why-use-rails-for-json-apis-questionmark">2 Why Use Rails for JSON APIs?</a></h3>
+<p>The first question a lot of people have when thinking about building a JSON API
+using Rails is: "isn't using Rails to spit out some JSON overkill? Shouldn't I
+just use something like Sinatra?".</p>
+
+<p>For very simple APIs, this may be true. However, even in very HTML-heavy
+applications, most of an application's logic lives outside of the view
+layer.</p>
+
+<p>The reason most people use Rails is that it provides a set of defaults that
+allows developers to get up and running quickly, without having to make a lot of trivial
+decisions.</p>
+
+<p>Let's take a look at some of the things that Rails provides out of the box that are
+still applicable to API applications.</p>
+
+<p>Handled at the middleware layer:</p>
+<ul>
+<li>Reloading: Rails applications support transparent reloading. This works even if
+your application gets big and restarting the server for every request becomes
+non-viable.</li>
+<li>Development Mode: Rails applications come with smart defaults for development,
+making development pleasant without compromising production-time performance.</li>
+<li>Test Mode: Ditto development mode.</li>
+<li>Logging: Rails applications log every request, with a level of verbosity
+appropriate for the current mode. Rails logs in development include information
+about the request environment, database queries, and basic performance
+information.</li>
+<li>Security: Rails detects and thwarts <a href="https://en.wikipedia.org/wiki/IP_address_spoofing">IP spoofing
+attacks</a> and handles
+cryptographic signatures in a <a href="https://en.wikipedia.org/wiki/Timing_attack">timing
+attack</a> aware way. Don't know what
+an IP spoofing attack or a timing attack is? Exactly.</li>
+<li>Parameter Parsing: Want to specify your parameters as JSON instead of as a
+URL-encoded String? No problem. Rails will decode the JSON for you and make
+it available in <code>params</code>. Want to use nested URL-encoded parameters? That
+works too.</li>
+<li>Conditional GETs: Rails handles conditional <code>GET</code> (<code>ETag</code> and <code>Last-Modified</code>)
+processing request headers and returning the correct response headers and status
+code. All you need to do is use the
+<a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActionController/ConditionalGet.html#method-i-stale-3F"><code>stale?</code></a>
+check in your controller, and Rails will handle all of the HTTP details for you.</li>
+<li>HEAD requests: Rails will transparently convert <code>HEAD</code> requests into <code>GET</code> ones,
+and return just the headers on the way out. This makes <code>HEAD</code> work reliably in
+all Rails APIs.</li>
+</ul>
+<p>While you could obviously build these up in terms of existing Rack middleware,
+this list demonstrates that the default Rails middleware stack provides a lot
+of value, even if you're "just generating JSON".</p>
+
+<p>Handled at the Action Pack layer:</p>
+<ul>
+<li>Resourceful Routing: If you're building a RESTful JSON API, you want to be
+using the Rails router. Clean and conventional mapping from HTTP to controllers
+means not having to spend time thinking about how to model your API in terms
+of HTTP.</li>
+<li>URL Generation: The flip side of routing is URL generation. A good API based
+on HTTP includes URLs (see <a href="https://docs.github.com/en/rest/reference/gists">the GitHub Gist API</a>
+for an example).</li>
+<li>Header and Redirection Responses: <code>head :no_content</code> and
+<code>redirect_to user_url(current_user)</code> come in handy. Sure, you could manually
+add the response headers, but why?</li>
+<li>Caching: Rails provides page, action, and fragment caching. Fragment caching
+is especially helpful when building up a nested JSON object.</li>
+<li>Basic, Digest, and Token Authentication: Rails comes with out-of-the-box support
+for three kinds of HTTP authentication.</li>
+<li>Instrumentation: Rails has an instrumentation API that triggers registered
+handlers for a variety of events, such as action processing, sending a file or
+data, redirection, and database queries. The payload of each event comes with
+relevant information (for the action processing event, the payload includes
+the controller, action, parameters, request format, request method, and the
+request's full path).</li>
+<li>Generators: It is often handy to generate a resource and get your model,
+controller, test stubs, and routes created for you in a single command for
+further tweaking. Same for migrations and others.</li>
+<li>Plugins: Many third-party libraries come with support for Rails that reduce
+or eliminate the cost of setting up and gluing together the library and the
+web framework. This includes things like overriding default generators, adding
+Rake tasks, and honoring Rails choices (like the logger and cache back-end).</li>
+</ul>
+<p>Of course, the Rails boot process also glues together all registered components.
+For example, the Rails boot process is what uses your <code>config/database.yml</code> file
+when configuring Active Record.</p>
+
+<p><strong>The short version is</strong>: you may not have thought about which parts of Rails
+are still applicable even if you remove the view layer, but the answer turns out
+to be most of it.</p>
+</body>
+</html>

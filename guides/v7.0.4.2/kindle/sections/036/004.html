@@ -1,0 +1,108 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>5 Choosing Controller Modules</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v7.0.4.2/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="choosing-controller-modules"><a class="anchorlink" href="#choosing-controller-modules">5 Choosing Controller Modules</a></h3>
+<p>An API application (using <code>ActionController::API</code>) comes with the following
+controller modules by default:</p>
+<ul>
+<li>
+<code>ActionController::UrlFor</code>: Makes <code>url_for</code> and similar helpers available.</li>
+<li>
+<code>ActionController::Redirecting</code>: Support for <code>redirect_to</code>.</li>
+<li>
+<code>AbstractController::Rendering</code> and <code>ActionController::ApiRendering</code>: Basic support for rendering.</li>
+<li>
+<code>ActionController::Renderers::All</code>: Support for <code>render :json</code> and friends.</li>
+<li>
+<code>ActionController::ConditionalGet</code>: Support for <code>stale?</code>.</li>
+<li>
+<code>ActionController::BasicImplicitRender</code>: Makes sure to return an empty response, if there isn't an explicit one.</li>
+<li>
+<code>ActionController::StrongParameters</code>: Support for parameters filtering in combination with Active Model mass assignment.</li>
+<li>
+<code>ActionController::DataStreaming</code>: Support for <code>send_file</code> and <code>send_data</code>.</li>
+<li>
+<code>AbstractController::Callbacks</code>: Support for <code>before_action</code> and
+similar helpers.</li>
+<li>
+<code>ActionController::Rescue</code>: Support for <code>rescue_from</code>.</li>
+<li>
+<code>ActionController::Instrumentation</code>: Support for the instrumentation
+hooks defined by Action Controller (see <a href="active_support_instrumentation.html#action-controller">the instrumentation
+guide</a> for
+more information regarding this).</li>
+<li>
+<code>ActionController::ParamsWrapper</code>: Wraps the parameters hash into a nested hash,
+so that you don't have to specify root elements sending POST requests for instance.</li>
+<li>
+<code>ActionController::Head</code>: Support for returning a response with no content, only headers.</li>
+</ul>
+<p>Other plugins may add additional modules. You can get a list of all modules
+included into <code>ActionController::API</code> in the rails console:</p>
+
+<div class="code_container">
+<pre><code class="highlight irb"><span class="gp">irb&gt;</span><span class="w"> </span><span class="no">ActionController</span><span class="o">::</span><span class="no">API</span><span class="p">.</span><span class="nf">ancestors</span> <span class="o">-</span> <span class="no">ActionController</span><span class="o">::</span><span class="no">Metal</span><span class="p">.</span><span class="nf">ancestors</span>
+<span class="p">=&gt;</span> <span class="p">[</span><span class="no">ActionController</span><span class="o">::</span><span class="no">API</span><span class="p">,</span>
+    <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Railties</span><span class="o">::</span><span class="no">ControllerRuntime</span><span class="p">,</span>
+    <span class="no">ActionDispatch</span><span class="o">::</span><span class="no">Routing</span><span class="o">::</span><span class="no">RouteSet</span><span class="o">::</span><span class="no">MountedHelpers</span><span class="p">,</span>
+    <span class="no">ActionController</span><span class="o">::</span><span class="no">ParamsWrapper</span><span class="p">,</span>
+    <span class="o">...</span> <span class="p">,</span>
+    <span class="no">AbstractController</span><span class="o">::</span><span class="no">Rendering</span><span class="p">,</span>
+    <span class="no">ActionView</span><span class="o">::</span><span class="no">ViewPaths</span><span class="p">]</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="ActionController::API.ancestors - ActionController::Metal.ancestors
+">Copy</button>
+</div>
+<h4 id="adding-other-modules"><a class="anchorlink" href="#adding-other-modules">5.1 Adding Other Modules</a></h4>
+
+<p>All Action Controller modules know about their dependent modules, so you can feel
+free to include any modules into your controllers, and all dependencies will be
+included and set up as well.</p>
+
+<p>Some common modules you might want to add:</p>
+<ul>
+<li>
+<code>AbstractController::Translation</code>: Support for the <code>l</code> and <code>t</code> localization
+and translation methods.</li>
+<li>Support for basic, digest, or token HTTP authentication:
+
+<ul>
+<li><code>ActionController::HttpAuthentication::Basic::ControllerMethods</code></li>
+<li><code>ActionController::HttpAuthentication::Digest::ControllerMethods</code></li>
+<li><code>ActionController::HttpAuthentication::Token::ControllerMethods</code></li>
+</ul>
+</li>
+<li>
+<code>ActionView::Layouts</code>: Support for layouts when rendering.</li>
+<li>
+<code>ActionController::MimeResponds</code>: Support for <code>respond_to</code>.</li>
+<li>
+<code>ActionController::Cookies</code>: Support for <code>cookies</code>, which includes
+support for signed and encrypted cookies. This requires the cookies middleware.</li>
+<li>
+<code>ActionController::Caching</code>: Support view caching for the API controller. Please note
+that you will need to manually specify the cache store inside the controller like this:
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">ApplicationController</span> <span class="o">&lt;</span> <span class="no">ActionController</span><span class="o">::</span><span class="no">API</span>
+  <span class="kp">include</span> <span class="o">::</span><span class="no">ActionController</span><span class="o">::</span><span class="no">Caching</span>
+  <span class="nb">self</span><span class="p">.</span><span class="nf">cache_store</span> <span class="o">=</span> <span class="ss">:mem_cache_store</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="class ApplicationController &lt; ActionController::API
+  include ::ActionController::Caching
+  self.cache_store = :mem_cache_store
+end
+">Copy</button>
+</div>
+Rails does <em>not</em> pass this configuration automatically.
+</li>
+</ul>
+<p>The best place to add a module is in your <code>ApplicationController</code>, but you can
+also add modules to individual controllers.</p>
+</body>
+</html>

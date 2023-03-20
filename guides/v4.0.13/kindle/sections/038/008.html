@@ -1,0 +1,29 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>9 Deprecated</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v4.0.13/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="deprecated">9 Deprecated</h3>
+<p>A few pieces of older code are deprecated in this release:</p>
+<ul>
+<li>If you're one of the (fairly rare) Rails developers who deploys in a fashion that depends on the inspector, reaper, and spawner scripts, you'll need to know that those scripts are no longer included in core Rails. If you need them, you'll be able to pick up copies via the <a href="http://github.com/rails/irs_process_scripts/tree">irs_process_scripts</a> plugin.</li>
+<li>
+<code>render_component</code> goes from "deprecated" to "nonexistent" in Rails 2.3. If you still need it, you can install the <a href="http://github.com/rails/render_component/tree/master.">render_component plugin</a>
+</li>
+<li>Support for Rails components has been removed.</li>
+<li>If you were one of the people who got used to running <code>script/performance/request</code> to look at performance based on integration tests, you need to learn a new trick: that script has been removed from core Rails now. There’s a new request_profiler plugin that you can install to get the exact same functionality back.</li>
+<li>
+<code>ActionController::Base#session_enabled?</code> is deprecated because sessions are lazy-loaded now.</li>
+<li>The <code>:digest</code> and <code>:secret</code> options to <code>protect_from_forgery</code> are deprecated and have no effect.</li>
+<li>Some integration test helpers have been removed. <code>response.headers["Status"]</code> and <code>headers["Status"]</code> will no longer return anything. Rack does not allow "Status" in its return headers. However you can still use the <code>status</code> and <code>status_message</code> helpers. <code>response.headers["cookie"]</code> and <code>headers["cookie"]</code> will no longer return any CGI cookies. You can inspect <code>headers["Set-Cookie"]</code> to see the raw cookie header or use the <code>cookies</code> helper to get a hash of the cookies sent to the client.</li>
+<li>
+<code>formatted_polymorphic_url</code> is deprecated. Use <code>polymorphic_url</code> with <code>:format</code> instead.</li>
+<li>The <code>:http_only</code> option in <code>ActionController::Response#set_cookie</code> has been renamed to <code>:httponly</code>.</li>
+<li>The <code>:connector</code> and <code>:skip_last_comma</code> options of <code>to_sentence</code> have been replaced by <code>:words_connnector</code>, <code>:two_words_connector</code>, and <code>:last_word_connector</code> options.</li>
+<li>Posting a multipart form with an empty <code>file_field</code> control used to submit an empty string to the controller. Now it submits a nil, due to differences between Rack's multipart parser and the old Rails one.</li>
+</ul>
+</body>
+</html>

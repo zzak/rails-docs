@@ -1,0 +1,53 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>8 Migrations</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v7.0.4.2/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="migrations"><a class="anchorlink" href="#migrations">8 Migrations</a></h3>
+<p>Rails provides a domain-specific language for managing a database schema called
+migrations. Migrations are stored in files which are executed against any
+database that Active Record supports using <code>rake</code>. Here's a migration that
+creates a table:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">CreatePublications</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Migration</span><span class="p">[</span><span class="mf">7.0</span><span class="p">]</span>
+  <span class="k">def</span> <span class="nf">change</span>
+    <span class="n">create_table</span> <span class="ss">:publications</span> <span class="k">do</span> <span class="o">|</span><span class="n">t</span><span class="o">|</span>
+      <span class="n">t</span><span class="p">.</span><span class="nf">string</span> <span class="ss">:title</span>
+      <span class="n">t</span><span class="p">.</span><span class="nf">text</span> <span class="ss">:description</span>
+      <span class="n">t</span><span class="p">.</span><span class="nf">references</span> <span class="ss">:publication_type</span>
+      <span class="n">t</span><span class="p">.</span><span class="nf">references</span> <span class="ss">:publisher</span><span class="p">,</span> <span class="ss">polymorphic: </span><span class="kp">true</span>
+      <span class="n">t</span><span class="p">.</span><span class="nf">boolean</span> <span class="ss">:single_issue</span>
+
+      <span class="n">t</span><span class="p">.</span><span class="nf">timestamps</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="class CreatePublications &lt; ActiveRecord::Migration[7.0]
+  def change
+    create_table :publications do |t|
+      t.string :title
+      t.text :description
+      t.references :publication_type
+      t.references :publisher, polymorphic: true
+      t.boolean :single_issue
+
+      t.timestamps
+    end
+  end
+end
+">Copy</button>
+</div>
+<p>Rails keeps track of which files have been committed to the database and
+provides rollback features. To actually create the table, you'd run <code>bin/rails db:migrate</code>,
+and to roll it back, <code>bin/rails db:rollback</code>.</p>
+
+<p>Note that the above code is database-agnostic: it will run in MySQL,
+PostgreSQL, Oracle, and others. You can learn more about migrations in the
+<a href="active_record_migrations.html">Active Record Migrations guide</a>.</p>
+</body>
+</html>

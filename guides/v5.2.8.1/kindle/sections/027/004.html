@@ -1,0 +1,87 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>5 autoload_paths and eager_load_paths</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v5.2.8.1/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="autoload-paths-and-eager-load-paths"><a class="anchorlink" href="#autoload-paths-and-eager-load-paths">5 autoload_paths and eager_load_paths</a></h3>
+<p>As you probably know, when <code>require</code> gets a relative file name:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+require 'erb'
+
+</pre>
+</div>
+<p>Ruby looks for the file in the directories listed in <code>$LOAD_PATH</code>. That is, Ruby
+iterates over all its directories and for each one of them checks whether they
+have a file called "erb.rb", or "erb.so", or "erb.o", or "erb.dll". If it finds
+any of them, the interpreter loads it and ends the search. Otherwise, it tries
+again in the next directory of the list. If the list gets exhausted, <code>LoadError</code>
+is raised.</p>
+
+<p>We are going to cover how constant autoloading works in more detail later, but
+the idea is that when a constant like <code>Post</code> is hit and missing, if there's a
+<code>post.rb</code> file for example in <code>app/models</code> Rails is going to find it, evaluate
+it, and have <code>Post</code> defined as a side-effect.</p>
+
+<p>All right, Rails has a collection of directories similar to <code>$LOAD_PATH</code> in which
+to look up <code>post.rb</code>. That collection is called <code>autoload_paths</code> and by
+default it contains:</p>
+<ul>
+<li>All subdirectories of <code>app</code> in the application and engines present at boot
+time. For example, <code>app/controllers</code>. They do not need to be the default
+ones, any custom directories like <code>app/workers</code> belong automatically to
+<code>autoload_paths</code>.</li>
+<li>Any existing second level directories called <code>app/*/concerns</code> in the
+application and engines.</li>
+<li>The directory <code>test/mailers/previews</code>.</li>
+</ul>
+<p><code>eager_load_paths</code> is initially the <code>app</code> paths above</p>
+
+<p>How files are autoloaded depends on <code>eager_load</code> and <code>cache_classes</code> config settings which typically vary in development, production, and test modes:</p>
+<ul>
+<li>In <strong>development</strong>, you want quicker startup with incremental loading of application code.  So <code>eager_load</code> should be set to <code>false</code>, and rails will autoload files as needed (see <a href="#autoloading-algorithms">Autoloading Algorithms</a> below) -- and then reload them when they change (see <a href="#constant-reloading">Constant Reloading</a> below).</li>
+<li>In <strong>production</strong>, however you want consistency and thread-safety and can live with a longer boot time. So <code>eager_load</code> is set to <code>true</code>, and then during boot (before the app is ready to receive requests) rails loads all files in the <code>eager_load_paths</code>  and then turns off auto loading (NB: autoloading may be needed during eager loading). Not autoloading after boot is a <code>good thing</code>, as autoloading can cause the app to be have thread-safety problems. </li>
+<li>In <strong>test</strong>, for speed of execution (of individual tests) <code>eager_load</code> is <code>false</code>, so rails follows development behaviour. </li>
+</ul>
+<p>What is described above are the defaults with a newly generated rails app. There are multiple ways this can be configured differently (see <a href="configuring.html#rails-general-configuration">Configuring Rails Applications</a>.
+). But using <code>autoload_paths</code> on its own  in the past (pre-rails 5) developers might configure <code>autoload_paths</code> to add in extra locations (e.g. <code>lib</code> which used to be an autoload path list years ago, but no longer is).  However this is now discouraged for most purposes, as it is likely to lead to production-only errors. It is possible to add new locations to both <code>config.eager_load_paths</code> and <code>config.autoload_paths</code> but use at your own risk.</p>
+
+<p>See also (<a href="#autoloading-in-the-test-environment">Autoloading in the Test Environment</a>.</p>
+
+<p><code>config.autoload_paths</code> is not changeable from environment-specific configuration files.</p>
+
+<p>The value of <code>autoload_paths</code> can be inspected. In a just-generated application
+it is (edited):</p>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+$ bin/rails r 'puts ActiveSupport::Dependencies.autoload_paths'
+.../app/assets
+.../app/channels
+.../app/controllers
+.../app/controllers/concerns
+.../app/helpers
+.../app/jobs
+.../app/mailers
+.../app/models
+.../app/models/concerns
+.../activestorage/app/assets
+.../activestorage/app/controllers
+.../activestorage/app/javascript
+.../activestorage/app/jobs
+.../activestorage/app/models
+.../actioncable/app/assets
+.../actionview/app/assets
+.../test/mailers/previews
+
+</pre>
+</div>
+<div class="info"><p><code>autoload_paths</code> is computed and cached during the initialization process.
+The application needs to be restarted to reflect any changes in the directory
+structure.</p></div>
+</body>
+</html>

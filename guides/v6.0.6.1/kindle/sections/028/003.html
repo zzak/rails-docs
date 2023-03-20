@@ -1,0 +1,101 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>4 Server-Side Concerns</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v6.0.6.1/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="server-side-concerns"><a class="anchorlink" href="#server-side-concerns">4 Server-Side Concerns</a></h3>
+<p>Ajax isn't just client-side, you also need to do some work on the server
+side to support it. Often, people like their Ajax requests to return JSON
+rather than HTML. Let's discuss what it takes to make that happen.</p>
+
+<h4 id="a-simple-example"><a class="anchorlink" href="#a-simple-example">4.1 A Simple Example</a></h4>
+
+<p>Imagine you have a series of users that you would like to display and provide a
+form on that same page to create a new user. The index action of your
+controller looks like this:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class UsersController &lt; ApplicationController
+  def index
+    @users = User.all
+    @user = User.new
+  end
+  # ...
+
+</pre>
+</div>
+<p>The index view (<code>app/views/users/index.html.erb</code>) contains:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; html-script: true; gutter: false; toolbar: false">
+&lt;b&gt;Users&lt;/b&gt;
+
+&lt;ul id="users"&gt;
+&lt;%= render @users %&gt;
+&lt;/ul&gt;
+
+&lt;br&gt;
+
+&lt;%= form_with(model: @user) do |f| %&gt;
+  &lt;%= f.label :name %&gt;&lt;br&gt;
+  &lt;%= f.text_field :name %&gt;
+  &lt;%= f.submit %&gt;
+&lt;% end %&gt;
+
+</pre>
+</div>
+<p>The <code>app/views/users/_user.html.erb</code> partial contains the following:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; html-script: true; gutter: false; toolbar: false">
+&lt;li&gt;&lt;%= user.name %&gt;&lt;/li&gt;
+
+</pre>
+</div>
+<p>The top portion of the index page displays the users. The bottom portion
+provides a form to create a new user.</p>
+
+<p>The bottom form will call the <code>create</code> action on the <code>UsersController</code>. Because
+the form's remote option is set to true, the request will be posted to the
+<code>UsersController</code> as an Ajax request, looking for JavaScript. In order to
+serve that request, the <code>create</code> action of your controller would look like
+this:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+  # app/controllers/users_controller.rb
+  # ......
+  def create
+    @user = User.new(params[:user])
+
+    respond_to do |format|
+      if @user.save
+        format.html { redirect_to @user, notice: 'User was successfully created.' }
+        format.js
+        format.json { render json: @user, status: :created, location: @user }
+      else
+        format.html { render action: "new" }
+        format.json { render json: @user.errors, status: :unprocessable_entity }
+      end
+    end
+  end
+
+</pre>
+</div>
+<p>Notice the <code>format.js</code> in the <code>respond_to</code> block: that allows the controller to
+respond to your Ajax request. You then have a corresponding
+<code>app/views/users/create.js.erb</code> view file that generates the actual JavaScript
+code that will be sent and executed on the client side.</p>
+
+<div class="code_container">
+<pre class="brush: ruby; html-script: true; gutter: false; toolbar: false">
+$("&lt;%= escape_javascript(render @user) %&gt;").appendTo("#users");
+
+</pre>
+</div>
+</body>
+</html>

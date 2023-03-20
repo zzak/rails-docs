@@ -1,0 +1,48 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>5 Linking to Files</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v6.1.7.3/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="linking-to-files"><a class="anchorlink" href="#linking-to-files">5 Linking to Files</a></h3>
+<p>Generate a permanent URL for the blob that points to the application. Upon
+access, a redirect to the actual service endpoint is returned. This indirection
+decouples the service URL from the actual one, and allows, for example, mirroring
+attachments in different services for high-availability. The redirection has an
+HTTP expiration of 5 minutes.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">url_for</span><span class="p">(</span><span class="n">user</span><span class="p">.</span><span class="nf">avatar</span><span class="p">)</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-00aaa155661b2b3059dfa40953d3daa4">url_for(user.avatar)
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-00aaa155661b2b3059dfa40953d3daa4">Copy</button>
+</div>
+<p>To create a download link, use the <code>rails_blob_{path|url}</code> helper. Using this
+helper allows you to set the disposition.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">rails_blob_path</span><span class="p">(</span><span class="n">user</span><span class="p">.</span><span class="nf">avatar</span><span class="p">,</span> <span class="ss">disposition: </span><span class="s2">"attachment"</span><span class="p">)</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-74ed522d40a8bd8c85b8a36d5660f438">rails_blob_path(user.avatar, disposition: "attachment")
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-74ed522d40a8bd8c85b8a36d5660f438">Copy</button>
+</div>
+<div class="warning"><p>To prevent XSS attacks, ActiveStorage forces the Content-Disposition header
+to "attachment" for some kind of files. To change this behaviour see the
+available configuration options in <a href="configuring.html#configuring-active-storage">Configuring Rails Applications</a>.</p></div>
+
+<p>If you need to create a link from outside of controller/view context (Background
+jobs, Cronjobs, etc.), you can access the <code>rails_blob_path</code> like this:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="no">Rails</span><span class="p">.</span><span class="nf">application</span><span class="p">.</span><span class="nf">routes</span><span class="p">.</span><span class="nf">url_helpers</span><span class="p">.</span><span class="nf">rails_blob_path</span><span class="p">(</span><span class="n">user</span><span class="p">.</span><span class="nf">avatar</span><span class="p">,</span> <span class="ss">only_path: </span><span class="kp">true</span><span class="p">)</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-c92384f8b7ab39719cf6100ec399a5cc">Rails.application.routes.url_helpers.rails_blob_path(user.avatar, only_path: true)
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-c92384f8b7ab39719cf6100ec399a5cc">Copy</button>
+</div>
+</body>
+</html>

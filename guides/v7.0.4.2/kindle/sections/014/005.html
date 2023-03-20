@@ -1,0 +1,143 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>6 Inspecting and Testing Routes</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v7.0.4.2/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="inspecting-and-testing-routes"><a class="anchorlink" href="#inspecting-and-testing-routes">6 Inspecting and Testing Routes</a></h3>
+<p>Rails offers facilities for inspecting and testing your routes.</p>
+
+<h4 id="listing-existing-routes"><a class="anchorlink" href="#listing-existing-routes">6.1 Listing Existing Routes</a></h4>
+
+<p>To get a complete list of the available routes in your application, visit <a href="http://localhost:3000/rails/info/routes">http://localhost:3000/rails/info/routes</a> in your browser while your server is running in the <strong>development</strong> environment. You can also execute the <code>bin/rails routes</code> command in your terminal to produce the same output.</p>
+
+<p>Both methods will list all of your routes, in the same order that they appear in <code>config/routes.rb</code>. For each route, you'll see:</p>
+<ul>
+<li>The route name (if any)</li>
+<li>The HTTP verb used (if the route doesn't respond to all verbs)</li>
+<li>The URL pattern to match</li>
+<li>The routing parameters for the route</li>
+</ul>
+<p>For example, here's a small section of the <code>bin/rails routes</code> output for a RESTful route:</p>
+
+<div class="code_container">
+<pre><code class="highlight plaintext">    users GET    /users(.:format)          users#index
+          POST   /users(.:format)          users#create
+ new_user GET    /users/new(.:format)      users#new
+edit_user GET    /users/:id/edit(.:format) users#edit
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="    users GET    /users(.:format)          users#index
+          POST   /users(.:format)          users#create
+ new_user GET    /users/new(.:format)      users#new
+edit_user GET    /users/:id/edit(.:format) users#edit
+">Copy</button>
+</div>
+<p>You can also use the <code>--expanded</code> option to turn on the expanded table formatting mode.</p>
+
+<div class="code_container">
+<pre><code class="highlight console"><span class="gp">$</span><span class="w"> </span><span class="nb">bin/rails </span>routes <span class="nt">--expanded</span>
+<span class="go">
+--[ Route 1 ]----------------------------------------------------
+Prefix            | users
+Verb              | GET
+URI               | /users(.:format)
+</span><span class="gp">Controller#</span>Action | <span class="nb">users</span><span class="c">#index</span>
+<span class="go">--[ Route 2 ]----------------------------------------------------
+Prefix            |
+Verb              | POST
+URI               | /users(.:format)
+</span><span class="gp">Controller#</span>Action | <span class="nb">users</span><span class="c">#create</span>
+<span class="go">--[ Route 3 ]----------------------------------------------------
+Prefix            | new_user
+Verb              | GET
+URI               | /users/new(.:format)
+</span><span class="gp">Controller#</span>Action | <span class="nb">users</span><span class="c">#new</span>
+<span class="go">--[ Route 4 ]----------------------------------------------------
+Prefix            | edit_user
+Verb              | GET
+URI               | /users/:id/edit(.:format)
+</span><span class="gp">Controller#</span>Action | <span class="nb">users</span><span class="c">#edit</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="bin/rails routes --expanded
+">Copy</button>
+</div>
+<p>You can search through your routes with the grep option: -g. This outputs any routes that partially match the URL helper method name, the HTTP verb, or the URL path.</p>
+
+<div class="code_container">
+<pre><code class="highlight console"><span class="gp">$</span><span class="w"> </span><span class="nb">bin/rails </span>routes <span class="nt">-g</span> new_comment
+<span class="gp">$</span><span class="w"> </span><span class="nb">bin/rails </span>routes <span class="nt">-g</span> POST
+<span class="gp">$</span><span class="w"> </span><span class="nb">bin/rails </span>routes <span class="nt">-g</span> admin
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="bin/rails routes -g new_comment
+bin/rails routes -g POST
+bin/rails routes -g admin
+">Copy</button>
+</div>
+<p>If you only want to see the routes that map to a specific controller, there's the -c option.</p>
+
+<div class="code_container">
+<pre><code class="highlight console"><span class="gp">$</span><span class="w"> </span><span class="nb">bin/rails </span>routes <span class="nt">-c</span> <span class="nb">users</span>
+<span class="gp">$</span><span class="w"> </span><span class="nb">bin/rails </span>routes <span class="nt">-c</span> admin/users
+<span class="gp">$</span><span class="w"> </span><span class="nb">bin/rails </span>routes <span class="nt">-c</span> Comments
+<span class="gp">$</span><span class="w"> </span><span class="nb">bin/rails </span>routes <span class="nt">-c</span> Articles::CommentsController
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="bin/rails routes -c users
+bin/rails routes -c admin/users
+bin/rails routes -c Comments
+bin/rails routes -c Articles::CommentsController
+">Copy</button>
+</div>
+<div class="info"><p>You'll find that the output from <code>bin/rails routes</code> is much more readable if you widen your terminal window until the output lines don't wrap.</p></div>
+
+<h4 id="testing-routes"><a class="anchorlink" href="#testing-routes">6.2 Testing Routes</a></h4>
+
+<p>Routes should be included in your testing strategy (just like the rest of your application). Rails offers three built-in assertions designed to make testing routes simpler:</p>
+<ul>
+<li><a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActionDispatch/Assertions/RoutingAssertions.html#method-i-assert_generates"><code>assert_generates</code></a></li>
+<li><a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActionDispatch/Assertions/RoutingAssertions.html#method-i-assert_recognizes"><code>assert_recognizes</code></a></li>
+<li><a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActionDispatch/Assertions/RoutingAssertions.html#method-i-assert_routing"><code>assert_routing</code></a></li>
+</ul>
+<h5 id="the-assert-generates-assertion"><a class="anchorlink" href="#the-assert-generates-assertion">6.2.1 The <code>assert_generates</code> Assertion</a></h5>
+
+<p><a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActionDispatch/Assertions/RoutingAssertions.html#method-i-assert_generates"><code>assert_generates</code></a> asserts that a particular set of options generate a particular path and can be used with default routes or custom routes. For example:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">assert_generates</span> <span class="s1">'/photos/1'</span><span class="p">,</span> <span class="p">{</span> <span class="ss">controller: </span><span class="s1">'photos'</span><span class="p">,</span> <span class="ss">action: </span><span class="s1">'show'</span><span class="p">,</span> <span class="ss">id: </span><span class="s1">'1'</span> <span class="p">}</span>
+<span class="n">assert_generates</span> <span class="s1">'/about'</span><span class="p">,</span> <span class="ss">controller: </span><span class="s1">'pages'</span><span class="p">,</span> <span class="ss">action: </span><span class="s1">'about'</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="assert_generates '/photos/1', { controller: 'photos', action: 'show', id: '1' }
+assert_generates '/about', controller: 'pages', action: 'about'
+">Copy</button>
+</div>
+<h5 id="the-assert-recognizes-assertion"><a class="anchorlink" href="#the-assert-recognizes-assertion">6.2.2 The <code>assert_recognizes</code> Assertion</a></h5>
+
+<p><a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActionDispatch/Assertions/RoutingAssertions.html#method-i-assert_recognizes"><code>assert_recognizes</code></a> is the inverse of <code>assert_generates</code>. It asserts that a given path is recognized and routes it to a particular spot in your application. For example:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">assert_recognizes</span><span class="p">({</span> <span class="ss">controller: </span><span class="s1">'photos'</span><span class="p">,</span> <span class="ss">action: </span><span class="s1">'show'</span><span class="p">,</span> <span class="ss">id: </span><span class="s1">'1'</span> <span class="p">},</span> <span class="s1">'/photos/1'</span><span class="p">)</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="assert_recognizes({ controller: 'photos', action: 'show', id: '1' }, '/photos/1')
+">Copy</button>
+</div>
+<p>You can supply a <code>:method</code> argument to specify the HTTP verb:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">assert_recognizes</span><span class="p">({</span> <span class="ss">controller: </span><span class="s1">'photos'</span><span class="p">,</span> <span class="ss">action: </span><span class="s1">'create'</span> <span class="p">},</span> <span class="p">{</span> <span class="ss">path: </span><span class="s1">'photos'</span><span class="p">,</span> <span class="ss">method: :post</span> <span class="p">})</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="assert_recognizes({ controller: 'photos', action: 'create' }, { path: 'photos', method: :post })
+">Copy</button>
+</div>
+<h5 id="the-assert-routing-assertion"><a class="anchorlink" href="#the-assert-routing-assertion">6.2.3 The <code>assert_routing</code> Assertion</a></h5>
+
+<p>The <a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActionDispatch/Assertions/RoutingAssertions.html#method-i-assert_routing"><code>assert_routing</code></a> assertion checks the route both ways: it tests that the path generates the options, and that the options generate the path. Thus, it combines the functions of <code>assert_generates</code> and <code>assert_recognizes</code>:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">assert_routing</span><span class="p">({</span> <span class="ss">path: </span><span class="s1">'photos'</span><span class="p">,</span> <span class="ss">method: :post</span> <span class="p">},</span> <span class="p">{</span> <span class="ss">controller: </span><span class="s1">'photos'</span><span class="p">,</span> <span class="ss">action: </span><span class="s1">'create'</span> <span class="p">})</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="assert_routing({ path: 'photos', method: :post }, { controller: 'photos', action: 'create' })
+">Copy</button>
+</div>
+</body>
+</html>

@@ -1,0 +1,28 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>5 Autoloading</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v7.0.4.2/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="autoloading"><a class="anchorlink" href="#autoloading">5 Autoloading</a></h3>
+<p>Rails applications <strong>do not</strong> use <code>require</code> to load application code.</p>
+
+<p>You may have noticed that <code>ArticlesController</code> inherits from <code>ApplicationController</code>, but <code>app/controllers/articles_controller.rb</code> does not have anything like</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="nb">require</span> <span class="s2">"application_controller"</span> <span class="c1"># DON'T DO THIS.</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="require &quot;application_controller&quot; # DON'T DO THIS.
+">Copy</button>
+</div>
+<p>Application classes and modules are available everywhere, you do not need and <strong>should not</strong> load anything under <code>app</code> with <code>require</code>. This feature is called <em>autoloading</em>, and you can learn more about it in <a href="autoloading_and_reloading_constants.html"><em>Autoloading and Reloading Constants</em></a>.</p>
+
+<p>You only need <code>require</code> calls for two use cases:</p>
+<ul>
+<li>To load files under the <code>lib</code> directory.</li>
+<li>To load gem dependencies that have <code>require: false</code> in the <code>Gemfile</code>.</li>
+</ul>
+</body>
+</html>

@@ -1,0 +1,194 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>6 Full-Stack Examples</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v5.2.8.1/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="full-stack-examples"><a class="anchorlink" href="#full-stack-examples">6 Full-Stack Examples</a></h3>
+<p>The following setup steps are common to both examples:</p>
+<ol>
+<li>
+<a href="#connection-setup">Setup your connection</a>.</li>
+<li>
+<a href="#parent-channel-setup">Setup your parent channel</a>.</li>
+<li>
+<a href="#connect-consumer">Connect your consumer</a>.</li>
+</ol>
+<h4 id="example-1-user-appearances"><a class="anchorlink" href="#example-1-user-appearances">6.1 Example 1: User Appearances</a></h4>
+
+<p>Here's a simple example of a channel that tracks whether a user is online or not
+and what page they're on. (This is useful for creating presence features like showing
+a green dot next to a user name if they're online).</p>
+
+<p>Create the server-side appearance channel:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+# app/channels/appearance_channel.rb
+class AppearanceChannel &lt; ApplicationCable::Channel
+  def subscribed
+    current_user.appear
+  end
+
+  def unsubscribed
+    current_user.disappear
+  end
+
+  def appear(data)
+    current_user.appear(on: data['appearing_on'])
+  end
+
+  def away
+    current_user.away
+  end
+end
+
+</pre>
+</div>
+<p>When a subscription is initiated the <code>subscribed</code> callback gets fired and we
+take that opportunity to say "the current user has indeed appeared". That
+appear/disappear API could be backed by Redis, a database, or whatever else.</p>
+
+<p>Create the client-side appearance channel subscription:</p>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+# app/assets/javascripts/cable/subscriptions/appearance.coffee
+App.cable.subscriptions.create "AppearanceChannel",
+  # Called when the subscription is ready for use on the server.
+  connected: -&gt;
+    @install()
+    @appear()
+
+  # Called when the WebSocket connection is closed.
+  disconnected: -&gt;
+    @uninstall()
+
+  # Called when the subscription is rejected by the server.
+  rejected: -&gt;
+    @uninstall()
+
+  appear: -&gt;
+    # Calls `AppearanceChannel#appear(data)` on the server.
+    @perform("appear", appearing_on: $("main").data("appearing-on"))
+
+  away: -&gt;
+    # Calls `AppearanceChannel#away` on the server.
+    @perform("away")
+
+
+  buttonSelector = "[data-behavior~=appear_away]"
+
+  install: -&gt;
+    $(document).on "turbolinks:load.appearance", =&gt;
+      @appear()
+
+    $(document).on "click.appearance", buttonSelector, =&gt;
+      @away()
+      false
+
+    $(buttonSelector).show()
+
+  uninstall: -&gt;
+    $(document).off(".appearance")
+    $(buttonSelector).hide()
+
+</pre>
+</div>
+<h6 id="client-server-interaction"><a class="anchorlink" href="#client-server-interaction">6.1.1 Client-Server Interaction</a></h6>
+<ol>
+<li>
+<strong>Client</strong> connects to the <strong>Server</strong> via <code>App.cable =
+ActionCable.createConsumer("ws://cable.example.com")</code>. (<code>cable.js</code>). The
+<strong>Server</strong> identifies this connection by <code>current_user</code>.</li>
+<li>
+<strong>Client</strong> subscribes to the appearance channel via
+<code>App.cable.subscriptions.create(channel: "AppearanceChannel")</code>. (<code>appearance.coffee</code>)</li>
+<li>
+<strong>Server</strong> recognizes a new subscription has been initiated for the
+appearance channel and runs its <code>subscribed</code> callback, calling the <code>appear</code>
+method on <code>current_user</code>. (<code>appearance_channel.rb</code>)</li>
+<li>
+<strong>Client</strong> recognizes that a subscription has been established and calls
+<code>connected</code> (<code>appearance.coffee</code>) which in turn calls <code>@install</code> and <code>@appear</code>.
+<code>@appear</code> calls <code>AppearanceChannel#appear(data)</code> on the server, and supplies a
+data hash of <code>{ appearing_on: $("main").data("appearing-on") }</code>. This is
+possible because the server-side channel instance automatically exposes all
+public methods declared on the class (minus the callbacks), so that these can be
+reached as remote procedure calls via a subscription's <code>perform</code> method.</li>
+<li>
+<strong>Server</strong> receives the request for the <code>appear</code> action on the appearance
+channel for the connection identified by <code>current_user</code>
+(<code>appearance_channel.rb</code>). <strong>Server</strong> retrieves the data with the
+<code>:appearing_on</code> key from the data hash and sets it as the value for the <code>:on</code>
+key being passed to <code>current_user.appear</code>.</li>
+</ol>
+<h4 id="example-2-receiving-new-web-notifications"><a class="anchorlink" href="#example-2-receiving-new-web-notifications">6.2 Example 2: Receiving New Web Notifications</a></h4>
+
+<p>The appearance example was all about exposing server functionality to
+client-side invocation over the WebSocket connection. But the great thing
+about WebSockets is that it's a two-way street. So now let's show an example
+where the server invokes an action on the client.</p>
+
+<p>This is a web notification channel that allows you to trigger client-side
+web notifications when you broadcast to the right streams:</p>
+
+<p>Create the server-side web notifications channel:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+# app/channels/web_notifications_channel.rb
+class WebNotificationsChannel &lt; ApplicationCable::Channel
+  def subscribed
+    stream_for current_user
+  end
+end
+
+</pre>
+</div>
+<p>Create the client-side web notifications channel subscription:</p>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+# app/assets/javascripts/cable/subscriptions/web_notifications.coffee
+# Client-side which assumes you've already requested
+# the right to send web notifications.
+App.cable.subscriptions.create "WebNotificationsChannel",
+  received: (data) -&gt;
+    new Notification data["title"], body: data["body"]
+
+</pre>
+</div>
+<p>Broadcast content to a web notification channel instance from elsewhere in your
+application:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+# Somewhere in your app this is called, perhaps from a NewCommentJob
+WebNotificationsChannel.broadcast_to(
+  current_user,
+  title: 'New things!',
+  body: 'All the news fit to print'
+)
+
+</pre>
+</div>
+<p>The <code>WebNotificationsChannel.broadcast_to</code> call places a message in the current
+subscription adapter's pubsub queue under a separate broadcasting name for each
+user. For a user with an ID of 1, the broadcasting name would be
+<code>web_notifications:1</code>.</p>
+
+<p>The channel has been instructed to stream everything that arrives at
+<code>web_notifications:1</code> directly to the client by invoking the <code>received</code>
+callback. The data passed as argument is the hash sent as the second parameter
+to the server-side broadcast call, JSON encoded for the trip across the wire
+and unpacked for the data argument arriving as <code>received</code>.</p>
+
+<h4 id="more-complete-examples"><a class="anchorlink" href="#more-complete-examples">6.3 More Complete Examples</a></h4>
+
+<p>See the <a href="https://github.com/rails/actioncable-examples">rails/actioncable-examples</a>
+repository for a full example of how to setup Action Cable in a Rails app and adding channels.</p>
+</body>
+</html>

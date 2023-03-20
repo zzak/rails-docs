@@ -1,0 +1,200 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>10 Extensions to Enumerable</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v7.0.4.2/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="extensions-to-enumerable"><a class="anchorlink" href="#extensions-to-enumerable">10 Extensions to <code>Enumerable</code></a></h3>
+<h4 id="sum"><a class="anchorlink" href="#sum">10.1 <code>sum</code></a></h4>
+
+<p>The method <a href="https://api.rubyonrails.org/v7.0.4.2/classes/Enumerable.html#method-i-sum"><code>sum</code></a> adds the elements of an enumerable:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">].</span><span class="nf">sum</span> <span class="c1"># =&gt; 6</span>
+<span class="p">(</span><span class="mi">1</span><span class="o">..</span><span class="mi">100</span><span class="p">).</span><span class="nf">sum</span>  <span class="c1"># =&gt; 5050</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="[1, 2, 3].sum # =&gt; 6
+(1..100).sum  # =&gt; 5050
+">Copy</button>
+</div>
+<p>Addition only assumes the elements respond to <code>+</code>:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="p">[[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">]].</span><span class="nf">sum</span>    <span class="c1"># =&gt; [1, 2, 2, 3, 3, 4]</span>
+<span class="sx">%w(foo bar baz)</span><span class="p">.</span><span class="nf">sum</span>             <span class="c1"># =&gt; "foobarbaz"</span>
+<span class="p">{</span><span class="ss">a: </span><span class="mi">1</span><span class="p">,</span> <span class="ss">b: </span><span class="mi">2</span><span class="p">,</span> <span class="ss">c: </span><span class="mi">3</span><span class="p">}.</span><span class="nf">sum</span>          <span class="c1"># =&gt; [:a, 1, :b, 2, :c, 3]</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='[[1, 2], [2, 3], [3, 4]].sum    # =&gt; [1, 2, 2, 3, 3, 4]
+%w(foo bar baz).sum             # =&gt; "foobarbaz"
+{a: 1, b: 2, c: 3}.sum          # =&gt; [:a, 1, :b, 2, :c, 3]
+'>Copy</button>
+</div>
+<p>The sum of an empty collection is zero by default, but this is customizable:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="p">[].</span><span class="nf">sum</span>    <span class="c1"># =&gt; 0</span>
+<span class="p">[].</span><span class="nf">sum</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="c1"># =&gt; 1</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="[].sum    # =&gt; 0
+[].sum(1) # =&gt; 1
+">Copy</button>
+</div>
+<p>If a block is given, <code>sum</code> becomes an iterator that yields the elements of the collection and sums the returned values:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="p">(</span><span class="mi">1</span><span class="o">..</span><span class="mi">5</span><span class="p">).</span><span class="nf">sum</span> <span class="p">{</span><span class="o">|</span><span class="n">n</span><span class="o">|</span> <span class="n">n</span> <span class="o">*</span> <span class="mi">2</span> <span class="p">}</span> <span class="c1"># =&gt; 30</span>
+<span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">10</span><span class="p">].</span><span class="nf">sum</span>    <span class="c1"># =&gt; 30</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="(1..5).sum {|n| n * 2 } # =&gt; 30
+[2, 4, 6, 8, 10].sum    # =&gt; 30
+">Copy</button>
+</div>
+<p>The sum of an empty receiver can be customized in this form as well:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="p">[].</span><span class="nf">sum</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="p">{</span><span class="o">|</span><span class="n">n</span><span class="o">|</span> <span class="n">n</span><span class="o">**</span><span class="mi">3</span><span class="p">}</span> <span class="c1"># =&gt; 1</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="[].sum(1) {|n| n**3} # =&gt; 1
+">Copy</button>
+</div>
+<div class="note"><p>Defined in <code><a href="https://github.com/rails/rails/tree/v7.0.4.2/activesupport/lib/active_support/core_ext/enumerable.rb">active_support/core_ext/enumerable.rb</a></code>.</p></div>
+
+<h4 id="index-by"><a class="anchorlink" href="#index-by">10.2 <code>index_by</code></a></h4>
+
+<p>The method <a href="https://api.rubyonrails.org/v7.0.4.2/classes/Enumerable.html#method-i-index_by"><code>index_by</code></a> generates a hash with the elements of an enumerable indexed by some key.</p>
+
+<p>It iterates through the collection and passes each element to a block. The element will be keyed by the value returned by the block:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">invoices</span><span class="p">.</span><span class="nf">index_by</span><span class="p">(</span><span class="o">&amp;</span><span class="ss">:number</span><span class="p">)</span>
+<span class="c1"># =&gt; {'2009-032' =&gt; &lt;Invoice ...&gt;, '2009-008' =&gt; &lt;Invoice ...&gt;, ...}</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="invoices.index_by(&amp;:number)
+# =&gt; {'2009-032' =&gt; &lt;Invoice ...&gt;, '2009-008' =&gt; &lt;Invoice ...&gt;, ...}
+">Copy</button>
+</div>
+<div class="warning"><p>Keys should normally be unique. If the block returns the same value for different elements no collection is built for that key. The last item will win.</p></div>
+
+<div class="note"><p>Defined in <code><a href="https://github.com/rails/rails/tree/v7.0.4.2/activesupport/lib/active_support/core_ext/enumerable.rb">active_support/core_ext/enumerable.rb</a></code>.</p></div>
+
+<h4 id="index-with"><a class="anchorlink" href="#index-with">10.3 <code>index_with</code></a></h4>
+
+<p>The method <a href="https://api.rubyonrails.org/v7.0.4.2/classes/Enumerable.html#method-i-index_with"><code>index_with</code></a> generates a hash with the elements of an enumerable as keys. The value
+is either a passed default or returned in a block.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">post</span> <span class="o">=</span> <span class="no">Post</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="ss">title: </span><span class="s2">"hey there"</span><span class="p">,</span> <span class="ss">body: </span><span class="s2">"what's up?"</span><span class="p">)</span>
+
+<span class="sx">%i( title body )</span><span class="p">.</span><span class="nf">index_with</span> <span class="p">{</span> <span class="o">|</span><span class="n">attr_name</span><span class="o">|</span> <span class="n">post</span><span class="p">.</span><span class="nf">public_send</span><span class="p">(</span><span class="n">attr_name</span><span class="p">)</span> <span class="p">}</span>
+<span class="c1"># =&gt; { title: "hey there", body: "what's up?" }</span>
+
+<span class="no">WEEKDAYS</span><span class="p">.</span><span class="nf">index_with</span><span class="p">(</span><span class="no">Interval</span><span class="p">.</span><span class="nf">all_day</span><span class="p">)</span>
+<span class="c1"># =&gt; { monday: [ 0, 1440 ], … }</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="post = Post.new(title: &quot;hey there&quot;, body: &quot;what's up?&quot;)
+
+%i( title body ).index_with { |attr_name| post.public_send(attr_name) }
+# =&gt; { title: &quot;hey there&quot;, body: &quot;what's up?&quot; }
+
+WEEKDAYS.index_with(Interval.all_day)
+# =&gt; { monday: [ 0, 1440 ], … }
+">Copy</button>
+</div>
+<div class="note"><p>Defined in <code><a href="https://github.com/rails/rails/tree/v7.0.4.2/activesupport/lib/active_support/core_ext/enumerable.rb">active_support/core_ext/enumerable.rb</a></code>.</p></div>
+
+<h4 id="many-questionmark"><a class="anchorlink" href="#many-questionmark">10.4 <code>many?</code></a></h4>
+
+<p>The method <a href="https://api.rubyonrails.org/v7.0.4.2/classes/Enumerable.html#method-i-many-3F"><code>many?</code></a> is shorthand for <code>collection.size &gt; 1</code>:</p>
+
+<div class="code_container">
+<pre><code class="highlight erb"><span class="cp">&lt;%</span> <span class="k">if</span> <span class="n">pages</span><span class="p">.</span><span class="nf">many?</span> <span class="cp">%&gt;</span>
+  <span class="cp">&lt;%=</span> <span class="n">pagination_links</span> <span class="cp">%&gt;</span>
+<span class="cp">&lt;%</span> <span class="k">end</span> <span class="cp">%&gt;</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="&lt;% if pages.many? %&gt;
+  &lt;%= pagination_links %&gt;
+&lt;% end %&gt;
+">Copy</button>
+</div>
+<p>If an optional block is given, <code>many?</code> only takes into account those elements that return true:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="vi">@see_more</span> <span class="o">=</span> <span class="n">videos</span><span class="p">.</span><span class="nf">many?</span> <span class="p">{</span><span class="o">|</span><span class="n">video</span><span class="o">|</span> <span class="n">video</span><span class="p">.</span><span class="nf">category</span> <span class="o">==</span> <span class="n">params</span><span class="p">[</span><span class="ss">:category</span><span class="p">]}</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="@see_more = videos.many? {|video| video.category == params[:category]}
+">Copy</button>
+</div>
+<div class="note"><p>Defined in <code><a href="https://github.com/rails/rails/tree/v7.0.4.2/activesupport/lib/active_support/core_ext/enumerable.rb">active_support/core_ext/enumerable.rb</a></code>.</p></div>
+
+<h4 id="exclude-questionmark"><a class="anchorlink" href="#exclude-questionmark">10.5 <code>exclude?</code></a></h4>
+
+<p>The predicate <a href="https://api.rubyonrails.org/v7.0.4.2/classes/Enumerable.html#method-i-exclude-3F"><code>exclude?</code></a> tests whether a given object does <strong>not</strong> belong to the collection. It is the negation of the built-in <code>include?</code>:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">to_visit</span> <span class="o">&lt;&lt;</span> <span class="n">node</span> <span class="k">if</span> <span class="n">visited</span><span class="p">.</span><span class="nf">exclude?</span><span class="p">(</span><span class="n">node</span><span class="p">)</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="to_visit &lt;&lt; node if visited.exclude?(node)
+">Copy</button>
+</div>
+<div class="note"><p>Defined in <code><a href="https://github.com/rails/rails/tree/v7.0.4.2/activesupport/lib/active_support/core_ext/enumerable.rb">active_support/core_ext/enumerable.rb</a></code>.</p></div>
+
+<h4 id="including"><a class="anchorlink" href="#including">10.6 <code>including</code></a></h4>
+
+<p>The method <a href="https://api.rubyonrails.org/v7.0.4.2/classes/Enumerable.html#method-i-including"><code>including</code></a> returns a new enumerable that includes the passed elements:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="p">[</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span> <span class="p">].</span><span class="nf">including</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>                    <span class="c1"># =&gt; [ 1, 2, 3, 4, 5 ]</span>
+<span class="p">[</span><span class="s2">"David"</span><span class="p">,</span> <span class="s2">"Rafael"</span><span class="p">].</span><span class="nf">including</span> <span class="sx">%w[ Aaron Todd ]</span> <span class="c1"># =&gt; ["David", "Rafael", "Aaron", "Todd"]</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='[ 1, 2, 3 ].including(4, 5)                    # =&gt; [ 1, 2, 3, 4, 5 ]
+["David", "Rafael"].including %w[ Aaron Todd ] # =&gt; ["David", "Rafael", "Aaron", "Todd"]
+'>Copy</button>
+</div>
+<div class="note"><p>Defined in <code><a href="https://github.com/rails/rails/tree/v7.0.4.2/activesupport/lib/active_support/core_ext/enumerable.rb">active_support/core_ext/enumerable.rb</a></code>.</p></div>
+
+<h4 id="excluding"><a class="anchorlink" href="#excluding">10.7 <code>excluding</code></a></h4>
+
+<p>The method <a href="https://api.rubyonrails.org/v7.0.4.2/classes/Enumerable.html#method-i-excluding"><code>excluding</code></a> returns a copy of an enumerable with the specified elements
+removed:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="p">[</span><span class="s2">"David"</span><span class="p">,</span> <span class="s2">"Rafael"</span><span class="p">,</span> <span class="s2">"Aaron"</span><span class="p">,</span> <span class="s2">"Todd"</span><span class="p">].</span><span class="nf">excluding</span><span class="p">(</span><span class="s2">"Aaron"</span><span class="p">,</span> <span class="s2">"Todd"</span><span class="p">)</span> <span class="c1"># =&gt; ["David", "Rafael"]</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='["David", "Rafael", "Aaron", "Todd"].excluding("Aaron", "Todd") # =&gt; ["David", "Rafael"]
+'>Copy</button>
+</div>
+<p><code>excluding</code> is aliased to <a href="https://api.rubyonrails.org/v7.0.4.2/classes/Enumerable.html#method-i-without"><code>without</code></a>.</p>
+
+<div class="note"><p>Defined in <code><a href="https://github.com/rails/rails/tree/v7.0.4.2/activesupport/lib/active_support/core_ext/enumerable.rb">active_support/core_ext/enumerable.rb</a></code>.</p></div>
+
+<h4 id="pluck"><a class="anchorlink" href="#pluck">10.8 <code>pluck</code></a></h4>
+
+<p>The method <a href="https://api.rubyonrails.org/v7.0.4.2/classes/Enumerable.html#method-i-pluck"><code>pluck</code></a> extracts the given key from each element:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="p">[{</span> <span class="ss">name: </span><span class="s2">"David"</span> <span class="p">},</span> <span class="p">{</span> <span class="ss">name: </span><span class="s2">"Rafael"</span> <span class="p">},</span> <span class="p">{</span> <span class="ss">name: </span><span class="s2">"Aaron"</span> <span class="p">}].</span><span class="nf">pluck</span><span class="p">(</span><span class="ss">:name</span><span class="p">)</span> <span class="c1"># =&gt; ["David", "Rafael", "Aaron"]</span>
+<span class="p">[{</span> <span class="ss">id: </span><span class="mi">1</span><span class="p">,</span> <span class="ss">name: </span><span class="s2">"David"</span> <span class="p">},</span> <span class="p">{</span> <span class="ss">id: </span><span class="mi">2</span><span class="p">,</span> <span class="ss">name: </span><span class="s2">"Rafael"</span> <span class="p">}].</span><span class="nf">pluck</span><span class="p">(</span><span class="ss">:id</span><span class="p">,</span> <span class="ss">:name</span><span class="p">)</span> <span class="c1"># =&gt; [[1, "David"], [2, "Rafael"]]</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='[{ name: "David" }, { name: "Rafael" }, { name: "Aaron" }].pluck(:name) # =&gt; ["David", "Rafael", "Aaron"]
+[{ id: 1, name: "David" }, { id: 2, name: "Rafael" }].pluck(:id, :name) # =&gt; [[1, "David"], [2, "Rafael"]]
+'>Copy</button>
+</div>
+<div class="note"><p>Defined in <code><a href="https://github.com/rails/rails/tree/v7.0.4.2/activesupport/lib/active_support/core_ext/enumerable.rb">active_support/core_ext/enumerable.rb</a></code>.</p></div>
+
+<h4 id="pick"><a class="anchorlink" href="#pick">10.9 <code>pick</code></a></h4>
+
+<p>The method <a href="https://api.rubyonrails.org/v7.0.4.2/classes/Enumerable.html#method-i-pick"><code>pick</code></a> extracts the given key from the first element:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="p">[{</span> <span class="ss">name: </span><span class="s2">"David"</span> <span class="p">},</span> <span class="p">{</span> <span class="ss">name: </span><span class="s2">"Rafael"</span> <span class="p">},</span> <span class="p">{</span> <span class="ss">name: </span><span class="s2">"Aaron"</span> <span class="p">}].</span><span class="nf">pick</span><span class="p">(</span><span class="ss">:name</span><span class="p">)</span> <span class="c1"># =&gt; "David"</span>
+<span class="p">[{</span> <span class="ss">id: </span><span class="mi">1</span><span class="p">,</span> <span class="ss">name: </span><span class="s2">"David"</span> <span class="p">},</span> <span class="p">{</span> <span class="ss">id: </span><span class="mi">2</span><span class="p">,</span> <span class="ss">name: </span><span class="s2">"Rafael"</span> <span class="p">}].</span><span class="nf">pick</span><span class="p">(</span><span class="ss">:id</span><span class="p">,</span> <span class="ss">:name</span><span class="p">)</span> <span class="c1"># =&gt; [1, "David"]</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='[{ name: "David" }, { name: "Rafael" }, { name: "Aaron" }].pick(:name) # =&gt; "David"
+[{ id: 1, name: "David" }, { id: 2, name: "Rafael" }].pick(:id, :name) # =&gt; [1, "David"]
+'>Copy</button>
+</div>
+<div class="note"><p>Defined in <code><a href="https://github.com/rails/rails/tree/v7.0.4.2/activesupport/lib/active_support/core_ext/enumerable.rb">active_support/core_ext/enumerable.rb</a></code>.</p></div>
+</body>
+</html>

@@ -1,0 +1,344 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html 
+     PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+  <head>
+    <title>Module: ActiveSupport::Deprecation</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <link rel="stylesheet" href="../../rdoc-style.css" type="text/css" media="screen" />
+
+    <script language="JavaScript" type="text/javascript">
+    // <![CDATA[
+
+        function toggleSource( id )
+        {
+          var elem
+          var link
+
+          if( document.getElementById )
+          {
+            elem = document.getElementById( id )
+            link = document.getElementById( "l_" + id )
+          }
+          else if ( document.all )
+          {
+            elem = eval( "document.all." + id )
+            link = eval( "document.all.l_" + id )
+          }
+          else
+            return false;
+
+          if( elem.style.display == "block" )
+          {
+            elem.style.display = "none"
+            link.innerHTML = "show source"
+          }
+          else
+          {
+            elem.style.display = "block"
+            link.innerHTML = "hide source"
+          }
+        }
+
+        function openCode( url )
+        {
+          window.open( url, "SOURCE_CODE", "resizable=yes,scrollbars=yes,toolbar=no,status=no,height=480,width=750" ).focus();
+        }
+      // ]]>
+    </script>
+  </head>
+
+  <body>
+    <table width="100%" border='0' cellpadding='0' cellspacing='0' class='banner'>
+    <tr><td>Ruby on Rails v3.0.9</td></tr>
+    <tr>
+  <td class="file-title"><span class="file-title-prefix">Module</span><br />ActiveSupport::Deprecation</td>
+  <td align="right">
+    <table cellspacing="0" cellpadding="2">
+      <tr valign="top">
+        <td>In:</td>
+        <td>
+<a href="../../files/activesupport/lib/active_support/deprecation/behaviors_rb.html">activesupport/lib/active_support/deprecation/behaviors.rb</a>:
+<a href="../../files/activesupport/lib/active_support/deprecation/reporting_rb.html">activesupport/lib/active_support/deprecation/reporting.rb</a>:
+<a href="../../files/activesupport/lib/active_support/deprecation/method_wrappers_rb.html">activesupport/lib/active_support/deprecation/method_wrappers.rb</a>:
+<a href="../../files/activesupport/lib/active_support/deprecation/proxy_wrappers_rb.html">activesupport/lib/active_support/deprecation/proxy_wrappers.rb</a>:
+<a href="../../files/activesupport/lib/active_support/deprecation_rb.html">activesupport/lib/active_support/deprecation.rb</a>:
+        </td>
+      </tr>
+         </table>
+        </td>
+        </tr>
+      </table>
+  <div id="bodyContent">
+  <div id="content">
+
+  <div class="description"></div>
+
+
+  <div class="sectiontitle">Methods</div>
+  <ul>
+                <li><a href="#method-c-behavior">behavior</a></li>
+                <li><a href="#method-c-behavior-3D">behavior=</a></li>
+                <li><a href="#method-c-deprecate_methods">deprecate_methods</a></li>
+                <li><a href="#method-c-deprecated_method_warning">deprecated_method_warning</a></li>
+                <li><a href="#method-c-silence">silence</a></li>
+                <li><a href="#method-c-warn">warn</a></li>
+      </ul>
+
+
+  <div class="sectiontitle">Constants</div>
+  <table border='0' cellpadding='5'>
+  <tr valign='top'>
+    <td class="attr-name">DEFAULT_BEHAVIORS</td>
+    <td>=</td>
+    <td class="attr-value">{
+:stderr => Proc.new { |message, callstack|
+$stderr.puts(message)
+$stderr.puts callstack.join("\n  ") if debug
+},
+:log => Proc.new { |message, callstack|
+logger =
+if defined?(Rails) && Rails.logger
+Rails.logger
+else
+require 'logger'
+Logger.new($stderr)
+end
+logger.warn message
+logger.debug callstack.join("\n  ") if debug
+},
+:notify => Proc.new { |message, callstack|
+ActiveSupport::Notifications.instrument("deprecation.rails",
+:message => message, :callstack => callstack)
+}
+}</td>
+  </tr>
+  <tr valign='top'>
+    <td>&nbsp;</td>
+    <td colspan="2" class="attr-desc"><p>Default warning behaviors per <a
+href="../Rails.html#method-c-env">Rails.env</a>.</p></td>
+  </tr>
+  </table>
+
+  <div class="sectiontitle">Attributes</div>
+  <table border='0' cellpadding='5'>
+  <tr valign='top'>
+    <td class='attr-rw'>
+[RW]
+    </td>
+    <td class='attr-name'>debug</td>
+    <td class='attr-desc'>
+              <p>Whether to print a backtrace along with the warning.</p>          </td>
+  </tr>
+  <tr valign='top'>
+    <td class='attr-rw'>
+[RW]
+    </td>
+    <td class='attr-name'>silenced</td>
+    <td class='attr-desc'>
+                        </td>
+  </tr>
+  </table>
+
+        
+    <div class="sectiontitle">
+      Public      Class      methods
+    </div>
+
+          
+      <div class="method">
+        <div class="title">
+                      <a name="method-c-behavior"></a>
+            <b>behavior</b>()          
+        </div>
+
+                  <div class="description">
+                      </div>
+        
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('behavior_source')"
+                 id="l_method-c-behavior_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="behavior_source">
+<pre>
+  <span class="ruby-comment"># File activesupport/lib/active_support/deprecation/behaviors.rb, line 10</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">behavior</span>
+  <span class="ruby-ivar">@behavior</span> <span class="ruby-operator">||=</span> [<span class="ruby-constant">DEFAULT_BEHAVIORS</span>[<span class="ruby-value">:stderr</span>]]
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+          
+      <div class="method">
+        <div class="title">
+                      <a name="method-c-behavior-3D"></a>
+            <b>behavior=</b>(behavior)          
+        </div>
+
+                  <div class="description">
+                      </div>
+        
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('behavior-3D_source')"
+                 id="l_method-c-behavior-3D_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="behavior-3D_source">
+<pre>
+  <span class="ruby-comment"># File activesupport/lib/active_support/deprecation/behaviors.rb, line 14</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">behavior=</span>(<span class="ruby-identifier">behavior</span>)
+  <span class="ruby-ivar">@behavior</span> = <span class="ruby-constant">Array</span>.<span class="ruby-identifier">wrap</span>(<span class="ruby-identifier">behavior</span>).<span class="ruby-identifier">map</span> { <span class="ruby-operator">|</span><span class="ruby-identifier">b</span><span class="ruby-operator">|</span> <span class="ruby-constant">DEFAULT_BEHAVIORS</span>[<span class="ruby-identifier">b</span>] <span class="ruby-operator">||</span> <span class="ruby-identifier">b</span> }
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+          
+      <div class="method">
+        <div class="title">
+                      <a name="method-c-deprecate_methods"></a>
+            <b>deprecate_methods</b>(target_module, *method_names)          
+        </div>
+
+                  <div class="description">
+            <p>Declare that a method has been deprecated.</p>          </div>
+        
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('deprecate_methods_source')"
+                 id="l_method-c-deprecate_methods_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="deprecate_methods_source">
+<pre>
+  <span class="ruby-comment"># File activesupport/lib/active_support/deprecation/method_wrappers.rb, line 8</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">deprecate_methods</span>(<span class="ruby-identifier">target_module</span>, *<span class="ruby-identifier">method_names</span>)
+  <span class="ruby-identifier">options</span> = <span class="ruby-identifier">method_names</span>.<span class="ruby-identifier">extract_options!</span>
+  <span class="ruby-identifier">method_names</span> <span class="ruby-operator">+=</span> <span class="ruby-identifier">options</span>.<span class="ruby-identifier">keys</span>
+
+  <span class="ruby-identifier">method_names</span>.<span class="ruby-identifier">each</span> <span class="ruby-keyword">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">method_name</span><span class="ruby-operator">|</span>
+    <span class="ruby-identifier">target_module</span>.<span class="ruby-identifier">alias_method_chain</span>(<span class="ruby-identifier">method_name</span>, <span class="ruby-value">:deprecation</span>) <span class="ruby-keyword">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">target</span>, <span class="ruby-identifier">punctuation</span><span class="ruby-operator">|</span>
+      <span class="ruby-identifier">target_module</span>.<span class="ruby-identifier">module_eval</span>(<span class="ruby-string">            def #{target}_with_deprecation#{punctuation}(*args, &amp;block)              ::ActiveSupport::Deprecation.warn(                ::ActiveSupport::Deprecation.deprecated_method_warning(                  :#{method_name},                  #{options[method_name].inspect}),                caller              )              send(:#{target}_without_deprecation#{punctuation}, *args, &amp;block)            end</span>, <span class="ruby-keyword">__FILE__</span>, <span class="ruby-keyword">__LINE__</span> <span class="ruby-operator">+</span> <span class="ruby-value">1</span>)
+    <span class="ruby-keyword">end</span>
+  <span class="ruby-keyword">end</span>
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+          
+      <div class="method">
+        <div class="title">
+                      <a name="method-c-deprecated_method_warning"></a>
+            <b>deprecated_method_warning</b>(method_name, message = nil)          
+        </div>
+
+                  <div class="description">
+                      </div>
+        
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('deprecated_method_warning_source')"
+                 id="l_method-c-deprecated_method_warning_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="deprecated_method_warning_source">
+<pre>
+  <span class="ruby-comment"># File activesupport/lib/active_support/deprecation/reporting.rb, line 21</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">deprecated_method_warning</span>(<span class="ruby-identifier">method_name</span>, <span class="ruby-identifier">message</span> = <span class="ruby-keyword">nil</span>)
+  <span class="ruby-identifier">warning</span> = <span class="ruby-node">&quot;#{method_name} is deprecated and will be removed from Rails #{deprecation_horizon}&quot;</span>
+  <span class="ruby-keyword">case</span> <span class="ruby-identifier">message</span>
+    <span class="ruby-keyword">when</span> <span class="ruby-constant">Symbol</span> <span class="ruby-keyword">then</span> <span class="ruby-node">&quot;#{warning} (use #{message} instead)&quot;</span>
+    <span class="ruby-keyword">when</span> <span class="ruby-constant">String</span> <span class="ruby-keyword">then</span> <span class="ruby-node">&quot;#{warning} (#{message})&quot;</span>
+    <span class="ruby-keyword">else</span> <span class="ruby-identifier">warning</span>
+  <span class="ruby-keyword">end</span>
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+          
+      <div class="method">
+        <div class="title">
+                      <a name="method-c-silence"></a>
+            <b>silence</b>()          
+        </div>
+
+                  <div class="description">
+            <p>Silence deprecation warnings within the block.</p>          </div>
+        
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('silence_source')"
+                 id="l_method-c-silence_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="silence_source">
+<pre>
+  <span class="ruby-comment"># File activesupport/lib/active_support/deprecation/reporting.rb, line 14</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">silence</span>
+  <span class="ruby-identifier">old_silenced</span>, <span class="ruby-ivar">@silenced</span> = <span class="ruby-ivar">@silenced</span>, <span class="ruby-keyword">true</span>
+  <span class="ruby-keyword">yield</span>
+<span class="ruby-keyword">ensure</span>
+  <span class="ruby-ivar">@silenced</span> = <span class="ruby-identifier">old_silenced</span>
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+          
+      <div class="method">
+        <div class="title">
+                      <a name="method-c-warn"></a>
+            <b>warn</b>(message = nil, callstack = caller)          
+        </div>
+
+                  <div class="description">
+                      </div>
+        
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('warn_source')"
+                 id="l_method-c-warn_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="warn_source">
+<pre>
+  <span class="ruby-comment"># File activesupport/lib/active_support/deprecation/reporting.rb, line 6</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">warn</span>(<span class="ruby-identifier">message</span> = <span class="ruby-keyword">nil</span>, <span class="ruby-identifier">callstack</span> = <span class="ruby-identifier">caller</span>)
+  <span class="ruby-keyword">return</span> <span class="ruby-keyword">if</span> <span class="ruby-identifier">silenced</span>
+  <span class="ruby-identifier">deprecation_message</span>(<span class="ruby-identifier">callstack</span>, <span class="ruby-identifier">message</span>).<span class="ruby-identifier">tap</span> <span class="ruby-keyword">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">m</span><span class="ruby-operator">|</span>
+    <span class="ruby-identifier">behavior</span>.<span class="ruby-identifier">each</span> { <span class="ruby-operator">|</span><span class="ruby-identifier">b</span><span class="ruby-operator">|</span> <span class="ruby-identifier">b</span>.<span class="ruby-identifier">call</span>(<span class="ruby-identifier">m</span>, <span class="ruby-identifier">callstack</span>) }
+  <span class="ruby-keyword">end</span>
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+                              </div>
+  </div>
+  </body>
+</html>

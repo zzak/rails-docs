@@ -1,0 +1,74 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>6 Booleans</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v6.1.7.3/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="booleans"><a class="anchorlink" href="#booleans">6 Booleans</a></h3>
+<p>In predicates and flags prefer documenting boolean semantics over exact values.</p>
+
+<p>When "true" or "false" are used as defined in Ruby use regular font. The
+singletons <code>true</code> and <code>false</code> need fixed-width font. Please avoid terms like
+"truthy", Ruby defines what is true and false in the language, and thus those
+words have a technical meaning and need no substitutes.</p>
+
+<p>As a rule of thumb, do not document singletons unless absolutely necessary. That
+prevents artificial constructs like <code>!!</code> or ternaries, allows refactors, and the
+code does not need to rely on the exact values returned by methods being called
+in the implementation.</p>
+
+<p>For example:</p>
+
+<div class="code_container">
+<pre><code class="highlight markdown"><span class="sb">`config.action_mailer.perform_deliveries`</span> specifies whether mail will actually be delivered and is true by default
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-1fe6d14799ba486c30041b56745e2f2b">`config.action_mailer.perform_deliveries` specifies whether mail will actually be delivered and is true by default
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-1fe6d14799ba486c30041b56745e2f2b">Copy</button>
+</div>
+<p>the user does not need to know which is the actual default value of the flag,
+and so we only document its boolean semantics.</p>
+
+<p>An example with a predicate:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="c1"># Returns true if the collection is empty.</span>
+<span class="c1">#</span>
+<span class="c1"># If the collection has been loaded</span>
+<span class="c1"># it is equivalent to &lt;tt&gt;collection.size.zero?&lt;/tt&gt;. If the</span>
+<span class="c1"># collection has not been loaded, it is equivalent to</span>
+<span class="c1"># &lt;tt&gt;!collection.exists?&lt;/tt&gt;. If the collection has not already been</span>
+<span class="c1"># loaded and you are going to fetch the records anyway it is better to</span>
+<span class="c1"># check &lt;tt&gt;collection.length.zero?&lt;/tt&gt;.</span>
+<span class="k">def</span> <span class="nf">empty?</span>
+  <span class="k">if</span> <span class="n">loaded?</span>
+    <span class="n">size</span><span class="p">.</span><span class="nf">zero?</span>
+  <span class="k">else</span>
+    <span class="vi">@target</span><span class="p">.</span><span class="nf">blank?</span> <span class="o">&amp;&amp;</span> <span class="o">!</span><span class="n">scope</span><span class="p">.</span><span class="nf">exists?</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-78235d31808119fc47bb6555304495d2"># Returns true if the collection is empty.
+#
+# If the collection has been loaded
+# it is equivalent to &lt;tt&gt;collection.size.zero?&lt;/tt&gt;. If the
+# collection has not been loaded, it is equivalent to
+# &lt;tt&gt;!collection.exists?&lt;/tt&gt;. If the collection has not already been
+# loaded and you are going to fetch the records anyway it is better to
+# check &lt;tt&gt;collection.length.zero?&lt;/tt&gt;.
+def empty?
+  if loaded?
+    size.zero?
+  else
+    @target.blank? &amp;&amp; !scope.exists?
+  end
+end
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-78235d31808119fc47bb6555304495d2">Copy</button>
+</div>
+<p>The API is careful not to commit to any particular value, the method has
+predicate semantics, that's enough.</p>
+</body>
+</html>

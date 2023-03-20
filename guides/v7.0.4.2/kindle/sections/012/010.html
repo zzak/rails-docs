@@ -1,0 +1,28 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>11 Using Tag Helpers Without a Form Builder</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v7.0.4.2/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="using-tag-helpers-without-a-form-builder"><a class="anchorlink" href="#using-tag-helpers-without-a-form-builder">11 Using Tag Helpers Without a Form Builder</a></h3>
+<p>In case you need to render form fields outside of the context of a form builder, Rails provides tag helpers for common form elements. For example, <a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActionView/Helpers/FormTagHelper.html#method-i-check_box_tag"><code>check_box_tag</code></a>:</p>
+
+<div class="code_container">
+<pre><code class="highlight erb"><span class="cp">&lt;%=</span> <span class="n">check_box_tag</span> <span class="s2">"accept"</span> <span class="cp">%&gt;</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='&lt;%= check_box_tag "accept" %&gt;
+'>Copy</button>
+</div>
+<p>Output:</p>
+
+<div class="code_container">
+<pre><code class="highlight html"><span class="nt">&lt;input</span> <span class="na">type=</span><span class="s">"checkbox"</span> <span class="na">name=</span><span class="s">"accept"</span> <span class="na">id=</span><span class="s">"accept"</span> <span class="na">value=</span><span class="s">"1"</span> <span class="nt">/&gt;</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='&lt;input type="checkbox" name="accept" id="accept" value="1" /&gt;
+'>Copy</button>
+</div>
+<p>Generally, these helpers have the same name as their form builder counterparts plus a <code>_tag</code> suffix.  For a complete list, see the <a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActionView/Helpers/FormTagHelper.html"><code>FormTagHelper</code> API documentation</a>.</p>
+</body>
+</html>

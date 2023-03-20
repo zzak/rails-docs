@@ -1,0 +1,93 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>4 Full Text Search</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v7.0.4.2/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="full-text-search"><a class="anchorlink" href="#full-text-search">4 Full Text Search</a></h3>
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="c1"># db/migrate/20131220144913_create_documents.rb</span>
+<span class="n">create_table</span> <span class="ss">:documents</span> <span class="k">do</span> <span class="o">|</span><span class="n">t</span><span class="o">|</span>
+  <span class="n">t</span><span class="p">.</span><span class="nf">string</span> <span class="ss">:title</span>
+  <span class="n">t</span><span class="p">.</span><span class="nf">string</span> <span class="ss">:body</span>
+<span class="k">end</span>
+
+<span class="n">add_index</span> <span class="ss">:documents</span><span class="p">,</span> <span class="s2">"to_tsvector('english', title || ' ' || body)"</span><span class="p">,</span> <span class="ss">using: :gin</span><span class="p">,</span> <span class="ss">name: </span><span class="s1">'documents_idx'</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="# db/migrate/20131220144913_create_documents.rb
+create_table :documents do |t|
+  t.string :title
+  t.string :body
+end
+
+add_index :documents, &quot;to_tsvector('english', title || ' ' || body)&quot;, using: :gin, name: 'documents_idx'
+">Copy</button>
+</div>
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="c1"># app/models/document.rb</span>
+<span class="k">class</span> <span class="nc">Document</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="# app/models/document.rb
+class Document &lt; ApplicationRecord
+end
+">Copy</button>
+</div>
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="c1"># Usage</span>
+<span class="no">Document</span><span class="p">.</span><span class="nf">create</span><span class="p">(</span><span class="ss">title: </span><span class="s2">"Cats and Dogs"</span><span class="p">,</span> <span class="ss">body: </span><span class="s2">"are nice!"</span><span class="p">)</span>
+
+<span class="c1">## all documents matching 'cat &amp; dog'</span>
+<span class="no">Document</span><span class="p">.</span><span class="nf">where</span><span class="p">(</span><span class="s2">"to_tsvector('english', title || ' ' || body) @@ to_tsquery(?)"</span><span class="p">,</span>
+                 <span class="s2">"cat &amp; dog"</span><span class="p">)</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="# Usage
+Document.create(title: &quot;Cats and Dogs&quot;, body: &quot;are nice!&quot;)
+
+## all documents matching 'cat &amp; dog'
+Document.where(&quot;to_tsvector('english', title || ' ' || body) @@ to_tsquery(?)&quot;,
+                 &quot;cat &amp; dog&quot;)
+">Copy</button>
+</div>
+<p>Optionally, you can store the vector as automatically generated column (from PostgreSQL 12.0):</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="c1"># db/migrate/20131220144913_create_documents.rb</span>
+<span class="n">create_table</span> <span class="ss">:documents</span> <span class="k">do</span> <span class="o">|</span><span class="n">t</span><span class="o">|</span>
+  <span class="n">t</span><span class="p">.</span><span class="nf">string</span> <span class="ss">:title</span>
+  <span class="n">t</span><span class="p">.</span><span class="nf">string</span> <span class="ss">:body</span>
+
+  <span class="n">t</span><span class="p">.</span><span class="nf">virtual</span> <span class="ss">:textsearchable_index_col</span><span class="p">,</span>
+            <span class="ss">type: :tsvector</span><span class="p">,</span> <span class="ss">as: </span><span class="s2">"to_tsvector('english', title || ' ' || body)"</span><span class="p">,</span> <span class="ss">stored: </span><span class="kp">true</span>
+<span class="k">end</span>
+
+<span class="n">add_index</span> <span class="ss">:documents</span><span class="p">,</span> <span class="ss">:textsearchable_index_col</span><span class="p">,</span> <span class="ss">using: :gin</span><span class="p">,</span> <span class="ss">name: </span><span class="s1">'documents_idx'</span>
+
+<span class="c1"># Usage</span>
+<span class="no">Document</span><span class="p">.</span><span class="nf">create</span><span class="p">(</span><span class="ss">title: </span><span class="s2">"Cats and Dogs"</span><span class="p">,</span> <span class="ss">body: </span><span class="s2">"are nice!"</span><span class="p">)</span>
+
+<span class="c1">## all documents matching 'cat &amp; dog'</span>
+<span class="no">Document</span><span class="p">.</span><span class="nf">where</span><span class="p">(</span><span class="s2">"textsearchable_index_col @@ to_tsquery(?)"</span><span class="p">,</span> <span class="s2">"cat &amp; dog"</span><span class="p">)</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="# db/migrate/20131220144913_create_documents.rb
+create_table :documents do |t|
+  t.string :title
+  t.string :body
+
+  t.virtual :textsearchable_index_col,
+            type: :tsvector, as: &quot;to_tsvector('english', title || ' ' || body)&quot;, stored: true
+end
+
+add_index :documents, :textsearchable_index_col, using: :gin, name: 'documents_idx'
+
+# Usage
+Document.create(title: &quot;Cats and Dogs&quot;, body: &quot;are nice!&quot;)
+
+## all documents matching 'cat &amp; dog'
+Document.where(&quot;textsearchable_index_col @@ to_tsquery(?)&quot;, &quot;cat &amp; dog&quot;)
+">Copy</button>
+</div>
+</body>
+</html>

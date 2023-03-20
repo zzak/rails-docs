@@ -1,0 +1,195 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>4 Choosing Middleware</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v5.2.8.1/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="choosing-middleware"><a class="anchorlink" href="#choosing-middleware">4 Choosing Middleware</a></h3>
+<p>An API application comes with the following middleware by default:</p>
+<ul>
+<li><code>Rack::Sendfile</code></li>
+<li><code>ActionDispatch::Static</code></li>
+<li><code>ActionDispatch::Executor</code></li>
+<li><code>ActiveSupport::Cache::Strategy::LocalCache::Middleware</code></li>
+<li><code>Rack::Runtime</code></li>
+<li><code>ActionDispatch::RequestId</code></li>
+<li><code>ActionDispatch::RemoteIp</code></li>
+<li><code>Rails::Rack::Logger</code></li>
+<li><code>ActionDispatch::ShowExceptions</code></li>
+<li><code>ActionDispatch::DebugExceptions</code></li>
+<li><code>ActionDispatch::Reloader</code></li>
+<li><code>ActionDispatch::Callbacks</code></li>
+<li><code>ActiveRecord::Migration::CheckPending</code></li>
+<li><code>Rack::Head</code></li>
+<li><code>Rack::ConditionalGet</code></li>
+<li><code>Rack::ETag</code></li>
+</ul>
+<p>See the <a href="rails_on_rack.html#internal-middleware-stack">internal middleware</a>
+section of the Rack guide for further information on them.</p>
+
+<p>Other plugins, including Active Record, may add additional middleware. In
+general, these middleware are agnostic to the type of application you are
+building, and make sense in an API-only Rails application.</p>
+
+<p>You can get a list of all middleware in your application via:</p>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+$ rails middleware
+
+</pre>
+</div>
+<h4 id="using-the-cache-middleware"><a class="anchorlink" href="#using-the-cache-middleware">4.1 Using the Cache Middleware</a></h4>
+
+<p>By default, Rails will add a middleware that provides a cache store based on
+the configuration of your application (memcache by default). This means that
+the built-in HTTP cache will rely on it.</p>
+
+<p>For instance, using the <code>stale?</code> method:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+def show
+  @post = Post.find(params[:id])
+
+  if stale?(last_modified: @post.updated_at)
+    render json: @post
+  end
+end
+
+</pre>
+</div>
+<p>The call to <code>stale?</code> will compare the <code>If-Modified-Since</code> header in the request
+with <code>@post.updated_at</code>. If the header is newer than the last modified, this
+action will return a "304 Not Modified" response. Otherwise, it will render the
+response and include a <code>Last-Modified</code> header in it.</p>
+
+<p>Normally, this mechanism is used on a per-client basis. The cache middleware
+allows us to share this caching mechanism across clients. We can enable
+cross-client caching in the call to <code>stale?</code>:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+def show
+  @post = Post.find(params[:id])
+
+  if stale?(last_modified: @post.updated_at, public: true)
+    render json: @post
+  end
+end
+
+</pre>
+</div>
+<p>This means that the cache middleware will store off the <code>Last-Modified</code> value
+for a URL in the Rails cache, and add an <code>If-Modified-Since</code> header to any
+subsequent inbound requests for the same URL.</p>
+
+<p>Think of it as page caching using HTTP semantics.</p>
+
+<h4 id="using-rack-sendfile"><a class="anchorlink" href="#using-rack-sendfile">4.2 Using Rack::Sendfile</a></h4>
+
+<p>When you use the <code>send_file</code> method inside a Rails controller, it sets the
+<code>X-Sendfile</code> header. <code>Rack::Sendfile</code> is responsible for actually sending the
+file.</p>
+
+<p>If your front-end server supports accelerated file sending, <code>Rack::Sendfile</code>
+will offload the actual file sending work to the front-end server.</p>
+
+<p>You can configure the name of the header that your front-end server uses for
+this purpose using <code>config.action_dispatch.x_sendfile_header</code> in the appropriate
+environment's configuration file.</p>
+
+<p>You can learn more about how to use <code>Rack::Sendfile</code> with popular
+front-ends in <a href="http://rubydoc.info/github/rack/rack/master/Rack/Sendfile">the Rack::Sendfile
+documentation</a>.</p>
+
+<p>Here are some values for this header for some popular servers, once these servers are configured to support
+accelerated file sending:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+# Apache and lighttpd
+config.action_dispatch.x_sendfile_header = "X-Sendfile"
+
+# Nginx
+config.action_dispatch.x_sendfile_header = "X-Accel-Redirect"
+
+</pre>
+</div>
+<p>Make sure to configure your server to support these options following the
+instructions in the <code>Rack::Sendfile</code> documentation.</p>
+
+<h4 id="using-actiondispatch-request"><a class="anchorlink" href="#using-actiondispatch-request">4.3 Using ActionDispatch::Request</a></h4>
+
+<p><code>ActionDispatch::Request#params</code> will take parameters from the client in the JSON
+format and make them available in your controller inside <code>params</code>.</p>
+
+<p>To use this, your client will need to make a request with JSON-encoded parameters
+and specify the <code>Content-Type</code> as <code>application/json</code>.</p>
+
+<p>Here's an example in jQuery:</p>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+jQuery.ajax({
+  type: 'POST',
+  url: '/people',
+  dataType: 'json',
+  contentType: 'application/json',
+  data: JSON.stringify({ person: { firstName: "Yehuda", lastName: "Katz" } }),
+  success: function(json) { }
+});
+
+</pre>
+</div>
+<p><code>ActionDispatch::Request</code> will see the <code>Content-Type</code> and your parameters
+will be:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+{ :person =&gt; { :firstName =&gt; "Yehuda", :lastName =&gt; "Katz" } }
+
+</pre>
+</div>
+<h4 id="other-middleware"><a class="anchorlink" href="#other-middleware">4.4 Other Middleware</a></h4>
+
+<p>Rails ships with a number of other middleware that you might want to use in an
+API application, especially if one of your API clients is the browser:</p>
+<ul>
+<li><code>Rack::MethodOverride</code></li>
+<li><code>ActionDispatch::Cookies</code></li>
+<li><code>ActionDispatch::Flash</code></li>
+<li>For session management
+
+<ul>
+<li><code>ActionDispatch::Session::CacheStore</code></li>
+<li><code>ActionDispatch::Session::CookieStore</code></li>
+<li><code>ActionDispatch::Session::MemCacheStore</code></li>
+</ul>
+</li>
+</ul>
+<p>Any of these middleware can be added via:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+config.middleware.use Rack::MethodOverride
+
+</pre>
+</div>
+<h4 id="removing-middleware"><a class="anchorlink" href="#removing-middleware">4.5 Removing Middleware</a></h4>
+
+<p>If you don't want to use a middleware that is included by default in the API-only
+middleware set, you can remove it with:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+config.middleware.delete ::Rack::Sendfile
+
+</pre>
+</div>
+<p>Keep in mind that removing these middlewares will remove support for certain
+features in Action Controller.</p>
+</body>
+</html>

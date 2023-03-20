@@ -1,0 +1,59 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>1 Application Architecture</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v7.0.4.2/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="application-architecture"><a class="anchorlink" href="#application-architecture">1 Application Architecture</a></h3>
+<p>There are two major changes in the architecture of Rails applications: complete integration of the <a href="https://rack.github.io/">Rack</a> modular web server interface, and renewed support for Rails Engines.</p>
+
+<h4 id="rack-integration"><a class="anchorlink" href="#rack-integration">1.1 Rack Integration</a></h4>
+
+<p>Rails has now broken with its CGI past, and uses Rack everywhere. This required and resulted in a tremendous number of internal changes (but if you use CGI, don't worry; Rails now supports CGI through a proxy interface). Still, this is a major change to Rails internals. After upgrading to 2.3, you should test on your local environment and your production environment. Some things to test:</p>
+<ul>
+<li>Sessions</li>
+<li>Cookies</li>
+<li>File uploads</li>
+<li>JSON/XML APIs</li>
+</ul>
+<p>Here's a summary of the rack-related changes:</p>
+<ul>
+<li>
+<code>script/server</code> has been switched to use Rack, which means it supports any Rack compatible server. <code>script/server</code> will also pick up a rackup configuration file if one exists. By default, it will look for a <code>config.ru</code> file, but you can override this with the <code>-c</code> switch.</li>
+<li>The FCGI handler goes through Rack.</li>
+<li>
+<code>ActionController::Dispatcher</code> maintains its own default middleware stack. Middlewares can be injected in, reordered, and removed. The stack is compiled into a chain on boot. You can configure the middleware stack in <code>environment.rb</code>.</li>
+<li>The <code>rake middleware</code> task has been added to inspect the middleware stack. This is useful for debugging the order of the middleware stack.</li>
+<li>The integration test runner has been modified to execute the entire middleware and application stack. This makes integration tests perfect for testing Rack middleware.</li>
+<li>
+<code>ActionController::CGIHandler</code> is a backwards compatible CGI wrapper around Rack. The <code>CGIHandler</code> is meant to take an old CGI object and convert its environment information into a Rack compatible form.</li>
+<li>
+<code>CgiRequest</code> and <code>CgiResponse</code> have been removed.</li>
+<li>Session stores are now lazy loaded. If you never access the session object during a request, it will never attempt to load the session data (parse the cookie, load the data from memcache, or lookup an Active Record object).</li>
+<li>You no longer need to use <code>CGI::Cookie.new</code> in your tests for setting a cookie value. Assigning a <code>String</code> value to request.cookies["foo"] now sets the cookie as expected.</li>
+<li>
+<code>CGI::Session::CookieStore</code> has been replaced by <code>ActionController::Session::CookieStore</code>.</li>
+<li>
+<code>CGI::Session::MemCacheStore</code> has been replaced by <code>ActionController::Session::MemCacheStore</code>.</li>
+<li>
+<code>CGI::Session::ActiveRecordStore</code> has been replaced by <code>ActiveRecord::SessionStore</code>.</li>
+<li>You can still change your session store with <code>ActionController::Base.session_store = :active_record_store</code>.</li>
+<li>Default sessions options are still set with <code>ActionController::Base.session = { :key =&gt; "..." }</code>. However, the <code>:session_domain</code> option has been renamed to <code>:domain</code>.</li>
+<li>The mutex that normally wraps your entire request has been moved into middleware, <code>ActionController::Lock</code>.</li>
+<li>
+<code>ActionController::AbstractRequest</code> and <code>ActionController::Request</code> have been unified. The new <code>ActionController::Request</code> inherits from <code>Rack::Request</code>. This affects access to <code>response.headers['type']</code> in test requests. Use <code>response.content_type</code> instead.</li>
+<li>
+<code>ActiveRecord::QueryCache</code> middleware is automatically inserted onto the middleware stack if <code>ActiveRecord</code> has been loaded. This middleware sets up and flushes the per-request Active Record query cache.</li>
+<li>The Rails router and controller classes follow the Rack spec. You can call a controller directly with <code>SomeController.call(env)</code>. The router stores the routing parameters in <code>rack.routing_args</code>.</li>
+<li>
+<code>ActionController::Request</code> inherits from <code>Rack::Request</code>.</li>
+<li>Instead of <code>config.action_controller.session = { :session_key =&gt; 'foo', ...</code> use <code>config.action_controller.session = { :key =&gt; 'foo', ...</code>.</li>
+<li>Using the <code>ParamsParser</code> middleware preprocesses any XML, JSON, or YAML requests so they can be read normally with any <code>Rack::Request</code> object after it.</li>
+</ul>
+<h4 id="renewed-support-for-rails-engines"><a class="anchorlink" href="#renewed-support-for-rails-engines">1.2 Renewed Support for Rails Engines</a></h4>
+
+<p>After some versions without an upgrade, Rails 2.3 offers some new features for Rails Engines (Rails applications that can be embedded within other applications). First, routing files in engines are automatically loaded and reloaded now, just like your <code>routes.rb</code> file (this also applies to routing files in other plugins). Second, if your plugin has an app folder, then app/[models|controllers|helpers] will automatically be added to the Rails load path. Engines also support adding view paths now, and Action Mailer as well as Action View will use views from engines and other plugins.</p>
+</body>
+</html>

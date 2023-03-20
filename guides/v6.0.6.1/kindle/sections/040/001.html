@@ -1,0 +1,298 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>2 Generating an engine</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v6.0.6.1/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="generating-an-engine"><a class="anchorlink" href="#generating-an-engine">2 Generating an engine</a></h3>
+<p>To generate an engine, you will need to run the plugin generator and pass it
+options as appropriate to the need. For the "blorgh" example, you will need to
+create a "mountable" engine, running this command in a terminal:</p>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+$ rails plugin new blorgh --mountable
+
+</pre>
+</div>
+<p>The full list of options for the plugin generator may be seen by typing:</p>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+$ rails plugin --help
+
+</pre>
+</div>
+<p>The <code>--mountable</code> option tells the generator that you want to create a
+"mountable" and namespace-isolated engine. This generator will provide the same
+skeleton structure as would the <code>--full</code> option. The <code>--full</code> option tells the
+generator that you want to create an engine, including a skeleton structure
+that provides the following:</p>
+<ul>
+<li>An <code>app</code> directory tree</li>
+<li>
+A <code>config/routes.rb</code> file:
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+Rails.application.routes.draw do
+end
+
+</pre>
+</div>
+</li>
+<li>
+A file at <code>lib/blorgh/engine.rb</code>, which is identical in function to a
+standard Rails application's <code>config/application.rb</code> file:
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+module Blorgh
+  class Engine &lt; ::Rails::Engine
+  end
+end
+
+</pre>
+</div>
+</li>
+</ul>
+<p>The <code>--mountable</code> option will add to the <code>--full</code> option:</p>
+<ul>
+<li>Asset manifest files (<code>application.js</code> and <code>application.css</code>)</li>
+<li>A namespaced <code>ApplicationController</code> stub</li>
+<li>A namespaced <code>ApplicationHelper</code> stub</li>
+<li>A layout view template for the engine</li>
+<li>
+Namespace isolation to <code>config/routes.rb</code>:
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+Blorgh::Engine.routes.draw do
+end
+
+</pre>
+</div>
+</li>
+<li>
+Namespace isolation to <code>lib/blorgh/engine.rb</code>:
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+module Blorgh
+  class Engine &lt; ::Rails::Engine
+    isolate_namespace Blorgh
+  end
+end
+
+</pre>
+</div>
+</li>
+</ul>
+<p>Additionally, the <code>--mountable</code> option tells the generator to mount the engine
+inside the dummy testing application located at <code>test/dummy</code> by adding the
+following to the dummy application's routes file at
+<code>test/dummy/config/routes.rb</code>:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+mount Blorgh::Engine =&gt; "/blorgh"
+
+</pre>
+</div>
+<h4 id="inside-an-engine"><a class="anchorlink" href="#inside-an-engine">2.1 Inside an Engine</a></h4>
+
+<h5 id="critical-files"><a class="anchorlink" href="#critical-files">2.1.1 Critical Files</a></h5>
+
+<p>At the root of this brand new engine's directory lives a <code>blorgh.gemspec</code> file.
+When you include the engine into an application later on, you will do so with
+this line in the Rails application's <code>Gemfile</code>:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+gem 'blorgh', path: 'engines/blorgh'
+
+</pre>
+</div>
+<p>Don't forget to run <code>bundle install</code> as usual. By specifying it as a gem within
+the <code>Gemfile</code>, Bundler will load it as such, parsing this <code>blorgh.gemspec</code> file
+and requiring a file within the <code>lib</code> directory called <code>lib/blorgh.rb</code>. This
+file requires the <code>blorgh/engine.rb</code> file (located at <code>lib/blorgh/engine.rb</code>)
+and defines a base module called <code>Blorgh</code>.</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+require "blorgh/engine"
+
+module Blorgh
+end
+
+</pre>
+</div>
+<div class="info"><p>Some engines choose to use this file to put global configuration options
+for their engine. It's a relatively good idea, so if you want to offer
+configuration options, the file where your engine's <code>module</code> is defined is
+perfect for that. Place the methods inside the module and you'll be good to go.</p></div>
+
+<p>Within <code>lib/blorgh/engine.rb</code> is the base class for the engine:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+module Blorgh
+  class Engine &lt; ::Rails::Engine
+    isolate_namespace Blorgh
+  end
+end
+
+</pre>
+</div>
+<p>By inheriting from the <code>Rails::Engine</code> class, this gem notifies Rails that
+there's an engine at the specified path, and will correctly mount the engine
+inside the application, performing tasks such as adding the <code>app</code> directory of
+the engine to the load path for models, mailers, controllers, and views.</p>
+
+<p>The <code>isolate_namespace</code> method here deserves special notice. This call is
+responsible for isolating the controllers, models, routes, and other things into
+their own namespace, away from similar components inside the application.
+Without this, there is a possibility that the engine's components could "leak"
+into the application, causing unwanted disruption, or that important engine
+components could be overridden by similarly named things within the application.
+One of the examples of such conflicts is helpers. Without calling
+<code>isolate_namespace</code>, the engine's helpers would be included in an application's
+controllers.</p>
+
+<div class="note"><p>It is <strong>highly</strong> recommended that the <code>isolate_namespace</code> line be left
+within the <code>Engine</code> class definition. Without it, classes generated in an engine
+<strong>may</strong> conflict with an application.</p></div>
+
+<p>What this isolation of the namespace means is that a model generated by a call
+to <code>rails g model</code>, such as <code>rails g model article</code>, won't be called <code>Article</code>, but
+instead be namespaced and called <code>Blorgh::Article</code>. In addition, the table for the
+model is namespaced, becoming <code>blorgh_articles</code>, rather than simply <code>articles</code>.
+Similar to the model namespacing, a controller called <code>ArticlesController</code> becomes
+<code>Blorgh::ArticlesController</code> and the views for that controller will not be at
+<code>app/views/articles</code>, but <code>app/views/blorgh/articles</code> instead. Mailers are namespaced
+as well.</p>
+
+<p>Finally, routes will also be isolated within the engine. This is one of the most
+important parts about namespacing, and is discussed later in the
+<a href="#routes">Routes</a> section of this guide.</p>
+
+<h5 id="app-directory"><a class="anchorlink" href="#app-directory">2.1.2 <code>app</code> Directory</a></h5>
+
+<p>Inside the <code>app</code> directory are the standard <code>assets</code>, <code>controllers</code>, <code>helpers</code>,
+<code>jobs</code>, <code>mailers</code>, <code>models</code>, and <code>views</code> directories that you should be familiar with
+from an application. We'll look more into models in a future section, when we're writing the engine.</p>
+
+<p>Within the <code>app/assets</code> directory, there are the <code>images</code>, <code>javascripts</code> and
+<code>stylesheets</code> directories which, again, you should be familiar with due to their
+similarity to an application. One difference here, however, is that each
+directory contains a sub-directory with the engine name. Because this engine is
+going to be namespaced, its assets should be too.</p>
+
+<p>Within the <code>app/controllers</code> directory there is a <code>blorgh</code> directory that
+contains a file called <code>application_controller.rb</code>. This file will provide any
+common functionality for the controllers of the engine. The <code>blorgh</code> directory
+is where the other controllers for the engine will go. By placing them within
+this namespaced directory, you prevent them from possibly clashing with
+identically-named controllers within other engines or even within the
+application.</p>
+
+<div class="note"><p>The <code>ApplicationController</code> class inside an engine is named just like a
+Rails application in order to make it easier for you to convert your
+applications into engines.</p></div>
+
+<div class="note"><p>Because of the way that Ruby does constant lookup you may run into a situation
+where your engine controller is inheriting from the main application controller and
+not your engine's application controller. Ruby is able to resolve the <code>ApplicationController</code> constant, and therefore the autoloading mechanism is not triggered. See the section <a href="autoloading_and_reloading_constants.html#when-constants-aren-t-missed">When Constants Aren't Missed</a> of the <a href="autoloading_and_reloading_constants.html">Autoloading and Reloading Constants</a> guide for further details. The best way to prevent this from
+happening is to use <code>require_dependency</code> to ensure that the engine's application
+controller is loaded. For example:</p></div>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+# app/controllers/blorgh/articles_controller.rb:
+require_dependency "blorgh/application_controller"
+
+module Blorgh
+  class ArticlesController &lt; ApplicationController
+    ...
+  end
+end
+
+</pre>
+</div>
+<div class="warning"><p>Don't use <code>require</code> because it will break the automatic reloading of classes
+in the development environment - using <code>require_dependency</code> ensures that classes are
+loaded and unloaded in the correct manner.</p></div>
+
+<p>Within the <code>app/helpers</code> directory there is a <code>blorgh</code> directory that
+contains a file called <code>application_helper.rb</code>. This file will provide any
+common functionality for the helpers of the engine. The <code>blorgh</code> directory
+is where the other helpers for the engine will go. By placing them within
+this namespaced directory, you prevent them from possibly clashing with
+identically-named route helpers within other engines or even within the
+application.</p>
+
+<p>Within the <code>app/jobs</code> directory there is a <code>blorgh</code> directory that
+contains a file called <code>application_job.rb</code>. This file will provide any
+common functionality for the jobs of the engine. The <code>blorgh</code> directory
+is where the other jobs for the engine will go. By placing them within
+this namespaced directory, you prevent them from possibly clashing with
+identically-named jobs within other engines or even within the
+application.</p>
+
+<p>Within the <code>app/mailers</code> directory there is a <code>blorgh</code> directory that
+contains a file called <code>application_mailer.rb</code>. This file will provide any
+common functionality for the mailers of the engine. The <code>blorgh</code> directory
+is where the other mailers for the engine will go. By placing them within
+this namespaced directory, you prevent them from possibly clashing with
+identically-named mailers within other engines or even within the
+application.</p>
+
+<p>Lastly, the <code>app/views</code> directory contains a <code>layouts</code> folder, which contains a
+file at <code>blorgh/application.html.erb</code>. This file allows you to specify a layout
+for the engine. If this engine is to be used as a stand-alone engine, then you
+would add any customization to its layout in this file, rather than the
+application's <code>app/views/layouts/application.html.erb</code> file.</p>
+
+<p>If you don't want to force a layout on to users of the engine, then you can
+delete this file and reference a different layout in the controllers of your
+engine.</p>
+
+<h5 id="bin-directory"><a class="anchorlink" href="#bin-directory">2.1.3 <code>bin</code> Directory</a></h5>
+
+<p>This directory contains one file, <code>bin/rails</code>, which enables you to use the
+<code>rails</code> sub-commands and generators just like you would within an application.
+This means that you will be able to generate new controllers and models for this
+engine very easily by running commands like this:</p>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+$ bin/rails g model
+
+</pre>
+</div>
+<p>Keep in mind, of course, that anything generated with these commands inside of
+an engine that has <code>isolate_namespace</code> in the <code>Engine</code> class will be namespaced.</p>
+
+<h5 id="test-directory"><a class="anchorlink" href="#test-directory">2.1.4 <code>test</code> Directory</a></h5>
+
+<p>The <code>test</code> directory is where tests for the engine will go. To test the engine,
+there is a cut-down version of a Rails application embedded within it at
+<code>test/dummy</code>. This application will mount the engine in the
+<code>test/dummy/config/routes.rb</code> file:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+Rails.application.routes.draw do
+  mount Blorgh::Engine =&gt; "/blorgh"
+end
+
+</pre>
+</div>
+<p>This line mounts the engine at the path <code>/blorgh</code>, which will make it accessible
+through the application only at that path.</p>
+
+<p>Inside the test directory there is the <code>test/integration</code> directory, where
+integration tests for the engine should be placed. Other directories can be
+created in the <code>test</code> directory as well. For example, you may wish to create a
+<code>test/models</code> directory for your model tests.</p>
+</body>
+</html>

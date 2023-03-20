@@ -1,0 +1,40 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>10 Transaction Callbacks</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v4.0.13/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="transaction-callbacks">10 Transaction Callbacks</h3>
+<p>There are two additional callbacks that are triggered by the completion of a database transaction: <code>after_commit</code> and <code>after_rollback</code>. These callbacks are very similar to the <code>after_save</code> callback except that they don't execute until after database changes have either been committed or rolled back. They are most useful when your active record models need to interact with external systems which are not part of the database transaction.</p>
+<p>Consider, for example, the previous example where the <code>PictureFile</code> model needs to delete a file after the corresponding record is destroyed. If anything raises an exception after the <code>after_destroy</code> callback is called and the transaction rolls back, the file will have been deleted and the model will be left in an inconsistent state. For example, suppose that <code>picture_file_2</code> in the code below is not valid and the <code>save!</code> method raises an error.</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+PictureFile.transaction do
+  picture_file_1.destroy
+  picture_file_2.save!
+end
+
+</pre>
+</div>
+<p>By using the <code>after_commit</code> callback we can account for this case.</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class PictureFile &lt; ActiveRecord::Base
+  after_commit :delete_picture_file_from_disk, :on =&gt; [:destroy]
+
+  def delete_picture_file_from_disk
+    if File.exist?(filepath)
+      File.delete(filepath)
+    end
+  end
+end
+
+</pre>
+</div>
+<div class="note"><p>the <code>:on</code> option specifies when a callback will be fired. If you
+don't supply the <code>:on</code> option the callback will fire for every action.</p></div>
+<p>The <code>after_commit</code> and <code>after_rollback</code> callbacks are guaranteed to be called for all models created, updated, or destroyed within a transaction block. If any exceptions are raised within one of these callbacks, they will be ignored so that they don't interfere with the other callbacks. As such, if your callback code could raise an exception, you'll need to rescue it and handle it appropriately within the callback.</p>
+</body>
+</html>

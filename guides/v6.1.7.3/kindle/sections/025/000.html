@@ -1,0 +1,147 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>1 View Helpers for Debugging</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v6.1.7.3/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="view-helpers-for-debugging"><a class="anchorlink" href="#view-helpers-for-debugging">1 View Helpers for Debugging</a></h3>
+<p>One common task is to inspect the contents of a variable. Rails provides three different ways to do this:</p>
+<ul>
+<li><code>debug</code></li>
+<li><code>to_yaml</code></li>
+<li><code>inspect</code></li>
+</ul>
+<h4 id="debug"><a class="anchorlink" href="#debug">1.1 <code>debug</code></a></h4>
+
+<p>The <code>debug</code> helper will return a &lt;pre&gt; tag that renders the object using the YAML format. This will generate human-readable data from any object. For example, if you have this code in a view:</p>
+
+<div class="code_container">
+<pre><code class="highlight erb"><span class="cp">&lt;%=</span> <span class="n">debug</span> <span class="vi">@article</span> <span class="cp">%&gt;</span>
+<span class="nt">&lt;p&gt;</span>
+  <span class="nt">&lt;b&gt;</span>Title:<span class="nt">&lt;/b&gt;</span>
+  <span class="cp">&lt;%=</span> <span class="vi">@article</span><span class="p">.</span><span class="nf">title</span> <span class="cp">%&gt;</span>
+<span class="nt">&lt;/p&gt;</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-4429ada509da1cab827d75efcd2adb5c">&lt;%= debug @article %&gt;
+&lt;p&gt;
+  &lt;b&gt;Title:&lt;/b&gt;
+  &lt;%= @article.title %&gt;
+&lt;/p&gt;
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-4429ada509da1cab827d75efcd2adb5c">Copy</button>
+</div>
+<p>You'll see something like this:</p>
+
+<div class="code_container">
+<pre><code class="highlight yaml"><span class="nn">---</span> <span class="kt">!ruby/object</span> <span class="s">Article</span>
+<span class="na">attributes</span><span class="pi">:</span>
+  <span class="na">updated_at</span><span class="pi">:</span> <span class="s">2008-09-05 22:55:47</span>
+  <span class="na">body</span><span class="pi">:</span> <span class="s">It's a very helpful guide for debugging your Rails app.</span>
+  <span class="na">title</span><span class="pi">:</span> <span class="s">Rails debugging guide</span>
+  <span class="na">published</span><span class="pi">:</span> <span class="s">t</span>
+  <span class="na">id</span><span class="pi">:</span> <span class="s2">"</span><span class="s">1"</span>
+  <span class="na">created_at</span><span class="pi">:</span> <span class="s">2008-09-05 22:55:47</span>
+<span class="na">attributes_cache</span><span class="pi">:</span> <span class="pi">{}</span>
+
+
+<span class="na">Title</span><span class="pi">:</span> <span class="s">Rails debugging guide</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-cc41c54b190b9e03cc2f14d62b16b56e">--- !ruby/object Article
+attributes:
+  updated_at: 2008-09-05 22:55:47
+  body: It's a very helpful guide for debugging your Rails app.
+  title: Rails debugging guide
+  published: t
+  id: "1"
+  created_at: 2008-09-05 22:55:47
+attributes_cache: {}
+
+
+Title: Rails debugging guide
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-cc41c54b190b9e03cc2f14d62b16b56e">Copy</button>
+</div>
+<h4 id="to-yaml"><a class="anchorlink" href="#to-yaml">1.2 <code>to_yaml</code></a></h4>
+
+<p>Alternatively, calling <code>to_yaml</code> on any object converts it to YAML. You can pass this converted object into the <code>simple_format</code> helper method to format the output. This is how <code>debug</code> does its magic.</p>
+
+<div class="code_container">
+<pre><code class="highlight erb"><span class="cp">&lt;%=</span> <span class="n">simple_format</span> <span class="vi">@article</span><span class="p">.</span><span class="nf">to_yaml</span> <span class="cp">%&gt;</span>
+<span class="nt">&lt;p&gt;</span>
+  <span class="nt">&lt;b&gt;</span>Title:<span class="nt">&lt;/b&gt;</span>
+  <span class="cp">&lt;%=</span> <span class="vi">@article</span><span class="p">.</span><span class="nf">title</span> <span class="cp">%&gt;</span>
+<span class="nt">&lt;/p&gt;</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-6502dfc84276d826622ba17b470ffda9">&lt;%= simple_format @article.to_yaml %&gt;
+&lt;p&gt;
+  &lt;b&gt;Title:&lt;/b&gt;
+  &lt;%= @article.title %&gt;
+&lt;/p&gt;
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-6502dfc84276d826622ba17b470ffda9">Copy</button>
+</div>
+<p>The above code will render something like this:</p>
+
+<div class="code_container">
+<pre><code class="highlight yaml"><span class="nn">---</span> <span class="kt">!ruby/object</span> <span class="s">Article</span>
+<span class="na">attributes</span><span class="pi">:</span>
+<span class="na">updated_at</span><span class="pi">:</span> <span class="s">2008-09-05 22:55:47</span>
+<span class="na">body</span><span class="pi">:</span> <span class="s">It's a very helpful guide for debugging your Rails app.</span>
+<span class="na">title</span><span class="pi">:</span> <span class="s">Rails debugging guide</span>
+<span class="na">published</span><span class="pi">:</span> <span class="s">t</span>
+<span class="na">id</span><span class="pi">:</span> <span class="s2">"</span><span class="s">1"</span>
+<span class="na">created_at</span><span class="pi">:</span> <span class="s">2008-09-05 22:55:47</span>
+<span class="na">attributes_cache</span><span class="pi">:</span> <span class="pi">{}</span>
+
+<span class="na">Title</span><span class="pi">:</span> <span class="s">Rails debugging guide</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-687930b74d167c3009607c3eec0df9f8">--- !ruby/object Article
+attributes:
+updated_at: 2008-09-05 22:55:47
+body: It's a very helpful guide for debugging your Rails app.
+title: Rails debugging guide
+published: t
+id: "1"
+created_at: 2008-09-05 22:55:47
+attributes_cache: {}
+
+Title: Rails debugging guide
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-687930b74d167c3009607c3eec0df9f8">Copy</button>
+</div>
+<h4 id="inspect"><a class="anchorlink" href="#inspect">1.3 <code>inspect</code></a></h4>
+
+<p>Another useful method for displaying object values is <code>inspect</code>, especially when working with arrays or hashes. This will print the object value as a string. For example:</p>
+
+<div class="code_container">
+<pre><code class="highlight erb"><span class="cp">&lt;%=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">].</span><span class="nf">inspect</span> <span class="cp">%&gt;</span>
+<span class="nt">&lt;p&gt;</span>
+  <span class="nt">&lt;b&gt;</span>Title:<span class="nt">&lt;/b&gt;</span>
+  <span class="cp">&lt;%=</span> <span class="vi">@article</span><span class="p">.</span><span class="nf">title</span> <span class="cp">%&gt;</span>
+<span class="nt">&lt;/p&gt;</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-3866e4b3642676ed836e1c842c5e3a44">&lt;%= [1, 2, 3, 4, 5].inspect %&gt;
+&lt;p&gt;
+  &lt;b&gt;Title:&lt;/b&gt;
+  &lt;%= @article.title %&gt;
+&lt;/p&gt;
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-3866e4b3642676ed836e1c842c5e3a44">Copy</button>
+</div>
+<p>Will render:</p>
+
+<div class="code_container">
+<pre><code class="highlight plaintext">[1, 2, 3, 4, 5]
+
+Title: Rails debugging guide
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-1f820fb77ca1bca5c21d5af953cada7f">[1, 2, 3, 4, 5]
+
+Title: Rails debugging guide
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-1f820fb77ca1bca5c21d5af953cada7f">Copy</button>
+</div>
+</body>
+</html>

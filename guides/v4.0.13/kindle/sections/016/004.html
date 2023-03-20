@@ -1,0 +1,175 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>5 Integration Testing</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v4.0.13/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="integration-testing">5 Integration Testing</h3>
+<p>Integration tests are used to test the interaction among any number of controllers. They are generally used to test important work flows within your application.</p>
+<p>Unlike Unit and Functional tests, integration tests have to be explicitly created under the 'test/integration' folder within your application. Rails provides a generator to create an integration test skeleton for you.</p>
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+$ rails generate integration_test user_flows
+      exists  test/integration/
+      create  test/integration/user_flows_test.rb
+
+</pre>
+</div>
+<p>Here's what a freshly-generated integration test looks like:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+require 'test_helper'
+
+class UserFlowsTest &lt; ActionDispatch::IntegrationTest
+  # test "the truth" do
+  #   assert true
+  # end
+end
+
+</pre>
+</div>
+<p>Integration tests inherit from <code>ActionDispatch::IntegrationTest</code>. This makes available some additional helpers to use in your integration tests. Also you need to explicitly include the fixtures to be made available to the test.</p>
+<h4 id="helpers-available-for-integration-tests">5.1 Helpers Available for Integration Tests</h4>
+<p>In addition to the standard testing helpers, there are some additional helpers available to integration tests:</p>
+<table>
+<thead>
+<tr>
+<th>Helper</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>https?</code></td>
+<td>Returns <code>true</code> if the session is mimicking a secure HTTPS request.</td>
+</tr>
+<tr>
+<td><code>https!</code></td>
+<td>Allows you to mimic a secure HTTPS request.</td>
+</tr>
+<tr>
+<td><code>host!</code></td>
+<td>Allows you to set the host name to use in the next request.</td>
+</tr>
+<tr>
+<td><code>redirect?</code></td>
+<td>Returns <code>true</code> if the last request was a redirect.</td>
+</tr>
+<tr>
+<td><code>follow_redirect!</code></td>
+<td>Follows a single redirect response.</td>
+</tr>
+<tr>
+<td><code>request_via_redirect(http_method, path, [parameters], [headers])</code></td>
+<td>Allows you to make an HTTP request and follow any subsequent redirects.</td>
+</tr>
+<tr>
+<td><code>post_via_redirect(path, [parameters], [headers])</code></td>
+<td>Allows you to make an HTTP POST request and follow any subsequent redirects.</td>
+</tr>
+<tr>
+<td><code>get_via_redirect(path, [parameters], [headers])</code></td>
+<td>Allows you to make an HTTP GET request and follow any subsequent redirects.</td>
+</tr>
+<tr>
+<td><code>patch_via_redirect(path, [parameters], [headers])</code></td>
+<td>Allows you to make an HTTP PATCH request and follow any subsequent redirects.</td>
+</tr>
+<tr>
+<td><code>put_via_redirect(path, [parameters], [headers])</code></td>
+<td>Allows you to make an HTTP PUT request and follow any subsequent redirects.</td>
+</tr>
+<tr>
+<td><code>delete_via_redirect(path, [parameters], [headers])</code></td>
+<td>Allows you to make an HTTP DELETE request and follow any subsequent redirects.</td>
+</tr>
+<tr>
+<td><code>open_session</code></td>
+<td>Opens a new session instance.</td>
+</tr>
+</tbody>
+</table>
+<h4 id="integration-testing-examples">5.2 Integration Testing Examples</h4>
+<p>A simple integration test that exercises multiple controllers:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+require 'test_helper'
+
+class UserFlowsTest &lt; ActionDispatch::IntegrationTest
+  fixtures :users
+
+  test "login and browse site" do
+    # login via https
+    https!
+    get "/login"
+    assert_response :success
+
+    post_via_redirect "/login", username: users(:david).username, password: users(:david).password
+    assert_equal '/welcome', path
+    assert_equal 'Welcome david!', flash[:notice]
+
+    https!(false)
+    get "/posts/all"
+    assert_response :success
+    assert assigns(:products)
+  end
+end
+
+</pre>
+</div>
+<p>As you can see the integration test involves multiple controllers and exercises the entire stack from database to dispatcher. In addition you can have multiple session instances open simultaneously in a test and extend those instances with assertion methods to create a very powerful testing DSL (domain-specific language) just for your application.</p>
+<p>Here's an example of multiple sessions and custom DSL in an integration test</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+require 'test_helper'
+
+class UserFlowsTest &lt; ActionDispatch::IntegrationTest
+  fixtures :users
+
+  test "login and browse site" do
+
+    # User david logs in
+    david = login(:david)
+    # User guest logs in
+    guest = login(:guest)
+
+    # Both are now available in different sessions
+    assert_equal 'Welcome david!', david.flash[:notice]
+    assert_equal 'Welcome guest!', guest.flash[:notice]
+
+    # User david can browse site
+    david.browses_site
+    # User guest can browse site as well
+    guest.browses_site
+
+    # Continue with other assertions
+  end
+
+  private
+
+  module CustomDsl
+    def browses_site
+      get "/products/all"
+      assert_response :success
+      assert assigns(:products)
+    end
+  end
+
+  def login(user)
+    open_session do |sess|
+      sess.extend(CustomDsl)
+      u = users(user)
+      sess.https!
+      sess.post "/login", username: u.username, password: u.password
+      assert_equal '/welcome', sess.path
+      sess.https!(false)
+    end
+  end
+end
+
+</pre>
+</div>
+</body>
+</html>

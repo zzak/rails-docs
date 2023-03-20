@@ -1,0 +1,104 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>21 Calculations</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v5.1.7/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="calculations">21 Calculations</h3>
+<p>This section uses count as an example method in this preamble, but the options described apply to all sub-sections.</p>
+
+<p>All calculation methods work directly on a model:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+Client.count
+# SELECT count(*) AS count_all FROM clients
+
+</pre>
+</div>
+<p>Or on a relation:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+Client.where(first_name: 'Ryan').count
+# SELECT count(*) AS count_all FROM clients WHERE (first_name = 'Ryan')
+
+</pre>
+</div>
+<p>You can also use various finder methods on a relation for performing complex calculations:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+Client.includes("orders").where(first_name: 'Ryan', orders: { status: 'received' }).count
+
+</pre>
+</div>
+<p>Which will execute:</p>
+
+<div class="code_container">
+<pre class="brush: sql; gutter: false; toolbar: false">
+SELECT count(DISTINCT clients.id) AS count_all FROM clients
+  LEFT OUTER JOIN orders ON orders.client_id = clients.id WHERE
+  (clients.first_name = 'Ryan' AND orders.status = 'received')
+
+</pre>
+</div>
+<h4 id="count">21.1 Count</h4>
+
+<p>If you want to see how many records are in your model's table you could call <code>Client.count</code> and that will return the number. If you want to be more specific and find all the clients with their age present in the database you can use <code>Client.count(:age)</code>.</p>
+
+<p>For options, please see the parent section, <a href="#calculations">Calculations</a>.</p>
+
+<h4 id="average">21.2 Average</h4>
+
+<p>If you want to see the average of a certain number in one of your tables you can call the <code>average</code> method on the class that relates to the table. This method call will look something like this:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+Client.average("orders_count")
+
+</pre>
+</div>
+<p>This will return a number (possibly a floating point number such as 3.14159265) representing the average value in the field.</p>
+
+<p>For options, please see the parent section, <a href="#calculations">Calculations</a>.</p>
+
+<h4 id="minimum">21.3 Minimum</h4>
+
+<p>If you want to find the minimum value of a field in your table you can call the <code>minimum</code> method on the class that relates to the table. This method call will look something like this:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+Client.minimum("age")
+
+</pre>
+</div>
+<p>For options, please see the parent section, <a href="#calculations">Calculations</a>.</p>
+
+<h4 id="maximum">21.4 Maximum</h4>
+
+<p>If you want to find the maximum value of a field in your table you can call the <code>maximum</code> method on the class that relates to the table. This method call will look something like this:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+Client.maximum("age")
+
+</pre>
+</div>
+<p>For options, please see the parent section, <a href="#calculations">Calculations</a>.</p>
+
+<h4 id="sum">21.5 Sum</h4>
+
+<p>If you want to find the sum of a field for all records in your table you can call the <code>sum</code> method on the class that relates to the table. This method call will look something like this:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+Client.sum("orders_count")
+
+</pre>
+</div>
+<p>For options, please see the parent section, <a href="#calculations">Calculations</a>.</p>
+</body>
+</html>

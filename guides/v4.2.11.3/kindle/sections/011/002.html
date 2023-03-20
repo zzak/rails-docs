@@ -1,0 +1,196 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>3 Making Select Boxes with Ease</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v4.2.11.3/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="making-select-boxes-with-ease">3 Making Select Boxes with Ease</h3>
+<p>Select boxes in HTML require a significant amount of markup (one <code>OPTION</code> element for each option to choose from), therefore it makes the most sense for them to be dynamically generated.</p>
+
+<p>Here is what the markup might look like:</p>
+
+<div class="code_container">
+<pre class="brush: xml; gutter: false; toolbar: false">
+&lt;select name="city_id" id="city_id"&gt;
+  &lt;option value="1"&gt;Lisbon&lt;/option&gt;
+  &lt;option value="2"&gt;Madrid&lt;/option&gt;
+  ...
+  &lt;option value="12"&gt;Berlin&lt;/option&gt;
+&lt;/select&gt;
+
+</pre>
+</div>
+<p>Here you have a list of cities whose names are presented to the user. Internally the application only wants to handle their IDs so they are used as the options' value attribute. Let's see how Rails can help out here.</p>
+
+<h4 id="the-select-and-option-tags">3.1 The Select and Option Tags</h4>
+
+<p>The most generic helper is <code>select_tag</code>, which - as the name implies - simply generates the <code>SELECT</code> tag that encapsulates an options string:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; html-script: true; gutter: false; toolbar: false">
+&lt;%= select_tag(:city_id, '&lt;option value="1"&gt;Lisbon&lt;/option&gt;...') %&gt;
+
+</pre>
+</div>
+<p>This is a start, but it doesn't dynamically create the option tags. You can generate option tags with the <code>options_for_select</code> helper:</p>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+&lt;%= options_for_select([['Lisbon', 1], ['Madrid', 2], ...]) %&gt;
+
+output:
+
+&lt;option value="1"&gt;Lisbon&lt;/option&gt;
+&lt;option value="2"&gt;Madrid&lt;/option&gt;
+...
+
+</pre>
+</div>
+<p>The first argument to <code>options_for_select</code> is a nested array where each element has two elements: option text (city name) and option value (city id). The option value is what will be submitted to your controller. Often this will be the id of a corresponding database object but this does not have to be the case.</p>
+
+<p>Knowing this, you can combine <code>select_tag</code> and <code>options_for_select</code> to achieve the desired, complete markup:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; html-script: true; gutter: false; toolbar: false">
+&lt;%= select_tag(:city_id, options_for_select(...)) %&gt;
+
+</pre>
+</div>
+<p><code>options_for_select</code> allows you to pre-select an option by passing its value.</p>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+&lt;%= options_for_select([['Lisbon', 1], ['Madrid', 2], ...], 2) %&gt;
+
+output:
+
+&lt;option value="1"&gt;Lisbon&lt;/option&gt;
+&lt;option value="2" selected="selected"&gt;Madrid&lt;/option&gt;
+...
+
+</pre>
+</div>
+<p>Whenever Rails sees that the internal value of an option being generated matches this value, it will add the <code>selected</code> attribute to that option.</p>
+
+<div class="info"><p>The second argument to <code>options_for_select</code> must be exactly equal to the desired internal value. In particular if the value is the integer <code>2</code> you cannot pass <code>"2"</code> to <code>options_for_select</code> - you must pass <code>2</code>. Be aware of values extracted from the <code>params</code> hash as they are all strings.</p></div>
+
+<div class="warning"><p>when <code>:include_blank</code> or <code>:prompt</code> are not present, <code>:include_blank</code> is forced true if the select attribute <code>required</code> is true, display <code>size</code> is one and <code>multiple</code> is not true.</p></div>
+
+<p>You can add arbitrary attributes to the options using hashes:</p>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+&lt;%= options_for_select(
+  [
+    ['Lisbon', 1, { 'data-size' =&gt; '2.8 million' }],
+    ['Madrid', 2, { 'data-size' =&gt; '3.2 million' }]
+  ], 2
+) %&gt;
+
+output:
+
+&lt;option value="1" data-size="2.8 million"&gt;Lisbon&lt;/option&gt;
+&lt;option value="2" selected="selected" data-size="3.2 million"&gt;Madrid&lt;/option&gt;
+...
+
+</pre>
+</div>
+<h4 id="select-boxes-for-dealing-with-models">3.2 Select Boxes for Dealing with Models</h4>
+
+<p>In most cases form controls will be tied to a specific database model and as you might expect Rails provides helpers tailored for that purpose. Consistent with other form helpers, when dealing with models you drop the <code>_tag</code> suffix from <code>select_tag</code>:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+# controller:
+@person = Person.new(city_id: 2)
+
+</pre>
+</div>
+<div class="code_container">
+<pre class="brush: ruby; html-script: true; gutter: false; toolbar: false">
+# view:
+&lt;%= select(:person, :city_id, [['Lisbon', 1], ['Madrid', 2], ...]) %&gt;
+
+</pre>
+</div>
+<p>Notice that the third parameter, the options array, is the same kind of argument you pass to <code>options_for_select</code>. One advantage here is that you don't have to worry about pre-selecting the correct city if the user already has one - Rails will do this for you by reading from the <code>@person.city_id</code> attribute.</p>
+
+<p>As with other helpers, if you were to use the <code>select</code> helper on a form builder scoped to the <code>@person</code> object, the syntax would be:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; html-script: true; gutter: false; toolbar: false">
+# select on a form builder
+&lt;%= f.select(:city_id, ...) %&gt;
+
+</pre>
+</div>
+<p>You can also pass a block to <code>select</code> helper:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; html-script: true; gutter: false; toolbar: false">
+&lt;%= f.select(:city_id) do %&gt;
+  &lt;% [['Lisbon', 1], ['Madrid', 2]].each do |c| -%&gt;
+    &lt;%= content_tag(:option, c.first, value: c.last) %&gt;
+  &lt;% end %&gt;
+&lt;% end %&gt;
+
+</pre>
+</div>
+<div class="warning"><p>If you are using <code>select</code> (or similar helpers such as <code>collection_select</code>, <code>select_tag</code>) to set a <code>belongs_to</code> association you must pass the name of the foreign key (in the example above <code>city_id</code>), not the name of association itself. If you specify <code>city</code> instead of <code>city_id</code> Active Record will raise an error along the lines of <code>ActiveRecord::AssociationTypeMismatch: City(#17815740) expected, got String(#1138750)</code> when you pass the <code>params</code> hash to <code>Person.new</code> or <code>update</code>. Another way of looking at this is that form helpers only edit attributes. You should also be aware of the potential security ramifications of allowing users to edit foreign keys directly.</p></div>
+
+<h4 id="option-tags-from-a-collection-of-arbitrary-objects">3.3 Option Tags from a Collection of Arbitrary Objects</h4>
+
+<p>Generating options tags with <code>options_for_select</code> requires that you create an array containing the text and value for each option. But what if you had a <code>City</code> model (perhaps an Active Record one) and you wanted to generate option tags from a collection of those objects? One solution would be to make a nested array by iterating over them:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; html-script: true; gutter: false; toolbar: false">
+&lt;% cities_array = City.all.map { |city| [city.name, city.id] } %&gt;
+&lt;%= options_for_select(cities_array) %&gt;
+
+</pre>
+</div>
+<p>This is a perfectly valid solution, but Rails provides a less verbose alternative: <code>options_from_collection_for_select</code>. This helper expects a collection of arbitrary objects and two additional arguments: the names of the methods to read the option <strong>value</strong> and <strong>text</strong> from, respectively:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; html-script: true; gutter: false; toolbar: false">
+&lt;%= options_from_collection_for_select(City.all, :id, :name) %&gt;
+
+</pre>
+</div>
+<p>As the name implies, this only generates option tags. To generate a working select box you would need to use it in conjunction with <code>select_tag</code>, just as you would with <code>options_for_select</code>. When working with model objects, just as <code>select</code> combines <code>select_tag</code> and <code>options_for_select</code>, <code>collection_select</code> combines <code>select_tag</code> with <code>options_from_collection_for_select</code>.</p>
+
+<div class="code_container">
+<pre class="brush: ruby; html-script: true; gutter: false; toolbar: false">
+&lt;%= collection_select(:person, :city_id, City.all, :id, :name) %&gt;
+
+</pre>
+</div>
+<p>As with other helpers, if you were to use the <code>collection_select</code> helper on a form builder scoped to the <code>@person</code> object, the syntax would be:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; html-script: true; gutter: false; toolbar: false">
+&lt;%= f.collection_select(:city_id, City.all, :id, :name) %&gt;
+
+</pre>
+</div>
+<p>To recap, <code>options_from_collection_for_select</code> is to <code>collection_select</code> what <code>options_for_select</code> is to <code>select</code>.</p>
+
+<div class="note"><p>Pairs passed to <code>options_for_select</code> should have the name first and the id second, however with <code>options_from_collection_for_select</code> the first argument is the value method and the second the text method.</p></div>
+
+<h4 id="time-zone-and-country-select">3.4 Time Zone and Country Select</h4>
+
+<p>To leverage time zone support in Rails, you have to ask your users what time zone they are in. Doing so would require generating select options from a list of pre-defined TimeZone objects using <code>collection_select</code>, but you can simply use the <code>time_zone_select</code> helper that already wraps this:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; html-script: true; gutter: false; toolbar: false">
+&lt;%= time_zone_select(:person, :time_zone) %&gt;
+
+</pre>
+</div>
+<p>There is also <code>time_zone_options_for_select</code> helper for a more manual (therefore more customizable) way of doing this. Read the API documentation to learn about the possible arguments for these two methods.</p>
+
+<p>Rails <em>used</em> to have a <code>country_select</code> helper for choosing countries, but this has been extracted to the <a href="https://github.com/stefanpenner/country_select">country_select plugin</a>. When using this, be aware that the exclusion or inclusion of certain names from the list can be somewhat controversial (and was the reason this functionality was extracted from Rails).</p>
+</body>
+</html>

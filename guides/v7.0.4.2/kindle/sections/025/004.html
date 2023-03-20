@@ -1,0 +1,40 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>5 Intranet and Admin Security</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v7.0.4.2/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="intranet-and-admin-security"><a class="anchorlink" href="#intranet-and-admin-security">5 Intranet and Admin Security</a></h3>
+<p>Intranet and administration interfaces are popular attack targets, because they allow privileged access. Although this would require several extra-security measures, the opposite is the case in the real world.</p>
+
+<p>In 2007 there was the first tailor-made trojan which stole information from an Intranet, namely the "Monster for employers" website of Monster.com, an online recruitment web application. Tailor-made Trojans are very rare, so far, and the risk is quite low, but it is certainly a possibility and an example of how the security of the client host is important, too. However, the highest threat to Intranet and Admin applications are XSS and CSRF.</p>
+
+<p><strong>XSS</strong> If your application re-displays malicious user input from the extranet, the application will be vulnerable to XSS. User names, comments, spam reports, order addresses are just a few uncommon examples, where there can be XSS.</p>
+
+<p>Having one single place in the admin interface or Intranet, where the input has not been sanitized, makes the entire application vulnerable. Possible exploits include stealing the privileged administrator's cookie, injecting an iframe to steal the administrator's password or installing malicious software through browser security holes to take over the administrator's computer.</p>
+
+<p>Refer to the Injection section for countermeasures against XSS.</p>
+
+<p><strong>CSRF</strong> Cross-Site Request Forgery (CSRF), also known as Cross-Site Reference Forgery (XSRF), is a gigantic attack method, it allows the attacker to do everything the administrator or Intranet user may do. As you have already seen above how CSRF works, here are a few examples of what attackers can do in the Intranet or admin interface.</p>
+
+<p>A real-world example is a <a href="http://www.h-online.com/security/news/item/Symantec-reports-first-active-attack-on-a-DSL-router-735883.html">router reconfiguration by CSRF</a>. The attackers sent a malicious e-mail, with CSRF in it, to Mexican users. The e-mail claimed there was an e-card waiting for the user, but it also contained an image tag that resulted in an HTTP-GET request to reconfigure the user's router (which is a popular model in Mexico). The request changed the DNS-settings so that requests to a Mexico-based banking site would be mapped to the attacker's site. Everyone who accessed the banking site through that router saw the attacker's fake website and had their credentials stolen.</p>
+
+<p>Another example changed Google Adsense's e-mail address and password. If the victim was logged into Google Adsense, the administration interface for Google advertisement campaigns, an attacker could change the credentials of the victim.</p>
+
+<p>Another popular attack is to spam your web application, your blog, or forum to propagate malicious XSS. Of course, the attacker has to know the URL structure, but most Rails URLs are quite straightforward or they will be easy to find out, if it is an open-source application's admin interface. The attacker may even do 1,000 lucky guesses by just including malicious IMG-tags which try every possible combination.</p>
+
+<p>For <em>countermeasures against CSRF in administration interfaces and Intranet applications, refer to the countermeasures in the CSRF section</em>.</p>
+
+<h4 id="additional-precautions"><a class="anchorlink" href="#additional-precautions">5.1 Additional Precautions</a></h4>
+
+<p>The common admin interface works like this: it's located at <a href="http://www.example.com/admin">www.example.com/admin</a>, may be accessed only if the admin flag is set in the User model, re-displays user input and allows the admin to delete/add/edit whatever data desired. Here are some thoughts about this:</p>
+<ul>
+<li>It is very important to <em>think about the worst case</em>: What if someone really got hold of your cookies or user credentials. You could <em>introduce roles</em> for the admin interface to limit the possibilities of the attacker. Or how about <em>special login credentials</em> for the admin interface, other than the ones used for the public part of the application. Or a <em>special password for very serious actions</em>?</li>
+<li>Does the admin really have to access the interface from everywhere in the world? Think about <em>limiting the login to a bunch of source IP addresses</em>. Examine request.remote_ip to find out about the user's IP address. This is not bullet-proof, but a great barrier. Remember that there might be a proxy in use, though.</li>
+<li>
+<em>Put the admin interface to a special subdomain</em> such as admin.application.com and make it a separate application with its own user management. This makes stealing an admin cookie from the usual domain, <a href="http://www.application.com">www.application.com</a>, impossible. This is because of the same origin policy in your browser: An injected (XSS) script on <a href="http://www.application.com">www.application.com</a> may not read the cookie for admin.application.com and vice-versa.</li>
+</ul>
+</body>
+</html>

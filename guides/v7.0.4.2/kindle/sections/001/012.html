@@ -1,0 +1,40 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>13 Configuration Gotchas</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v7.0.4.2/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="configuration-gotchas"><a class="anchorlink" href="#configuration-gotchas">13 Configuration Gotchas</a></h3>
+<p>The easiest way to work with Rails is to store all external data as UTF-8. If
+you don't, Ruby libraries and Rails will often be able to convert your native
+data into UTF-8, but this doesn't always work reliably, so you're better off
+ensuring that all external data is UTF-8.</p>
+
+<p>If you have made a mistake in this area, the most common symptom is a black
+diamond with a question mark inside appearing in the browser. Another common
+symptom is characters like "Ã¼" appearing instead of "ü". Rails takes a number
+of internal steps to mitigate common causes of these problems that can be
+automatically detected and corrected. However, if you have external data that is
+not stored as UTF-8, it can occasionally result in these kinds of issues that
+cannot be automatically detected by Rails and corrected.</p>
+
+<p>Two very common sources of data that are not UTF-8:</p>
+<ul>
+<li>Your text editor: Most text editors (such as TextMate), default to saving
+files as UTF-8. If your text editor does not, this can result in special
+characters that you enter in your templates (such as é) to appear as a diamond
+with a question mark inside in the browser. This also applies to your i18n
+translation files. Most editors that do not already default to UTF-8 (such as
+some versions of Dreamweaver) offer a way to change the default to UTF-8. Do
+so.</li>
+<li>Your database: Rails defaults to converting data from your database into UTF-8
+at the boundary. However, if your database is not using UTF-8 internally, it
+may not be able to store all characters that your users enter. For instance,
+if your database is using Latin-1 internally, and your user enters a Russian,
+Hebrew, or Japanese character, the data will be lost forever once it enters
+the database. If possible, use UTF-8 as the internal storage of your database.</li>
+</ul>
+</body>
+</html>

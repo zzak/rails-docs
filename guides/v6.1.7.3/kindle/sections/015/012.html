@@ -1,0 +1,52 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>13 Extensions to Regexp</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v6.1.7.3/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="extensions-to-regexp"><a class="anchorlink" href="#extensions-to-regexp">13 Extensions to <code>Regexp</code></a></h3>
+<h4 id="multiline-questionmark"><a class="anchorlink" href="#multiline-questionmark">13.1 <code>multiline?</code></a></h4>
+
+<p>The method <a href="https://api.rubyonrails.org/v6.1.7.3/classes/Regexp.html#method-i-multiline-3F"><code>multiline?</code></a> says whether a regexp has the <code>/m</code> flag set, that is, whether the dot matches newlines.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="sr">%r{.}</span><span class="p">.</span><span class="nf">multiline?</span>  <span class="c1"># =&gt; false</span>
+<span class="sr">%r{.}m</span><span class="p">.</span><span class="nf">multiline?</span> <span class="c1"># =&gt; true</span>
+
+<span class="no">Regexp</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="s1">'.'</span><span class="p">).</span><span class="nf">multiline?</span>                    <span class="c1"># =&gt; false</span>
+<span class="no">Regexp</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="s1">'.'</span><span class="p">,</span> <span class="no">Regexp</span><span class="o">::</span><span class="no">MULTILINE</span><span class="p">).</span><span class="nf">multiline?</span> <span class="c1"># =&gt; true</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-5dc7f8fc75f42b8bce478e1ad2961088">%r{.}.multiline?  # =&gt; false
+%r{.}m.multiline? # =&gt; true
+
+Regexp.new('.').multiline?                    # =&gt; false
+Regexp.new('.', Regexp::MULTILINE).multiline? # =&gt; true
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-5dc7f8fc75f42b8bce478e1ad2961088">Copy</button>
+</div>
+<p>Rails uses this method in a single place, also in the routing code. Multiline regexps are disallowed for route requirements and this flag eases enforcing that constraint.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">def</span> <span class="nf">verify_regexp_requirements</span><span class="p">(</span><span class="n">requirements</span><span class="p">)</span>
+  <span class="c1"># ...</span>
+  <span class="k">if</span> <span class="n">requirement</span><span class="p">.</span><span class="nf">multiline?</span>
+    <span class="k">raise</span> <span class="no">ArgumentError</span><span class="p">,</span> <span class="s2">"Regexp multiline option is not allowed in routing requirements: </span><span class="si">#{</span><span class="n">requirement</span><span class="p">.</span><span class="nf">inspect</span><span class="si">}</span><span class="s2">"</span>
+  <span class="k">end</span>
+  <span class="c1"># ...</span>
+<span class="k">end</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-d0d99d2e6be8ee01b414bd8a1034968d">def verify_regexp_requirements(requirements)
+  # ...
+  if requirement.multiline?
+    raise ArgumentError, "Regexp multiline option is not allowed in routing requirements: #{requirement.inspect}"
+  end
+  # ...
+end
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-d0d99d2e6be8ee01b414bd8a1034968d">Copy</button>
+</div>
+<div class="note"><p>Defined in <code><a href="https://github.com/rails/rails/tree/v6.1.7.3/activesupport/lib/active_support/core_ext/regexp.rb">active_support/core_ext/regexp.rb</a></code>.</p></div>
+</body>
+</html>

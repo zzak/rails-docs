@@ -1,0 +1,736 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>3 Structuring Layouts</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v6.0.6.1/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="structuring-layouts"><a class="anchorlink" href="#structuring-layouts">3 Structuring Layouts</a></h3>
+<p>When Rails renders a view as a response, it does so by combining the view with the current layout, using the rules for finding the current layout that were covered earlier in this guide. Within a layout, you have access to three tools for combining different bits of output to form the overall response:</p>
+<ul>
+<li>Asset tags</li>
+<li>
+<code>yield</code> and <code>content_for</code>
+</li>
+<li>Partials</li>
+</ul>
+<h4 id="asset-tag-helpers"><a class="anchorlink" href="#asset-tag-helpers">3.1 Asset Tag Helpers</a></h4>
+
+<p>Asset tag helpers provide methods for generating HTML that link views to feeds, JavaScript, stylesheets, images, videos, and audios. There are six asset tag helpers available in Rails:</p>
+<ul>
+<li><code>auto_discovery_link_tag</code></li>
+<li><code>javascript_include_tag</code></li>
+<li><code>stylesheet_link_tag</code></li>
+<li><code>image_tag</code></li>
+<li><code>video_tag</code></li>
+<li><code>audio_tag</code></li>
+</ul>
+<p>You can use these tags in layouts or other views, although the <code>auto_discovery_link_tag</code>, <code>javascript_include_tag</code>, and <code>stylesheet_link_tag</code>, are most commonly used in the <code>&lt;head&gt;</code> section of a layout.</p>
+
+<div class="warning"><p>The asset tag helpers do <em>not</em> verify the existence of the assets at the specified locations; they simply assume that you know what you're doing and generate the link.</p></div>
+
+<h5 id="linking-to-feeds-with-the-auto-discovery-link-tag"><a class="anchorlink" href="#linking-to-feeds-with-the-auto-discovery-link-tag">3.1.1 Linking to Feeds with the <code>auto_discovery_link_tag</code></a></h5>
+
+<p>The <code>auto_discovery_link_tag</code> helper builds HTML that most browsers and feed readers can use to detect the presence of RSS, Atom, or JSON feeds. It takes the type of the link (<code>:rss</code>, <code>:atom</code>, or <code>:json</code>), a hash of options that are passed through to url_for, and a hash of options for the tag:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; html-script: true; gutter: false; toolbar: false">
+&lt;%= auto_discovery_link_tag(:rss, {action: "feed"},
+  {title: "RSS Feed"}) %&gt;
+
+</pre>
+</div>
+<p>There are three tag options available for the <code>auto_discovery_link_tag</code>:</p>
+<ul>
+<li>
+<code>:rel</code> specifies the <code>rel</code> value in the link. The default value is "alternate".</li>
+<li>
+<code>:type</code> specifies an explicit MIME type. Rails will generate an appropriate MIME type automatically.</li>
+<li>
+<code>:title</code> specifies the title of the link. The default value is the uppercase <code>:type</code> value, for example, "ATOM" or "RSS".</li>
+</ul>
+<h5 id="linking-to-javascript-files-with-the-javascript-include-tag"><a class="anchorlink" href="#linking-to-javascript-files-with-the-javascript-include-tag">3.1.2 Linking to JavaScript Files with the <code>javascript_include_tag</code></a></h5>
+
+<p>The <code>javascript_include_tag</code> helper returns an HTML <code>script</code> tag for each source provided.</p>
+
+<p>If you are using Rails with the <a href="asset_pipeline.html">Asset Pipeline</a> enabled, this helper will generate a link to <code>/assets/javascripts/</code> rather than <code>public/javascripts</code> which was used in earlier versions of Rails. This link is then served by the asset pipeline.</p>
+
+<p>A JavaScript file within a Rails application or Rails engine goes in one of three locations: <code>app/assets</code>, <code>lib/assets</code> or <code>vendor/assets</code>. These locations are explained in detail in the <a href="asset_pipeline.html#asset-organization">Asset Organization section in the Asset Pipeline Guide</a>.</p>
+
+<p>You can specify a full path relative to the document root, or a URL, if you prefer. For example, to link to a JavaScript file that is inside a directory called <code>javascripts</code> inside of one of <code>app/assets</code>, <code>lib/assets</code> or <code>vendor/assets</code>, you would do this:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; html-script: true; gutter: false; toolbar: false">
+&lt;%= javascript_include_tag "main" %&gt;
+
+</pre>
+</div>
+<p>Rails will then output a <code>script</code> tag such as this:</p>
+
+<div class="code_container">
+<pre class="brush: xml; gutter: false; toolbar: false">
+&lt;script src='/assets/main.js'&gt;&lt;/script&gt;
+
+</pre>
+</div>
+<p>The request to this asset is then served by the Sprockets gem.</p>
+
+<p>To include multiple files such as <code>app/assets/javascripts/main.js</code> and <code>app/assets/javascripts/columns.js</code> at the same time:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; html-script: true; gutter: false; toolbar: false">
+&lt;%= javascript_include_tag "main", "columns" %&gt;
+
+</pre>
+</div>
+<p>To include <code>app/assets/javascripts/main.js</code> and <code>app/assets/javascripts/photos/columns.js</code>:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; html-script: true; gutter: false; toolbar: false">
+&lt;%= javascript_include_tag "main", "/photos/columns" %&gt;
+
+</pre>
+</div>
+<p>To include <code>http://example.com/main.js</code>:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; html-script: true; gutter: false; toolbar: false">
+&lt;%= javascript_include_tag "http://example.com/main.js" %&gt;
+
+</pre>
+</div>
+<h5 id="linking-to-css-files-with-the-stylesheet-link-tag"><a class="anchorlink" href="#linking-to-css-files-with-the-stylesheet-link-tag">3.1.3 Linking to CSS Files with the <code>stylesheet_link_tag</code></a></h5>
+
+<p>The <code>stylesheet_link_tag</code> helper returns an HTML <code>&lt;link&gt;</code> tag for each source provided.</p>
+
+<p>If you are using Rails with the "Asset Pipeline" enabled, this helper will generate a link to <code>/assets/stylesheets/</code>. This link is then processed by the Sprockets gem. A stylesheet file can be stored in one of three locations: <code>app/assets</code>, <code>lib/assets</code> or <code>vendor/assets</code>.</p>
+
+<p>You can specify a full path relative to the document root, or a URL. For example, to link to a stylesheet file that is inside a directory called <code>stylesheets</code> inside of one of <code>app/assets</code>, <code>lib/assets</code> or <code>vendor/assets</code>, you would do this:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; html-script: true; gutter: false; toolbar: false">
+&lt;%= stylesheet_link_tag "main" %&gt;
+
+</pre>
+</div>
+<p>To include <code>app/assets/stylesheets/main.css</code> and <code>app/assets/stylesheets/columns.css</code>:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; html-script: true; gutter: false; toolbar: false">
+&lt;%= stylesheet_link_tag "main", "columns" %&gt;
+
+</pre>
+</div>
+<p>To include <code>app/assets/stylesheets/main.css</code> and <code>app/assets/stylesheets/photos/columns.css</code>:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; html-script: true; gutter: false; toolbar: false">
+&lt;%= stylesheet_link_tag "main", "photos/columns" %&gt;
+
+</pre>
+</div>
+<p>To include <code>http://example.com/main.css</code>:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; html-script: true; gutter: false; toolbar: false">
+&lt;%= stylesheet_link_tag "http://example.com/main.css" %&gt;
+
+</pre>
+</div>
+<p>By default, the <code>stylesheet_link_tag</code> creates links with <code>media="screen" rel="stylesheet"</code>. You can override any of these defaults by specifying an appropriate option (<code>:media</code>, <code>:rel</code>):</p>
+
+<div class="code_container">
+<pre class="brush: ruby; html-script: true; gutter: false; toolbar: false">
+&lt;%= stylesheet_link_tag "main_print", media: "print" %&gt;
+
+</pre>
+</div>
+<h5 id="linking-to-images-with-the-image-tag"><a class="anchorlink" href="#linking-to-images-with-the-image-tag">3.1.4 Linking to Images with the <code>image_tag</code></a></h5>
+
+<p>The <code>image_tag</code> helper builds an HTML <code>&lt;img /&gt;</code> tag to the specified file. By default, files are loaded from <code>public/images</code>.</p>
+
+<div class="warning"><p>Note that you must specify the extension of the image.</p></div>
+
+<div class="code_container">
+<pre class="brush: ruby; html-script: true; gutter: false; toolbar: false">
+&lt;%= image_tag "header.png" %&gt;
+
+</pre>
+</div>
+<p>You can supply a path to the image if you like:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; html-script: true; gutter: false; toolbar: false">
+&lt;%= image_tag "icons/delete.gif" %&gt;
+
+</pre>
+</div>
+<p>You can supply a hash of additional HTML options:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; html-script: true; gutter: false; toolbar: false">
+&lt;%= image_tag "icons/delete.gif", {height: 45} %&gt;
+
+</pre>
+</div>
+<p>You can supply alternate text for the image which will be used if the user has images turned off in their browser. If you do not specify an alt text explicitly, it defaults to the file name of the file, capitalized and with no extension. For example, these two image tags would return the same code:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; html-script: true; gutter: false; toolbar: false">
+&lt;%= image_tag "home.gif" %&gt;
+&lt;%= image_tag "home.gif", alt: "Home" %&gt;
+
+</pre>
+</div>
+<p>You can also specify a special size tag, in the format "{width}x{height}":</p>
+
+<div class="code_container">
+<pre class="brush: ruby; html-script: true; gutter: false; toolbar: false">
+&lt;%= image_tag "home.gif", size: "50x20" %&gt;
+
+</pre>
+</div>
+<p>In addition to the above special tags, you can supply a final hash of standard HTML options, such as <code>:class</code>, <code>:id</code> or <code>:name</code>:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; html-script: true; gutter: false; toolbar: false">
+&lt;%= image_tag "home.gif", alt: "Go Home",
+                          id: "HomeImage",
+                          class: "nav_bar" %&gt;
+
+</pre>
+</div>
+<h5 id="linking-to-videos-with-the-video-tag"><a class="anchorlink" href="#linking-to-videos-with-the-video-tag">3.1.5 Linking to Videos with the <code>video_tag</code></a></h5>
+
+<p>The <code>video_tag</code> helper builds an HTML 5 <code>&lt;video&gt;</code> tag to the specified file. By default, files are loaded from <code>public/videos</code>.</p>
+
+<div class="code_container">
+<pre class="brush: ruby; html-script: true; gutter: false; toolbar: false">
+&lt;%= video_tag "movie.ogg" %&gt;
+
+</pre>
+</div>
+<p>Produces</p>
+
+<div class="code_container">
+<pre class="brush: ruby; html-script: true; gutter: false; toolbar: false">
+&lt;video src="/videos/movie.ogg" /&gt;
+
+</pre>
+</div>
+<p>Like an <code>image_tag</code> you can supply a path, either absolute, or relative to the <code>public/videos</code> directory. Additionally you can specify the <code>size: "#{width}x#{height}"</code> option just like an <code>image_tag</code>. Video tags can also have any of the HTML options specified at the end (<code>id</code>, <code>class</code> et al).</p>
+
+<p>The video tag also supports all of the <code>&lt;video&gt;</code> HTML options through the HTML options hash, including:</p>
+<ul>
+<li>
+<code>poster: "image_name.png"</code>, provides an image to put in place of the video before it starts playing.</li>
+<li>
+<code>autoplay: true</code>, starts playing the video on page load.</li>
+<li>
+<code>loop: true</code>, loops the video once it gets to the end.</li>
+<li>
+<code>controls: true</code>, provides browser supplied controls for the user to interact with the video.</li>
+<li>
+<code>autobuffer: true</code>, the video will pre load the file for the user on page load.</li>
+</ul>
+<p>You can also specify multiple videos to play by passing an array of videos to the <code>video_tag</code>:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; html-script: true; gutter: false; toolbar: false">
+&lt;%= video_tag ["trailer.ogg", "movie.ogg"] %&gt;
+
+</pre>
+</div>
+<p>This will produce:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; html-script: true; gutter: false; toolbar: false">
+&lt;video&gt;
+  &lt;source src="/videos/trailer.ogg"&gt;
+  &lt;source src="/videos/movie.ogg"&gt;
+&lt;/video&gt;
+
+</pre>
+</div>
+<h5 id="linking-to-audio-files-with-the-audio-tag"><a class="anchorlink" href="#linking-to-audio-files-with-the-audio-tag">3.1.6 Linking to Audio Files with the <code>audio_tag</code></a></h5>
+
+<p>The <code>audio_tag</code> helper builds an HTML 5 <code>&lt;audio&gt;</code> tag to the specified file. By default, files are loaded from <code>public/audios</code>.</p>
+
+<div class="code_container">
+<pre class="brush: ruby; html-script: true; gutter: false; toolbar: false">
+&lt;%= audio_tag "music.mp3" %&gt;
+
+</pre>
+</div>
+<p>You can supply a path to the audio file if you like:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; html-script: true; gutter: false; toolbar: false">
+&lt;%= audio_tag "music/first_song.mp3" %&gt;
+
+</pre>
+</div>
+<p>You can also supply a hash of additional options, such as <code>:id</code>, <code>:class</code> etc.</p>
+
+<p>Like the <code>video_tag</code>, the <code>audio_tag</code> has special options:</p>
+<ul>
+<li>
+<code>autoplay: true</code>, starts playing the audio on page load</li>
+<li>
+<code>controls: true</code>, provides browser supplied controls for the user to interact with the audio.</li>
+<li>
+<code>autobuffer: true</code>, the audio will pre load the file for the user on page load.</li>
+</ul>
+<h4 id="understanding-yield"><a class="anchorlink" href="#understanding-yield">3.2 Understanding <code>yield</code></a></h4>
+
+<p>Within the context of a layout, <code>yield</code> identifies a section where content from the view should be inserted. The simplest way to use this is to have a single <code>yield</code>, into which the entire contents of the view currently being rendered is inserted:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; html-script: true; gutter: false; toolbar: false">
+&lt;html&gt;
+  &lt;head&gt;
+  &lt;/head&gt;
+  &lt;body&gt;
+  &lt;%= yield %&gt;
+  &lt;/body&gt;
+&lt;/html&gt;
+
+</pre>
+</div>
+<p>You can also create a layout with multiple yielding regions:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; html-script: true; gutter: false; toolbar: false">
+&lt;html&gt;
+  &lt;head&gt;
+  &lt;%= yield :head %&gt;
+  &lt;/head&gt;
+  &lt;body&gt;
+  &lt;%= yield %&gt;
+  &lt;/body&gt;
+&lt;/html&gt;
+
+</pre>
+</div>
+<p>The main body of the view will always render into the unnamed <code>yield</code>. To render content into a named <code>yield</code>, you use the <code>content_for</code> method.</p>
+
+<h4 id="using-the-content-for-method"><a class="anchorlink" href="#using-the-content-for-method">3.3 Using the <code>content_for</code> Method</a></h4>
+
+<p>The <code>content_for</code> method allows you to insert content into a named <code>yield</code> block in your layout. For example, this view would work with the layout that you just saw:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; html-script: true; gutter: false; toolbar: false">
+&lt;% content_for :head do %&gt;
+  &lt;title&gt;A simple page&lt;/title&gt;
+&lt;% end %&gt;
+
+&lt;p&gt;Hello, Rails!&lt;/p&gt;
+
+</pre>
+</div>
+<p>The result of rendering this page into the supplied layout would be this HTML:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; html-script: true; gutter: false; toolbar: false">
+&lt;html&gt;
+  &lt;head&gt;
+  &lt;title&gt;A simple page&lt;/title&gt;
+  &lt;/head&gt;
+  &lt;body&gt;
+  &lt;p&gt;Hello, Rails!&lt;/p&gt;
+  &lt;/body&gt;
+&lt;/html&gt;
+
+</pre>
+</div>
+<p>The <code>content_for</code> method is very helpful when your layout contains distinct regions such as sidebars and footers that should get their own blocks of content inserted. It's also useful for inserting tags that load page-specific JavaScript or css files into the header of an otherwise generic layout.</p>
+
+<h4 id="using-partials"><a class="anchorlink" href="#using-partials">3.4 Using Partials</a></h4>
+
+<p>Partial templates - usually just called "partials" - are another device for breaking the rendering process into more manageable chunks. With a partial, you can move the code for rendering a particular piece of a response to its own file.</p>
+
+<h5 id="naming-partials"><a class="anchorlink" href="#naming-partials">3.4.1 Naming Partials</a></h5>
+
+<p>To render a partial as part of a view, you use the <code>render</code> method within the view:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+&lt;%= render "menu" %&gt;
+
+</pre>
+</div>
+<p>This will render a file named <code>_menu.html.erb</code> at that point within the view being rendered. Note the leading underscore character: partials are named with a leading underscore to distinguish them from regular views, even though they are referred to without the underscore. This holds true even when you're pulling in a partial from another folder:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+&lt;%= render "shared/menu" %&gt;
+
+</pre>
+</div>
+<p>That code will pull in the partial from <code>app/views/shared/_menu.html.erb</code>.</p>
+
+<h5 id="using-partials-to-simplify-views"><a class="anchorlink" href="#using-partials-to-simplify-views">3.4.2 Using Partials to Simplify Views</a></h5>
+
+<p>One way to use partials is to treat them as the equivalent of subroutines: as a way to move details out of a view so that you can grasp what's going on more easily. For example, you might have a view that looked like this:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; html-script: true; gutter: false; toolbar: false">
+&lt;%= render "shared/ad_banner" %&gt;
+
+&lt;h1&gt;Products&lt;/h1&gt;
+
+&lt;p&gt;Here are a few of our fine products:&lt;/p&gt;
+...
+
+&lt;%= render "shared/footer" %&gt;
+
+</pre>
+</div>
+<p>Here, the <code>_ad_banner.html.erb</code> and <code>_footer.html.erb</code> partials could contain
+content that is shared by many pages in your application. You don't need to see
+the details of these sections when you're concentrating on a particular page.</p>
+
+<p>As seen in the previous sections of this guide, <code>yield</code> is a very powerful tool
+for cleaning up your layouts. Keep in mind that it's pure Ruby, so you can use
+it almost everywhere. For example, we can use it to DRY up form layout
+definitions for several similar resources:</p>
+<ul>
+<li>
+<code>users/index.html.erb</code>
+<div class="code_container">
+<pre class="brush: ruby; html-script: true; gutter: false; toolbar: false">
+&lt;%= render "shared/search_filters", search: @q do |f| %&gt;
+  &lt;p&gt;
+    Name contains: &lt;%= f.text_field :name_contains %&gt;
+  &lt;/p&gt;
+&lt;% end %&gt;
+
+</pre>
+</div>
+</li>
+<li>
+<code>roles/index.html.erb</code>
+<div class="code_container">
+<pre class="brush: ruby; html-script: true; gutter: false; toolbar: false">
+&lt;%= render "shared/search_filters", search: @q do |f| %&gt;
+  &lt;p&gt;
+    Title contains: &lt;%= f.text_field :title_contains %&gt;
+  &lt;/p&gt;
+&lt;% end %&gt;
+
+</pre>
+</div>
+</li>
+<li>
+<code>shared/_search_filters.html.erb</code>
+<div class="code_container">
+<pre class="brush: ruby; html-script: true; gutter: false; toolbar: false">
+&lt;%= form_for(search) do |f| %&gt;
+  &lt;h1&gt;Search form:&lt;/h1&gt;
+  &lt;fieldset&gt;
+    &lt;%= yield f %&gt;
+  &lt;/fieldset&gt;
+  &lt;p&gt;
+    &lt;%= f.submit "Search" %&gt;
+  &lt;/p&gt;
+&lt;% end %&gt;
+
+</pre>
+</div>
+</li>
+</ul>
+<div class="info"><p>For content that is shared among all pages in your application, you can use partials directly from layouts.</p></div>
+
+<h5 id="partial-layouts"><a class="anchorlink" href="#partial-layouts">3.4.3 Partial Layouts</a></h5>
+
+<p>A partial can use its own layout file, just as a view can use a layout. For example, you might call a partial like this:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; html-script: true; gutter: false; toolbar: false">
+&lt;%= render partial: "link_area", layout: "graybar" %&gt;
+
+</pre>
+</div>
+<p>This would look for a partial named <code>_link_area.html.erb</code> and render it using the layout <code>_graybar.html.erb</code>. Note that layouts for partials follow the same leading-underscore naming as regular partials, and are placed in the same folder with the partial that they belong to (not in the master <code>layouts</code> folder).</p>
+
+<p>Also note that explicitly specifying <code>:partial</code> is required when passing additional options such as <code>:layout</code>.</p>
+
+<h5 id="passing-local-variables"><a class="anchorlink" href="#passing-local-variables">3.4.4 Passing Local Variables</a></h5>
+
+<p>You can also pass local variables into partials, making them even more powerful and flexible. For example, you can use this technique to reduce duplication between new and edit pages, while still keeping a bit of distinct content:</p>
+<ul>
+<li>
+<code>new.html.erb</code>
+<div class="code_container">
+<pre class="brush: ruby; html-script: true; gutter: false; toolbar: false">
+&lt;h1&gt;New zone&lt;/h1&gt;
+&lt;%= render partial: "form", locals: {zone: @zone} %&gt;
+
+</pre>
+</div>
+</li>
+<li>
+<code>edit.html.erb</code>
+<div class="code_container">
+<pre class="brush: ruby; html-script: true; gutter: false; toolbar: false">
+&lt;h1&gt;Editing zone&lt;/h1&gt;
+&lt;%= render partial: "form", locals: {zone: @zone} %&gt;
+
+</pre>
+</div>
+</li>
+<li>
+<code>_form.html.erb</code>
+<div class="code_container">
+<pre class="brush: ruby; html-script: true; gutter: false; toolbar: false">
+&lt;%= form_for(zone) do |f| %&gt;
+  &lt;p&gt;
+    &lt;b&gt;Zone name&lt;/b&gt;&lt;br&gt;
+    &lt;%= f.text_field :name %&gt;
+  &lt;/p&gt;
+  &lt;p&gt;
+    &lt;%= f.submit %&gt;
+  &lt;/p&gt;
+&lt;% end %&gt;
+
+</pre>
+</div>
+</li>
+</ul>
+<p>Although the same partial will be rendered into both views, Action View's submit helper will return "Create Zone" for the new action and "Update Zone" for the edit action.</p>
+
+<p>To pass a local variable to a partial in only specific cases use the <code>local_assigns</code>.</p>
+<ul>
+<li><code>index.html.erb</code></li>
+</ul>
+<div class="code_container">
+<pre class="brush: ruby; html-script: true; gutter: false; toolbar: false">
+  &lt;%= render user.articles %&gt;
+
+</pre>
+</div>
+<ul>
+<li><code>show.html.erb</code></li>
+</ul>
+<div class="code_container">
+<pre class="brush: ruby; html-script: true; gutter: false; toolbar: false">
+  &lt;%= render article, full: true %&gt;
+
+</pre>
+</div>
+<ul>
+<li><code>_article.html.erb</code></li>
+</ul>
+<div class="code_container">
+<pre class="brush: ruby; html-script: true; gutter: false; toolbar: false">
+  &lt;h2&gt;&lt;%= article.title %&gt;&lt;/h2&gt;
+
+  &lt;% if local_assigns[:full] %&gt;
+    &lt;%= simple_format article.body %&gt;
+  &lt;% else %&gt;
+    &lt;%= truncate article.body %&gt;
+  &lt;% end %&gt;
+
+</pre>
+</div>
+<p>This way it is possible to use the partial without the need to declare all local variables.</p>
+
+<p>Every partial also has a local variable with the same name as the partial (minus the leading underscore). You can pass an object in to this local variable via the <code>:object</code> option:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; html-script: true; gutter: false; toolbar: false">
+&lt;%= render partial: "customer", object: @new_customer %&gt;
+
+</pre>
+</div>
+<p>Within the <code>customer</code> partial, the <code>customer</code> variable will refer to <code>@new_customer</code> from the parent view.</p>
+
+<p>If you have an instance of a model to render into a partial, you can use a shorthand syntax:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; html-script: true; gutter: false; toolbar: false">
+&lt;%= render @customer %&gt;
+
+</pre>
+</div>
+<p>Assuming that the <code>@customer</code> instance variable contains an instance of the <code>Customer</code> model, this will use <code>_customer.html.erb</code> to render it and will pass the local variable <code>customer</code> into the partial which will refer to the <code>@customer</code> instance variable in the parent view.</p>
+
+<h5 id="rendering-collections"><a class="anchorlink" href="#rendering-collections">3.4.5 Rendering Collections</a></h5>
+
+<p>Partials are very useful in rendering collections. When you pass a collection to a partial via the <code>:collection</code> option, the partial will be inserted once for each member in the collection:</p>
+<ul>
+<li>
+<code>index.html.erb</code>
+<div class="code_container">
+<pre class="brush: ruby; html-script: true; gutter: false; toolbar: false">
+&lt;h1&gt;Products&lt;/h1&gt;
+&lt;%= render partial: "product", collection: @products %&gt;
+
+</pre>
+</div>
+</li>
+<li>
+<code>_product.html.erb</code>
+<div class="code_container">
+<pre class="brush: ruby; html-script: true; gutter: false; toolbar: false">
+&lt;p&gt;Product Name: &lt;%= product.name %&gt;&lt;/p&gt;
+
+</pre>
+</div>
+</li>
+</ul>
+<p>When a partial is called with a pluralized collection, then the individual instances of the partial have access to the member of the collection being rendered via a variable named after the partial. In this case, the partial is <code>_product</code>, and within the <code>_product</code> partial, you can refer to <code>product</code> to get the instance that is being rendered.</p>
+
+<p>There is also a shorthand for this. Assuming <code>@products</code> is a collection of <code>Product</code> instances, you can simply write this in the <code>index.html.erb</code> to produce the same result:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; html-script: true; gutter: false; toolbar: false">
+&lt;h1&gt;Products&lt;/h1&gt;
+&lt;%= render @products %&gt;
+
+</pre>
+</div>
+<p>Rails determines the name of the partial to use by looking at the model name in the collection. In fact, you can even create a heterogeneous collection and render it this way, and Rails will choose the proper partial for each member of the collection:</p>
+<ul>
+<li>
+<code>index.html.erb</code>
+<div class="code_container">
+<pre class="brush: ruby; html-script: true; gutter: false; toolbar: false">
+&lt;h1&gt;Contacts&lt;/h1&gt;
+&lt;%= render [customer1, employee1, customer2, employee2] %&gt;
+
+</pre>
+</div>
+</li>
+<li>
+<code>customers/_customer.html.erb</code>
+<div class="code_container">
+<pre class="brush: ruby; html-script: true; gutter: false; toolbar: false">
+&lt;p&gt;Customer: &lt;%= customer.name %&gt;&lt;/p&gt;
+
+</pre>
+</div>
+</li>
+<li>
+<code>employees/_employee.html.erb</code>
+<div class="code_container">
+<pre class="brush: ruby; html-script: true; gutter: false; toolbar: false">
+&lt;p&gt;Employee: &lt;%= employee.name %&gt;&lt;/p&gt;
+
+</pre>
+</div>
+</li>
+</ul>
+<p>In this case, Rails will use the customer or employee partials as appropriate for each member of the collection.</p>
+
+<p>In the event that the collection is empty, <code>render</code> will return nil, so it should be fairly simple to provide alternative content.</p>
+
+<div class="code_container">
+<pre class="brush: ruby; html-script: true; gutter: false; toolbar: false">
+&lt;h1&gt;Products&lt;/h1&gt;
+&lt;%= render(@products) || "There are no products available." %&gt;
+
+</pre>
+</div>
+<h5 id="local-variables"><a class="anchorlink" href="#local-variables">3.4.6 Local Variables</a></h5>
+
+<p>To use a custom local variable name within the partial, specify the <code>:as</code> option in the call to the partial:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; html-script: true; gutter: false; toolbar: false">
+&lt;%= render partial: "product", collection: @products, as: :item %&gt;
+
+</pre>
+</div>
+<p>With this change, you can access an instance of the <code>@products</code> collection as the <code>item</code> local variable within the partial.</p>
+
+<p>You can also pass in arbitrary local variables to any partial you are rendering with the <code>locals: {}</code> option:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; html-script: true; gutter: false; toolbar: false">
+&lt;%= render partial: "product", collection: @products,
+           as: :item, locals: {title: "Products Page"} %&gt;
+
+</pre>
+</div>
+<p>In this case, the partial will have access to a local variable <code>title</code> with the value "Products Page".</p>
+
+<div class="info"><p>Rails also makes a counter variable available within a partial called by the collection, named after the title of the partial followed by <code>_counter</code>. For example, when rendering a collection <code>@products</code> the partial <code>_product.html.erb</code> can access the variable <code>product_counter</code> which indexes the number of times it has been rendered within the enclosing view. Note that it also applies for when the partial name was changed by using the <code>as:</code> option. For example, the counter variable for the code above would be <code>item_counter</code>.</p></div>
+
+<p>You can also specify a second partial to be rendered between instances of the main partial by using the <code>:spacer_template</code> option:</p>
+
+<h5 id="spacer-templates"><a class="anchorlink" href="#spacer-templates">3.4.7 Spacer Templates</a></h5>
+
+<div class="code_container">
+<pre class="brush: ruby; html-script: true; gutter: false; toolbar: false">
+&lt;%= render partial: @products, spacer_template: "product_ruler" %&gt;
+
+</pre>
+</div>
+<p>Rails will render the <code>_product_ruler</code> partial (with no data passed in to it) between each pair of <code>_product</code> partials.</p>
+
+<h5 id="collection-partial-layouts"><a class="anchorlink" href="#collection-partial-layouts">3.4.8 Collection Partial Layouts</a></h5>
+
+<p>When rendering collections it is also possible to use the <code>:layout</code> option:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; html-script: true; gutter: false; toolbar: false">
+&lt;%= render partial: "product", collection: @products, layout: "special_layout" %&gt;
+
+</pre>
+</div>
+<p>The layout will be rendered together with the partial for each item in the collection. The current object and object_counter variables will be available in the layout as well, the same way they are within the partial.</p>
+
+<h4 id="using-nested-layouts"><a class="anchorlink" href="#using-nested-layouts">3.5 Using Nested Layouts</a></h4>
+
+<p>You may find that your application requires a layout that differs slightly from your regular application layout to support one particular controller. Rather than repeating the main layout and editing it, you can accomplish this by using nested layouts (sometimes called sub-templates). Here's an example:</p>
+
+<p>Suppose you have the following <code>ApplicationController</code> layout:</p>
+<ul>
+<li>
+<code>app/views/layouts/application.html.erb</code>
+<div class="code_container">
+<pre class="brush: ruby; html-script: true; gutter: false; toolbar: false">
+&lt;html&gt;
+&lt;head&gt;
+  &lt;title&gt;&lt;%= @page_title or "Page Title" %&gt;&lt;/title&gt;
+  &lt;%= stylesheet_link_tag "layout" %&gt;
+  &lt;style&gt;&lt;%= yield :stylesheets %&gt;&lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+  &lt;div id="top_menu"&gt;Top menu items here&lt;/div&gt;
+  &lt;div id="menu"&gt;Menu items here&lt;/div&gt;
+  &lt;div id="content"&gt;&lt;%= content_for?(:content) ? yield(:content) : yield %&gt;&lt;/div&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+
+</pre>
+</div>
+</li>
+</ul>
+<p>On pages generated by <code>NewsController</code>, you want to hide the top menu and add a right menu:</p>
+<ul>
+<li>
+<code>app/views/layouts/news.html.erb</code>
+<div class="code_container">
+<pre class="brush: ruby; html-script: true; gutter: false; toolbar: false">
+&lt;% content_for :stylesheets do %&gt;
+  #top_menu {display: none}
+  #right_menu {float: right; background-color: yellow; color: black}
+&lt;% end %&gt;
+&lt;% content_for :content do %&gt;
+  &lt;div id="right_menu"&gt;Right menu items here&lt;/div&gt;
+  &lt;%= content_for?(:news_content) ? yield(:news_content) : yield %&gt;
+&lt;% end %&gt;
+&lt;%= render template: "layouts/application" %&gt;
+
+</pre>
+</div>
+</li>
+</ul>
+<p>That's it. The News views will use the new layout, hiding the top menu and adding a new right menu inside the "content" div.</p>
+
+<p>There are several ways of getting similar results with different sub-templating schemes using this technique. Note that there is no limit in nesting levels. One can use the <code>ActionView::render</code> method via <code>render template: 'layouts/news'</code> to base a new layout on the News layout. If you are sure you will not subtemplate the <code>News</code> layout, you can replace the <code>content_for?(:news_content) ? yield(:news_content) : yield</code> with simply <code>yield</code>.</p>
+</body>
+</html>

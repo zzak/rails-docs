@@ -1,0 +1,46 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>8 Making Your Library or Gem a Pre-Processor</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v4.2.11.3/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="making-your-library-or-gem-a-pre-processor">8 Making Your Library or Gem a Pre-Processor</h3>
+<p>As Sprockets uses <a href="https://github.com/rtomayko/tilt">Tilt</a> as a generic
+interface to different templating engines, your gem should just implement the
+Tilt template protocol. Normally, you would subclass <code>Tilt::Template</code> and
+reimplement the <code>prepare</code> method, which initializes your template, and the
+<code>evaluate</code> method, which returns the processed source. The original source is
+stored in <code>data</code>. Have a look at
+<a href="https://github.com/rtomayko/tilt/blob/master/lib/tilt/template.rb"><code>Tilt::Template</code></a>
+sources to learn more.</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+module BangBang
+  class Template &lt; ::Tilt::Template
+    def prepare
+      # Do any initialization here
+    end
+
+    # Adds a "!" to original template.
+    def evaluate(scope, locals, &amp;block)
+      "#{data}!"
+    end
+  end
+end
+
+</pre>
+</div>
+<p>Now that you have a <code>Template</code> class, it's time to associate it with an
+extension for template files:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+Sprockets.register_engine '.bang', BangBang::Template
+
+</pre>
+</div>
+</body>
+</html>

@@ -1,0 +1,50 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>4 Framework Behavior</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v6.0.6.1/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="framework-behavior"><a class="anchorlink" href="#framework-behavior">4 Framework Behavior</a></h3>
+<p>The Rails framework components use these tools to manage their own concurrency
+needs too.</p>
+
+<p><code>ActionDispatch::Executor</code> and <code>ActionDispatch::Reloader</code> are Rack middlewares
+that wraps the request with a supplied Executor or Reloader, respectively. They
+are automatically included in the default application stack. The Reloader will
+ensure any arriving HTTP request is served with a freshly-loaded copy of the
+application if any code changes have occurred.</p>
+
+<p>Active Job also wraps its job executions with the Reloader, loading the latest
+code to execute each job as it comes off the queue.</p>
+
+<p>Action Cable uses the Executor instead: because a Cable connection is linked to
+a specific instance of a class, it's not possible to reload for every arriving
+websocket message. Only the message handler is wrapped, though; a long-running
+Cable connection does not prevent a reload that's triggered by a new incoming
+request or job. Instead, Action Cable uses the Reloader's <code>before_class_unload</code>
+callback to disconnect all its connections. When the client automatically
+reconnects, it will be speaking to the new version of the code.</p>
+
+<p>The above are the entry points to the framework, so they are responsible for
+ensuring their respective threads are protected, and deciding whether a reload
+is necessary. Other components only need to use the Executor when they spawn
+additional threads.</p>
+
+<h4 id="configuration"><a class="anchorlink" href="#configuration">4.1 Configuration</a></h4>
+
+<p>The Reloader only checks for file changes when <code>cache_classes</code> is false and
+<code>reload_classes_only_on_change</code> is true (which is the default in the
+<code>development</code> environment).</p>
+
+<p>When <code>cache_classes</code> is true (in <code>production</code>, by default), the Reloader is only
+a pass-through to the Executor.</p>
+
+<p>The Executor always has important work to do, like database connection
+management. When <code>cache_classes</code> and <code>eager_load</code> are both true (<code>production</code>),
+no autoloading or class reloading will occur, so it does not need the Load
+Interlock. If either of those are false (<code>development</code>), then the Executor will
+use the Load Interlock to ensure constants are only loaded when it is safe.</p>
+</body>
+</html>

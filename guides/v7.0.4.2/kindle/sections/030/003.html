@@ -1,0 +1,144 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>4 Turbo</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v7.0.4.2/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="turbo"><a class="anchorlink" href="#turbo">4 Turbo</a></h3>
+<p>Whether you choose import maps or a traditional bundler, Rails ships with
+<a href="https://turbo.hotwired.dev/">Turbo</a> to speed up your application while dramatically reducing the
+amount of JavaScript that you will need to write.</p>
+
+<p>Turbo lets your server deliver HTML directly as an alternative to the prevailing front-end
+frameworks that reduce the server-side of your Rails application to little more than a JSON API.</p>
+
+<h4 id="turbo-drive"><a class="anchorlink" href="#turbo-drive">4.1 Turbo Drive</a></h4>
+
+<p><a href="https://turbo.hotwired.dev/handbook/drive">Turbo Drive</a> speeds up page loads by avoiding full-page
+teardowns and rebuilds on every navigation request. Turbo Drive is an improvement on and
+replacement for Turbolinks.</p>
+
+<h4 id="turbo-frames"><a class="anchorlink" href="#turbo-frames">4.2 Turbo Frames</a></h4>
+
+<p><a href="https://turbo.hotwired.dev/handbook/frames">Turbo Frames</a> allow predefined parts of a page to be
+updated on request, without impacting the rest of the page’s content.</p>
+
+<p>You can use Turbo Frames to build in-place editing without any custom JavaScript, lazy load
+content, and create server-rendered, tabbed interfaces with ease.</p>
+
+<p>Rails provides HTML helpers to simplify the use of Turbo Frames through the
+<a href="https://github.com/hotwired/turbo-rails">turbo-rails</a> gem.</p>
+
+<p>Using this gem, you can add a Turbo Frame to your application with the <code>turbo_frame_tag</code> helper
+like this:</p>
+
+<div class="code_container">
+<pre><code class="highlight erb"><span class="cp">&lt;%=</span> <span class="n">turbo_frame_tag</span> <span class="n">dom_id</span><span class="p">(</span><span class="n">post</span><span class="p">)</span> <span class="k">do</span> <span class="cp">%&gt;</span>
+  <span class="nt">&lt;div&gt;</span>
+     <span class="cp">&lt;%=</span> <span class="n">link_to</span> <span class="n">post</span><span class="p">.</span><span class="nf">title</span><span class="p">,</span> <span class="n">post_path</span><span class="p">(</span><span class="n">path</span><span class="p">)</span> <span class="cp">%&gt;</span>
+  <span class="nt">&lt;/div&gt;</span>
+<span class="cp">&lt;%</span> <span class="k">end</span> <span class="cp">%&gt;</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="&lt;%= turbo_frame_tag dom_id(post) do %&gt;
+  &lt;div&gt;
+     &lt;%= link_to post.title, post_path(path) %&gt;
+  &lt;/div&gt;
+&lt;% end %&gt;
+">Copy</button>
+</div>
+<h4 id="turbo-streams"><a class="anchorlink" href="#turbo-streams">4.3 Turbo Streams</a></h4>
+
+<p><a href="https://turbo.hotwired.dev/handbook/streams">Turbo Streams</a> deliver page changes as fragments of
+HTML wrapped in self-executing <code>&lt;turbo-stream&gt;</code> elements. Turbo Streams allow you to broadcast
+changes made by other users over WebSockets and update pieces of a page after a form submission
+without requiring a full page load.</p>
+
+<p>Rails provides HTML and server-side helpers to simplify the use of Turbo Streams through the
+<a href="https://github.com/hotwired/turbo-rails">turbo-rails</a> gem.</p>
+
+<p>Using this gem, you can render Turbo Streams from a controller action:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">def</span> <span class="nf">create</span>
+  <span class="vi">@post</span> <span class="o">=</span> <span class="no">Post</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="n">post_params</span><span class="p">)</span>
+
+  <span class="n">respond_to</span> <span class="k">do</span> <span class="o">|</span><span class="nb">format</span><span class="o">|</span>
+    <span class="k">if</span> <span class="vi">@post</span><span class="p">.</span><span class="nf">save</span>
+      <span class="nb">format</span><span class="p">.</span><span class="nf">turbo_stream</span>
+    <span class="k">else</span>
+      <span class="nb">format</span><span class="p">.</span><span class="nf">html</span> <span class="p">{</span> <span class="n">render</span> <span class="ss">:new</span><span class="p">,</span> <span class="ss">status: :unprocessable_entity</span> <span class="p">}</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="def create
+  @post = Post.new(post_params)
+
+  respond_to do |format|
+    if @post.save
+      format.turbo_stream
+    else
+      format.html { render :new, status: :unprocessable_entity }
+    end
+  end
+end
+">Copy</button>
+</div>
+<p>Rails will automatically look for a <code>.turbo_stream.erb</code> view file and render that view when found.</p>
+
+<p>Turbo Stream responses can also be rendered inline in the controller action:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">def</span> <span class="nf">create</span>
+  <span class="vi">@post</span> <span class="o">=</span> <span class="no">Post</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="n">post_params</span><span class="p">)</span>
+
+  <span class="n">respond_to</span> <span class="k">do</span> <span class="o">|</span><span class="nb">format</span><span class="o">|</span>
+    <span class="k">if</span> <span class="vi">@post</span><span class="p">.</span><span class="nf">save</span>
+      <span class="nb">format</span><span class="p">.</span><span class="nf">turbo_stream</span> <span class="p">{</span> <span class="n">render</span> <span class="ss">turbo_stream: </span><span class="n">turbo_stream</span><span class="p">.</span><span class="nf">prepend</span><span class="p">(</span><span class="s1">'posts'</span><span class="p">,</span> <span class="ss">partial: </span><span class="s1">'post'</span><span class="p">)</span> <span class="p">}</span>
+    <span class="k">else</span>
+      <span class="nb">format</span><span class="p">.</span><span class="nf">html</span> <span class="p">{</span> <span class="n">render</span> <span class="ss">:new</span><span class="p">,</span> <span class="ss">status: :unprocessable_entity</span> <span class="p">}</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="def create
+  @post = Post.new(post_params)
+
+  respond_to do |format|
+    if @post.save
+      format.turbo_stream { render turbo_stream: turbo_stream.prepend('posts', partial: 'post') }
+    else
+      format.html { render :new, status: :unprocessable_entity }
+    end
+  end
+end
+">Copy</button>
+</div>
+<p>Finally, Turbo Streams can be initiated from a model or a background job using built-in helpers.
+These broadcasts can be used to update content via a WebSocket connection to all users, keeping
+page content fresh and bringing your application to life.</p>
+
+<p>To broadcast a Turbo Stream from a model combine a model callback like this:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">Post</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="n">after_create_commit</span> <span class="p">{</span> <span class="n">broadcast_append_to</span><span class="p">(</span><span class="s1">'posts'</span><span class="p">)</span> <span class="p">}</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="class Post &lt; ApplicationRecord
+  after_create_commit { broadcast_append_to('posts') }
+end
+">Copy</button>
+</div>
+<p>With a WebSocket connection set up on the page that should receive the updates like this:</p>
+
+<div class="code_container">
+<pre><code class="highlight erb"><span class="cp">&lt;%=</span> <span class="n">turbo_stream_from</span> <span class="s2">"posts"</span> <span class="cp">%&gt;</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='&lt;%= turbo_stream_from "posts" %&gt;
+'>Copy</button>
+</div>
+</body>
+</html>

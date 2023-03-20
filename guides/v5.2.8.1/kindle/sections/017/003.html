@@ -1,0 +1,71 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>4 Job Execution</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v5.2.8.1/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="job-execution"><a class="anchorlink" href="#job-execution">4 Job Execution</a></h3>
+<p>For enqueuing and executing jobs in production you need to set up a queuing backend,
+that is to say you need to decide for a 3rd-party queuing library that Rails should use.
+Rails itself only provides an in-process queuing system, which only keeps the jobs in RAM.
+If the process crashes or the machine is reset, then all outstanding jobs are lost with the
+default async backend. This may be fine for smaller apps or non-critical jobs, but most
+production apps will need to pick a persistent backend.</p>
+
+<h4 id="backends"><a class="anchorlink" href="#backends">4.1 Backends</a></h4>
+
+<p>Active Job has built-in adapters for multiple queuing backends (Sidekiq,
+Resque, Delayed Job and others). To get an up-to-date list of the adapters
+see the API Documentation for <a href="http://api.rubyonrails.org/v5.2.8.1/classes/ActiveJob/QueueAdapters.html">ActiveJob::QueueAdapters</a>.</p>
+
+<h4 id="setting-the-backend"><a class="anchorlink" href="#setting-the-backend">4.2 Setting the Backend</a></h4>
+
+<p>You can easily set your queuing backend:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+# config/application.rb
+module YourApp
+  class Application &lt; Rails::Application
+    # Be sure to have the adapter's gem in your Gemfile
+    # and follow the adapter's specific installation
+    # and deployment instructions.
+    config.active_job.queue_adapter = :sidekiq
+  end
+end
+
+</pre>
+</div>
+<p>You can also configure your backend on a per job basis.</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class GuestsCleanupJob &lt; ApplicationJob
+  self.queue_adapter = :resque
+  #....
+end
+
+# Now your job will use `resque` as it's backend queue adapter overriding what
+# was configured in `config.active_job.queue_adapter`.
+
+</pre>
+</div>
+<h4 id="starting-the-backend"><a class="anchorlink" href="#starting-the-backend">4.3 Starting the Backend</a></h4>
+
+<p>Since jobs run in parallel to your Rails application, most queuing libraries
+require that you start a library-specific queuing service (in addition to
+starting your Rails app) for the job processing to work. Refer to library
+documentation for instructions on starting your queue backend.</p>
+
+<p>Here is a noncomprehensive list of documentation:</p>
+<ul>
+<li><a href="https://github.com/mperham/sidekiq/wiki/Active-Job">Sidekiq</a></li>
+<li><a href="https://github.com/resque/resque/wiki/ActiveJob">Resque</a></li>
+<li><a href="https://github.com/jondot/sneakers/wiki/How-To:-Rails-Background-Jobs-with-ActiveJob">Sneakers</a></li>
+<li><a href="https://github.com/brandonhilkert/sucker_punch#active-job">Sucker Punch</a></li>
+<li><a href="https://github.com/QueueClassic/queue_classic#active-job">Queue Classic</a></li>
+</ul>
+</body>
+</html>

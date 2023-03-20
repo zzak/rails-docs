@@ -1,0 +1,78 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>11 Upgrading from Rails 3.1 to Rails 3.2</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v7.0.4.2/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="upgrading-from-rails-3-1-to-rails-3-2"><a class="anchorlink" href="#upgrading-from-rails-3-1-to-rails-3-2">11 Upgrading from Rails 3.1 to Rails 3.2</a></h3>
+<p>If your application is currently on any version of Rails older than 3.1.x, you
+should upgrade to Rails 3.1 before attempting an update to Rails 3.2.</p>
+
+<p>The following changes are meant for upgrading your application to the latest
+3.2.x version of Rails.</p>
+
+<h4 id="upgrading-from-rails-3-1-to-rails-3-2-gemfile"><a class="anchorlink" href="#upgrading-from-rails-3-1-to-rails-3-2-gemfile">11.1 Gemfile</a></h4>
+
+<p>Make the following changes to your <code>Gemfile</code>.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">gem</span> <span class="s1">'rails'</span><span class="p">,</span> <span class="s1">'3.2.21'</span>
+
+<span class="n">group</span> <span class="ss">:assets</span> <span class="k">do</span>
+  <span class="n">gem</span> <span class="s1">'sass-rails'</span><span class="p">,</span>   <span class="s1">'~&gt; 3.2.6'</span>
+  <span class="n">gem</span> <span class="s1">'coffee-rails'</span><span class="p">,</span> <span class="s1">'~&gt; 3.2.2'</span>
+  <span class="n">gem</span> <span class="s1">'uglifier'</span><span class="p">,</span>     <span class="s1">'&gt;= 1.0.3'</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="gem 'rails', '3.2.21'
+
+group :assets do
+  gem 'sass-rails',   '~&gt; 3.2.6'
+  gem 'coffee-rails', '~&gt; 3.2.2'
+  gem 'uglifier',     '&gt;= 1.0.3'
+end
+">Copy</button>
+</div>
+<h4 id="upgrading-from-rails-3-1-to-rails-3-2-config-environments-development-rb"><a class="anchorlink" href="#upgrading-from-rails-3-1-to-rails-3-2-config-environments-development-rb">11.2 config/environments/development.rb</a></h4>
+
+<p>There are a couple of new configuration settings that you should add to your development environment:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="c1"># Raise exception on mass assignment protection for Active Record models</span>
+<span class="n">config</span><span class="p">.</span><span class="nf">active_record</span><span class="p">.</span><span class="nf">mass_assignment_sanitizer</span> <span class="o">=</span> <span class="ss">:strict</span>
+
+<span class="c1"># Log the query plan for queries taking more than this (works</span>
+<span class="c1"># with SQLite, MySQL, and PostgreSQL)</span>
+<span class="n">config</span><span class="p">.</span><span class="nf">active_record</span><span class="p">.</span><span class="nf">auto_explain_threshold_in_seconds</span> <span class="o">=</span> <span class="mf">0.5</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="# Raise exception on mass assignment protection for Active Record models
+config.active_record.mass_assignment_sanitizer = :strict
+
+# Log the query plan for queries taking more than this (works
+# with SQLite, MySQL, and PostgreSQL)
+config.active_record.auto_explain_threshold_in_seconds = 0.5
+">Copy</button>
+</div>
+<h4 id="upgrading-from-rails-3-1-to-rails-3-2-config-environments-test-rb"><a class="anchorlink" href="#upgrading-from-rails-3-1-to-rails-3-2-config-environments-test-rb">11.3 config/environments/test.rb</a></h4>
+
+<p>The <code>mass_assignment_sanitizer</code> configuration setting should also be added to <code>config/environments/test.rb</code>:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="c1"># Raise exception on mass assignment protection for Active Record models</span>
+<span class="n">config</span><span class="p">.</span><span class="nf">active_record</span><span class="p">.</span><span class="nf">mass_assignment_sanitizer</span> <span class="o">=</span> <span class="ss">:strict</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="# Raise exception on mass assignment protection for Active Record models
+config.active_record.mass_assignment_sanitizer = :strict
+">Copy</button>
+</div>
+<h4 id="upgrading-from-rails-3-1-to-rails-3-2-vendor-plugins"><a class="anchorlink" href="#upgrading-from-rails-3-1-to-rails-3-2-vendor-plugins">11.4 vendor/plugins</a></h4>
+
+<p>Rails 3.2 deprecates <code>vendor/plugins</code> and Rails 4.0 will remove them completely. While it's not strictly necessary as part of a Rails 3.2 upgrade, you can start replacing any plugins by extracting them to gems and adding them to your <code>Gemfile</code>. If you choose not to make them gems, you can move them into, say, <code>lib/my_plugin/*</code> and add an appropriate initializer in <code>config/initializers/my_plugin.rb</code>.</p>
+
+<h4 id="upgrading-from-rails-3-1-to-rails-3-2-active-record"><a class="anchorlink" href="#upgrading-from-rails-3-1-to-rails-3-2-active-record">11.5 Active Record</a></h4>
+
+<p>Option <code>:dependent =&gt; :restrict</code> has been removed from <code>belongs_to</code>. If you want to prevent deleting the object if there are any associated objects, you can set <code>:dependent =&gt; :destroy</code> and return <code>false</code> after checking for existence of association from any of the associated object's destroy callbacks.</p>
+</body>
+</html>

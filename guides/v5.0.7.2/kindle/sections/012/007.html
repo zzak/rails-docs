@@ -1,0 +1,123 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>8 Filters</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v5.0.7.2/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="filters">8 Filters</h3>
+<p>Filters are methods that are run "before", "after" or "around" a controller action.</p>
+
+<p>Filters are inherited, so if you set a filter on <code>ApplicationController</code>, it will be run on every controller in your application.</p>
+
+<p>"before" filters may halt the request cycle. A common "before" filter is one which requires that a user is logged in for an action to be run. You can define the filter method this way:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class ApplicationController &lt; ActionController::Base
+  before_action :require_login
+
+  private
+
+  def require_login
+    unless logged_in?
+      flash[:error] = "You must be logged in to access this section"
+      redirect_to new_login_url # halts request cycle
+    end
+  end
+end
+
+</pre>
+</div>
+<p>The method simply stores an error message in the flash and redirects to the login form if the user is not logged in. If a "before" filter renders or redirects, the action will not run. If there are additional filters scheduled to run after that filter, they are also cancelled.</p>
+
+<p>In this example the filter is added to <code>ApplicationController</code> and thus all controllers in the application inherit it. This will make everything in the application require the user to be logged in in order to use it. For obvious reasons (the user wouldn't be able to log in in the first place!), not all controllers or actions should require this. You can prevent this filter from running before particular actions with <code>skip_before_action</code>:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class LoginsController &lt; ApplicationController
+  skip_before_action :require_login, only: [:new, :create]
+end
+
+</pre>
+</div>
+<p>Now, the <code>LoginsController</code>'s <code>new</code> and <code>create</code> actions will work as before without requiring the user to be logged in. The <code>:only</code> option is used to skip this filter only for these actions, and there is also an <code>:except</code> option which works the other way. These options can be used when adding filters too, so you can add a filter which only runs for selected actions in the first place.</p>
+
+<h4 id="after-filters-and-around-filters">8.1 After Filters and Around Filters</h4>
+
+<p>In addition to "before" filters, you can also run filters after an action has been executed, or both before and after.</p>
+
+<p>"after" filters are similar to "before" filters, but because the action has already been run they have access to the response data that's about to be sent to the client. Obviously, "after" filters cannot stop the action from running.</p>
+
+<p>"around" filters are responsible for running their associated actions by yielding, similar to how Rack middlewares work.</p>
+
+<p>For example, in a website where changes have an approval workflow an administrator could be able to preview them easily, just apply them within a transaction:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class ChangesController &lt; ApplicationController
+  around_action :wrap_in_transaction, only: :show
+
+  private
+
+  def wrap_in_transaction
+    ActiveRecord::Base.transaction do
+      begin
+        yield
+      ensure
+        raise ActiveRecord::Rollback
+      end
+    end
+  end
+end
+
+</pre>
+</div>
+<p>Note that an "around" filter also wraps rendering. In particular, if in the example above, the view itself reads from the database (e.g. via a scope), it will do so within the transaction and thus present the data to preview.</p>
+
+<p>You can choose not to yield and build the response yourself, in which case the action will not be run.</p>
+
+<h4 id="other-ways-to-use-filters">8.2 Other Ways to Use Filters</h4>
+
+<p>While the most common way to use filters is by creating private methods and using *_action to add them, there are two other ways to do the same thing.</p>
+
+<p>The first is to use a block directly with the *_action methods. The block receives the controller as an argument. The <code>require_login</code> filter from above could be rewritten to use a block:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class ApplicationController &lt; ActionController::Base
+  before_action do |controller|
+    unless controller.send(:logged_in?)
+      flash[:error] = "You must be logged in to access this section"
+      redirect_to new_login_url
+    end
+  end
+end
+
+</pre>
+</div>
+<p>Note that the filter in this case uses <code>send</code> because the <code>logged_in?</code> method is private and the filter does not run in the scope of the controller. This is not the recommended way to implement this particular filter, but in more simple cases it might be useful.</p>
+
+<p>The second way is to use a class (actually, any object that responds to the right methods will do) to handle the filtering. This is useful in cases that are more complex and cannot be implemented in a readable and reusable way using the two other methods. As an example, you could rewrite the login filter again to use a class:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class ApplicationController &lt; ActionController::Base
+  before_action LoginFilter
+end
+
+class LoginFilter
+  def self.before(controller)
+    unless controller.send(:logged_in?)
+      controller.flash[:error] = "You must be logged in to access this section"
+      controller.redirect_to controller.new_login_url
+    end
+  end
+end
+
+</pre>
+</div>
+<p>Again, this is not an ideal example for this filter, because it's not run in the scope of the controller but gets the controller passed as an argument. The filter class must implement a method with the same name as the filter, so for the <code>before_action</code> filter the class must implement a <code>before</code> method, and so on. The <code>around</code> method must <code>yield</code> to execute the action.</p>
+</body>
+</html>

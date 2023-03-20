@@ -1,0 +1,438 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>3 Debugging with the debugger gem</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v4.1.16/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="debugging-with-the-debugger-gem">3 Debugging with the <code>debugger</code> gem</h3>
+<p>When your code is behaving in unexpected ways, you can try printing to logs or the console to diagnose the problem. Unfortunately, there are times when this sort of error tracking is not effective in finding the root cause of a problem. When you actually need to journey into your running source code, the debugger is your best companion.</p>
+<p>The debugger can also help you if you want to learn about the Rails source code but don't know where to start. Just debug any request to your application and use this guide to learn how to move from the code you have written deeper into Rails code.</p>
+<h4 id="setup">3.1 Setup</h4>
+<p>You can use the <code>debugger</code> gem to set breakpoints and step through live code in Rails. To install it, just run:</p>
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+$ gem install debugger
+
+</pre>
+</div>
+<p>Rails has had built-in support for debugging since Rails 2.0. Inside any Rails application you can invoke the debugger by calling the <code>debugger</code> method.</p>
+<p>Here's an example:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class PeopleController &lt; ApplicationController
+  def new
+    debugger
+    @person = Person.new
+  end
+end
+
+</pre>
+</div>
+<p>If you see this message in the console or logs:</p>
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+***** Debugger requested, but was not available: Start server with --debugger to enable *****
+
+</pre>
+</div>
+<p>Make sure you have started your web server with the option <code>--debugger</code>:</p>
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+$ rails server --debugger
+=&gt; Booting WEBrick
+=&gt; Rails 4.1.4 application starting on http://0.0.0.0:3000
+=&gt; Debugger enabled
+...
+
+</pre>
+</div>
+<div class="info"><p>In development mode, you can dynamically <code>require 'debugger'</code> instead of restarting the server, even if it was started without <code>--debugger</code>.</p></div>
+<h4 id="the-shell">3.2 The Shell</h4>
+<p>As soon as your application calls the <code>debugger</code> method, the debugger will be started in a debugger shell inside the terminal window where you launched your application server, and you will be placed at the debugger's prompt <code>(rdb:n)</code>. The <em>n</em> is the thread number. The prompt will also show you the next line of code that is waiting to run.</p>
+<p>If you got there by a browser request, the browser tab containing the request will be hung until the debugger has finished and the trace has finished processing the entire request.</p>
+<p>For example:</p>
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+@posts = Post.all
+(rdb:7)
+
+</pre>
+</div>
+<p>Now it's time to explore and dig into your application. A good place to start is by asking the debugger for help. Type: <code>help</code></p>
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+(rdb:7) help
+ruby-debug help v0.10.2
+Type 'help &lt;command-name&gt;' for help on a specific command
+
+Available commands:
+backtrace  delete   enable  help    next  quit     show    trace
+break      disable  eval    info    p     reload   source  undisplay
+catch      display  exit    irb     pp    restart  step    up
+condition  down     finish  list    ps    save     thread  var
+continue   edit     frame   method  putl  set      tmate   where
+
+</pre>
+</div>
+<div class="info"><p>To view the help menu for any command use <code>help &lt;command-name&gt;</code> at the debugger prompt. For example: <em><code>help var</code></em></p></div>
+<p>The next command to learn is one of the most useful: <code>list</code>. You can abbreviate any debugging command by supplying just enough letters to distinguish them from other commands, so you can also use <code>l</code> for the <code>list</code> command.</p>
+<p>This command shows you where you are in the code by printing 10 lines centered around the current line; the current line in this particular case is line 6 and is marked by <code>=&gt;</code>.</p>
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+(rdb:7) list
+[1, 10] in /PathTo/project/app/controllers/posts_controller.rb
+   1  class PostsController &lt; ApplicationController
+   2    # GET /posts
+   3    # GET /posts.json
+   4    def index
+   5      debugger
+=&gt; 6      @posts = Post.all
+   7
+   8      respond_to do |format|
+   9        format.html # index.html.erb
+   10        format.json { render json: @posts }
+
+</pre>
+</div>
+<p>If you repeat the <code>list</code> command, this time using just <code>l</code>, the next ten lines of the file will be printed out.</p>
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+(rdb:7) l
+[11, 20] in /PathTo/project/app/controllers/posts_controller.rb
+   11      end
+   12    end
+   13
+   14    # GET /posts/1
+   15    # GET /posts/1.json
+   16    def show
+   17      @post = Post.find(params[:id])
+   18
+   19      respond_to do |format|
+   20        format.html # show.html.erb
+
+</pre>
+</div>
+<p>And so on until the end of the current file. When the end of file is reached, the <code>list</code> command will start again from the beginning of the file and continue again up to the end, treating the file as a circular buffer.</p>
+<p>On the other hand, to see the previous ten lines you should type <code>list-</code> (or <code>l-</code>)</p>
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+(rdb:7) l-
+[1, 10] in /PathTo/project/app/controllers/posts_controller.rb
+   1  class PostsController &lt; ApplicationController
+   2    # GET /posts
+   3    # GET /posts.json
+   4    def index
+   5      debugger
+   6      @posts = Post.all
+   7
+   8      respond_to do |format|
+   9        format.html # index.html.erb
+   10        format.json { render json: @posts }
+
+</pre>
+</div>
+<p>This way you can move inside the file, being able to see the code above and over the line you added the <code>debugger</code>.
+Finally, to see where you are in the code again you can type <code>list=</code></p>
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+(rdb:7) list=
+[1, 10] in /PathTo/project/app/controllers/posts_controller.rb
+   1  class PostsController &lt; ApplicationController
+   2    # GET /posts
+   3    # GET /posts.json
+   4    def index
+   5      debugger
+=&gt; 6      @posts = Post.all
+   7
+   8      respond_to do |format|
+   9        format.html # index.html.erb
+   10        format.json { render json: @posts }
+
+</pre>
+</div>
+<h4 id="the-context">3.3 The Context</h4>
+<p>When you start debugging your application, you will be placed in different contexts as you go through the different parts of the stack.</p>
+<p>The debugger creates a context when a stopping point or an event is reached. The context has information about the suspended program which enables a debugger to inspect the frame stack, evaluate variables from the perspective of the debugged program, and contains information about the place where the debugged program is stopped.</p>
+<p>At any time you can call the <code>backtrace</code> command (or its alias <code>where</code>) to print the backtrace of the application. This can be very helpful to know how you got where you are. If you ever wondered about how you got somewhere in your code, then <code>backtrace</code> will supply the answer.</p>
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+(rdb:5) where
+    #0 PostsController.index
+       at line /PathTo/project/app/controllers/posts_controller.rb:6
+    #1 Kernel.send
+       at line /PathTo/project/vendor/rails/actionpack/lib/action_controller/base.rb:1175
+    #2 ActionController::Base.perform_action_without_filters
+       at line /PathTo/project/vendor/rails/actionpack/lib/action_controller/base.rb:1175
+    #3 ActionController::Filters::InstanceMethods.call_filters(chain#ActionController::Fil...,...)
+       at line /PathTo/project/vendor/rails/actionpack/lib/action_controller/filters.rb:617
+...
+
+</pre>
+</div>
+<p>You move anywhere you want in this trace (thus changing the context) by using the <code>frame _n_</code> command, where <em>n</em> is the specified frame number.</p>
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+(rdb:5) frame 2
+#2 ActionController::Base.perform_action_without_filters
+       at line /PathTo/project/vendor/rails/actionpack/lib/action_controller/base.rb:1175
+
+</pre>
+</div>
+<p>The available variables are the same as if you were running the code line by line. After all, that's what debugging is.</p>
+<p>Moving up and down the stack frame: You can use <code>up [n]</code> (<code>u</code> for abbreviated) and <code>down [n]</code> commands in order to change the context <em>n</em> frames up or down the stack respectively. <em>n</em> defaults to one. Up in this case is towards higher-numbered stack frames, and down is towards lower-numbered stack frames.</p>
+<h4 id="threads">3.4 Threads</h4>
+<p>The debugger can list, stop, resume and switch between running threads by using the command <code>thread</code> (or the abbreviated <code>th</code>). This command has a handful of options:</p>
+<ul>
+<li>
+<code>thread</code> shows the current thread.</li>
+<li>
+<code>thread list</code> is used to list all threads and their statuses. The plus + character and the number indicates the current thread of execution.</li>
+<li>
+<code>thread stop _n_</code> stop thread <em>n</em>.</li>
+<li>
+<code>thread resume _n_</code> resumes thread <em>n</em>.</li>
+<li>
+<code>thread switch _n_</code> switches the current thread context to <em>n</em>.</li>
+</ul>
+<p>This command is very helpful, among other occasions, when you are debugging concurrent threads and need to verify that there are no race conditions in your code.</p>
+<h4 id="inspecting-variables">3.5 Inspecting Variables</h4>
+<p>Any expression can be evaluated in the current context. To evaluate an expression, just type it!</p>
+<p>This example shows how you can print the instance_variables defined within the current context:</p>
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+@posts = Post.all
+(rdb:11) instance_variables
+["@_response", "@action_name", "@url", "@_session", "@_cookies", "@performed_render", "@_flash", "@template", "@_params", "@before_filter_chain_aborted", "@request_origin", "@_headers", "@performed_redirect", "@_request"]
+
+</pre>
+</div>
+<p>As you may have figured out, all of the variables that you can access from a controller are displayed. This list is dynamically updated as you execute code. For example, run the next line using <code>next</code> (you'll learn more about this command later in this guide).</p>
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+(rdb:11) next
+Processing PostsController#index (for 127.0.0.1 at 2008-09-04 19:51:34) [GET]
+  Session ID: BAh7BiIKZmxhc2hJQzonQWN0aW9uQ29udHJvbGxlcjo6Rmxhc2g6OkZsYXNoSGFzaHsABjoKQHVzZWR7AA==--b16e91b992453a8cc201694d660147bba8b0fd0e
+  Parameters: {"action"=&gt;"index", "controller"=&gt;"posts"}
+/PathToProject/posts_controller.rb:8
+respond_to do |format|
+
+</pre>
+</div>
+<p>And then ask again for the instance_variables:</p>
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+(rdb:11) instance_variables.include? "@posts"
+true
+
+</pre>
+</div>
+<p>Now <code>@posts</code> is included in the instance variables, because the line defining it was executed.</p>
+<div class="info"><p>You can also step into <strong>irb</strong> mode with the command <code>irb</code> (of course!). This way an irb session will be started within the context you invoked it. But be warned: this is an experimental feature.</p></div>
+<p>The <code>var</code> method is the most convenient way to show variables and their values:</p>
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+var
+(rdb:1) v[ar] const &lt;object&gt;            show constants of object
+(rdb:1) v[ar] g[lobal]                  show global variables
+(rdb:1) v[ar] i[nstance] &lt;object&gt;       show instance variables of object
+(rdb:1) v[ar] l[ocal]                   show local variables
+
+</pre>
+</div>
+<p>This is a great way to inspect the values of the current context variables. For example:</p>
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+(rdb:9) var local
+  __dbg_verbose_save =&gt; false
+
+</pre>
+</div>
+<p>You can also inspect for an object method this way:</p>
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+(rdb:9) var instance Post.new
+@attributes = {"updated_at"=&gt;nil, "body"=&gt;nil, "title"=&gt;nil, "published"=&gt;nil, "created_at"...
+@attributes_cache = {}
+@new_record = true
+
+</pre>
+</div>
+<div class="info"><p>The commands <code>p</code> (print) and <code>pp</code> (pretty print) can be used to evaluate Ruby expressions and display the value of variables to the console.</p></div>
+<p>You can use also <code>display</code> to start watching variables. This is a good way of tracking the values of a variable while the execution goes on.</p>
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+(rdb:1) display @recent_comments
+1: @recent_comments =
+
+</pre>
+</div>
+<p>The variables inside the displaying list will be printed with their values after you move in the stack. To stop displaying a variable use <code>undisplay _n_</code> where <em>n</em> is the variable number (1 in the last example).</p>
+<h4 id="step-by-step">3.6 Step by Step</h4>
+<p>Now you should know where you are in the running trace and be able to print the available variables. But lets continue and move on with the application execution.</p>
+<p>Use <code>step</code> (abbreviated <code>s</code>) to continue running your program until the next logical stopping point and return control to the debugger.</p>
+<div class="info"><p>You can also use <code>step+ n</code> and <code>step- n</code> to move forward or backward <code>n</code> steps respectively.</p></div>
+<p>You may also use <code>next</code> which is similar to step, but function or method calls that appear within the line of code are executed without stopping. As with step, you may use plus sign to move <em>n</em> steps.</p>
+<p>The difference between <code>next</code> and <code>step</code> is that <code>step</code> stops at the next line of code executed, doing just a single step, while <code>next</code> moves to the next line without descending inside methods.</p>
+<p>For example, consider this block of code with an included <code>debugger</code> statement:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class Author &lt; ActiveRecord::Base
+  has_one :editorial
+  has_many :comments
+
+  def find_recent_comments(limit = 10)
+    debugger
+    @recent_comments ||= comments.where("created_at &gt; ?", 1.week.ago).limit(limit)
+  end
+end
+
+</pre>
+</div>
+<div class="info"><p>You can use the debugger while using <code>rails console</code>. Just remember to <code>require "debugger"</code> before calling the <code>debugger</code> method.</p></div>
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+$ rails console
+Loading development environment (Rails 4.1.4)
+&gt;&gt; require "debugger"
+=&gt; []
+&gt;&gt; author = Author.first
+=&gt; #&lt;Author id: 1, first_name: "Bob", last_name: "Smith", created_at: "2008-07-31 12:46:10", updated_at: "2008-07-31 12:46:10"&gt;
+&gt;&gt; author.find_recent_comments
+/PathTo/project/app/models/author.rb:11
+)
+
+</pre>
+</div>
+<p>With the code stopped, take a look around:</p>
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+(rdb:1) list
+[2, 9] in /PathTo/project/app/models/author.rb
+   2    has_one :editorial
+   3    has_many :comments
+   4
+   5    def find_recent_comments(limit = 10)
+   6      debugger
+=&gt; 7      @recent_comments ||= comments.where("created_at &gt; ?", 1.week.ago).limit(limit)
+   8    end
+   9  end
+
+</pre>
+</div>
+<p>You are at the end of the line, but... was this line executed? You can inspect the instance variables.</p>
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+(rdb:1) var instance
+@attributes = {"updated_at"=&gt;"2008-07-31 12:46:10", "id"=&gt;"1", "first_name"=&gt;"Bob", "las...
+@attributes_cache = {}
+
+</pre>
+</div>
+<p><code>@recent_comments</code> hasn't been defined yet, so it's clear that this line hasn't been executed yet. Use the <code>next</code> command to move on in the code:</p>
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+(rdb:1) next
+/PathTo/project/app/models/author.rb:12
+@recent_comments
+(rdb:1) var instance
+@attributes = {"updated_at"=&gt;"2008-07-31 12:46:10", "id"=&gt;"1", "first_name"=&gt;"Bob", "las...
+@attributes_cache = {}
+@comments = []
+@recent_comments = []
+
+</pre>
+</div>
+<p>Now you can see that the <code>@comments</code> relationship was loaded and @recent_comments defined because the line was executed.</p>
+<p>If you want to go deeper into the stack trace you can move single <code>steps</code>, through your calling methods and into Rails code. This is one of the best ways to find bugs in your code, or perhaps in Ruby or Rails.</p>
+<h4 id="breakpoints">3.7 Breakpoints</h4>
+<p>A breakpoint makes your application stop whenever a certain point in the program is reached. The debugger shell is invoked in that line.</p>
+<p>You can add breakpoints dynamically with the command <code>break</code> (or just <code>b</code>). There are 3 possible ways of adding breakpoints manually:</p>
+<ul>
+<li>
+<code>break line</code>: set breakpoint in the <em>line</em> in the current source file.</li>
+<li>
+<code>break file:line [if expression]</code>: set breakpoint in the <em>line</em> number inside the <em>file</em>. If an <em>expression</em> is given it must evaluated to <em>true</em> to fire up the debugger.</li>
+<li>
+<code>break class(.|\#)method [if expression]</code>: set breakpoint in <em>method</em> (. and # for class and instance method respectively) defined in <em>class</em>. The <em>expression</em> works the same way as with file:line.</li>
+</ul>
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+(rdb:5) break 10
+Breakpoint 1 file /PathTo/project/vendor/rails/actionpack/lib/action_controller/filters.rb, line 10
+
+</pre>
+</div>
+<p>Use <code>info breakpoints _n_</code> or <code>info break _n_</code> to list breakpoints. If you supply a number, it lists that breakpoint. Otherwise it lists all breakpoints.</p>
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+(rdb:5) info breakpoints
+Num Enb What
+  1 y   at filters.rb:10
+
+</pre>
+</div>
+<p>To delete breakpoints: use the command <code>delete _n_</code> to remove the breakpoint number <em>n</em>. If no number is specified, it deletes all breakpoints that are currently active..</p>
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+(rdb:5) delete 1
+(rdb:5) info breakpoints
+No breakpoints.
+
+</pre>
+</div>
+<p>You can also enable or disable breakpoints:</p>
+<ul>
+<li>
+<code>enable breakpoints</code>: allow a list <em>breakpoints</em> or all of them if no list is specified, to stop your program. This is the default state when you create a breakpoint.</li>
+<li>
+<code>disable breakpoints</code>: the <em>breakpoints</em> will have no effect on your program.</li>
+</ul>
+<h4 id="catching-exceptions">3.8 Catching Exceptions</h4>
+<p>The command <code>catch exception-name</code> (or just <code>cat exception-name</code>) can be used to intercept an exception of type <em>exception-name</em> when there would otherwise be is no handler for it.</p>
+<p>To list all active catchpoints use <code>catch</code>.</p>
+<h4 id="resuming-execution">3.9 Resuming Execution</h4>
+<p>There are two ways to resume execution of an application that is stopped in the debugger:</p>
+<ul>
+<li>
+<code>continue</code> [line-specification] (or <code>c</code>): resume program execution, at the address where your script last stopped; any breakpoints set at that address are bypassed. The optional argument line-specification allows you to specify a line number to set a one-time breakpoint which is deleted when that breakpoint is reached.</li>
+<li>
+<code>finish</code> [frame-number] (or <code>fin</code>): execute until the selected stack frame returns. If no frame number is given, the application will run until the currently selected frame returns. The currently selected frame starts out the most-recent frame or 0 if no frame positioning (e.g up, down or frame) has been performed. If a frame number is given it will run until the specified frame returns.</li>
+</ul>
+<h4 id="editing">3.10 Editing</h4>
+<p>Two commands allow you to open code from the debugger into an editor:</p>
+<ul>
+<li>
+<code>edit [file:line]</code>: edit <em>file</em> using the editor specified by the EDITOR environment variable. A specific <em>line</em> can also be given.</li>
+<li>
+<code>tmate _n_</code> (abbreviated <code>tm</code>): open the current file in TextMate. It uses n-th frame if <em>n</em> is specified.</li>
+</ul>
+<h4 id="quitting">3.11 Quitting</h4>
+<p>To exit the debugger, use the <code>quit</code> command (abbreviated <code>q</code>), or its alias <code>exit</code>.</p>
+<p>A simple quit tries to terminate all threads in effect. Therefore your server will be stopped and you will have to start it again.</p>
+<h4 id="settings">3.12 Settings</h4>
+<p>The <code>debugger</code> gem can automatically show the code you're stepping through and reload it when you change it in an editor. Here are a few of the available options:</p>
+<ul>
+<li>
+<code>set reload</code>: Reload source code when changed.</li>
+<li>
+<code>set autolist</code>: Execute <code>list</code> command on every breakpoint.</li>
+<li>
+<code>set listsize _n_</code>: Set number of source lines to list by default to <em>n</em>.</li>
+<li>
+<code>set forcestep</code>: Make sure the <code>next</code> and <code>step</code> commands always move to a new line</li>
+</ul>
+<p>You can see the full list by using <code>help set</code>. Use <code>help set _subcommand_</code> to learn about a particular <code>set</code> command.</p>
+<div class="info"><p>You can save these settings in an <code>.rdebugrc</code> file in your home directory. The debugger reads these global settings when it starts.</p></div>
+<p>Here's a good start for an <code>.rdebugrc</code>:</p>
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+set autolist
+set forcestep
+set listsize 25
+
+</pre>
+</div>
+</body>
+</html>

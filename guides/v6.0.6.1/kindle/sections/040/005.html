@@ -1,0 +1,384 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>6 Improving engine functionality</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v6.0.6.1/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="improving-engine-functionality"><a class="anchorlink" href="#improving-engine-functionality">6 Improving engine functionality</a></h3>
+<p>This section explains how to add and/or override engine MVC functionality in the
+main Rails application.</p>
+
+<h4 id="overriding-models-and-controllers"><a class="anchorlink" href="#overriding-models-and-controllers">6.1 Overriding Models and Controllers</a></h4>
+
+<p>Engine model and controller classes can be extended by open classing them in the
+main Rails application (since model and controller classes are just Ruby classes
+that inherit Rails specific functionality). Open classing an Engine class
+redefines it for use in the main application.</p>
+
+<p>For simple class modifications, use <code>Class#class_eval</code>. For complex class
+modifications, consider using <code>ActiveSupport::Concern</code>.</p>
+
+<h5 id="a-note-on-overriding-and-loading-code"><a class="anchorlink" href="#a-note-on-overriding-and-loading-code">6.1.1 A note on Overriding and Loading Code</a></h5>
+
+<p>Because these overrides are not referenced by your Rails application itself,
+Rails' autoloading system will not kick in and load your overrides. This means
+that you need to require them yourself.</p>
+
+<p>Here is some sample code to do this:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+# lib/blorgh/engine.rb
+module Blorgh
+  class Engine &lt; ::Rails::Engine
+    isolate_namespace Blorgh
+
+    config.to_prepare do
+      Dir.glob(Rails.root + "app/overrides/**/*_override*.rb").each do |c|
+        require_dependency(c)
+      end
+    end
+  end
+end
+
+</pre>
+</div>
+<p>This doesn't apply to just overrides, but anything that you add in an engine
+that isn't referenced by your main application.</p>
+
+<h5 id="reopening-existing-classes-using-class-class-eval"><a class="anchorlink" href="#reopening-existing-classes-using-class-class-eval">6.1.2 Reopening existing classes using Class#class_eval</a></h5>
+
+<p><strong>Adding</strong> <code>Article#time_since_created</code>:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+# MyApp/app/overrides/models/blorgh/article_override.rb
+
+Blorgh::Article.class_eval do
+  def time_since_created
+    Time.current - created_at
+  end
+end
+
+</pre>
+</div>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+# Blorgh/app/models/blorgh/article.rb
+module Blorgh
+  class Article &lt; ApplicationRecord
+    has_many :comments
+  end
+end
+
+</pre>
+</div>
+<p><strong>Overriding</strong> <code>Article#summary</code>:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+# MyApp/app/overrides/models/blorgh/article_override.rb
+
+Blorgh::Article.class_eval do
+  def summary
+    "#{title} - #{truncate(text)}"
+  end
+end
+
+</pre>
+</div>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+# Blorgh/app/models/blorgh/article.rb
+module Blorgh
+  class Article &lt; ApplicationRecord
+    has_many :comments
+    def summary
+      "#{title}"
+    end
+  end
+end
+
+</pre>
+</div>
+<h5 id="reopening-existing-classes-using-activesupport-concern"><a class="anchorlink" href="#reopening-existing-classes-using-activesupport-concern">6.1.3 Reopening existing classes using ActiveSupport::Concern</a></h5>
+
+<p>Using <code>Class#class_eval</code> is great for simple adjustments, but for more complex
+class modifications, you might want to consider using <a href="https://api.rubyonrails.org/v6.0.6.1/classes/ActiveSupport/Concern.html"><code>ActiveSupport::Concern</code></a>.
+ActiveSupport::Concern manages load order of interlinked dependent modules and
+classes at run time allowing you to significantly modularize your code.</p>
+
+<p><strong>Adding</strong> <code>Article#time_since_created</code> and <strong>Overriding</strong> <code>Article#summary</code>:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+# MyApp/app/models/blorgh/article.rb
+
+class Blorgh::Article &lt; ApplicationRecord
+  include Blorgh::Concerns::Models::Article
+
+  def time_since_created
+    Time.current - created_at
+  end
+
+  def summary
+    "#{title} - #{truncate(text)}"
+  end
+end
+
+</pre>
+</div>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+# Blorgh/app/models/blorgh/article.rb
+module Blorgh
+  class Article &lt; ApplicationRecord
+    include Blorgh::Concerns::Models::Article
+  end
+end
+
+</pre>
+</div>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+# Blorgh/lib/concerns/models/article.rb
+
+module Blorgh::Concerns::Models::Article
+  extend ActiveSupport::Concern
+
+  # 'included do' causes the included code to be evaluated in the
+  # context where it is included (article.rb), rather than being
+  # executed in the module's context (blorgh/concerns/models/article).
+  included do
+    attr_accessor :author_name
+    belongs_to :author, class_name: "User"
+
+    before_validation :set_author
+
+    private
+      def set_author
+        self.author = User.find_or_create_by(name: author_name)
+      end
+  end
+
+  def summary
+    "#{title}"
+  end
+
+  module ClassMethods
+    def some_class_method
+      'some class method string'
+    end
+  end
+end
+
+</pre>
+</div>
+<h4 id="overriding-views"><a class="anchorlink" href="#overriding-views">6.2 Overriding Views</a></h4>
+
+<p>When Rails looks for a view to render, it will first look in the <code>app/views</code>
+directory of the application. If it cannot find the view there, it will check in
+the <code>app/views</code> directories of all engines that have this directory.</p>
+
+<p>When the application is asked to render the view for <code>Blorgh::ArticlesController</code>'s
+index action, it will first look for the path
+<code>app/views/blorgh/articles/index.html.erb</code> within the application. If it cannot
+find it, it will look inside the engine.</p>
+
+<p>You can override this view in the application by simply creating a new file at
+<code>app/views/blorgh/articles/index.html.erb</code>. Then you can completely change what
+this view would normally output.</p>
+
+<p>Try this now by creating a new file at <code>app/views/blorgh/articles/index.html.erb</code>
+and put this content in it:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; html-script: true; gutter: false; toolbar: false">
+&lt;h1&gt;Articles&lt;/h1&gt;
+&lt;%= link_to "New Article", new_article_path %&gt;
+&lt;% @articles.each do |article| %&gt;
+  &lt;h2&gt;&lt;%= article.title %&gt;&lt;/h2&gt;
+  &lt;small&gt;By &lt;%= article.author %&gt;&lt;/small&gt;
+  &lt;%= simple_format(article.text) %&gt;
+  &lt;hr&gt;
+&lt;% end %&gt;
+
+</pre>
+</div>
+<h4 id="routes"><a class="anchorlink" href="#routes">6.3 Routes</a></h4>
+
+<p>Routes inside an engine are isolated from the application by default. This is
+done by the <code>isolate_namespace</code> call inside the <code>Engine</code> class. This essentially
+means that the application and its engines can have identically named routes and
+they will not clash.</p>
+
+<p>Routes inside an engine are drawn on the <code>Engine</code> class within
+<code>config/routes.rb</code>, like this:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+Blorgh::Engine.routes.draw do
+  resources :articles
+end
+
+</pre>
+</div>
+<p>By having isolated routes such as this, if you wish to link to an area of an
+engine from within an application, you will need to use the engine's routing
+proxy method. Calls to normal routing methods such as <code>articles_path</code> may end up
+going to undesired locations if both the application and the engine have such a
+helper defined.</p>
+
+<p>For instance, the following example would go to the application's <code>articles_path</code>
+if that template was rendered from the application, or the engine's <code>articles_path</code>
+if it was rendered from the engine:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; html-script: true; gutter: false; toolbar: false">
+&lt;%= link_to "Blog articles", articles_path %&gt;
+
+</pre>
+</div>
+<p>To make this route always use the engine's <code>articles_path</code> routing helper method,
+we must call the method on the routing proxy method that shares the same name as
+the engine.</p>
+
+<div class="code_container">
+<pre class="brush: ruby; html-script: true; gutter: false; toolbar: false">
+&lt;%= link_to "Blog articles", blorgh.articles_path %&gt;
+
+</pre>
+</div>
+<p>If you wish to reference the application inside the engine in a similar way, use
+the <code>main_app</code> helper:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; html-script: true; gutter: false; toolbar: false">
+&lt;%= link_to "Home", main_app.root_path %&gt;
+
+</pre>
+</div>
+<p>If you were to use this inside an engine, it would <strong>always</strong> go to the
+application's root. If you were to leave off the <code>main_app</code> "routing proxy"
+method call, it could potentially go to the engine's or application's root,
+depending on where it was called from.</p>
+
+<p>If a template rendered from within an engine attempts to use one of the
+application's routing helper methods, it may result in an undefined method call.
+If you encounter such an issue, ensure that you're not attempting to call the
+application's routing methods without the <code>main_app</code> prefix from within the
+engine.</p>
+
+<h4 id="assets"><a class="anchorlink" href="#assets">6.4 Assets</a></h4>
+
+<p>Assets within an engine work in an identical way to a full application. Because
+the engine class inherits from <code>Rails::Engine</code>, the application will know to
+look up assets in the engine's <code>app/assets</code> and <code>lib/assets</code> directories.</p>
+
+<p>Like all of the other components of an engine, the assets should be namespaced.
+This means that if you have an asset called <code>style.css</code>, it should be placed at
+<code>app/assets/stylesheets/[engine name]/style.css</code>, rather than
+<code>app/assets/stylesheets/style.css</code>. If this asset isn't namespaced, there is a
+possibility that the host application could have an asset named identically, in
+which case the application's asset would take precedence and the engine's one
+would be ignored.</p>
+
+<p>Imagine that you did have an asset located at
+<code>app/assets/stylesheets/blorgh/style.css</code> To include this asset inside an
+application, just use <code>stylesheet_link_tag</code> and reference the asset as if it
+were inside the engine:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; html-script: true; gutter: false; toolbar: false">
+&lt;%= stylesheet_link_tag "blorgh/style.css" %&gt;
+
+</pre>
+</div>
+<p>You can also specify these assets as dependencies of other assets using Asset
+Pipeline require statements in processed files:</p>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+/*
+ *= require blorgh/style
+*/
+
+</pre>
+</div>
+<div class="info"><p>Remember that in order to use languages like Sass or CoffeeScript, you
+should add the relevant library to your engine's <code>.gemspec</code>.</p></div>
+
+<h4 id="separate-assets-precompiling"><a class="anchorlink" href="#separate-assets-precompiling">6.5 Separate Assets &amp; Precompiling</a></h4>
+
+<p>There are some situations where your engine's assets are not required by the
+host application. For example, say that you've created an admin functionality
+that only exists for your engine. In this case, the host application doesn't
+need to require <code>admin.css</code> or <code>admin.js</code>. Only the gem's admin layout needs
+these assets. It doesn't make sense for the host app to include
+<code>"blorgh/admin.css"</code> in its stylesheets. In this situation, you should
+explicitly define these assets for precompilation.  This tells Sprockets to add
+your engine assets when <code>rails assets:precompile</code> is triggered.</p>
+
+<p>You can define assets for precompilation in <code>engine.rb</code>:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+initializer "blorgh.assets.precompile" do |app|
+  app.config.assets.precompile += %w( admin.js admin.css )
+end
+
+</pre>
+</div>
+<p>For more information, read the <a href="asset_pipeline.html">Asset Pipeline guide</a>.</p>
+
+<h4 id="other-gem-dependencies"><a class="anchorlink" href="#other-gem-dependencies">6.6 Other Gem Dependencies</a></h4>
+
+<p>Gem dependencies inside an engine should be specified inside the <code>.gemspec</code> file
+at the root of the engine. The reason is that the engine may be installed as a
+gem. If dependencies were to be specified inside the <code>Gemfile</code>, these would not
+be recognized by a traditional gem install and so they would not be installed,
+causing the engine to malfunction.</p>
+
+<p>To specify a dependency that should be installed with the engine during a
+traditional <code>gem install</code>, specify it inside the <code>Gem::Specification</code> block
+inside the <code>.gemspec</code> file in the engine:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+s.add_dependency "moo"
+
+</pre>
+</div>
+<p>To specify a dependency that should only be installed as a development
+dependency of the application, specify it like this:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+s.add_development_dependency "moo"
+
+</pre>
+</div>
+<p>Both kinds of dependencies will be installed when <code>bundle install</code> is run inside
+of the application. The development dependencies for the gem will only be used
+when the development and tests for the engine are running.</p>
+
+<p>Note that if you want to immediately require dependencies when the engine is
+required, you should require them before the engine's initialization. For
+example:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+require 'other_engine/engine'
+require 'yet_another_engine/engine'
+
+module MyEngine
+  class Engine &lt; ::Rails::Engine
+  end
+end
+
+</pre>
+</div>
+</body>
+</html>

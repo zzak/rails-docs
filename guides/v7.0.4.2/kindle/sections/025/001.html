@@ -1,0 +1,221 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>2 Sessions</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v7.0.4.2/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="sessions"><a class="anchorlink" href="#sessions">2 Sessions</a></h3>
+<p>This chapter describes some particular attacks related to sessions, and security measures to protect your session data.</p>
+
+<h4 id="what-are-sessions-questionmark"><a class="anchorlink" href="#what-are-sessions-questionmark">2.1 What are Sessions?</a></h4>
+
+<div class="info"><p>Sessions enable the application to maintain user-specific state, while users interact with the application. For example, sessions allow users to authenticate once and remain signed in for future requests.</p></div>
+
+<p>Most applications need to keep track of state for users that interact with the application. This could be the contents of a shopping basket, or the user id of the currently logged in user. This kind of user-specific state can be stored in the session.</p>
+
+<p>Rails provides a session object for each user that accesses the application. If the user already has an active session, Rails uses the existing session. Otherwise a new session is created.</p>
+
+<div class="note"><p>Read more about sessions and how to use them in <a href="action_controller_overview.html#session">Action Controller Overview Guide</a>.</p></div>
+
+<h4 id="session-hijacking"><a class="anchorlink" href="#session-hijacking">2.2 Session Hijacking</a></h4>
+
+<div class="warning"><p><em>Stealing a user's session ID lets an attacker use the web application in the victim's name.</em></p></div>
+
+<p>Many web applications have an authentication system: a user provides a username and password, the web application checks them and stores the corresponding user id in the session hash. From now on, the session is valid. On every request the application will load the user, identified by the user id in the session, without the need for new authentication. The session ID in the cookie identifies the session.</p>
+
+<p>Hence, the cookie serves as temporary authentication for the web application. Anyone who seizes a cookie from someone else, may use the web application as this user - with possibly severe consequences. Here are some ways to hijack a session, and their countermeasures:</p>
+<ul>
+<li>
+Sniff the cookie in an insecure network. A wireless LAN can be an example of such a network. In an unencrypted wireless LAN, it is especially easy to listen to the traffic of all connected clients. For the web application builder this means to <em>provide a secure connection over SSL</em>. In Rails 3.1 and later, this could be accomplished by always forcing SSL connection in your application config file:
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">config</span><span class="p">.</span><span class="nf">force_ssl</span> <span class="o">=</span> <span class="kp">true</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="config.force_ssl = true
+">Copy</button>
+</div>
+</li>
+<li>Most people don't clear out the cookies after working at a public terminal. So if the last user didn't log out of a web application, you would be able to use it as this user. Provide the user with a <em>log-out button</em> in the web application, and <em>make it prominent</em>.</li>
+<li>Many cross-site scripting (XSS) exploits aim at obtaining the user's cookie. You'll read <a href="#cross-site-scripting-xss">more about XSS</a> later.</li>
+<li>Instead of stealing a cookie unknown to the attacker, they fix a user's session identifier (in the cookie) known to them. Read more about this so-called session fixation later.</li>
+</ul>
+<p>The main objective of most attackers is to make money. The underground prices for stolen bank login accounts range from 0.5%-10% of account balance, $0.5-$30 for credit card numbers ($20-$60 with full details), $0.1-$1.5 for identities (Name, SSN, and DOB), $20-$50 for retailer accounts, and $6-$10 for cloud service provider accounts, according to the <a href="https://docs.broadcom.com/docs/istr-22-2017-en">Symantec Internet Security Threat Report (2017)</a>.</p>
+
+<h4 id="session-storage"><a class="anchorlink" href="#session-storage">2.3 Session Storage</a></h4>
+
+<div class="note"><p>Rails uses <code>ActionDispatch::Session::CookieStore</code> as the default session storage.</p></div>
+
+<div class="info"><p>Learn more about other session storages in <a href="action_controller_overview.html#session">Action Controller Overview Guide</a>.</p></div>
+
+<p>Rails <code>CookieStore</code> saves the session hash in a cookie on the client-side.
+The server retrieves the session hash from the cookie and
+eliminates the need for a session ID. That will greatly increase the
+speed of the application, but it is a controversial storage option and
+you have to think about the security implications and storage
+limitations of it:</p>
+<ul>
+<li>Cookies have a size limit of 4 kB. Use cookies only for data which is relevant for the session.</li>
+<li>Cookies are stored on the client-side. The client may preserve cookie contents even for expired cookies. The client may copy cookies to other machines. Avoid storing sensitive data in cookies.</li>
+<li>Cookies are temporary by nature. The server can set expiration time for the cookie, but the client may delete the cookie and its contents before that. Persist all data that is of more permanent nature on the server side.</li>
+<li>Session cookies do not invalidate themselves and can be maliciously
+reused. It may be a good idea to have your application invalidate old
+session cookies using a stored timestamp.</li>
+<li>Rails encrypts cookies by default. The client cannot read or edit the contents of the cookie, without breaking encryption. If you take appropriate care of your secrets, you can consider your cookies to be generally secured.</li>
+</ul>
+<p>The <code>CookieStore</code> uses the
+<a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActionDispatch/Cookies/ChainedCookieJars.html#method-i-encrypted">encrypted</a>
+cookie jar to provide a secure, encrypted location to store session
+data. Cookie-based sessions thus provide both integrity as well as
+confidentiality to their contents. The encryption key, as well as the
+verification key used for
+<a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActionDispatch/Cookies/ChainedCookieJars.html#method-i-signed">signed</a>
+cookies, is derived from the <code>secret_key_base</code> configuration value.</p>
+
+<div class="info"><p>Secrets must be long and random. Use <code>bin/rails secret</code> to get new unique secrets.</p></div>
+
+<div class="info"><p>Learn more about <a href="security.html#custom-credentials">managing credentials later in this guide</a></p></div>
+
+<p>It is also important to use different salt values for encrypted and
+signed cookies. Using the same value for different salt configuration
+values may lead to the same derived key being used for different
+security features which in turn may weaken the strength of the key.</p>
+
+<p>In test and development applications get a <code>secret_key_base</code> derived from the app name. Other environments must use a random key present in <code>config/credentials.yml.enc</code>, shown here in its decrypted state:</p>
+
+<div class="code_container">
+<pre><code class="highlight yaml"><span class="na">secret_key_base</span><span class="pi">:</span> <span class="s">492f...</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="secret_key_base: 492f...
+">Copy</button>
+</div>
+<div class="warning"><p>If your application's secrets may have been exposed, strongly consider changing them. Changing <code>secret_key_base</code> will expire currently active sessions.</p></div>
+
+<h4 id="rotating-encrypted-and-signed-cookies-configurations"><a class="anchorlink" href="#rotating-encrypted-and-signed-cookies-configurations">2.4 Rotating Encrypted and Signed Cookies Configurations</a></h4>
+
+<p>Rotation is ideal for changing cookie configurations and ensuring old cookies
+aren't immediately invalid. Your users then have a chance to visit your site,
+get their cookie read with an old configuration and have it rewritten with the
+new change. The rotation can then be removed once you're comfortable enough
+users have had their chance to get their cookies upgraded.</p>
+
+<p>It's possible to rotate the ciphers and digests used for encrypted and signed cookies.</p>
+
+<p>For instance to change the digest used for signed cookies from SHA1 to SHA256,
+you would first assign the new configuration value:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="no">Rails</span><span class="p">.</span><span class="nf">application</span><span class="p">.</span><span class="nf">config</span><span class="p">.</span><span class="nf">action_dispatch</span><span class="p">.</span><span class="nf">signed_cookie_digest</span> <span class="o">=</span> <span class="s2">"SHA256"</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='Rails.application.config.action_dispatch.signed_cookie_digest = "SHA256"
+'>Copy</button>
+</div>
+<p>Now add a rotation for the old SHA1 digest so existing cookies are
+seamlessly upgraded to the new SHA256 digest.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="no">Rails</span><span class="p">.</span><span class="nf">application</span><span class="p">.</span><span class="nf">config</span><span class="p">.</span><span class="nf">action_dispatch</span><span class="p">.</span><span class="nf">cookies_rotations</span><span class="p">.</span><span class="nf">tap</span> <span class="k">do</span> <span class="o">|</span><span class="n">cookies</span><span class="o">|</span>
+  <span class="n">cookies</span><span class="p">.</span><span class="nf">rotate</span> <span class="ss">:signed</span><span class="p">,</span> <span class="ss">digest: </span><span class="s2">"SHA1"</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='Rails.application.config.action_dispatch.cookies_rotations.tap do |cookies|
+  cookies.rotate :signed, digest: "SHA1"
+end
+'>Copy</button>
+</div>
+<p>Then any written signed cookies will be digested with SHA256. Old cookies
+that were written with SHA1 can still be read, and if accessed will be written
+with the new digest so they're upgraded and won't be invalid when you remove the
+rotation.</p>
+
+<p>Once users with SHA1 digested signed cookies should no longer have a chance to
+have their cookies rewritten, remove the rotation.</p>
+
+<p>While you can set up as many rotations as you'd like it's not common to have many
+rotations going at any one time.</p>
+
+<p>For more details on key rotation with encrypted and signed messages as
+well as the various options the <code>rotate</code> method accepts, please refer to
+the
+<a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveSupport/MessageEncryptor.html">MessageEncryptor API</a>
+and
+<a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveSupport/MessageVerifier.html">MessageVerifier API</a>
+documentation.</p>
+
+<h4 id="replay-attacks-for-cookiestore-sessions"><a class="anchorlink" href="#replay-attacks-for-cookiestore-sessions">2.5 Replay Attacks for CookieStore Sessions</a></h4>
+
+<div class="info"><p><em>Another sort of attack you have to be aware of when using <code>CookieStore</code> is the replay attack.</em></p></div>
+
+<p>It works like this:</p>
+<ul>
+<li>A user receives credits, the amount is stored in a session (which is a bad idea anyway, but we'll do this for demonstration purposes).</li>
+<li>The user buys something.</li>
+<li>The new adjusted credit value is stored in the session.</li>
+<li>The user takes the cookie from the first step (which they previously copied) and replaces the current cookie in the browser.</li>
+<li>The user has their original credit back.</li>
+</ul>
+<p>Including a nonce (a random value) in the session solves replay attacks. A nonce is valid only once, and the server has to keep track of all the valid nonces. It gets even more complicated if you have several application servers. Storing nonces in a database table would defeat the entire purpose of CookieStore (avoiding accessing the database).</p>
+
+<p>The best <em>solution against it is not to store this kind of data in a session, but in the database</em>. In this case store the credit in the database and the <code>logged_in_user_id</code> in the session.</p>
+
+<h4 id="session-fixation"><a class="anchorlink" href="#session-fixation">2.6 Session Fixation</a></h4>
+
+<div class="note"><p><em>Apart from stealing a user's session ID, the attacker may fix a session ID known to them. This is called session fixation.</em></p></div>
+
+<p><img src="/home/rails/v7.0.4.2/guides/output/kindle/images/security/session_fixation.png" alt="Session fixation"></p>
+
+<p>This attack focuses on fixing a user's session ID known to the attacker, and forcing the user's browser into using this ID. It is therefore not necessary for the attacker to steal the session ID afterwards. Here is how this attack works:</p>
+<ul>
+<li>The attacker creates a valid session ID: They load the login page of the web application where they want to fix the session, and take the session ID in the cookie from the response (see number 1 and 2 in the image).</li>
+<li>They maintain the session by accessing the web application periodically in order to keep an expiring session alive.</li>
+<li>The attacker forces the user's browser into using this session ID (see number 3 in the image). As you may not change a cookie of another domain (because of the same origin policy), the attacker has to run a JavaScript from the domain of the target web application. Injecting the JavaScript code into the application by XSS accomplishes this attack. Here is an example: <code>&lt;script&gt;document.cookie="_session_id=16d5b78abb28e3d6206b60f22a03c8d9";&lt;/script&gt;</code>. Read more about XSS and injection later on.</li>
+<li>The attacker lures the victim to the infected page with the JavaScript code. By viewing the page, the victim's browser will change the session ID to the trap session ID.</li>
+<li>As the new trap session is unused, the web application will require the user to authenticate.</li>
+<li>From now on, the victim and the attacker will co-use the web application with the same session: The session became valid and the victim didn't notice the attack.</li>
+</ul>
+<h4 id="session-fixation-countermeasures"><a class="anchorlink" href="#session-fixation-countermeasures">2.7 Session Fixation - Countermeasures</a></h4>
+
+<div class="info"><p><em>One line of code will protect you from session fixation.</em></p></div>
+
+<p>The most effective countermeasure is to <em>issue a new session identifier</em> and declare the old one invalid after a successful login. That way, an attacker cannot use the fixed session identifier. This is a good countermeasure against session hijacking, as well. Here is how to create a new session in Rails:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">reset_session</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="reset_session
+">Copy</button>
+</div>
+<p>If you use the popular <a href="https://rubygems.org/gems/devise">Devise</a> gem for user management, it will automatically expire sessions on sign in and sign out for you. If you roll your own, remember to expire the session after your sign in action (when the session is created). This will remove values from the session, therefore <em>you will have to transfer them to the new session</em>.</p>
+
+<p>Another countermeasure is to <em>save user-specific properties in the session</em>, verify them every time a request comes in, and deny access, if the information does not match. Such properties could be the remote IP address or the user agent (the web browser name), though the latter is less user-specific. When saving the IP address, you have to bear in mind that there are Internet service providers or large organizations that put their users behind proxies. <em>These might change over the course of a session</em>, so these users will not be able to use your application, or only in a limited way.</p>
+
+<h4 id="session-expiry"><a class="anchorlink" href="#session-expiry">2.8 Session Expiry</a></h4>
+
+<div class="note"><p><em>Sessions that never expire extend the time-frame for attacks such as cross-site request forgery (CSRF), session hijacking, and session fixation.</em></p></div>
+
+<p>One possibility is to set the expiry time-stamp of the cookie with the session ID. However the client can edit cookies that are stored in the web browser so expiring sessions on the server is safer. Here is an example of how to <em>expire sessions in a database table</em>. Call <code>Session.sweep(20.minutes)</code> to expire sessions that were used longer than 20 minutes ago.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">Session</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="k">def</span> <span class="nc">self</span><span class="o">.</span><span class="nf">sweep</span><span class="p">(</span><span class="n">time</span> <span class="o">=</span> <span class="mi">1</span><span class="p">.</span><span class="nf">hour</span><span class="p">)</span>
+    <span class="n">where</span><span class="p">(</span><span class="s2">"updated_at &lt; ?"</span><span class="p">,</span> <span class="n">time</span><span class="p">.</span><span class="nf">ago</span><span class="p">.</span><span class="nf">to_fs</span><span class="p">(</span><span class="ss">:db</span><span class="p">)).</span><span class="nf">delete_all</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='class Session &lt; ApplicationRecord
+  def self.sweep(time = 1.hour)
+    where("updated_at &lt; ?", time.ago.to_fs(:db)).delete_all
+  end
+end
+'>Copy</button>
+</div>
+<p>The section about session fixation introduced the problem of maintained sessions. An attacker maintaining a session every five minutes can keep the session alive forever, although you are expiring sessions. A simple solution for this would be to add a <code>created_at</code> column to the sessions table. Now you can delete sessions that were created a long time ago. Use this line in the sweep method above:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">where</span><span class="p">(</span><span class="s2">"updated_at &lt; ? OR created_at &lt; ?"</span><span class="p">,</span> <span class="n">time</span><span class="p">.</span><span class="nf">ago</span><span class="p">.</span><span class="nf">to_fs</span><span class="p">(</span><span class="ss">:db</span><span class="p">),</span> <span class="mi">2</span><span class="p">.</span><span class="nf">days</span><span class="p">.</span><span class="nf">ago</span><span class="p">.</span><span class="nf">to_fs</span><span class="p">(</span><span class="ss">:db</span><span class="p">)).</span><span class="nf">delete_all</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='where("updated_at &lt; ? OR created_at &lt; ?", time.ago.to_fs(:db), 2.days.ago.to_fs(:db)).delete_all
+'>Copy</button>
+</div>
+</body>
+</html>

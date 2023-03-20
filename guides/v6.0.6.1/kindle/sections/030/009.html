@@ -1,0 +1,40 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>10 Troubleshooting</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v6.0.6.1/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="troubleshooting"><a class="anchorlink" href="#troubleshooting">10 Troubleshooting</a></h3>
+<p>The best way to follow what the loaders are doing is to inspect their activity.</p>
+
+<p>The easiest way to do that is to throw</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+Rails.autoloaders.log!
+
+</pre>
+</div>
+<p>to <code>config/application.rb</code> after loading the framework defaults. That will print traces to standard output.</p>
+
+<p>If you prefer logging to a file, configure this instead:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+Rails.autoloaders.logger = Logger.new("#{Rails.root}/log/autoloading.log")
+
+</pre>
+</div>
+<p>The Rails logger is still not ready in <code>config/application.rb</code>, but it is in initializers:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+# config/initializers/log_autoloaders.rb
+Rails.autoloaders.logger = Rails.logger
+
+</pre>
+</div>
+</body>
+</html>

@@ -1,0 +1,67 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>6 Downloading Files</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v5.2.8.1/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="downloading-files"><a class="anchorlink" href="#downloading-files">6 Downloading Files</a></h3>
+<p>If you need to process the blobs on the server side, such as, when performing
+analysis or further conversions, you can download the blob and get a binary
+object:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+binary = user.avatar.download
+
+</pre>
+</div>
+<p>In some cases you might want to convert that into an actual file on the disk to
+pass the file path to external programs (such as virus scanners, converters,
+optimizers, minifiers, etc.). In this case you can include the
+<code>ActiveStorage::Downloading</code> module into your class which provides helpers to
+download directly into files while avoiding to store the file into memory.
+<code>ActiveStorage::Downloading</code> expects a <code>blob</code> method to be defined.</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class VirusScanner
+  include ActiveStorage::Downloading
+
+  attr_reader :blob
+
+  def initialize(blob)
+    @blob = blob
+  end
+
+  def scan
+    download_blob_to_tempfile do |file|
+      system 'scan_virus', file.path
+    end
+  end
+end
+
+</pre>
+</div>
+<p>By default, <code>download_blob_to_tempfile</code> creates files in <code>Dir.tmpdir</code>. If you need to use another directory, override ActiveStorage::Downloading#tempdir in your class:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class VirusScanner
+  include ActiveStorage::Downloading
+  # ...
+
+  private
+    def tempdir
+      '/path/to/tmp'
+    end
+end
+
+</pre>
+</div>
+<p>If the external program is run as a separate program, you might also want to
+<code>chmod</code> the file and it's directory, as it is inaccessible by other users
+because <code>Tempfile</code> will set the permissions to <code>0600</code>.</p>
+</body>
+</html>

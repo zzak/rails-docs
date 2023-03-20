@@ -1,0 +1,2355 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>4 Detailed Association Reference</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v7.0.4.2/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="detailed-association-reference"><a class="anchorlink" href="#detailed-association-reference">4 Detailed Association Reference</a></h3>
+<p>The following sections give the details of each type of association, including the methods that they add and the options that you can use when declaring an association.</p>
+
+<h4 id="belongs-to-association-reference"><a class="anchorlink" href="#belongs-to-association-reference">4.1 <code>belongs_to</code> Association Reference</a></h4>
+
+<p>In database terms, the <code>belongs_to</code> association says that this model's table contains a column which represents a reference to another table.
+This can be used to set up one-to-one or one-to-many relations, depending on the setup.
+If the table of the other class contains the reference in a one-to-one relation, then you should use <code>has_one</code> instead.</p>
+
+<h5 id="methods-added-by-belongs-to"><a class="anchorlink" href="#methods-added-by-belongs-to">4.1.1 Methods Added by <code>belongs_to</code></a></h5>
+
+<p>When you declare a <code>belongs_to</code> association, the declaring class automatically gains 8 methods related to the association:</p>
+<ul>
+<li><code>association</code></li>
+<li><code>association=(associate)</code></li>
+<li><code>build_association(attributes = {})</code></li>
+<li><code>create_association(attributes = {})</code></li>
+<li><code>create_association!(attributes = {})</code></li>
+<li><code>reload_association</code></li>
+<li><code>association_changed?</code></li>
+<li><code>association_previously_changed?</code></li>
+</ul>
+<p>In all of these methods, <code>association</code> is replaced with the symbol passed as the first argument to <code>belongs_to</code>. For example, given the declaration:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">Book</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="n">belongs_to</span> <span class="ss">:author</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="class Book &lt; ApplicationRecord
+  belongs_to :author
+end
+">Copy</button>
+</div>
+<p>Each instance of the <code>Book</code> model will have these methods:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">author</span>
+<span class="n">author</span><span class="o">=</span>
+<span class="n">build_author</span>
+<span class="n">create_author</span>
+<span class="n">create_author!</span>
+<span class="n">reload_author</span>
+<span class="n">author_changed?</span>
+<span class="n">author_previously_changed?</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="author
+author=
+build_author
+create_author
+create_author!
+reload_author
+author_changed?
+author_previously_changed?
+">Copy</button>
+</div>
+<div class="note"><p>When initializing a new <code>has_one</code> or <code>belongs_to</code> association you must use the <code>build_</code> prefix to build the association, rather than the <code>association.build</code> method that would be used for <code>has_many</code> or <code>has_and_belongs_to_many</code> associations. To create one, use the <code>create_</code> prefix.</p></div>
+
+<h6 id="methods-added-by-belongs-to-association"><a class="anchorlink" href="#methods-added-by-belongs-to-association">4.1.1.1 <code>association</code></a></h6>
+
+<p>The <code>association</code> method returns the associated object, if any. If no associated object is found, it returns <code>nil</code>.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="vi">@author</span> <span class="o">=</span> <span class="vi">@book</span><span class="p">.</span><span class="nf">author</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="@author = @book.author
+">Copy</button>
+</div>
+<p>If the associated object has already been retrieved from the database for this object, the cached version will be returned. To override this behavior (and force a database read), call <code>#reload_association</code> on the parent object.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="vi">@author</span> <span class="o">=</span> <span class="vi">@book</span><span class="p">.</span><span class="nf">reload_author</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="@author = @book.reload_author
+">Copy</button>
+</div>
+<h6 id="methods-added-by-belongs-to-association-associate"><a class="anchorlink" href="#methods-added-by-belongs-to-association-associate">4.1.1.2 <code>association=(associate)</code></a></h6>
+
+<p>The <code>association=</code> method assigns an associated object to this object. Behind the scenes, this means extracting the primary key from the associated object and setting this object's foreign key to the same value.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="vi">@book</span><span class="p">.</span><span class="nf">author</span> <span class="o">=</span> <span class="vi">@author</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="@book.author = @author
+">Copy</button>
+</div>
+<h6 id="methods-added-by-belongs-to-build-association-attributes"><a class="anchorlink" href="#methods-added-by-belongs-to-build-association-attributes">4.1.1.3 <code>build_association(attributes = {})</code></a></h6>
+
+<p>The <code>build_association</code> method returns a new object of the associated type. This object will be instantiated from the passed attributes, and the link through this object's foreign key will be set, but the associated object will <em>not</em> yet be saved.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="vi">@author</span> <span class="o">=</span> <span class="vi">@book</span><span class="p">.</span><span class="nf">build_author</span><span class="p">(</span><span class="ss">author_number: </span><span class="mi">123</span><span class="p">,</span>
+                             <span class="ss">author_name: </span><span class="s2">"John Doe"</span><span class="p">)</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='@author = @book.build_author(author_number: 123,
+                             author_name: "John Doe")
+'>Copy</button>
+</div>
+<h6 id="methods-added-by-belongs-to-create-association-attributes"><a class="anchorlink" href="#methods-added-by-belongs-to-create-association-attributes">4.1.1.4 <code>create_association(attributes = {})</code></a></h6>
+
+<p>The <code>create_association</code> method returns a new object of the associated type. This object will be instantiated from the passed attributes, the link through this object's foreign key will be set, and, once it passes all of the validations specified on the associated model, the associated object <em>will</em> be saved.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="vi">@author</span> <span class="o">=</span> <span class="vi">@book</span><span class="p">.</span><span class="nf">create_author</span><span class="p">(</span><span class="ss">author_number: </span><span class="mi">123</span><span class="p">,</span>
+                              <span class="ss">author_name: </span><span class="s2">"John Doe"</span><span class="p">)</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='@author = @book.create_author(author_number: 123,
+                              author_name: "John Doe")
+'>Copy</button>
+</div>
+<h6 id="methods-added-by-belongs-to-create-association-bang-attributes"><a class="anchorlink" href="#methods-added-by-belongs-to-create-association-bang-attributes">4.1.1.5 <code>create_association!(attributes = {})</code></a></h6>
+
+<p>Does the same as <code>create_association</code> above, but raises <code>ActiveRecord::RecordInvalid</code> if the record is invalid.</p>
+
+<h6 id="association-changed-questionmark"><a class="anchorlink" href="#association-changed-questionmark">4.1.1.6 <code>association_changed?</code></a></h6>
+
+<p>The <code>association_changed?</code> method returns true if a new associated object has been assigned and the foreign key will be updated in the next save.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="vi">@book</span><span class="p">.</span><span class="nf">author</span> <span class="c1"># =&gt; #&lt;Book author_number: 123, author_name: "John Doe"&gt;</span>
+<span class="vi">@book</span><span class="p">.</span><span class="nf">author_changed?</span> <span class="c1"># =&gt; false</span>
+
+<span class="vi">@book</span><span class="p">.</span><span class="nf">author</span> <span class="o">=</span> <span class="no">Author</span><span class="p">.</span><span class="nf">second</span> <span class="c1"># =&gt; #&lt;Book author_number: 456, author_name: "Jane Smith"&gt;</span>
+<span class="vi">@book</span><span class="p">.</span><span class="nf">author_changed?</span> <span class="c1"># =&gt; true</span>
+
+<span class="vi">@book</span><span class="p">.</span><span class="nf">save!</span>
+<span class="vi">@book</span><span class="p">.</span><span class="nf">author_changed?</span> <span class="c1"># =&gt; false</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='@book.author # =&gt; #&lt;Book author_number: 123, author_name: "John Doe"&gt;
+@book.author_changed? # =&gt; false
+
+@book.author = Author.second # =&gt; #&lt;Book author_number: 456, author_name: "Jane Smith"&gt;
+@book.author_changed? # =&gt; true
+
+@book.save!
+@book.author_changed? # =&gt; false
+'>Copy</button>
+</div>
+<h6 id="association-previously-changed-questionmark"><a class="anchorlink" href="#association-previously-changed-questionmark">4.1.1.7 <code>association_previously_changed?</code></a></h6>
+
+<p>The <code>association_previously_changed?</code> method returns true if the previous save updated the association to reference a new associate object.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="vi">@book</span><span class="p">.</span><span class="nf">author</span> <span class="c1"># =&gt; #&lt;Book author_number: 123, author_name: "John Doe"&gt;</span>
+<span class="vi">@book</span><span class="p">.</span><span class="nf">author_previously_changed?</span> <span class="c1"># =&gt; false</span>
+
+<span class="vi">@book</span><span class="p">.</span><span class="nf">author</span> <span class="o">=</span> <span class="no">Author</span><span class="p">.</span><span class="nf">second</span> <span class="c1"># =&gt; #&lt;Book author_number: 456, author_name: "Jane Smith"&gt;</span>
+<span class="vi">@book</span><span class="p">.</span><span class="nf">save!</span>
+<span class="vi">@book</span><span class="p">.</span><span class="nf">author_previously_changed?</span> <span class="c1"># =&gt; true</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='@book.author # =&gt; #&lt;Book author_number: 123, author_name: "John Doe"&gt;
+@book.author_previously_changed? # =&gt; false
+
+@book.author = Author.second # =&gt; #&lt;Book author_number: 456, author_name: "Jane Smith"&gt;
+@book.save!
+@book.author_previously_changed? # =&gt; true
+'>Copy</button>
+</div>
+<h5 id="options-for-belongs-to"><a class="anchorlink" href="#options-for-belongs-to">4.1.2 Options for <code>belongs_to</code></a></h5>
+
+<p>While Rails uses intelligent defaults that will work well in most situations, there may be times when you want to customize the behavior of the <code>belongs_to</code> association reference. Such customizations can easily be accomplished by passing options and scope blocks when you create the association. For example, this association uses two such options:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">Book</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="n">belongs_to</span> <span class="ss">:author</span><span class="p">,</span> <span class="ss">touch: :books_updated_at</span><span class="p">,</span>
+    <span class="ss">counter_cache: </span><span class="kp">true</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="class Book &lt; ApplicationRecord
+  belongs_to :author, touch: :books_updated_at,
+    counter_cache: true
+end
+">Copy</button>
+</div>
+<p>The <a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveRecord/Associations/ClassMethods.html#method-i-belongs_to"><code>belongs_to</code></a> association supports these options:</p>
+<ul>
+<li><code>:autosave</code></li>
+<li><code>:class_name</code></li>
+<li><code>:counter_cache</code></li>
+<li><code>:dependent</code></li>
+<li><code>:foreign_key</code></li>
+<li><code>:primary_key</code></li>
+<li><code>:inverse_of</code></li>
+<li><code>:polymorphic</code></li>
+<li><code>:touch</code></li>
+<li><code>:validate</code></li>
+<li><code>:optional</code></li>
+</ul>
+<h6 id="options-for-belongs-to-autosave"><a class="anchorlink" href="#options-for-belongs-to-autosave">4.1.2.1 <code>:autosave</code></a></h6>
+
+<p>If you set the <code>:autosave</code> option to <code>true</code>, Rails will save any loaded association members and destroy members that are marked for destruction whenever you save the parent object. Setting <code>:autosave</code> to <code>false</code> is not the same as not setting the <code>:autosave</code> option. If the <code>:autosave</code> option is not present, then new associated objects will be saved, but updated associated objects will not be saved.</p>
+
+<h6 id="options-for-belongs-to-class-name"><a class="anchorlink" href="#options-for-belongs-to-class-name">4.1.2.2 <code>:class_name</code></a></h6>
+
+<p>If the name of the other model cannot be derived from the association name, you can use the <code>:class_name</code> option to supply the model name. For example, if a book belongs to an author, but the actual name of the model containing authors is <code>Patron</code>, you'd set things up this way:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">Book</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="n">belongs_to</span> <span class="ss">:author</span><span class="p">,</span> <span class="ss">class_name: </span><span class="s2">"Patron"</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='class Book &lt; ApplicationRecord
+  belongs_to :author, class_name: "Patron"
+end
+'>Copy</button>
+</div>
+<h6 id="options-for-belongs-to-counter-cache"><a class="anchorlink" href="#options-for-belongs-to-counter-cache">4.1.2.3 <code>:counter_cache</code></a></h6>
+
+<p>The <code>:counter_cache</code> option can be used to make finding the number of belonging objects more efficient. Consider these models:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">Book</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="n">belongs_to</span> <span class="ss">:author</span>
+<span class="k">end</span>
+
+<span class="k">class</span> <span class="nc">Author</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="n">has_many</span> <span class="ss">:books</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="class Book &lt; ApplicationRecord
+  belongs_to :author
+end
+
+class Author &lt; ApplicationRecord
+  has_many :books
+end
+">Copy</button>
+</div>
+<p>With these declarations, asking for the value of <code>@author.books.size</code> requires making a call to the database to perform a <code>COUNT(*)</code> query. To avoid this call, you can add a counter cache to the <em>belonging</em> model:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">Book</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="n">belongs_to</span> <span class="ss">:author</span><span class="p">,</span> <span class="ss">counter_cache: </span><span class="kp">true</span>
+<span class="k">end</span>
+
+<span class="k">class</span> <span class="nc">Author</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="n">has_many</span> <span class="ss">:books</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="class Book &lt; ApplicationRecord
+  belongs_to :author, counter_cache: true
+end
+
+class Author &lt; ApplicationRecord
+  has_many :books
+end
+">Copy</button>
+</div>
+<p>With this declaration, Rails will keep the cache value up to date, and then return that value in response to the <code>size</code> method.</p>
+
+<p>Although the <code>:counter_cache</code> option is specified on the model that includes
+the <code>belongs_to</code> declaration, the actual column must be added to the
+<em>associated</em> (<code>has_many</code>) model. In the case above, you would need to add a
+column named <code>books_count</code> to the <code>Author</code> model.</p>
+
+<p>You can override the default column name by specifying a custom column name in
+the <code>counter_cache</code> declaration instead of <code>true</code>. For example, to use
+<code>count_of_books</code> instead of <code>books_count</code>:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">Book</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="n">belongs_to</span> <span class="ss">:author</span><span class="p">,</span> <span class="ss">counter_cache: :count_of_books</span>
+<span class="k">end</span>
+
+<span class="k">class</span> <span class="nc">Author</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="n">has_many</span> <span class="ss">:books</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="class Book &lt; ApplicationRecord
+  belongs_to :author, counter_cache: :count_of_books
+end
+
+class Author &lt; ApplicationRecord
+  has_many :books
+end
+">Copy</button>
+</div>
+<div class="note"><p>You only need to specify the <code>:counter_cache</code> option on the <code>belongs_to</code>
+side of the association.</p></div>
+
+<p>Counter cache columns are added to the containing model's list of read-only attributes through <code>attr_readonly</code>.</p>
+
+<h6 id="options-for-belongs-to-dependent"><a class="anchorlink" href="#options-for-belongs-to-dependent">4.1.2.4 <code>:dependent</code></a></h6>
+
+<p>If you set the <code>:dependent</code> option to:</p>
+<ul>
+<li>
+<code>:destroy</code>, when the object is destroyed, <code>destroy</code> will be called on its
+associated objects.</li>
+<li>
+<code>:delete</code>, when the object is destroyed, all its associated objects will be
+deleted directly from the database without calling their <code>destroy</code> method.</li>
+<li>
+<code>:destroy_async</code>: when the object is destroyed, an <code>ActiveRecord::DestroyAssociationAsyncJob</code>
+job is enqueued which will call destroy on its associated objects. Active Job must be set up
+for this to work.</li>
+</ul>
+<div class="warning"><p>You should not specify this option on a <code>belongs_to</code> association that is connected with a <code>has_many</code> association on the other class. Doing so can lead to orphaned records in your database.</p></div>
+
+<h6 id="options-for-belongs-to-foreign-key"><a class="anchorlink" href="#options-for-belongs-to-foreign-key">4.1.2.5 <code>:foreign_key</code></a></h6>
+
+<p>By convention, Rails assumes that the column used to hold the foreign key on this model is the name of the association with the suffix <code>_id</code> added. The <code>:foreign_key</code> option lets you set the name of the foreign key directly:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">Book</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="n">belongs_to</span> <span class="ss">:author</span><span class="p">,</span> <span class="ss">class_name: </span><span class="s2">"Patron"</span><span class="p">,</span>
+                      <span class="ss">foreign_key: </span><span class="s2">"patron_id"</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='class Book &lt; ApplicationRecord
+  belongs_to :author, class_name: "Patron",
+                      foreign_key: "patron_id"
+end
+'>Copy</button>
+</div>
+<div class="info"><p>In any case, Rails will not create foreign key columns for you. You need to explicitly define them as part of your migrations.</p></div>
+
+<h6 id="options-for-belongs-to-primary-key"><a class="anchorlink" href="#options-for-belongs-to-primary-key">4.1.2.6 <code>:primary_key</code></a></h6>
+
+<p>By convention, Rails assumes that the <code>id</code> column is used to hold the primary key
+of its tables. The <code>:primary_key</code> option allows you to specify a different column.</p>
+
+<p>For example, given we have a <code>users</code> table with <code>guid</code> as the primary key. If we want a separate <code>todos</code> table to hold the foreign key <code>user_id</code> in the <code>guid</code> column, then we can use <code>primary_key</code> to achieve this like so:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">User</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="nb">self</span><span class="p">.</span><span class="nf">primary_key</span> <span class="o">=</span> <span class="s1">'guid'</span> <span class="c1"># primary key is guid and not id</span>
+<span class="k">end</span>
+
+<span class="k">class</span> <span class="nc">Todo</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="n">belongs_to</span> <span class="ss">:user</span><span class="p">,</span> <span class="ss">primary_key: </span><span class="s1">'guid'</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="class User &lt; ApplicationRecord
+  self.primary_key = 'guid' # primary key is guid and not id
+end
+
+class Todo &lt; ApplicationRecord
+  belongs_to :user, primary_key: 'guid'
+end
+">Copy</button>
+</div>
+<p>When we execute <code>@user.todos.create</code> then the <code>@todo</code> record will have its
+<code>user_id</code> value as the <code>guid</code> value of <code>@user</code>.</p>
+
+<h6 id="options-for-belongs-to-inverse-of"><a class="anchorlink" href="#options-for-belongs-to-inverse-of">4.1.2.7 <code>:inverse_of</code></a></h6>
+
+<p>The <code>:inverse_of</code> option specifies the name of the <code>has_many</code> or <code>has_one</code> association that is the inverse of this association.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">Author</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="n">has_many</span> <span class="ss">:books</span><span class="p">,</span> <span class="ss">inverse_of: :author</span>
+<span class="k">end</span>
+
+<span class="k">class</span> <span class="nc">Book</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="n">belongs_to</span> <span class="ss">:author</span><span class="p">,</span> <span class="ss">inverse_of: :books</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="class Author &lt; ApplicationRecord
+  has_many :books, inverse_of: :author
+end
+
+class Book &lt; ApplicationRecord
+  belongs_to :author, inverse_of: :books
+end
+">Copy</button>
+</div>
+<h6 id="polymorphic"><a class="anchorlink" href="#polymorphic">4.1.2.8 <code>:polymorphic</code></a></h6>
+
+<p>Passing <code>true</code> to the <code>:polymorphic</code> option indicates that this is a polymorphic association. Polymorphic associations were discussed in detail <a href="#polymorphic-associations">earlier in this guide</a>.</p>
+
+<h6 id="options-for-belongs-to-touch"><a class="anchorlink" href="#options-for-belongs-to-touch">4.1.2.9 <code>:touch</code></a></h6>
+
+<p>If you set the <code>:touch</code> option to <code>true</code>, then the <code>updated_at</code> or <code>updated_on</code> timestamp on the associated object will be set to the current time whenever this object is saved or destroyed:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">Book</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="n">belongs_to</span> <span class="ss">:author</span><span class="p">,</span> <span class="ss">touch: </span><span class="kp">true</span>
+<span class="k">end</span>
+
+<span class="k">class</span> <span class="nc">Author</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="n">has_many</span> <span class="ss">:books</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="class Book &lt; ApplicationRecord
+  belongs_to :author, touch: true
+end
+
+class Author &lt; ApplicationRecord
+  has_many :books
+end
+">Copy</button>
+</div>
+<p>In this case, saving or destroying a book will update the timestamp on the associated author. You can also specify a particular timestamp attribute to update:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">Book</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="n">belongs_to</span> <span class="ss">:author</span><span class="p">,</span> <span class="ss">touch: :books_updated_at</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="class Book &lt; ApplicationRecord
+  belongs_to :author, touch: :books_updated_at
+end
+">Copy</button>
+</div>
+<h6 id="options-for-belongs-to-validate"><a class="anchorlink" href="#options-for-belongs-to-validate">4.1.2.10 <code>:validate</code></a></h6>
+
+<p>If you set the <code>:validate</code> option to <code>true</code>, then new associated objects will be validated whenever you save this object. By default, this is <code>false</code>: new associated objects will not be validated when this object is saved.</p>
+
+<h6 id="optional"><a class="anchorlink" href="#optional">4.1.2.11 <code>:optional</code></a></h6>
+
+<p>If you set the <code>:optional</code> option to <code>true</code>, then the presence of the associated
+object won't be validated. By default, this option is set to <code>false</code>.</p>
+
+<h5 id="scopes-for-belongs-to"><a class="anchorlink" href="#scopes-for-belongs-to">4.1.3 Scopes for <code>belongs_to</code></a></h5>
+
+<p>There may be times when you wish to customize the query used by <code>belongs_to</code>. Such customizations can be achieved via a scope block. For example:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">Book</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="n">belongs_to</span> <span class="ss">:author</span><span class="p">,</span> <span class="o">-&gt;</span> <span class="p">{</span> <span class="n">where</span> <span class="ss">active: </span><span class="kp">true</span> <span class="p">}</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="class Book &lt; ApplicationRecord
+  belongs_to :author, -&gt; { where active: true }
+end
+">Copy</button>
+</div>
+<p>You can use any of the standard <a href="active_record_querying.html">querying methods</a> inside the scope block. The following ones are discussed below:</p>
+<ul>
+<li><code>where</code></li>
+<li><code>includes</code></li>
+<li><code>readonly</code></li>
+<li><code>select</code></li>
+</ul>
+<h6 id="scopes-for-belongs-to-where"><a class="anchorlink" href="#scopes-for-belongs-to-where">4.1.3.1 <code>where</code></a></h6>
+
+<p>The <code>where</code> method lets you specify the conditions that the associated object must meet.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">Book</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="n">belongs_to</span> <span class="ss">:author</span><span class="p">,</span> <span class="o">-&gt;</span> <span class="p">{</span> <span class="n">where</span> <span class="ss">active: </span><span class="kp">true</span> <span class="p">}</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="class Book &lt; ApplicationRecord
+  belongs_to :author, -&gt; { where active: true }
+end
+">Copy</button>
+</div>
+<h6 id="scopes-for-belongs-to-includes"><a class="anchorlink" href="#scopes-for-belongs-to-includes">4.1.3.2 <code>includes</code></a></h6>
+
+<p>You can use the <code>includes</code> method to specify second-order associations that should be eager-loaded when this association is used. For example, consider these models:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">Chapter</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="n">belongs_to</span> <span class="ss">:book</span>
+<span class="k">end</span>
+
+<span class="k">class</span> <span class="nc">Book</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="n">belongs_to</span> <span class="ss">:author</span>
+  <span class="n">has_many</span> <span class="ss">:chapters</span>
+<span class="k">end</span>
+
+<span class="k">class</span> <span class="nc">Author</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="n">has_many</span> <span class="ss">:books</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="class Chapter &lt; ApplicationRecord
+  belongs_to :book
+end
+
+class Book &lt; ApplicationRecord
+  belongs_to :author
+  has_many :chapters
+end
+
+class Author &lt; ApplicationRecord
+  has_many :books
+end
+">Copy</button>
+</div>
+<p>If you frequently retrieve authors directly from chapters (<code>@chapter.book.author</code>), then you can make your code somewhat more efficient by including authors in the association from chapters to books:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">Chapter</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="n">belongs_to</span> <span class="ss">:book</span><span class="p">,</span> <span class="o">-&gt;</span> <span class="p">{</span> <span class="n">includes</span> <span class="ss">:author</span> <span class="p">}</span>
+<span class="k">end</span>
+
+<span class="k">class</span> <span class="nc">Book</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="n">belongs_to</span> <span class="ss">:author</span>
+  <span class="n">has_many</span> <span class="ss">:chapters</span>
+<span class="k">end</span>
+
+<span class="k">class</span> <span class="nc">Author</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="n">has_many</span> <span class="ss">:books</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="class Chapter &lt; ApplicationRecord
+  belongs_to :book, -&gt; { includes :author }
+end
+
+class Book &lt; ApplicationRecord
+  belongs_to :author
+  has_many :chapters
+end
+
+class Author &lt; ApplicationRecord
+  has_many :books
+end
+">Copy</button>
+</div>
+<div class="note"><p>There's no need to use <code>includes</code> for immediate associations - that is, if you have <code>Book belongs_to :author</code>, then the author is eager-loaded automatically when it's needed.</p></div>
+
+<h6 id="scopes-for-belongs-to-readonly"><a class="anchorlink" href="#scopes-for-belongs-to-readonly">4.1.3.3 <code>readonly</code></a></h6>
+
+<p>If you use <code>readonly</code>, then the associated object will be read-only when retrieved via the association.</p>
+
+<h6 id="scopes-for-belongs-to-select"><a class="anchorlink" href="#scopes-for-belongs-to-select">4.1.3.4 <code>select</code></a></h6>
+
+<p>The <code>select</code> method lets you override the SQL <code>SELECT</code> clause that is used to retrieve data about the associated object. By default, Rails retrieves all columns.</p>
+
+<div class="info"><p>If you use the <code>select</code> method on a <code>belongs_to</code> association, you should also set the <code>:foreign_key</code> option to guarantee the correct results.</p></div>
+
+<h5 id="belongs-to-association-reference-do-any-associated-objects-exist-questionmark"><a class="anchorlink" href="#belongs-to-association-reference-do-any-associated-objects-exist-questionmark">4.1.4 Do Any Associated Objects Exist?</a></h5>
+
+<p>You can see if any associated objects exist by using the <code>association.nil?</code> method:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">if</span> <span class="vi">@book</span><span class="p">.</span><span class="nf">author</span><span class="p">.</span><span class="nf">nil?</span>
+  <span class="vi">@msg</span> <span class="o">=</span> <span class="s2">"No author found for this book"</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='if @book.author.nil?
+  @msg = "No author found for this book"
+end
+'>Copy</button>
+</div>
+<h5 id="belongs-to-association-reference-when-are-objects-saved-questionmark"><a class="anchorlink" href="#belongs-to-association-reference-when-are-objects-saved-questionmark">4.1.5 When are Objects Saved?</a></h5>
+
+<p>Assigning an object to a <code>belongs_to</code> association does <em>not</em> automatically save the object. It does not save the associated object either.</p>
+
+<h4 id="has-one-association-reference"><a class="anchorlink" href="#has-one-association-reference">4.2 <code>has_one</code> Association Reference</a></h4>
+
+<p>The <code>has_one</code> association creates a one-to-one match with another model. In database terms, this association says that the other class contains the foreign key. If this class contains the foreign key, then you should use <code>belongs_to</code> instead.</p>
+
+<h5 id="methods-added-by-has-one"><a class="anchorlink" href="#methods-added-by-has-one">4.2.1 Methods Added by <code>has_one</code></a></h5>
+
+<p>When you declare a <code>has_one</code> association, the declaring class automatically gains 6 methods related to the association:</p>
+<ul>
+<li><code>association</code></li>
+<li><code>association=(associate)</code></li>
+<li><code>build_association(attributes = {})</code></li>
+<li><code>create_association(attributes = {})</code></li>
+<li><code>create_association!(attributes = {})</code></li>
+<li><code>reload_association</code></li>
+</ul>
+<p>In all of these methods, <code>association</code> is replaced with the symbol passed as the first argument to <code>has_one</code>. For example, given the declaration:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">Supplier</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="n">has_one</span> <span class="ss">:account</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="class Supplier &lt; ApplicationRecord
+  has_one :account
+end
+">Copy</button>
+</div>
+<p>Each instance of the <code>Supplier</code> model will have these methods:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">account</span>
+<span class="n">account</span><span class="o">=</span>
+<span class="n">build_account</span>
+<span class="n">create_account</span>
+<span class="n">create_account!</span>
+<span class="n">reload_account</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="account
+account=
+build_account
+create_account
+create_account!
+reload_account
+">Copy</button>
+</div>
+<div class="note"><p>When initializing a new <code>has_one</code> or <code>belongs_to</code> association you must use the <code>build_</code> prefix to build the association, rather than the <code>association.build</code> method that would be used for <code>has_many</code> or <code>has_and_belongs_to_many</code> associations. To create one, use the <code>create_</code> prefix.</p></div>
+
+<h6 id="methods-added-by-has-one-association"><a class="anchorlink" href="#methods-added-by-has-one-association">4.2.1.1 <code>association</code></a></h6>
+
+<p>The <code>association</code> method returns the associated object, if any. If no associated object is found, it returns <code>nil</code>.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="vi">@account</span> <span class="o">=</span> <span class="vi">@supplier</span><span class="p">.</span><span class="nf">account</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="@account = @supplier.account
+">Copy</button>
+</div>
+<p>If the associated object has already been retrieved from the database for this object, the cached version will be returned. To override this behavior (and force a database read), call <code>#reload_association</code> on the parent object.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="vi">@account</span> <span class="o">=</span> <span class="vi">@supplier</span><span class="p">.</span><span class="nf">reload_account</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="@account = @supplier.reload_account
+">Copy</button>
+</div>
+<h6 id="methods-added-by-has-one-association-associate"><a class="anchorlink" href="#methods-added-by-has-one-association-associate">4.2.1.2 <code>association=(associate)</code></a></h6>
+
+<p>The <code>association=</code> method assigns an associated object to this object. Behind the scenes, this means extracting the primary key from this object and setting the associated object's foreign key to the same value.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="vi">@supplier</span><span class="p">.</span><span class="nf">account</span> <span class="o">=</span> <span class="vi">@account</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="@supplier.account = @account
+">Copy</button>
+</div>
+<h6 id="methods-added-by-has-one-build-association-attributes"><a class="anchorlink" href="#methods-added-by-has-one-build-association-attributes">4.2.1.3 <code>build_association(attributes = {})</code></a></h6>
+
+<p>The <code>build_association</code> method returns a new object of the associated type. This object will be instantiated from the passed attributes, and the link through its foreign key will be set, but the associated object will <em>not</em> yet be saved.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="vi">@account</span> <span class="o">=</span> <span class="vi">@supplier</span><span class="p">.</span><span class="nf">build_account</span><span class="p">(</span><span class="ss">terms: </span><span class="s2">"Net 30"</span><span class="p">)</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='@account = @supplier.build_account(terms: "Net 30")
+'>Copy</button>
+</div>
+<h6 id="methods-added-by-has-one-create-association-attributes"><a class="anchorlink" href="#methods-added-by-has-one-create-association-attributes">4.2.1.4 <code>create_association(attributes = {})</code></a></h6>
+
+<p>The <code>create_association</code> method returns a new object of the associated type. This object will be instantiated from the passed attributes, the link through its foreign key will be set, and, once it passes all of the validations specified on the associated model, the associated object <em>will</em> be saved.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="vi">@account</span> <span class="o">=</span> <span class="vi">@supplier</span><span class="p">.</span><span class="nf">create_account</span><span class="p">(</span><span class="ss">terms: </span><span class="s2">"Net 30"</span><span class="p">)</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='@account = @supplier.create_account(terms: "Net 30")
+'>Copy</button>
+</div>
+<h6 id="methods-added-by-has-one-create-association-bang-attributes"><a class="anchorlink" href="#methods-added-by-has-one-create-association-bang-attributes">4.2.1.5 <code>create_association!(attributes = {})</code></a></h6>
+
+<p>Does the same as <code>create_association</code> above, but raises <code>ActiveRecord::RecordInvalid</code> if the record is invalid.</p>
+
+<h5 id="options-for-has-one"><a class="anchorlink" href="#options-for-has-one">4.2.2 Options for <code>has_one</code></a></h5>
+
+<p>While Rails uses intelligent defaults that will work well in most situations, there may be times when you want to customize the behavior of the <code>has_one</code> association reference. Such customizations can easily be accomplished by passing options when you create the association. For example, this association uses two such options:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">Supplier</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="n">has_one</span> <span class="ss">:account</span><span class="p">,</span> <span class="ss">class_name: </span><span class="s2">"Billing"</span><span class="p">,</span> <span class="ss">dependent: :nullify</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='class Supplier &lt; ApplicationRecord
+  has_one :account, class_name: "Billing", dependent: :nullify
+end
+'>Copy</button>
+</div>
+<p>The <a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveRecord/Associations/ClassMethods.html#method-i-has_one"><code>has_one</code></a> association supports these options:</p>
+<ul>
+<li><code>:as</code></li>
+<li><code>:autosave</code></li>
+<li><code>:class_name</code></li>
+<li><code>:dependent</code></li>
+<li><code>:foreign_key</code></li>
+<li><code>:inverse_of</code></li>
+<li><code>:primary_key</code></li>
+<li><code>:source</code></li>
+<li><code>:source_type</code></li>
+<li><code>:through</code></li>
+<li><code>:touch</code></li>
+<li><code>:validate</code></li>
+</ul>
+<h6 id="options-for-has-one-as"><a class="anchorlink" href="#options-for-has-one-as">4.2.2.1 <code>:as</code></a></h6>
+
+<p>Setting the <code>:as</code> option indicates that this is a polymorphic association. Polymorphic associations were discussed in detail <a href="#polymorphic-associations">earlier in this guide</a>.</p>
+
+<h6 id="options-for-has-one-autosave"><a class="anchorlink" href="#options-for-has-one-autosave">4.2.2.2 <code>:autosave</code></a></h6>
+
+<p>If you set the <code>:autosave</code> option to <code>true</code>, Rails will save any loaded association members and destroy members that are marked for destruction whenever you save the parent object. Setting <code>:autosave</code> to <code>false</code> is not the same as not setting the <code>:autosave</code> option. If the <code>:autosave</code> option is not present, then new associated objects will be saved, but updated associated objects will not be saved.</p>
+
+<h6 id="options-for-has-one-class-name"><a class="anchorlink" href="#options-for-has-one-class-name">4.2.2.3 <code>:class_name</code></a></h6>
+
+<p>If the name of the other model cannot be derived from the association name, you can use the <code>:class_name</code> option to supply the model name. For example, if a supplier has an account, but the actual name of the model containing accounts is <code>Billing</code>, you'd set things up this way:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">Supplier</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="n">has_one</span> <span class="ss">:account</span><span class="p">,</span> <span class="ss">class_name: </span><span class="s2">"Billing"</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='class Supplier &lt; ApplicationRecord
+  has_one :account, class_name: "Billing"
+end
+'>Copy</button>
+</div>
+<h6 id="options-for-has-one-dependent"><a class="anchorlink" href="#options-for-has-one-dependent">4.2.2.4 <code>:dependent</code></a></h6>
+
+<p>Controls what happens to the associated object when its owner is destroyed:</p>
+<ul>
+<li>
+<code>:destroy</code> causes the associated object to also be destroyed</li>
+<li>
+<code>:delete</code> causes the associated object to be deleted directly from the database (so callbacks will not execute)</li>
+<li>
+<code>:destroy_async</code>: when the object is destroyed, an <code>ActiveRecord::DestroyAssociationAsyncJob</code> job is enqueued which will call destroy on its associated objects. Active Job must be set up for this to work.</li>
+<li>
+<code>:nullify</code> causes the foreign key to be set to <code>NULL</code>. Polymorphic type column is also nullified on polymorphic associations. Callbacks are not executed.</li>
+<li>
+<code>:restrict_with_exception</code> causes an <code>ActiveRecord::DeleteRestrictionError</code> exception to be raised if there is an associated record</li>
+<li>
+<code>:restrict_with_error</code> causes an error to be added to the owner if there is an associated object</li>
+</ul>
+<p>It's necessary not to set or leave <code>:nullify</code> option for those associations
+that have <code>NOT NULL</code> database constraints. If you don't set <code>dependent</code> to
+destroy such associations you won't be able to change the associated object
+because the initial associated object's foreign key will be set to the
+unallowed <code>NULL</code> value.</p>
+
+<h6 id="options-for-has-one-foreign-key"><a class="anchorlink" href="#options-for-has-one-foreign-key">4.2.2.5 <code>:foreign_key</code></a></h6>
+
+<p>By convention, Rails assumes that the column used to hold the foreign key on the other model is the name of this model with the suffix <code>_id</code> added. The <code>:foreign_key</code> option lets you set the name of the foreign key directly:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">Supplier</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="n">has_one</span> <span class="ss">:account</span><span class="p">,</span> <span class="ss">foreign_key: </span><span class="s2">"supp_id"</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='class Supplier &lt; ApplicationRecord
+  has_one :account, foreign_key: "supp_id"
+end
+'>Copy</button>
+</div>
+<div class="info"><p>In any case, Rails will not create foreign key columns for you. You need to explicitly define them as part of your migrations.</p></div>
+
+<h6 id="options-for-has-one-inverse-of"><a class="anchorlink" href="#options-for-has-one-inverse-of">4.2.2.6 <code>:inverse_of</code></a></h6>
+
+<p>The <code>:inverse_of</code> option specifies the name of the <code>belongs_to</code> association that is the inverse of this association.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">Supplier</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="n">has_one</span> <span class="ss">:account</span><span class="p">,</span> <span class="ss">inverse_of: :supplier</span>
+<span class="k">end</span>
+
+<span class="k">class</span> <span class="nc">Account</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="n">belongs_to</span> <span class="ss">:supplier</span><span class="p">,</span> <span class="ss">inverse_of: :account</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="class Supplier &lt; ApplicationRecord
+  has_one :account, inverse_of: :supplier
+end
+
+class Account &lt; ApplicationRecord
+  belongs_to :supplier, inverse_of: :account
+end
+">Copy</button>
+</div>
+<h6 id="options-for-has-one-primary-key"><a class="anchorlink" href="#options-for-has-one-primary-key">4.2.2.7 <code>:primary_key</code></a></h6>
+
+<p>By convention, Rails assumes that the column used to hold the primary key of this model is <code>id</code>. You can override this and explicitly specify the primary key with the <code>:primary_key</code> option.</p>
+
+<h6 id="options-for-has-one-source"><a class="anchorlink" href="#options-for-has-one-source">4.2.2.8 <code>:source</code></a></h6>
+
+<p>The <code>:source</code> option specifies the source association name for a <code>has_one :through</code> association.</p>
+
+<h6 id="options-for-has-one-source-type"><a class="anchorlink" href="#options-for-has-one-source-type">4.2.2.9 <code>:source_type</code></a></h6>
+
+<p>The <code>:source_type</code> option specifies the source association type for a <code>has_one :through</code> association that proceeds through a polymorphic association.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">Author</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="n">has_one</span> <span class="ss">:book</span>
+  <span class="n">has_one</span> <span class="ss">:hardback</span><span class="p">,</span> <span class="ss">through: :book</span><span class="p">,</span> <span class="ss">source: :format</span><span class="p">,</span> <span class="ss">source_type: </span><span class="s2">"Hardback"</span>
+  <span class="n">has_one</span> <span class="ss">:dust_jacket</span><span class="p">,</span> <span class="ss">through: :hardback</span>
+<span class="k">end</span>
+
+<span class="k">class</span> <span class="nc">Book</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="n">belongs_to</span> <span class="ss">:format</span><span class="p">,</span> <span class="ss">polymorphic: </span><span class="kp">true</span>
+<span class="k">end</span>
+
+<span class="k">class</span> <span class="nc">Paperback</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span><span class="p">;</span> <span class="k">end</span>
+
+<span class="k">class</span> <span class="nc">Hardback</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="n">has_one</span> <span class="ss">:dust_jacket</span>
+<span class="k">end</span>
+
+<span class="k">class</span> <span class="nc">DustJacket</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span><span class="p">;</span> <span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='class Author &lt; ApplicationRecord
+  has_one :book
+  has_one :hardback, through: :book, source: :format, source_type: "Hardback"
+  has_one :dust_jacket, through: :hardback
+end
+
+class Book &lt; ApplicationRecord
+  belongs_to :format, polymorphic: true
+end
+
+class Paperback &lt; ApplicationRecord; end
+
+class Hardback &lt; ApplicationRecord
+  has_one :dust_jacket
+end
+
+class DustJacket &lt; ApplicationRecord; end
+'>Copy</button>
+</div>
+<h6 id="options-for-has-one-through"><a class="anchorlink" href="#options-for-has-one-through">4.2.2.10 <code>:through</code></a></h6>
+
+<p>The <code>:through</code> option specifies a join model through which to perform the query. <code>has_one :through</code> associations were discussed in detail <a href="#the-has-one-through-association">earlier in this guide</a>.</p>
+
+<h6 id="options-for-has-one-touch"><a class="anchorlink" href="#options-for-has-one-touch">4.2.2.11 <code>:touch</code></a></h6>
+
+<p>If you set the <code>:touch</code> option to <code>true</code>, then the <code>updated_at</code> or <code>updated_on</code> timestamp on the associated object will be set to the current time whenever this object is saved or destroyed:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">Supplier</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="n">has_one</span> <span class="ss">:account</span><span class="p">,</span> <span class="ss">touch: </span><span class="kp">true</span>
+<span class="k">end</span>
+
+<span class="k">class</span> <span class="nc">Account</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="n">belongs_to</span> <span class="ss">:supplier</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="class Supplier &lt; ApplicationRecord
+  has_one :account, touch: true
+end
+
+class Account &lt; ApplicationRecord
+  belongs_to :supplier
+end
+">Copy</button>
+</div>
+<p>In this case, saving or destroying a supplier will update the timestamp on the associated account. You can also specify a particular timestamp attribute to update:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">Supplier</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="n">has_one</span> <span class="ss">:account</span><span class="p">,</span> <span class="ss">touch: :suppliers_updated_at</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="class Supplier &lt; ApplicationRecord
+  has_one :account, touch: :suppliers_updated_at
+end
+">Copy</button>
+</div>
+<h6 id="options-for-has-one-validate"><a class="anchorlink" href="#options-for-has-one-validate">4.2.2.12 <code>:validate</code></a></h6>
+
+<p>If you set the <code>:validate</code> option to <code>true</code>, then new associated objects will be validated whenever you save this object. By default, this is <code>false</code>: new associated objects will not be validated when this object is saved.</p>
+
+<h5 id="scopes-for-has-one"><a class="anchorlink" href="#scopes-for-has-one">4.2.3 Scopes for <code>has_one</code></a></h5>
+
+<p>There may be times when you wish to customize the query used by <code>has_one</code>. Such customizations can be achieved via a scope block. For example:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">Supplier</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="n">has_one</span> <span class="ss">:account</span><span class="p">,</span> <span class="o">-&gt;</span> <span class="p">{</span> <span class="n">where</span> <span class="ss">active: </span><span class="kp">true</span> <span class="p">}</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="class Supplier &lt; ApplicationRecord
+  has_one :account, -&gt; { where active: true }
+end
+">Copy</button>
+</div>
+<p>You can use any of the standard <a href="active_record_querying.html">querying methods</a> inside the scope block. The following ones are discussed below:</p>
+<ul>
+<li><code>where</code></li>
+<li><code>includes</code></li>
+<li><code>readonly</code></li>
+<li><code>select</code></li>
+</ul>
+<h6 id="scopes-for-has-one-where"><a class="anchorlink" href="#scopes-for-has-one-where">4.2.3.1 <code>where</code></a></h6>
+
+<p>The <code>where</code> method lets you specify the conditions that the associated object must meet.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">Supplier</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="n">has_one</span> <span class="ss">:account</span><span class="p">,</span> <span class="o">-&gt;</span> <span class="p">{</span> <span class="n">where</span> <span class="s2">"confirmed = 1"</span> <span class="p">}</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='class Supplier &lt; ApplicationRecord
+  has_one :account, -&gt; { where "confirmed = 1" }
+end
+'>Copy</button>
+</div>
+<h6 id="scopes-for-has-one-includes"><a class="anchorlink" href="#scopes-for-has-one-includes">4.2.3.2 <code>includes</code></a></h6>
+
+<p>You can use the <code>includes</code> method to specify second-order associations that should be eager-loaded when this association is used. For example, consider these models:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">Supplier</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="n">has_one</span> <span class="ss">:account</span>
+<span class="k">end</span>
+
+<span class="k">class</span> <span class="nc">Account</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="n">belongs_to</span> <span class="ss">:supplier</span>
+  <span class="n">belongs_to</span> <span class="ss">:representative</span>
+<span class="k">end</span>
+
+<span class="k">class</span> <span class="nc">Representative</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="n">has_many</span> <span class="ss">:accounts</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="class Supplier &lt; ApplicationRecord
+  has_one :account
+end
+
+class Account &lt; ApplicationRecord
+  belongs_to :supplier
+  belongs_to :representative
+end
+
+class Representative &lt; ApplicationRecord
+  has_many :accounts
+end
+">Copy</button>
+</div>
+<p>If you frequently retrieve representatives directly from suppliers (<code>@supplier.account.representative</code>), then you can make your code somewhat more efficient by including representatives in the association from suppliers to accounts:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">Supplier</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="n">has_one</span> <span class="ss">:account</span><span class="p">,</span> <span class="o">-&gt;</span> <span class="p">{</span> <span class="n">includes</span> <span class="ss">:representative</span> <span class="p">}</span>
+<span class="k">end</span>
+
+<span class="k">class</span> <span class="nc">Account</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="n">belongs_to</span> <span class="ss">:supplier</span>
+  <span class="n">belongs_to</span> <span class="ss">:representative</span>
+<span class="k">end</span>
+
+<span class="k">class</span> <span class="nc">Representative</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="n">has_many</span> <span class="ss">:accounts</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="class Supplier &lt; ApplicationRecord
+  has_one :account, -&gt; { includes :representative }
+end
+
+class Account &lt; ApplicationRecord
+  belongs_to :supplier
+  belongs_to :representative
+end
+
+class Representative &lt; ApplicationRecord
+  has_many :accounts
+end
+">Copy</button>
+</div>
+<h6 id="scopes-for-has-one-readonly"><a class="anchorlink" href="#scopes-for-has-one-readonly">4.2.3.3 <code>readonly</code></a></h6>
+
+<p>If you use the <code>readonly</code> method, then the associated object will be read-only when retrieved via the association.</p>
+
+<h6 id="scopes-for-has-one-select"><a class="anchorlink" href="#scopes-for-has-one-select">4.2.3.4 <code>select</code></a></h6>
+
+<p>The <code>select</code> method lets you override the SQL <code>SELECT</code> clause that is used to retrieve data about the associated object. By default, Rails retrieves all columns.</p>
+
+<h5 id="has-one-association-reference-do-any-associated-objects-exist-questionmark"><a class="anchorlink" href="#has-one-association-reference-do-any-associated-objects-exist-questionmark">4.2.4 Do Any Associated Objects Exist?</a></h5>
+
+<p>You can see if any associated objects exist by using the <code>association.nil?</code> method:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">if</span> <span class="vi">@supplier</span><span class="p">.</span><span class="nf">account</span><span class="p">.</span><span class="nf">nil?</span>
+  <span class="vi">@msg</span> <span class="o">=</span> <span class="s2">"No account found for this supplier"</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='if @supplier.account.nil?
+  @msg = "No account found for this supplier"
+end
+'>Copy</button>
+</div>
+<h5 id="has-one-association-reference-when-are-objects-saved-questionmark"><a class="anchorlink" href="#has-one-association-reference-when-are-objects-saved-questionmark">4.2.5 When are Objects Saved?</a></h5>
+
+<p>When you assign an object to a <code>has_one</code> association, that object is automatically saved (in order to update its foreign key). In addition, any object being replaced is also automatically saved, because its foreign key will change too.</p>
+
+<p>If either of these saves fails due to validation errors, then the assignment statement returns <code>false</code> and the assignment itself is cancelled.</p>
+
+<p>If the parent object (the one declaring the <code>has_one</code> association) is unsaved (that is, <code>new_record?</code> returns <code>true</code>) then the child objects are not saved. They will automatically when the parent object is saved.</p>
+
+<p>If you want to assign an object to a <code>has_one</code> association without saving the object, use the <code>build_association</code> method.</p>
+
+<h4 id="has-many-association-reference"><a class="anchorlink" href="#has-many-association-reference">4.3 <code>has_many</code> Association Reference</a></h4>
+
+<p>The <code>has_many</code> association creates a one-to-many relationship with another model. In database terms, this association says that the other class will have a foreign key that refers to instances of this class.</p>
+
+<h5 id="methods-added-by-has-many"><a class="anchorlink" href="#methods-added-by-has-many">4.3.1 Methods Added by <code>has_many</code></a></h5>
+
+<p>When you declare a <code>has_many</code> association, the declaring class automatically gains 17 methods related to the association:</p>
+<ul>
+<li><code>collection</code></li>
+<li><a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveRecord/Associations/CollectionProxy.html#method-i-3C-3C"><code>collection&lt;&lt;(object, ...)</code></a></li>
+<li><a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveRecord/Associations/CollectionProxy.html#method-i-delete"><code>collection.delete(object, ...)</code></a></li>
+<li><a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveRecord/Associations/CollectionProxy.html#method-i-destroy"><code>collection.destroy(object, ...)</code></a></li>
+<li><code>collection=(objects)</code></li>
+<li><code>collection_singular_ids</code></li>
+<li><code>collection_singular_ids=(ids)</code></li>
+<li><a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveRecord/Associations/CollectionProxy.html#method-i-clear"><code>collection.clear</code></a></li>
+<li><a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveRecord/Associations/CollectionProxy.html#method-i-empty-3F"><code>collection.empty?</code></a></li>
+<li><a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveRecord/Associations/CollectionProxy.html#method-i-size"><code>collection.size</code></a></li>
+<li><a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveRecord/Associations/CollectionProxy.html#method-i-find"><code>collection.find(...)</code></a></li>
+<li><a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveRecord/QueryMethods.html#method-i-where"><code>collection.where(...)</code></a></li>
+<li><a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveRecord/FinderMethods.html#method-i-exists-3F"><code>collection.exists?(...)</code></a></li>
+<li><a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveRecord/Associations/CollectionProxy.html#method-i-build"><code>collection.build(attributes = {})</code></a></li>
+<li><a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveRecord/Associations/CollectionProxy.html#method-i-create"><code>collection.create(attributes = {})</code></a></li>
+<li><a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveRecord/Associations/CollectionProxy.html#method-i-create-21"><code>collection.create!(attributes = {})</code></a></li>
+<li><a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveRecord/Associations/CollectionProxy.html#method-i-reload"><code>collection.reload</code></a></li>
+</ul>
+<p>In all of these methods, <code>collection</code> is replaced with the symbol passed as the first argument to <code>has_many</code>, and <code>collection_singular</code> is replaced with the singularized version of that symbol. For example, given the declaration:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">Author</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="n">has_many</span> <span class="ss">:books</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="class Author &lt; ApplicationRecord
+  has_many :books
+end
+">Copy</button>
+</div>
+<p>Each instance of the <code>Author</code> model will have these methods:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">books</span>
+<span class="n">books</span><span class="o">&lt;&lt;</span><span class="p">(</span><span class="n">object</span><span class="p">,</span> <span class="o">...</span><span class="p">)</span>
+<span class="n">books</span><span class="p">.</span><span class="nf">delete</span><span class="p">(</span><span class="n">object</span><span class="p">,</span> <span class="o">...</span><span class="p">)</span>
+<span class="n">books</span><span class="p">.</span><span class="nf">destroy</span><span class="p">(</span><span class="n">object</span><span class="p">,</span> <span class="o">...</span><span class="p">)</span>
+<span class="n">books</span><span class="o">=</span><span class="p">(</span><span class="n">objects</span><span class="p">)</span>
+<span class="n">book_ids</span>
+<span class="n">book_ids</span><span class="o">=</span><span class="p">(</span><span class="n">ids</span><span class="p">)</span>
+<span class="n">books</span><span class="p">.</span><span class="nf">clear</span>
+<span class="n">books</span><span class="p">.</span><span class="nf">empty?</span>
+<span class="n">books</span><span class="p">.</span><span class="nf">size</span>
+<span class="n">books</span><span class="p">.</span><span class="nf">find</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+<span class="n">books</span><span class="p">.</span><span class="nf">where</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+<span class="n">books</span><span class="p">.</span><span class="nf">exists?</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+<span class="n">books</span><span class="p">.</span><span class="nf">build</span><span class="p">(</span><span class="n">attributes</span> <span class="o">=</span> <span class="p">{},</span> <span class="o">...</span><span class="p">)</span>
+<span class="n">books</span><span class="p">.</span><span class="nf">create</span><span class="p">(</span><span class="n">attributes</span> <span class="o">=</span> <span class="p">{})</span>
+<span class="n">books</span><span class="p">.</span><span class="nf">create!</span><span class="p">(</span><span class="n">attributes</span> <span class="o">=</span> <span class="p">{})</span>
+<span class="n">books</span><span class="p">.</span><span class="nf">reload</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="books
+books&lt;&lt;(object, ...)
+books.delete(object, ...)
+books.destroy(object, ...)
+books=(objects)
+book_ids
+book_ids=(ids)
+books.clear
+books.empty?
+books.size
+books.find(...)
+books.where(...)
+books.exists?(...)
+books.build(attributes = {}, ...)
+books.create(attributes = {})
+books.create!(attributes = {})
+books.reload
+">Copy</button>
+</div>
+<h6 id="methods-added-by-has-many-collection"><a class="anchorlink" href="#methods-added-by-has-many-collection">4.3.1.1 <code>collection</code></a></h6>
+
+<p>The <code>collection</code> method returns a Relation of all of the associated objects. If there are no associated objects, it returns an empty Relation.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="vi">@books</span> <span class="o">=</span> <span class="vi">@author</span><span class="p">.</span><span class="nf">books</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="@books = @author.books
+">Copy</button>
+</div>
+<h6 id="methods-added-by-has-many-collection-object"><a class="anchorlink" href="#methods-added-by-has-many-collection-object">4.3.1.2 <code>collection&lt;&lt;(object, ...)</code></a></h6>
+
+<p>The <a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveRecord/Associations/CollectionProxy.html#method-i-3C-3C"><code>collection&lt;&lt;</code></a> method adds one or more objects to the collection by setting their foreign keys to the primary key of the calling model.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="vi">@author</span><span class="p">.</span><span class="nf">books</span> <span class="o">&lt;&lt;</span> <span class="vi">@book1</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="@author.books &lt;&lt; @book1
+">Copy</button>
+</div>
+<h6 id="methods-added-by-has-many-collection-delete-object"><a class="anchorlink" href="#methods-added-by-has-many-collection-delete-object">4.3.1.3 <code>collection.delete(object, ...)</code></a></h6>
+
+<p>The <a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveRecord/Associations/CollectionProxy.html#method-i-delete"><code>collection.delete</code></a> method removes one or more objects from the collection by setting their foreign keys to <code>NULL</code>.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="vi">@author</span><span class="p">.</span><span class="nf">books</span><span class="p">.</span><span class="nf">delete</span><span class="p">(</span><span class="vi">@book1</span><span class="p">)</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="@author.books.delete(@book1)
+">Copy</button>
+</div>
+<div class="warning"><p>Additionally, objects will be destroyed if they're associated with <code>dependent: :destroy</code>, and deleted if they're associated with <code>dependent: :delete_all</code>.</p></div>
+
+<h6 id="methods-added-by-has-many-collection-destroy-object"><a class="anchorlink" href="#methods-added-by-has-many-collection-destroy-object">4.3.1.4 <code>collection.destroy(object, ...)</code></a></h6>
+
+<p>The <a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveRecord/Associations/CollectionProxy.html#method-i-destroy"><code>collection.destroy</code></a> method removes one or more objects from the collection by running <code>destroy</code> on each object.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="vi">@author</span><span class="p">.</span><span class="nf">books</span><span class="p">.</span><span class="nf">destroy</span><span class="p">(</span><span class="vi">@book1</span><span class="p">)</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="@author.books.destroy(@book1)
+">Copy</button>
+</div>
+<div class="warning"><p>Objects will <em>always</em> be removed from the database, ignoring the <code>:dependent</code> option.</p></div>
+
+<h6 id="methods-added-by-has-many-collection-objects"><a class="anchorlink" href="#methods-added-by-has-many-collection-objects">4.3.1.5 <code>collection=(objects)</code></a></h6>
+
+<p>The <code>collection=</code> method makes the collection contain only the supplied objects, by adding and deleting as appropriate. The changes are persisted to the database.</p>
+
+<h6 id="methods-added-by-has-many-collection-singular-ids"><a class="anchorlink" href="#methods-added-by-has-many-collection-singular-ids">4.3.1.6 <code>collection_singular_ids</code></a></h6>
+
+<p>The <code>collection_singular_ids</code> method returns an array of the ids of the objects in the collection.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="vi">@book_ids</span> <span class="o">=</span> <span class="vi">@author</span><span class="p">.</span><span class="nf">book_ids</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="@book_ids = @author.book_ids
+">Copy</button>
+</div>
+<h6 id="methods-added-by-has-many-collection-singular-ids-ids"><a class="anchorlink" href="#methods-added-by-has-many-collection-singular-ids-ids">4.3.1.7 <code>collection_singular_ids=(ids)</code></a></h6>
+
+<p>The <code>collection_singular_ids=</code> method makes the collection contain only the objects identified by the supplied primary key values, by adding and deleting as appropriate. The changes are persisted to the database.</p>
+
+<h6 id="methods-added-by-has-many-collection-clear"><a class="anchorlink" href="#methods-added-by-has-many-collection-clear">4.3.1.8 <code>collection.clear</code></a></h6>
+
+<p>The <a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveRecord/Associations/CollectionProxy.html#method-i-clear"><code>collection.clear</code></a> method removes all objects from the collection according to the strategy specified by the <code>dependent</code> option. If no option is given, it follows the default strategy. The default strategy for <code>has_many :through</code> associations is <code>delete_all</code>, and for <code>has_many</code> associations is to set the foreign keys to <code>NULL</code>.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="vi">@author</span><span class="p">.</span><span class="nf">books</span><span class="p">.</span><span class="nf">clear</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="@author.books.clear
+">Copy</button>
+</div>
+<div class="warning"><p>Objects will be deleted if they're associated with <code>dependent: :destroy</code> or <code>dependent: :destroy_async</code>,
+just like <code>dependent: :delete_all</code>.</p></div>
+
+<h6 id="methods-added-by-has-many-collection-empty-questionmark"><a class="anchorlink" href="#methods-added-by-has-many-collection-empty-questionmark">4.3.1.9 <code>collection.empty?</code></a></h6>
+
+<p>The <a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveRecord/Associations/CollectionProxy.html#method-i-empty-3F"><code>collection.empty?</code></a> method returns <code>true</code> if the collection does not contain any associated objects.</p>
+
+<div class="code_container">
+<pre><code class="highlight erb"><span class="cp">&lt;%</span> <span class="k">if</span> <span class="vi">@author</span><span class="p">.</span><span class="nf">books</span><span class="p">.</span><span class="nf">empty?</span> <span class="cp">%&gt;</span>
+  No Books Found
+<span class="cp">&lt;%</span> <span class="k">end</span> <span class="cp">%&gt;</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="&lt;% if @author.books.empty? %&gt;
+  No Books Found
+&lt;% end %&gt;
+">Copy</button>
+</div>
+<h6 id="methods-added-by-has-many-collection-size"><a class="anchorlink" href="#methods-added-by-has-many-collection-size">4.3.1.10 <code>collection.size</code></a></h6>
+
+<p>The <a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveRecord/Associations/CollectionProxy.html#method-i-size"><code>collection.size</code></a> method returns the number of objects in the collection.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="vi">@book_count</span> <span class="o">=</span> <span class="vi">@author</span><span class="p">.</span><span class="nf">books</span><span class="p">.</span><span class="nf">size</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="@book_count = @author.books.size
+">Copy</button>
+</div>
+<h6 id="methods-added-by-has-many-collection-find"><a class="anchorlink" href="#methods-added-by-has-many-collection-find">4.3.1.11 <code>collection.find(...)</code></a></h6>
+
+<p>The <a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveRecord/Associations/CollectionProxy.html#method-i-find"><code>collection.find</code></a> method finds objects within the collection's table.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="vi">@available_book</span> <span class="o">=</span> <span class="vi">@author</span><span class="p">.</span><span class="nf">books</span><span class="p">.</span><span class="nf">find</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="@available_book = @author.books.find(1)
+">Copy</button>
+</div>
+<h6 id="methods-added-by-has-many-collection-where"><a class="anchorlink" href="#methods-added-by-has-many-collection-where">4.3.1.12 <code>collection.where(...)</code></a></h6>
+
+<p>The <a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveRecord/QueryMethods.html#method-i-where"><code>collection.where</code></a> method finds objects within the collection based on the conditions supplied but the objects are loaded lazily meaning that the database is queried only when the object(s) are accessed.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="vi">@available_books</span> <span class="o">=</span> <span class="vi">@author</span><span class="p">.</span><span class="nf">books</span><span class="p">.</span><span class="nf">where</span><span class="p">(</span><span class="ss">available: </span><span class="kp">true</span><span class="p">)</span> <span class="c1"># No query yet</span>
+<span class="vi">@available_book</span> <span class="o">=</span> <span class="vi">@available_books</span><span class="p">.</span><span class="nf">first</span> <span class="c1"># Now the database will be queried</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="@available_books = @author.books.where(available: true) # No query yet
+@available_book = @available_books.first # Now the database will be queried
+">Copy</button>
+</div>
+<h6 id="methods-added-by-has-many-collection-exists-questionmark"><a class="anchorlink" href="#methods-added-by-has-many-collection-exists-questionmark">4.3.1.13 <code>collection.exists?(...)</code></a></h6>
+
+<p>The <a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveRecord/FinderMethods.html#method-i-exists-3F"><code>collection.exists?</code></a> method checks whether an object meeting the supplied
+conditions exists in the collection's table.</p>
+
+<h6 id="methods-added-by-has-many-collection-build-attributes"><a class="anchorlink" href="#methods-added-by-has-many-collection-build-attributes">4.3.1.14 <code>collection.build(attributes = {})</code></a></h6>
+
+<p>The <a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveRecord/Associations/CollectionProxy.html#method-i-build"><code>collection.build</code></a> method returns a single or array of new objects of the associated type. The object(s) will be instantiated from the passed attributes, and the link through their foreign key will be created, but the associated objects will <em>not</em> yet be saved.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="vi">@book</span> <span class="o">=</span> <span class="vi">@author</span><span class="p">.</span><span class="nf">books</span><span class="p">.</span><span class="nf">build</span><span class="p">(</span><span class="ss">published_at: </span><span class="no">Time</span><span class="p">.</span><span class="nf">now</span><span class="p">,</span>
+                            <span class="ss">book_number: </span><span class="s2">"A12345"</span><span class="p">)</span>
+
+<span class="vi">@books</span> <span class="o">=</span> <span class="vi">@author</span><span class="p">.</span><span class="nf">books</span><span class="p">.</span><span class="nf">build</span><span class="p">([</span>
+  <span class="p">{</span> <span class="ss">published_at: </span><span class="no">Time</span><span class="p">.</span><span class="nf">now</span><span class="p">,</span> <span class="ss">book_number: </span><span class="s2">"A12346"</span> <span class="p">},</span>
+  <span class="p">{</span> <span class="ss">published_at: </span><span class="no">Time</span><span class="p">.</span><span class="nf">now</span><span class="p">,</span> <span class="ss">book_number: </span><span class="s2">"A12347"</span> <span class="p">}</span>
+<span class="p">])</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='@book = @author.books.build(published_at: Time.now,
+                            book_number: "A12345")
+
+@books = @author.books.build([
+  { published_at: Time.now, book_number: "A12346" },
+  { published_at: Time.now, book_number: "A12347" }
+])
+'>Copy</button>
+</div>
+<h6 id="methods-added-by-has-many-collection-create-attributes"><a class="anchorlink" href="#methods-added-by-has-many-collection-create-attributes">4.3.1.15 <code>collection.create(attributes = {})</code></a></h6>
+
+<p>The <a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveRecord/Associations/CollectionProxy.html#method-i-create"><code>collection.create</code></a> method returns a single or array of new objects of the associated type. The object(s) will be instantiated from the passed attributes, the link through its foreign key will be created, and, once it passes all of the validations specified on the associated model, the associated object <em>will</em> be saved.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="vi">@book</span> <span class="o">=</span> <span class="vi">@author</span><span class="p">.</span><span class="nf">books</span><span class="p">.</span><span class="nf">create</span><span class="p">(</span><span class="ss">published_at: </span><span class="no">Time</span><span class="p">.</span><span class="nf">now</span><span class="p">,</span>
+                             <span class="ss">book_number: </span><span class="s2">"A12345"</span><span class="p">)</span>
+
+<span class="vi">@books</span> <span class="o">=</span> <span class="vi">@author</span><span class="p">.</span><span class="nf">books</span><span class="p">.</span><span class="nf">create</span><span class="p">([</span>
+  <span class="p">{</span> <span class="ss">published_at: </span><span class="no">Time</span><span class="p">.</span><span class="nf">now</span><span class="p">,</span> <span class="ss">book_number: </span><span class="s2">"A12346"</span> <span class="p">},</span>
+  <span class="p">{</span> <span class="ss">published_at: </span><span class="no">Time</span><span class="p">.</span><span class="nf">now</span><span class="p">,</span> <span class="ss">book_number: </span><span class="s2">"A12347"</span> <span class="p">}</span>
+<span class="p">])</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='@book = @author.books.create(published_at: Time.now,
+                             book_number: "A12345")
+
+@books = @author.books.create([
+  { published_at: Time.now, book_number: "A12346" },
+  { published_at: Time.now, book_number: "A12347" }
+])
+'>Copy</button>
+</div>
+<h6 id="methods-added-by-has-many-collection-create-bang-attributes"><a class="anchorlink" href="#methods-added-by-has-many-collection-create-bang-attributes">4.3.1.16 <code>collection.create!(attributes = {})</code></a></h6>
+
+<p>Does the same as <code>collection.create</code> above, but raises <code>ActiveRecord::RecordInvalid</code> if the record is invalid.</p>
+
+<h6 id="methods-added-by-has-many-collection-reload"><a class="anchorlink" href="#methods-added-by-has-many-collection-reload">4.3.1.17 <code>collection.reload</code></a></h6>
+
+<p>The <a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveRecord/Associations/CollectionProxy.html#method-i-reload"><code>collection.reload</code></a> method returns a Relation of all of the associated objects, forcing a database read. If there are no associated objects, it returns an empty Relation.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="vi">@books</span> <span class="o">=</span> <span class="vi">@author</span><span class="p">.</span><span class="nf">books</span><span class="p">.</span><span class="nf">reload</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="@books = @author.books.reload
+">Copy</button>
+</div>
+<h5 id="options-for-has-many"><a class="anchorlink" href="#options-for-has-many">4.3.2 Options for <code>has_many</code></a></h5>
+
+<p>While Rails uses intelligent defaults that will work well in most situations, there may be times when you want to customize the behavior of the <code>has_many</code> association reference. Such customizations can easily be accomplished by passing options when you create the association. For example, this association uses two such options:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">Author</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="n">has_many</span> <span class="ss">:books</span><span class="p">,</span> <span class="ss">dependent: :delete_all</span><span class="p">,</span> <span class="ss">validate: </span><span class="kp">false</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="class Author &lt; ApplicationRecord
+  has_many :books, dependent: :delete_all, validate: false
+end
+">Copy</button>
+</div>
+<p>The <a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveRecord/Associations/ClassMethods.html#method-i-has_many"><code>has_many</code></a> association supports these options:</p>
+<ul>
+<li><code>:as</code></li>
+<li><code>:autosave</code></li>
+<li><code>:class_name</code></li>
+<li><code>:counter_cache</code></li>
+<li><code>:dependent</code></li>
+<li><code>:foreign_key</code></li>
+<li><code>:inverse_of</code></li>
+<li><code>:primary_key</code></li>
+<li><code>:source</code></li>
+<li><code>:source_type</code></li>
+<li><code>:through</code></li>
+<li><code>:validate</code></li>
+</ul>
+<h6 id="options-for-has-many-as"><a class="anchorlink" href="#options-for-has-many-as">4.3.2.1 <code>:as</code></a></h6>
+
+<p>Setting the <code>:as</code> option indicates that this is a polymorphic association, as discussed <a href="#polymorphic-associations">earlier in this guide</a>.</p>
+
+<h6 id="options-for-has-many-autosave"><a class="anchorlink" href="#options-for-has-many-autosave">4.3.2.2 <code>:autosave</code></a></h6>
+
+<p>If you set the <code>:autosave</code> option to <code>true</code>, Rails will save any loaded association members and destroy members that are marked for destruction whenever you save the parent object. Setting <code>:autosave</code> to <code>false</code> is not the same as not setting the <code>:autosave</code> option. If the <code>:autosave</code> option is not present, then new associated objects will be saved, but updated associated objects will not be saved.</p>
+
+<h6 id="options-for-has-many-class-name"><a class="anchorlink" href="#options-for-has-many-class-name">4.3.2.3 <code>:class_name</code></a></h6>
+
+<p>If the name of the other model cannot be derived from the association name, you can use the <code>:class_name</code> option to supply the model name. For example, if an author has many books, but the actual name of the model containing books is <code>Transaction</code>, you'd set things up this way:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">Author</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="n">has_many</span> <span class="ss">:books</span><span class="p">,</span> <span class="ss">class_name: </span><span class="s2">"Transaction"</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='class Author &lt; ApplicationRecord
+  has_many :books, class_name: "Transaction"
+end
+'>Copy</button>
+</div>
+<h6 id="options-for-has-many-counter-cache"><a class="anchorlink" href="#options-for-has-many-counter-cache">4.3.2.4 <code>:counter_cache</code></a></h6>
+
+<p>This option can be used to configure a custom named <code>:counter_cache</code>. You only need this option when you customized the name of your <code>:counter_cache</code> on the <a href="#options-for-belongs-to">belongs_to association</a>.</p>
+
+<h6 id="dependent"><a class="anchorlink" href="#dependent">4.3.2.5 <code>:dependent</code></a></h6>
+
+<p>Controls what happens to the associated objects when their owner is destroyed:</p>
+<ul>
+<li>
+<code>:destroy</code> causes all the associated objects to also be destroyed</li>
+<li>
+<code>:delete_all</code> causes all the associated objects to be deleted directly from the database (so callbacks will not execute)</li>
+<li>
+<code>:destroy_async</code>: when the object is destroyed, an <code>ActiveRecord::DestroyAssociationAsyncJob</code> job is enqueued which will call destroy on its associated objects. Active Job must be set up for this to work.</li>
+<li>
+<code>:nullify</code> causes the foreign key to be set to <code>NULL</code>. Polymorphic type column is also nullified on polymorphic associations. Callbacks are not executed.</li>
+<li>
+<code>:restrict_with_exception</code> causes an <code>ActiveRecord::DeleteRestrictionError</code> exception to be raised if there are any associated records</li>
+<li>
+<code>:restrict_with_error</code> causes an error to be added to the owner if there are any associated objects</li>
+</ul>
+<p>The <code>:destroy</code> and <code>:delete_all</code> options also affect the semantics of the <code>collection.delete</code> and <code>collection=</code> methods by causing them to destroy associated objects when they are removed from the collection.</p>
+
+<h6 id="options-for-has-many-foreign-key"><a class="anchorlink" href="#options-for-has-many-foreign-key">4.3.2.6 <code>:foreign_key</code></a></h6>
+
+<p>By convention, Rails assumes that the column used to hold the foreign key on the other model is the name of this model with the suffix <code>_id</code> added. The <code>:foreign_key</code> option lets you set the name of the foreign key directly:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">Author</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="n">has_many</span> <span class="ss">:books</span><span class="p">,</span> <span class="ss">foreign_key: </span><span class="s2">"cust_id"</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='class Author &lt; ApplicationRecord
+  has_many :books, foreign_key: "cust_id"
+end
+'>Copy</button>
+</div>
+<div class="info"><p>In any case, Rails will not create foreign key columns for you. You need to explicitly define them as part of your migrations.</p></div>
+
+<h6 id="inverse-of"><a class="anchorlink" href="#inverse-of">4.3.2.7 <code>:inverse_of</code></a></h6>
+
+<p>The <code>:inverse_of</code> option specifies the name of the <code>belongs_to</code> association that is the inverse of this association.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">Author</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="n">has_many</span> <span class="ss">:books</span><span class="p">,</span> <span class="ss">inverse_of: :author</span>
+<span class="k">end</span>
+
+<span class="k">class</span> <span class="nc">Book</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="n">belongs_to</span> <span class="ss">:author</span><span class="p">,</span> <span class="ss">inverse_of: :books</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="class Author &lt; ApplicationRecord
+  has_many :books, inverse_of: :author
+end
+
+class Book &lt; ApplicationRecord
+  belongs_to :author, inverse_of: :books
+end
+">Copy</button>
+</div>
+<h6 id="primary-key"><a class="anchorlink" href="#primary-key">4.3.2.8 <code>:primary_key</code></a></h6>
+
+<p>By convention, Rails assumes that the column used to hold the primary key of the association is <code>id</code>. You can override this and explicitly specify the primary key with the <code>:primary_key</code> option.</p>
+
+<p>Let's say the <code>users</code> table has <code>id</code> as the primary_key but it also
+has a <code>guid</code> column. The requirement is that the <code>todos</code> table should
+hold the <code>guid</code> column value as the foreign key and not <code>id</code>
+value. This can be achieved like this:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">User</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="n">has_many</span> <span class="ss">:todos</span><span class="p">,</span> <span class="ss">primary_key: :guid</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="class User &lt; ApplicationRecord
+  has_many :todos, primary_key: :guid
+end
+">Copy</button>
+</div>
+<p>Now if we execute <code>@todo = @user.todos.create</code> then the <code>@todo</code>
+record's <code>user_id</code> value will be the <code>guid</code> value of <code>@user</code>.</p>
+
+<h6 id="options-for-has-many-source"><a class="anchorlink" href="#options-for-has-many-source">4.3.2.9 <code>:source</code></a></h6>
+
+<p>The <code>:source</code> option specifies the source association name for a <code>has_many :through</code> association. You only need to use this option if the name of the source association cannot be automatically inferred from the association name.</p>
+
+<h6 id="options-for-has-many-source-type"><a class="anchorlink" href="#options-for-has-many-source-type">4.3.2.10 <code>:source_type</code></a></h6>
+
+<p>The <code>:source_type</code> option specifies the source association type for a <code>has_many :through</code> association that proceeds through a polymorphic association.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">Author</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="n">has_many</span> <span class="ss">:books</span>
+  <span class="n">has_many</span> <span class="ss">:paperbacks</span><span class="p">,</span> <span class="ss">through: :books</span><span class="p">,</span> <span class="ss">source: :format</span><span class="p">,</span> <span class="ss">source_type: </span><span class="s2">"Paperback"</span>
+<span class="k">end</span>
+
+<span class="k">class</span> <span class="nc">Book</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="n">belongs_to</span> <span class="ss">:format</span><span class="p">,</span> <span class="ss">polymorphic: </span><span class="kp">true</span>
+<span class="k">end</span>
+
+<span class="k">class</span> <span class="nc">Hardback</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span><span class="p">;</span> <span class="k">end</span>
+<span class="k">class</span> <span class="nc">Paperback</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span><span class="p">;</span> <span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='class Author &lt; ApplicationRecord
+  has_many :books
+  has_many :paperbacks, through: :books, source: :format, source_type: "Paperback"
+end
+
+class Book &lt; ApplicationRecord
+  belongs_to :format, polymorphic: true
+end
+
+class Hardback &lt; ApplicationRecord; end
+class Paperback &lt; ApplicationRecord; end
+'>Copy</button>
+</div>
+<h6 id="options-for-has-many-through"><a class="anchorlink" href="#options-for-has-many-through">4.3.2.11 <code>:through</code></a></h6>
+
+<p>The <code>:through</code> option specifies a join model through which to perform the query. <code>has_many :through</code> associations provide a way to implement many-to-many relationships, as discussed <a href="#the-has-many-through-association">earlier in this guide</a>.</p>
+
+<h6 id="options-for-has-many-validate"><a class="anchorlink" href="#options-for-has-many-validate">4.3.2.12 <code>:validate</code></a></h6>
+
+<p>If you set the <code>:validate</code> option to <code>false</code>, then new associated objects will not be validated whenever you save this object. By default, this is <code>true</code>: new associated objects will be validated when this object is saved.</p>
+
+<h5 id="scopes-for-has-many"><a class="anchorlink" href="#scopes-for-has-many">4.3.3 Scopes for <code>has_many</code></a></h5>
+
+<p>There may be times when you wish to customize the query used by <code>has_many</code>. Such customizations can be achieved via a scope block. For example:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">Author</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="n">has_many</span> <span class="ss">:books</span><span class="p">,</span> <span class="o">-&gt;</span> <span class="p">{</span> <span class="n">where</span> <span class="ss">processed: </span><span class="kp">true</span> <span class="p">}</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="class Author &lt; ApplicationRecord
+  has_many :books, -&gt; { where processed: true }
+end
+">Copy</button>
+</div>
+<p>You can use any of the standard <a href="active_record_querying.html">querying methods</a> inside the scope block. The following ones are discussed below:</p>
+<ul>
+<li><code>where</code></li>
+<li><code>extending</code></li>
+<li><code>group</code></li>
+<li><code>includes</code></li>
+<li><code>limit</code></li>
+<li><code>offset</code></li>
+<li><code>order</code></li>
+<li><code>readonly</code></li>
+<li><code>select</code></li>
+<li><code>distinct</code></li>
+</ul>
+<h6 id="scopes-for-has-many-where"><a class="anchorlink" href="#scopes-for-has-many-where">4.3.3.1 <code>where</code></a></h6>
+
+<p>The <code>where</code> method lets you specify the conditions that the associated object must meet.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">Author</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="n">has_many</span> <span class="ss">:confirmed_books</span><span class="p">,</span> <span class="o">-&gt;</span> <span class="p">{</span> <span class="n">where</span> <span class="s2">"confirmed = 1"</span> <span class="p">},</span>
+    <span class="ss">class_name: </span><span class="s2">"Book"</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='class Author &lt; ApplicationRecord
+  has_many :confirmed_books, -&gt; { where "confirmed = 1" },
+    class_name: "Book"
+end
+'>Copy</button>
+</div>
+<p>You can also set conditions via a hash:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">Author</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="n">has_many</span> <span class="ss">:confirmed_books</span><span class="p">,</span> <span class="o">-&gt;</span> <span class="p">{</span> <span class="n">where</span> <span class="ss">confirmed: </span><span class="kp">true</span> <span class="p">},</span>
+    <span class="ss">class_name: </span><span class="s2">"Book"</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='class Author &lt; ApplicationRecord
+  has_many :confirmed_books, -&gt; { where confirmed: true },
+    class_name: "Book"
+end
+'>Copy</button>
+</div>
+<p>If you use a hash-style <code>where</code> option, then record creation via this association will be automatically scoped using the hash. In this case, using <code>@author.confirmed_books.create</code> or <code>@author.confirmed_books.build</code> will create books where the confirmed column has the value <code>true</code>.</p>
+
+<h6 id="scopes-for-has-many-extending"><a class="anchorlink" href="#scopes-for-has-many-extending">4.3.3.2 <code>extending</code></a></h6>
+
+<p>The <code>extending</code> method specifies a named module to extend the association proxy. Association extensions are discussed in detail <a href="#association-extensions">later in this guide</a>.</p>
+
+<h6 id="scopes-for-has-many-group"><a class="anchorlink" href="#scopes-for-has-many-group">4.3.3.3 <code>group</code></a></h6>
+
+<p>The <code>group</code> method supplies an attribute name to group the result set by, using a <code>GROUP BY</code> clause in the finder SQL.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">Author</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="n">has_many</span> <span class="ss">:chapters</span><span class="p">,</span> <span class="o">-&gt;</span> <span class="p">{</span> <span class="n">group</span> <span class="s1">'books.id'</span> <span class="p">},</span>
+                      <span class="ss">through: :books</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="class Author &lt; ApplicationRecord
+  has_many :chapters, -&gt; { group 'books.id' },
+                      through: :books
+end
+">Copy</button>
+</div>
+<h6 id="scopes-for-has-many-includes"><a class="anchorlink" href="#scopes-for-has-many-includes">4.3.3.4 <code>includes</code></a></h6>
+
+<p>You can use the <code>includes</code> method to specify second-order associations that should be eager-loaded when this association is used. For example, consider these models:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">Author</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="n">has_many</span> <span class="ss">:books</span>
+<span class="k">end</span>
+
+<span class="k">class</span> <span class="nc">Book</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="n">belongs_to</span> <span class="ss">:author</span>
+  <span class="n">has_many</span> <span class="ss">:chapters</span>
+<span class="k">end</span>
+
+<span class="k">class</span> <span class="nc">Chapter</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="n">belongs_to</span> <span class="ss">:book</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="class Author &lt; ApplicationRecord
+  has_many :books
+end
+
+class Book &lt; ApplicationRecord
+  belongs_to :author
+  has_many :chapters
+end
+
+class Chapter &lt; ApplicationRecord
+  belongs_to :book
+end
+">Copy</button>
+</div>
+<p>If you frequently retrieve chapters directly from authors (<code>@author.books.chapters</code>), then you can make your code somewhat more efficient by including chapters in the association from authors to books:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">Author</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="n">has_many</span> <span class="ss">:books</span><span class="p">,</span> <span class="o">-&gt;</span> <span class="p">{</span> <span class="n">includes</span> <span class="ss">:chapters</span> <span class="p">}</span>
+<span class="k">end</span>
+
+<span class="k">class</span> <span class="nc">Book</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="n">belongs_to</span> <span class="ss">:author</span>
+  <span class="n">has_many</span> <span class="ss">:chapters</span>
+<span class="k">end</span>
+
+<span class="k">class</span> <span class="nc">Chapter</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="n">belongs_to</span> <span class="ss">:book</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="class Author &lt; ApplicationRecord
+  has_many :books, -&gt; { includes :chapters }
+end
+
+class Book &lt; ApplicationRecord
+  belongs_to :author
+  has_many :chapters
+end
+
+class Chapter &lt; ApplicationRecord
+  belongs_to :book
+end
+">Copy</button>
+</div>
+<h6 id="scopes-for-has-many-limit"><a class="anchorlink" href="#scopes-for-has-many-limit">4.3.3.5 <code>limit</code></a></h6>
+
+<p>The <code>limit</code> method lets you restrict the total number of objects that will be fetched through an association.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">Author</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="n">has_many</span> <span class="ss">:recent_books</span><span class="p">,</span>
+    <span class="o">-&gt;</span> <span class="p">{</span> <span class="n">order</span><span class="p">(</span><span class="s1">'published_at desc'</span><span class="p">).</span><span class="nf">limit</span><span class="p">(</span><span class="mi">100</span><span class="p">)</span> <span class="p">},</span>
+    <span class="ss">class_name: </span><span class="s2">"Book"</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="class Author &lt; ApplicationRecord
+  has_many :recent_books,
+    -&gt; { order('published_at desc').limit(100) },
+    class_name: &quot;Book&quot;
+end
+">Copy</button>
+</div>
+<h6 id="scopes-for-has-many-offset"><a class="anchorlink" href="#scopes-for-has-many-offset">4.3.3.6 <code>offset</code></a></h6>
+
+<p>The <code>offset</code> method lets you specify the starting offset for fetching objects via an association. For example, <code>-&gt; { offset(11) }</code> will skip the first 11 records.</p>
+
+<h6 id="scopes-for-has-many-order"><a class="anchorlink" href="#scopes-for-has-many-order">4.3.3.7 <code>order</code></a></h6>
+
+<p>The <code>order</code> method dictates the order in which associated objects will be received (in the syntax used by an SQL <code>ORDER BY</code> clause).</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">Author</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="n">has_many</span> <span class="ss">:books</span><span class="p">,</span> <span class="o">-&gt;</span> <span class="p">{</span> <span class="n">order</span> <span class="s2">"date_confirmed DESC"</span> <span class="p">}</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='class Author &lt; ApplicationRecord
+  has_many :books, -&gt; { order "date_confirmed DESC" }
+end
+'>Copy</button>
+</div>
+<h6 id="scopes-for-has-many-readonly"><a class="anchorlink" href="#scopes-for-has-many-readonly">4.3.3.8 <code>readonly</code></a></h6>
+
+<p>If you use the <code>readonly</code> method, then the associated objects will be read-only when retrieved via the association.</p>
+
+<h6 id="scopes-for-has-many-select"><a class="anchorlink" href="#scopes-for-has-many-select">4.3.3.9 <code>select</code></a></h6>
+
+<p>The <code>select</code> method lets you override the SQL <code>SELECT</code> clause that is used to retrieve data about the associated objects. By default, Rails retrieves all columns.</p>
+
+<div class="warning"><p>If you specify your own <code>select</code>, be sure to include the primary key and foreign key columns of the associated model. If you do not, Rails will throw an error.</p></div>
+
+<h6 id="scopes-for-has-many-distinct"><a class="anchorlink" href="#scopes-for-has-many-distinct">4.3.3.10 <code>distinct</code></a></h6>
+
+<p>Use the <code>distinct</code> method to keep the collection free of duplicates. This is
+mostly useful together with the <code>:through</code> option.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">Person</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="n">has_many</span> <span class="ss">:readings</span>
+  <span class="n">has_many</span> <span class="ss">:articles</span><span class="p">,</span> <span class="ss">through: :readings</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="class Person &lt; ApplicationRecord
+  has_many :readings
+  has_many :articles, through: :readings
+end
+">Copy</button>
+</div>
+<div class="code_container">
+<pre><code class="highlight irb"><span class="gp">irb&gt;</span><span class="w"> </span><span class="n">person</span> <span class="o">=</span> <span class="no">Person</span><span class="p">.</span><span class="nf">create</span><span class="p">(</span><span class="ss">name: </span><span class="s1">'John'</span><span class="p">)</span>
+<span class="gp">irb&gt;</span><span class="w"> </span><span class="n">article</span> <span class="o">=</span> <span class="no">Article</span><span class="p">.</span><span class="nf">create</span><span class="p">(</span><span class="ss">name: </span><span class="s1">'a1'</span><span class="p">)</span>
+<span class="gp">irb&gt;</span><span class="w"> </span><span class="n">person</span><span class="p">.</span><span class="nf">articles</span> <span class="o">&lt;&lt;</span> <span class="n">article</span>
+<span class="gp">irb&gt;</span><span class="w"> </span><span class="n">person</span><span class="p">.</span><span class="nf">articles</span> <span class="o">&lt;&lt;</span> <span class="n">article</span>
+<span class="gp">irb&gt;</span><span class="w"> </span><span class="n">person</span><span class="p">.</span><span class="nf">articles</span><span class="p">.</span><span class="nf">to_a</span>
+<span class="p">=&gt;</span> <span class="p">[</span><span class="kt">#&lt;</span><span class="no">Article</span> <span class="ss">id: </span><span class="mi">5</span><span class="p">,</span> <span class="ss">name: </span><span class="s2">"a1"</span><span class="kt">&gt;</span><span class="p">,</span> <span class="kt">#&lt;</span><span class="no">Article</span> <span class="ss">id: </span><span class="mi">5</span><span class="p">,</span> <span class="ss">name: </span><span class="s2">"a1"</span><span class="kt">&gt;</span><span class="p">]</span>
+<span class="gp">irb&gt;</span><span class="w"> </span><span class="no">Reading</span><span class="p">.</span><span class="nf">all</span><span class="p">.</span><span class="nf">to_a</span>
+<span class="p">=&gt;</span> <span class="p">[</span><span class="kt">#&lt;</span><span class="no">Reading</span> <span class="ss">id: </span><span class="mi">12</span><span class="p">,</span> <span class="ss">person_id: </span><span class="mi">5</span><span class="p">,</span> <span class="ss">article_id: </span><span class="mi">5</span><span class="kt">&gt;</span><span class="p">,</span> <span class="kt">#&lt;</span><span class="no">Reading</span> <span class="ss">id: </span><span class="mi">13</span><span class="p">,</span> <span class="ss">person_id: </span><span class="mi">5</span><span class="p">,</span> <span class="ss">article_id: </span><span class="mi">5</span><span class="kt">&gt;</span><span class="p">]</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="person = Person.create(name: 'John')
+article = Article.create(name: 'a1')
+person.articles &lt;&lt; article
+person.articles &lt;&lt; article
+person.articles.to_a
+Reading.all.to_a
+">Copy</button>
+</div>
+<p>In the above case there are two readings and <code>person.articles</code> brings out both of
+them even though these records are pointing to the same article.</p>
+
+<p>Now let's set <code>distinct</code>:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">Person</span>
+  <span class="n">has_many</span> <span class="ss">:readings</span>
+  <span class="n">has_many</span> <span class="ss">:articles</span><span class="p">,</span> <span class="o">-&gt;</span> <span class="p">{</span> <span class="n">distinct</span> <span class="p">},</span> <span class="ss">through: :readings</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="class Person
+  has_many :readings
+  has_many :articles, -&gt; { distinct }, through: :readings
+end
+">Copy</button>
+</div>
+<div class="code_container">
+<pre><code class="highlight irb"><span class="gp">irb&gt;</span><span class="w"> </span><span class="n">person</span> <span class="o">=</span> <span class="no">Person</span><span class="p">.</span><span class="nf">create</span><span class="p">(</span><span class="ss">name: </span><span class="s1">'Honda'</span><span class="p">)</span>
+<span class="gp">irb&gt;</span><span class="w"> </span><span class="n">article</span> <span class="o">=</span> <span class="no">Article</span><span class="p">.</span><span class="nf">create</span><span class="p">(</span><span class="ss">name: </span><span class="s1">'a1'</span><span class="p">)</span>
+<span class="gp">irb&gt;</span><span class="w"> </span><span class="n">person</span><span class="p">.</span><span class="nf">articles</span> <span class="o">&lt;&lt;</span> <span class="n">article</span>
+<span class="gp">irb&gt;</span><span class="w"> </span><span class="n">person</span><span class="p">.</span><span class="nf">articles</span> <span class="o">&lt;&lt;</span> <span class="n">article</span>
+<span class="gp">irb&gt;</span><span class="w"> </span><span class="n">person</span><span class="p">.</span><span class="nf">articles</span><span class="p">.</span><span class="nf">to_a</span>
+<span class="p">=&gt;</span> <span class="p">[</span><span class="kt">#&lt;</span><span class="no">Article</span> <span class="ss">id: </span><span class="mi">7</span><span class="p">,</span> <span class="ss">name: </span><span class="s2">"a1"</span><span class="kt">&gt;</span><span class="p">]</span>
+<span class="gp">irb&gt;</span><span class="w"> </span><span class="no">Reading</span><span class="p">.</span><span class="nf">all</span><span class="p">.</span><span class="nf">to_a</span>
+<span class="p">=&gt;</span> <span class="p">[</span><span class="kt">#&lt;</span><span class="no">Reading</span> <span class="ss">id: </span><span class="mi">16</span><span class="p">,</span> <span class="ss">person_id: </span><span class="mi">7</span><span class="p">,</span> <span class="ss">article_id: </span><span class="mi">7</span><span class="kt">&gt;</span><span class="p">,</span> <span class="kt">#&lt;</span><span class="no">Reading</span> <span class="ss">id: </span><span class="mi">17</span><span class="p">,</span> <span class="ss">person_id: </span><span class="mi">7</span><span class="p">,</span> <span class="ss">article_id: </span><span class="mi">7</span><span class="kt">&gt;</span><span class="p">]</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="person = Person.create(name: 'Honda')
+article = Article.create(name: 'a1')
+person.articles &lt;&lt; article
+person.articles &lt;&lt; article
+person.articles.to_a
+Reading.all.to_a
+">Copy</button>
+</div>
+<p>In the above case there are still two readings. However <code>person.articles</code> shows
+only one article because the collection loads only unique records.</p>
+
+<p>If you want to make sure that, upon insertion, all of the records in the
+persisted association are distinct (so that you can be sure that when you
+inspect the association that you will never find duplicate records), you should
+add a unique index on the table itself. For example, if you have a table named
+<code>readings</code> and you want to make sure the articles can only be added to a person once,
+you could add the following in a migration:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">add_index</span> <span class="ss">:readings</span><span class="p">,</span> <span class="p">[</span><span class="ss">:person_id</span><span class="p">,</span> <span class="ss">:article_id</span><span class="p">],</span> <span class="ss">unique: </span><span class="kp">true</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="add_index :readings, [:person_id, :article_id], unique: true
+">Copy</button>
+</div>
+<p>Once you have this unique index, attempting to add the article to a person twice
+will raise an <code>ActiveRecord::RecordNotUnique</code> error:</p>
+
+<div class="code_container">
+<pre><code class="highlight irb"><span class="gp">irb&gt;</span><span class="w"> </span><span class="n">person</span> <span class="o">=</span> <span class="no">Person</span><span class="p">.</span><span class="nf">create</span><span class="p">(</span><span class="ss">name: </span><span class="s1">'Honda'</span><span class="p">)</span>
+<span class="gp">irb&gt;</span><span class="w"> </span><span class="n">article</span> <span class="o">=</span> <span class="no">Article</span><span class="p">.</span><span class="nf">create</span><span class="p">(</span><span class="ss">name: </span><span class="s1">'a1'</span><span class="p">)</span>
+<span class="gp">irb&gt;</span><span class="w"> </span><span class="n">person</span><span class="p">.</span><span class="nf">articles</span> <span class="o">&lt;&lt;</span> <span class="n">article</span>
+<span class="gp">irb&gt;</span><span class="w"> </span><span class="n">person</span><span class="p">.</span><span class="nf">articles</span> <span class="o">&lt;&lt;</span> <span class="n">article</span>
+<span class="go">ActiveRecord::RecordNotUnique
+</span></code></pre>
+<button class="clipboard-button" data-clipboard-text="person = Person.create(name: 'Honda')
+article = Article.create(name: 'a1')
+person.articles &lt;&lt; article
+person.articles &lt;&lt; article
+">Copy</button>
+</div>
+<p>Note that checking for uniqueness using something like <code>include?</code> is subject
+to race conditions. Do not attempt to use <code>include?</code> to enforce distinctness
+in an association. For instance, using the article example from above, the
+following code would be racy because multiple users could be attempting this
+at the same time:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">person</span><span class="p">.</span><span class="nf">articles</span> <span class="o">&lt;&lt;</span> <span class="n">article</span> <span class="k">unless</span> <span class="n">person</span><span class="p">.</span><span class="nf">articles</span><span class="p">.</span><span class="nf">include?</span><span class="p">(</span><span class="n">article</span><span class="p">)</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="person.articles &lt;&lt; article unless person.articles.include?(article)
+">Copy</button>
+</div>
+<h5 id="has-many-association-reference-when-are-objects-saved-questionmark"><a class="anchorlink" href="#has-many-association-reference-when-are-objects-saved-questionmark">4.3.4 When are Objects Saved?</a></h5>
+
+<p>When you assign an object to a <code>has_many</code> association, that object is automatically saved (in order to update its foreign key). If you assign multiple objects in one statement, then they are all saved.</p>
+
+<p>If any of these saves fails due to validation errors, then the assignment statement returns <code>false</code> and the assignment itself is cancelled.</p>
+
+<p>If the parent object (the one declaring the <code>has_many</code> association) is unsaved (that is, <code>new_record?</code> returns <code>true</code>) then the child objects are not saved when they are added. All unsaved members of the association will automatically be saved when the parent is saved.</p>
+
+<p>If you want to assign an object to a <code>has_many</code> association without saving the object, use the <code>collection.build</code> method.</p>
+
+<h4 id="has-and-belongs-to-many-association-reference"><a class="anchorlink" href="#has-and-belongs-to-many-association-reference">4.4 <code>has_and_belongs_to_many</code> Association Reference</a></h4>
+
+<p>The <code>has_and_belongs_to_many</code> association creates a many-to-many relationship with another model. In database terms, this associates two classes via an intermediate join table that includes foreign keys referring to each of the classes.</p>
+
+<h5 id="methods-added-by-has-and-belongs-to-many"><a class="anchorlink" href="#methods-added-by-has-and-belongs-to-many">4.4.1 Methods Added by <code>has_and_belongs_to_many</code></a></h5>
+
+<p>When you declare a <code>has_and_belongs_to_many</code> association, the declaring class automatically gains several methods related to the association:</p>
+<ul>
+<li><code>collection</code></li>
+<li><a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveRecord/Associations/CollectionProxy.html#method-i-3C-3C"><code>collection&lt;&lt;(object, ...)</code></a></li>
+<li><a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveRecord/Associations/CollectionProxy.html#method-i-delete"><code>collection.delete(object, ...)</code></a></li>
+<li><a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveRecord/Associations/CollectionProxy.html#method-i-destroy"><code>collection.destroy(object, ...)</code></a></li>
+<li><code>collection=(objects)</code></li>
+<li><code>collection_singular_ids</code></li>
+<li><code>collection_singular_ids=(ids)</code></li>
+<li><a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveRecord/Associations/CollectionProxy.html#method-i-clear"><code>collection.clear</code></a></li>
+<li><a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveRecord/Associations/CollectionProxy.html#method-i-empty-3F"><code>collection.empty?</code></a></li>
+<li><a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveRecord/Associations/CollectionProxy.html#method-i-size"><code>collection.size</code></a></li>
+<li><a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveRecord/Associations/CollectionProxy.html#method-i-find"><code>collection.find(...)</code></a></li>
+<li><a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveRecord/QueryMethods.html#method-i-where"><code>collection.where(...)</code></a></li>
+<li><a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveRecord/FinderMethods.html#method-i-exists-3F"><code>collection.exists?(...)</code></a></li>
+<li><a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveRecord/Associations/CollectionProxy.html#method-i-build"><code>collection.build(attributes = {})</code></a></li>
+<li><a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveRecord/Associations/CollectionProxy.html#method-i-create"><code>collection.create(attributes = {})</code></a></li>
+<li><a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveRecord/Associations/CollectionProxy.html#method-i-create-21"><code>collection.create!(attributes = {})</code></a></li>
+<li><a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveRecord/Associations/CollectionProxy.html#method-i-reload"><code>collection.reload</code></a></li>
+</ul>
+<p>In all of these methods, <code>collection</code> is replaced with the symbol passed as the first argument to <code>has_and_belongs_to_many</code>, and <code>collection_singular</code> is replaced with the singularized version of that symbol. For example, given the declaration:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">Part</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="n">has_and_belongs_to_many</span> <span class="ss">:assemblies</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="class Part &lt; ApplicationRecord
+  has_and_belongs_to_many :assemblies
+end
+">Copy</button>
+</div>
+<p>Each instance of the <code>Part</code> model will have these methods:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">assemblies</span>
+<span class="n">assemblies</span><span class="o">&lt;&lt;</span><span class="p">(</span><span class="n">object</span><span class="p">,</span> <span class="o">...</span><span class="p">)</span>
+<span class="n">assemblies</span><span class="p">.</span><span class="nf">delete</span><span class="p">(</span><span class="n">object</span><span class="p">,</span> <span class="o">...</span><span class="p">)</span>
+<span class="n">assemblies</span><span class="p">.</span><span class="nf">destroy</span><span class="p">(</span><span class="n">object</span><span class="p">,</span> <span class="o">...</span><span class="p">)</span>
+<span class="n">assemblies</span><span class="o">=</span><span class="p">(</span><span class="n">objects</span><span class="p">)</span>
+<span class="n">assembly_ids</span>
+<span class="n">assembly_ids</span><span class="o">=</span><span class="p">(</span><span class="n">ids</span><span class="p">)</span>
+<span class="n">assemblies</span><span class="p">.</span><span class="nf">clear</span>
+<span class="n">assemblies</span><span class="p">.</span><span class="nf">empty?</span>
+<span class="n">assemblies</span><span class="p">.</span><span class="nf">size</span>
+<span class="n">assemblies</span><span class="p">.</span><span class="nf">find</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+<span class="n">assemblies</span><span class="p">.</span><span class="nf">where</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+<span class="n">assemblies</span><span class="p">.</span><span class="nf">exists?</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+<span class="n">assemblies</span><span class="p">.</span><span class="nf">build</span><span class="p">(</span><span class="n">attributes</span> <span class="o">=</span> <span class="p">{},</span> <span class="o">...</span><span class="p">)</span>
+<span class="n">assemblies</span><span class="p">.</span><span class="nf">create</span><span class="p">(</span><span class="n">attributes</span> <span class="o">=</span> <span class="p">{})</span>
+<span class="n">assemblies</span><span class="p">.</span><span class="nf">create!</span><span class="p">(</span><span class="n">attributes</span> <span class="o">=</span> <span class="p">{})</span>
+<span class="n">assemblies</span><span class="p">.</span><span class="nf">reload</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="assemblies
+assemblies&lt;&lt;(object, ...)
+assemblies.delete(object, ...)
+assemblies.destroy(object, ...)
+assemblies=(objects)
+assembly_ids
+assembly_ids=(ids)
+assemblies.clear
+assemblies.empty?
+assemblies.size
+assemblies.find(...)
+assemblies.where(...)
+assemblies.exists?(...)
+assemblies.build(attributes = {}, ...)
+assemblies.create(attributes = {})
+assemblies.create!(attributes = {})
+assemblies.reload
+">Copy</button>
+</div>
+<h6 id="additional-column-methods"><a class="anchorlink" href="#additional-column-methods">4.4.1.1 Additional Column Methods</a></h6>
+
+<p>If the join table for a <code>has_and_belongs_to_many</code> association has additional columns beyond the two foreign keys, these columns will be added as attributes to records retrieved via that association. Records returned with additional attributes will always be read-only, because Rails cannot save changes to those attributes.</p>
+
+<div class="warning"><p>The use of extra attributes on the join table in a <code>has_and_belongs_to_many</code> association is deprecated. If you require this sort of complex behavior on the table that joins two models in a many-to-many relationship, you should use a <code>has_many :through</code> association instead of <code>has_and_belongs_to_many</code>.</p></div>
+
+<h6 id="methods-added-by-has-and-belongs-to-many-collection"><a class="anchorlink" href="#methods-added-by-has-and-belongs-to-many-collection">4.4.1.2 <code>collection</code></a></h6>
+
+<p>The <code>collection</code> method returns a Relation of all of the associated objects. If there are no associated objects, it returns an empty Relation.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="vi">@assemblies</span> <span class="o">=</span> <span class="vi">@part</span><span class="p">.</span><span class="nf">assemblies</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="@assemblies = @part.assemblies
+">Copy</button>
+</div>
+<h6 id="methods-added-by-has-and-belongs-to-many-collection-object"><a class="anchorlink" href="#methods-added-by-has-and-belongs-to-many-collection-object">4.4.1.3 <code>collection&lt;&lt;(object, ...)</code></a></h6>
+
+<p>The <a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveRecord/Associations/CollectionProxy.html#method-i-3C-3C"><code>collection&lt;&lt;</code></a> method adds one or more objects to the collection by creating records in the join table.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="vi">@part</span><span class="p">.</span><span class="nf">assemblies</span> <span class="o">&lt;&lt;</span> <span class="vi">@assembly1</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="@part.assemblies &lt;&lt; @assembly1
+">Copy</button>
+</div>
+<div class="note"><p>This method is aliased as <code>collection.concat</code> and <code>collection.push</code>.</p></div>
+
+<h6 id="methods-added-by-has-and-belongs-to-many-collection-delete-object"><a class="anchorlink" href="#methods-added-by-has-and-belongs-to-many-collection-delete-object">4.4.1.4 <code>collection.delete(object, ...)</code></a></h6>
+
+<p>The <a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveRecord/Associations/CollectionProxy.html#method-i-delete"><code>collection.delete</code></a> method removes one or more objects from the collection by deleting records in the join table. This does not destroy the objects.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="vi">@part</span><span class="p">.</span><span class="nf">assemblies</span><span class="p">.</span><span class="nf">delete</span><span class="p">(</span><span class="vi">@assembly1</span><span class="p">)</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="@part.assemblies.delete(@assembly1)
+">Copy</button>
+</div>
+<h6 id="methods-added-by-has-and-belongs-to-many-collection-destroy-object"><a class="anchorlink" href="#methods-added-by-has-and-belongs-to-many-collection-destroy-object">4.4.1.5 <code>collection.destroy(object, ...)</code></a></h6>
+
+<p>The <a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveRecord/Associations/CollectionProxy.html#method-i-destroy"><code>collection.destroy</code></a> method removes one or more objects from the collection by deleting records in the join table. This does not destroy the objects.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="vi">@part</span><span class="p">.</span><span class="nf">assemblies</span><span class="p">.</span><span class="nf">destroy</span><span class="p">(</span><span class="vi">@assembly1</span><span class="p">)</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="@part.assemblies.destroy(@assembly1)
+">Copy</button>
+</div>
+<h6 id="methods-added-by-has-and-belongs-to-many-collection-objects"><a class="anchorlink" href="#methods-added-by-has-and-belongs-to-many-collection-objects">4.4.1.6 <code>collection=(objects)</code></a></h6>
+
+<p>The <code>collection=</code> method makes the collection contain only the supplied objects, by adding and deleting as appropriate. The changes are persisted to the database.</p>
+
+<h6 id="methods-added-by-has-and-belongs-to-many-collection-singular-ids"><a class="anchorlink" href="#methods-added-by-has-and-belongs-to-many-collection-singular-ids">4.4.1.7 <code>collection_singular_ids</code></a></h6>
+
+<p>The <code>collection_singular_ids</code> method returns an array of the ids of the objects in the collection.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="vi">@assembly_ids</span> <span class="o">=</span> <span class="vi">@part</span><span class="p">.</span><span class="nf">assembly_ids</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="@assembly_ids = @part.assembly_ids
+">Copy</button>
+</div>
+<h6 id="methods-added-by-has-and-belongs-to-many-collection-singular-ids-ids"><a class="anchorlink" href="#methods-added-by-has-and-belongs-to-many-collection-singular-ids-ids">4.4.1.8 <code>collection_singular_ids=(ids)</code></a></h6>
+
+<p>The <code>collection_singular_ids=</code> method makes the collection contain only the objects identified by the supplied primary key values, by adding and deleting as appropriate. The changes are persisted to the database.</p>
+
+<h6 id="methods-added-by-has-and-belongs-to-many-collection-clear"><a class="anchorlink" href="#methods-added-by-has-and-belongs-to-many-collection-clear">4.4.1.9 <code>collection.clear</code></a></h6>
+
+<p>The <a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveRecord/Associations/CollectionProxy.html#method-i-clear"><code>collection.clear</code></a> method removes every object from the collection by deleting the rows from the joining table. This does not destroy the associated objects.</p>
+
+<h6 id="methods-added-by-has-and-belongs-to-many-collection-empty-questionmark"><a class="anchorlink" href="#methods-added-by-has-and-belongs-to-many-collection-empty-questionmark">4.4.1.10 <code>collection.empty?</code></a></h6>
+
+<p>The <a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveRecord/Associations/CollectionProxy.html#method-i-empty-3F"><code>collection.empty?</code></a> method returns <code>true</code> if the collection does not contain any associated objects.</p>
+
+<div class="code_container">
+<pre><code class="highlight erb"><span class="cp">&lt;%</span> <span class="k">if</span> <span class="vi">@part</span><span class="p">.</span><span class="nf">assemblies</span><span class="p">.</span><span class="nf">empty?</span> <span class="cp">%&gt;</span>
+  This part is not used in any assemblies
+<span class="cp">&lt;%</span> <span class="k">end</span> <span class="cp">%&gt;</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="&lt;% if @part.assemblies.empty? %&gt;
+  This part is not used in any assemblies
+&lt;% end %&gt;
+">Copy</button>
+</div>
+<h6 id="methods-added-by-has-and-belongs-to-many-collection-size"><a class="anchorlink" href="#methods-added-by-has-and-belongs-to-many-collection-size">4.4.1.11 <code>collection.size</code></a></h6>
+
+<p>The <a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveRecord/Associations/CollectionProxy.html#method-i-size"><code>collection.size</code></a> method returns the number of objects in the collection.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="vi">@assembly_count</span> <span class="o">=</span> <span class="vi">@part</span><span class="p">.</span><span class="nf">assemblies</span><span class="p">.</span><span class="nf">size</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="@assembly_count = @part.assemblies.size
+">Copy</button>
+</div>
+<h6 id="methods-added-by-has-and-belongs-to-many-collection-find"><a class="anchorlink" href="#methods-added-by-has-and-belongs-to-many-collection-find">4.4.1.12 <code>collection.find(...)</code></a></h6>
+
+<p>The <a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveRecord/Associations/CollectionProxy.html#method-i-find"><code>collection.find</code></a> method finds objects within the collection's table.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="vi">@assembly</span> <span class="o">=</span> <span class="vi">@part</span><span class="p">.</span><span class="nf">assemblies</span><span class="p">.</span><span class="nf">find</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="@assembly = @part.assemblies.find(1)
+">Copy</button>
+</div>
+<h6 id="methods-added-by-has-and-belongs-to-many-collection-where"><a class="anchorlink" href="#methods-added-by-has-and-belongs-to-many-collection-where">4.4.1.13 <code>collection.where(...)</code></a></h6>
+
+<p>The <a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveRecord/QueryMethods.html#method-i-where"><code>collection.where</code></a> method finds objects within the collection based on the conditions supplied but the objects are loaded lazily meaning that the database is queried only when the object(s) are accessed.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="vi">@new_assemblies</span> <span class="o">=</span> <span class="vi">@part</span><span class="p">.</span><span class="nf">assemblies</span><span class="p">.</span><span class="nf">where</span><span class="p">(</span><span class="s2">"created_at &gt; ?"</span><span class="p">,</span> <span class="mi">2</span><span class="p">.</span><span class="nf">days</span><span class="p">.</span><span class="nf">ago</span><span class="p">)</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='@new_assemblies = @part.assemblies.where("created_at &gt; ?", 2.days.ago)
+'>Copy</button>
+</div>
+<h6 id="methods-added-by-has-and-belongs-to-many-collection-exists-questionmark"><a class="anchorlink" href="#methods-added-by-has-and-belongs-to-many-collection-exists-questionmark">4.4.1.14 <code>collection.exists?(...)</code></a></h6>
+
+<p>The <a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveRecord/FinderMethods.html#method-i-exists-3F"><code>collection.exists?</code></a> method checks whether an object meeting the supplied
+conditions exists in the collection's table.</p>
+
+<h6 id="methods-added-by-has-and-belongs-to-many-collection-build-attributes"><a class="anchorlink" href="#methods-added-by-has-and-belongs-to-many-collection-build-attributes">4.4.1.15 <code>collection.build(attributes = {})</code></a></h6>
+
+<p>The <a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveRecord/Associations/CollectionProxy.html#method-i-build"><code>collection.build</code></a> method returns a new object of the associated type. This object will be instantiated from the passed attributes, and the link through the join table will be created, but the associated object will <em>not</em> yet be saved.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="vi">@assembly</span> <span class="o">=</span> <span class="vi">@part</span><span class="p">.</span><span class="nf">assemblies</span><span class="p">.</span><span class="nf">build</span><span class="p">({</span><span class="ss">assembly_name: </span><span class="s2">"Transmission housing"</span><span class="p">})</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='@assembly = @part.assemblies.build({assembly_name: "Transmission housing"})
+'>Copy</button>
+</div>
+<h6 id="methods-added-by-has-and-belongs-to-many-collection-create-attributes"><a class="anchorlink" href="#methods-added-by-has-and-belongs-to-many-collection-create-attributes">4.4.1.16 <code>collection.create(attributes = {})</code></a></h6>
+
+<p>The <a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveRecord/Associations/CollectionProxy.html#method-i-create"><code>collection.create</code></a> method returns a new object of the associated type. This object will be instantiated from the passed attributes, the link through the join table will be created, and, once it passes all of the validations specified on the associated model, the associated object <em>will</em> be saved.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="vi">@assembly</span> <span class="o">=</span> <span class="vi">@part</span><span class="p">.</span><span class="nf">assemblies</span><span class="p">.</span><span class="nf">create</span><span class="p">({</span><span class="ss">assembly_name: </span><span class="s2">"Transmission housing"</span><span class="p">})</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='@assembly = @part.assemblies.create({assembly_name: "Transmission housing"})
+'>Copy</button>
+</div>
+<h6 id="methods-added-by-has-and-belongs-to-many-collection-create-bang-attributes"><a class="anchorlink" href="#methods-added-by-has-and-belongs-to-many-collection-create-bang-attributes">4.4.1.17 <code>collection.create!(attributes = {})</code></a></h6>
+
+<p>Does the same as <code>collection.create</code>, but raises <code>ActiveRecord::RecordInvalid</code> if the record is invalid.</p>
+
+<h6 id="methods-added-by-has-and-belongs-to-many-collection-reload"><a class="anchorlink" href="#methods-added-by-has-and-belongs-to-many-collection-reload">4.4.1.18 <code>collection.reload</code></a></h6>
+
+<p>The <a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveRecord/Associations/CollectionProxy.html#method-i-reload"><code>collection.reload</code></a> method returns a Relation of all of the associated objects, forcing a database read. If there are no associated objects, it returns an empty Relation.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="vi">@assemblies</span> <span class="o">=</span> <span class="vi">@part</span><span class="p">.</span><span class="nf">assemblies</span><span class="p">.</span><span class="nf">reload</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="@assemblies = @part.assemblies.reload
+">Copy</button>
+</div>
+<h5 id="options-for-has-and-belongs-to-many"><a class="anchorlink" href="#options-for-has-and-belongs-to-many">4.4.2 Options for <code>has_and_belongs_to_many</code></a></h5>
+
+<p>While Rails uses intelligent defaults that will work well in most situations, there may be times when you want to customize the behavior of the <code>has_and_belongs_to_many</code> association reference. Such customizations can easily be accomplished by passing options when you create the association. For example, this association uses two such options:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">Parts</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="n">has_and_belongs_to_many</span> <span class="ss">:assemblies</span><span class="p">,</span> <span class="o">-&gt;</span> <span class="p">{</span> <span class="n">readonly</span> <span class="p">},</span>
+                                       <span class="ss">autosave: </span><span class="kp">true</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="class Parts &lt; ApplicationRecord
+  has_and_belongs_to_many :assemblies, -&gt; { readonly },
+                                       autosave: true
+end
+">Copy</button>
+</div>
+<p>The <a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveRecord/Associations/ClassMethods.html#method-i-has_and_belongs_to_many"><code>has_and_belongs_to_many</code></a> association supports these options:</p>
+<ul>
+<li><code>:association_foreign_key</code></li>
+<li><code>:autosave</code></li>
+<li><code>:class_name</code></li>
+<li><code>:foreign_key</code></li>
+<li><code>:join_table</code></li>
+<li><code>:validate</code></li>
+</ul>
+<h6 id="association-foreign-key"><a class="anchorlink" href="#association-foreign-key">4.4.2.1 <code>:association_foreign_key</code></a></h6>
+
+<p>By convention, Rails assumes that the column in the join table used to hold the foreign key pointing to the other model is the name of that model with the suffix <code>_id</code> added. The <code>:association_foreign_key</code> option lets you set the name of the foreign key directly:</p>
+
+<div class="info"><p>The <code>:foreign_key</code> and <code>:association_foreign_key</code> options are useful when setting up a many-to-many self-join. For example:</p></div>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">User</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="n">has_and_belongs_to_many</span> <span class="ss">:friends</span><span class="p">,</span>
+      <span class="ss">class_name: </span><span class="s2">"User"</span><span class="p">,</span>
+      <span class="ss">foreign_key: </span><span class="s2">"this_user_id"</span><span class="p">,</span>
+      <span class="ss">association_foreign_key: </span><span class="s2">"other_user_id"</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='class User &lt; ApplicationRecord
+  has_and_belongs_to_many :friends,
+      class_name: "User",
+      foreign_key: "this_user_id",
+      association_foreign_key: "other_user_id"
+end
+'>Copy</button>
+</div>
+<h6 id="options-for-has-and-belongs-to-many-autosave"><a class="anchorlink" href="#options-for-has-and-belongs-to-many-autosave">4.4.2.2 <code>:autosave</code></a></h6>
+
+<p>If you set the <code>:autosave</code> option to <code>true</code>, Rails will save any loaded association members and destroy members that are marked for destruction whenever you save the parent object. Setting <code>:autosave</code> to <code>false</code> is not the same as not setting the <code>:autosave</code> option. If the <code>:autosave</code> option is not present, then new associated objects will be saved, but updated associated objects will not be saved.</p>
+
+<h6 id="options-for-has-and-belongs-to-many-class-name"><a class="anchorlink" href="#options-for-has-and-belongs-to-many-class-name">4.4.2.3 <code>:class_name</code></a></h6>
+
+<p>If the name of the other model cannot be derived from the association name, you can use the <code>:class_name</code> option to supply the model name. For example, if a part has many assemblies, but the actual name of the model containing assemblies is <code>Gadget</code>, you'd set things up this way:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">Parts</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="n">has_and_belongs_to_many</span> <span class="ss">:assemblies</span><span class="p">,</span> <span class="ss">class_name: </span><span class="s2">"Gadget"</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='class Parts &lt; ApplicationRecord
+  has_and_belongs_to_many :assemblies, class_name: "Gadget"
+end
+'>Copy</button>
+</div>
+<h6 id="options-for-has-and-belongs-to-many-foreign-key"><a class="anchorlink" href="#options-for-has-and-belongs-to-many-foreign-key">4.4.2.4 <code>:foreign_key</code></a></h6>
+
+<p>By convention, Rails assumes that the column in the join table used to hold the foreign key pointing to this model is the name of this model with the suffix <code>_id</code> added. The <code>:foreign_key</code> option lets you set the name of the foreign key directly:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">User</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="n">has_and_belongs_to_many</span> <span class="ss">:friends</span><span class="p">,</span>
+      <span class="ss">class_name: </span><span class="s2">"User"</span><span class="p">,</span>
+      <span class="ss">foreign_key: </span><span class="s2">"this_user_id"</span><span class="p">,</span>
+      <span class="ss">association_foreign_key: </span><span class="s2">"other_user_id"</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='class User &lt; ApplicationRecord
+  has_and_belongs_to_many :friends,
+      class_name: "User",
+      foreign_key: "this_user_id",
+      association_foreign_key: "other_user_id"
+end
+'>Copy</button>
+</div>
+<h6 id="join-table"><a class="anchorlink" href="#join-table">4.4.2.5 <code>:join_table</code></a></h6>
+
+<p>If the default name of the join table, based on lexical ordering, is not what you want, you can use the <code>:join_table</code> option to override the default.</p>
+
+<h6 id="options-for-has-and-belongs-to-many-validate"><a class="anchorlink" href="#options-for-has-and-belongs-to-many-validate">4.4.2.6 <code>:validate</code></a></h6>
+
+<p>If you set the <code>:validate</code> option to <code>false</code>, then new associated objects will not be validated whenever you save this object. By default, this is <code>true</code>: new associated objects will be validated when this object is saved.</p>
+
+<h5 id="scopes-for-has-and-belongs-to-many"><a class="anchorlink" href="#scopes-for-has-and-belongs-to-many">4.4.3 Scopes for <code>has_and_belongs_to_many</code></a></h5>
+
+<p>There may be times when you wish to customize the query used by <code>has_and_belongs_to_many</code>. Such customizations can be achieved via a scope block. For example:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">Parts</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="n">has_and_belongs_to_many</span> <span class="ss">:assemblies</span><span class="p">,</span> <span class="o">-&gt;</span> <span class="p">{</span> <span class="n">where</span> <span class="ss">active: </span><span class="kp">true</span> <span class="p">}</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="class Parts &lt; ApplicationRecord
+  has_and_belongs_to_many :assemblies, -&gt; { where active: true }
+end
+">Copy</button>
+</div>
+<p>You can use any of the standard <a href="active_record_querying.html">querying methods</a> inside the scope block. The following ones are discussed below:</p>
+<ul>
+<li><code>where</code></li>
+<li><code>extending</code></li>
+<li><code>group</code></li>
+<li><code>includes</code></li>
+<li><code>limit</code></li>
+<li><code>offset</code></li>
+<li><code>order</code></li>
+<li><code>readonly</code></li>
+<li><code>select</code></li>
+<li><code>distinct</code></li>
+</ul>
+<h6 id="scopes-for-has-and-belongs-to-many-where"><a class="anchorlink" href="#scopes-for-has-and-belongs-to-many-where">4.4.3.1 <code>where</code></a></h6>
+
+<p>The <code>where</code> method lets you specify the conditions that the associated object must meet.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">Parts</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="n">has_and_belongs_to_many</span> <span class="ss">:assemblies</span><span class="p">,</span>
+    <span class="o">-&gt;</span> <span class="p">{</span> <span class="n">where</span> <span class="s2">"factory = 'Seattle'"</span> <span class="p">}</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="class Parts &lt; ApplicationRecord
+  has_and_belongs_to_many :assemblies,
+    -&gt; { where &quot;factory = 'Seattle'&quot; }
+end
+">Copy</button>
+</div>
+<p>You can also set conditions via a hash:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">Parts</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="n">has_and_belongs_to_many</span> <span class="ss">:assemblies</span><span class="p">,</span>
+    <span class="o">-&gt;</span> <span class="p">{</span> <span class="n">where</span> <span class="ss">factory: </span><span class="s1">'Seattle'</span> <span class="p">}</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="class Parts &lt; ApplicationRecord
+  has_and_belongs_to_many :assemblies,
+    -&gt; { where factory: 'Seattle' }
+end
+">Copy</button>
+</div>
+<p>If you use a hash-style <code>where</code>, then record creation via this association will be automatically scoped using the hash. In this case, using <code>@parts.assemblies.create</code> or <code>@parts.assemblies.build</code> will create orders where the <code>factory</code> column has the value "Seattle".</p>
+
+<h6 id="scopes-for-has-and-belongs-to-many-extending"><a class="anchorlink" href="#scopes-for-has-and-belongs-to-many-extending">4.4.3.2 <code>extending</code></a></h6>
+
+<p>The <code>extending</code> method specifies a named module to extend the association proxy. Association extensions are discussed in detail <a href="#association-extensions">later in this guide</a>.</p>
+
+<h6 id="scopes-for-has-and-belongs-to-many-group"><a class="anchorlink" href="#scopes-for-has-and-belongs-to-many-group">4.4.3.3 <code>group</code></a></h6>
+
+<p>The <code>group</code> method supplies an attribute name to group the result set by, using a <code>GROUP BY</code> clause in the finder SQL.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">Parts</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="n">has_and_belongs_to_many</span> <span class="ss">:assemblies</span><span class="p">,</span> <span class="o">-&gt;</span> <span class="p">{</span> <span class="n">group</span> <span class="s2">"factory"</span> <span class="p">}</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='class Parts &lt; ApplicationRecord
+  has_and_belongs_to_many :assemblies, -&gt; { group "factory" }
+end
+'>Copy</button>
+</div>
+<h6 id="scopes-for-has-and-belongs-to-many-includes"><a class="anchorlink" href="#scopes-for-has-and-belongs-to-many-includes">4.4.3.4 <code>includes</code></a></h6>
+
+<p>You can use the <code>includes</code> method to specify second-order associations that should be eager-loaded when this association is used.</p>
+
+<h6 id="scopes-for-has-and-belongs-to-many-limit"><a class="anchorlink" href="#scopes-for-has-and-belongs-to-many-limit">4.4.3.5 <code>limit</code></a></h6>
+
+<p>The <code>limit</code> method lets you restrict the total number of objects that will be fetched through an association.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">Parts</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="n">has_and_belongs_to_many</span> <span class="ss">:assemblies</span><span class="p">,</span>
+    <span class="o">-&gt;</span> <span class="p">{</span> <span class="n">order</span><span class="p">(</span><span class="s2">"created_at DESC"</span><span class="p">).</span><span class="nf">limit</span><span class="p">(</span><span class="mi">50</span><span class="p">)</span> <span class="p">}</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='class Parts &lt; ApplicationRecord
+  has_and_belongs_to_many :assemblies,
+    -&gt; { order("created_at DESC").limit(50) }
+end
+'>Copy</button>
+</div>
+<h6 id="scopes-for-has-and-belongs-to-many-offset"><a class="anchorlink" href="#scopes-for-has-and-belongs-to-many-offset">4.4.3.6 <code>offset</code></a></h6>
+
+<p>The <code>offset</code> method lets you specify the starting offset for fetching objects via an association. For example, if you set <code>offset(11)</code>, it will skip the first 11 records.</p>
+
+<h6 id="scopes-for-has-and-belongs-to-many-order"><a class="anchorlink" href="#scopes-for-has-and-belongs-to-many-order">4.4.3.7 <code>order</code></a></h6>
+
+<p>The <code>order</code> method dictates the order in which associated objects will be received (in the syntax used by an SQL <code>ORDER BY</code> clause).</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">Parts</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="n">has_and_belongs_to_many</span> <span class="ss">:assemblies</span><span class="p">,</span>
+    <span class="o">-&gt;</span> <span class="p">{</span> <span class="n">order</span> <span class="s2">"assembly_name ASC"</span> <span class="p">}</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='class Parts &lt; ApplicationRecord
+  has_and_belongs_to_many :assemblies,
+    -&gt; { order "assembly_name ASC" }
+end
+'>Copy</button>
+</div>
+<h6 id="scopes-for-has-and-belongs-to-many-readonly"><a class="anchorlink" href="#scopes-for-has-and-belongs-to-many-readonly">4.4.3.8 <code>readonly</code></a></h6>
+
+<p>If you use the <code>readonly</code> method, then the associated objects will be read-only when retrieved via the association.</p>
+
+<h6 id="scopes-for-has-and-belongs-to-many-select"><a class="anchorlink" href="#scopes-for-has-and-belongs-to-many-select">4.4.3.9 <code>select</code></a></h6>
+
+<p>The <code>select</code> method lets you override the SQL <code>SELECT</code> clause that is used to retrieve data about the associated objects. By default, Rails retrieves all columns.</p>
+
+<h6 id="scopes-for-has-and-belongs-to-many-distinct"><a class="anchorlink" href="#scopes-for-has-and-belongs-to-many-distinct">4.4.3.10 <code>distinct</code></a></h6>
+
+<p>Use the <code>distinct</code> method to remove duplicates from the collection.</p>
+
+<h5 id="has-and-belongs-to-many-association-reference-when-are-objects-saved-questionmark"><a class="anchorlink" href="#has-and-belongs-to-many-association-reference-when-are-objects-saved-questionmark">4.4.4 When are Objects Saved?</a></h5>
+
+<p>When you assign an object to a <code>has_and_belongs_to_many</code> association, that object is automatically saved (in order to update the join table). If you assign multiple objects in one statement, then they are all saved.</p>
+
+<p>If any of these saves fails due to validation errors, then the assignment statement returns <code>false</code> and the assignment itself is cancelled.</p>
+
+<p>If the parent object (the one declaring the <code>has_and_belongs_to_many</code> association) is unsaved (that is, <code>new_record?</code> returns <code>true</code>) then the child objects are not saved when they are added. All unsaved members of the association will automatically be saved when the parent is saved.</p>
+
+<p>If you want to assign an object to a <code>has_and_belongs_to_many</code> association without saving the object, use the <code>collection.build</code> method.</p>
+
+<h4 id="association-callbacks"><a class="anchorlink" href="#association-callbacks">4.5 Association Callbacks</a></h4>
+
+<p>Normal callbacks hook into the life cycle of Active Record objects, allowing you to work with those objects at various points. For example, you can use a <code>:before_save</code> callback to cause something to happen just before an object is saved.</p>
+
+<p>Association callbacks are similar to normal callbacks, but they are triggered by events in the life cycle of a collection. There are four available association callbacks:</p>
+<ul>
+<li><code>before_add</code></li>
+<li><code>after_add</code></li>
+<li><code>before_remove</code></li>
+<li><code>after_remove</code></li>
+</ul>
+<p>You define association callbacks by adding options to the association declaration. For example:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">Author</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="n">has_many</span> <span class="ss">:books</span><span class="p">,</span> <span class="ss">before_add: :check_credit_limit</span>
+
+  <span class="k">def</span> <span class="nf">check_credit_limit</span><span class="p">(</span><span class="n">book</span><span class="p">)</span>
+    <span class="c1"># ...</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="class Author &lt; ApplicationRecord
+  has_many :books, before_add: :check_credit_limit
+
+  def check_credit_limit(book)
+    # ...
+  end
+end
+">Copy</button>
+</div>
+<p>Rails passes the object being added or removed to the callback.</p>
+
+<p>You can stack callbacks on a single event by passing them as an array:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">Author</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="n">has_many</span> <span class="ss">:books</span><span class="p">,</span>
+    <span class="ss">before_add: </span><span class="p">[</span><span class="ss">:check_credit_limit</span><span class="p">,</span> <span class="ss">:calculate_shipping_charges</span><span class="p">]</span>
+
+  <span class="k">def</span> <span class="nf">check_credit_limit</span><span class="p">(</span><span class="n">book</span><span class="p">)</span>
+    <span class="c1"># ...</span>
+  <span class="k">end</span>
+
+  <span class="k">def</span> <span class="nf">calculate_shipping_charges</span><span class="p">(</span><span class="n">book</span><span class="p">)</span>
+    <span class="c1"># ...</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="class Author &lt; ApplicationRecord
+  has_many :books,
+    before_add: [:check_credit_limit, :calculate_shipping_charges]
+
+  def check_credit_limit(book)
+    # ...
+  end
+
+  def calculate_shipping_charges(book)
+    # ...
+  end
+end
+">Copy</button>
+</div>
+<p>If a <code>before_add</code> callback throws <code>:abort</code>, the object does not get added to
+the collection. Similarly, if a <code>before_remove</code> callback throws <code>:abort</code>, the
+object does not get removed from the collection:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="c1"># book won't be added if the limit has been reached</span>
+<span class="k">def</span> <span class="nf">check_credit_limit</span><span class="p">(</span><span class="n">book</span><span class="p">)</span>
+  <span class="kp">throw</span><span class="p">(</span><span class="ss">:abort</span><span class="p">)</span> <span class="k">if</span> <span class="n">limit_reached?</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="# book won't be added if the limit has been reached
+def check_credit_limit(book)
+  throw(:abort) if limit_reached?
+end
+">Copy</button>
+</div>
+<div class="note"><p>These callbacks are called only when the associated objects are added or removed through the association collection:</p></div>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="c1"># Triggers `before_add` callback</span>
+<span class="n">author</span><span class="p">.</span><span class="nf">books</span> <span class="o">&lt;&lt;</span> <span class="n">book</span>
+<span class="n">author</span><span class="p">.</span><span class="nf">books</span> <span class="o">=</span> <span class="p">[</span><span class="n">book</span><span class="p">,</span> <span class="n">book2</span><span class="p">]</span>
+
+<span class="c1"># Does not trigger the `before_add` callback</span>
+<span class="n">book</span><span class="p">.</span><span class="nf">update</span><span class="p">(</span><span class="ss">author_id: </span><span class="mi">1</span><span class="p">)</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="# Triggers `before_add` callback
+author.books &lt;&lt; book
+author.books = [book, book2]
+
+# Does not trigger the `before_add` callback
+book.update(author_id: 1)
+">Copy</button>
+</div>
+<h4 id="association-extensions"><a class="anchorlink" href="#association-extensions">4.6 Association Extensions</a></h4>
+
+<p>You're not limited to the functionality that Rails automatically builds into association proxy objects. You can also extend these objects through anonymous modules, adding new finders, creators, or other methods. For example:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">Author</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="n">has_many</span> <span class="ss">:books</span> <span class="k">do</span>
+    <span class="k">def</span> <span class="nf">find_by_book_prefix</span><span class="p">(</span><span class="n">book_number</span><span class="p">)</span>
+      <span class="n">find_by</span><span class="p">(</span><span class="ss">category_id: </span><span class="n">book_number</span><span class="p">[</span><span class="mi">0</span><span class="o">..</span><span class="mi">2</span><span class="p">])</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="class Author &lt; ApplicationRecord
+  has_many :books do
+    def find_by_book_prefix(book_number)
+      find_by(category_id: book_number[0..2])
+    end
+  end
+end
+">Copy</button>
+</div>
+<p>If you have an extension that should be shared by many associations, you can use a named extension module. For example:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">module</span> <span class="nn">FindRecentExtension</span>
+  <span class="k">def</span> <span class="nf">find_recent</span>
+    <span class="n">where</span><span class="p">(</span><span class="s2">"created_at &gt; ?"</span><span class="p">,</span> <span class="mi">5</span><span class="p">.</span><span class="nf">days</span><span class="p">.</span><span class="nf">ago</span><span class="p">)</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+
+<span class="k">class</span> <span class="nc">Author</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="n">has_many</span> <span class="ss">:books</span><span class="p">,</span> <span class="o">-&gt;</span> <span class="p">{</span> <span class="n">extending</span> <span class="no">FindRecentExtension</span> <span class="p">}</span>
+<span class="k">end</span>
+
+<span class="k">class</span> <span class="nc">Supplier</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="n">has_many</span> <span class="ss">:deliveries</span><span class="p">,</span> <span class="o">-&gt;</span> <span class="p">{</span> <span class="n">extending</span> <span class="no">FindRecentExtension</span> <span class="p">}</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='module FindRecentExtension
+  def find_recent
+    where("created_at &gt; ?", 5.days.ago)
+  end
+end
+
+class Author &lt; ApplicationRecord
+  has_many :books, -&gt; { extending FindRecentExtension }
+end
+
+class Supplier &lt; ApplicationRecord
+  has_many :deliveries, -&gt; { extending FindRecentExtension }
+end
+'>Copy</button>
+</div>
+<p>Extensions can refer to the internals of the association proxy using these three attributes of the <code>proxy_association</code> accessor:</p>
+<ul>
+<li>
+<code>proxy_association.owner</code> returns the object that the association is a part of.</li>
+<li>
+<code>proxy_association.reflection</code> returns the reflection object that describes the association.</li>
+<li>
+<code>proxy_association.target</code> returns the associated object for <code>belongs_to</code> or <code>has_one</code>, or the collection of associated objects for <code>has_many</code> or <code>has_and_belongs_to_many</code>.</li>
+</ul>
+</body>
+</html>

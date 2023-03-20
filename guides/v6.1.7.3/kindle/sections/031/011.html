@@ -1,0 +1,64 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>12 Differences with Classic Mode</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v6.1.7.3/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="differences-with-classic-mode"><a class="anchorlink" href="#differences-with-classic-mode">12 Differences with Classic Mode</a></h3>
+<h4 id="ruby-constant-lookup-compliance"><a class="anchorlink" href="#ruby-constant-lookup-compliance">12.1 Ruby Constant Lookup Compliance</a></h4>
+
+<p><code>classic</code> mode cannot match constant lookup semantics due to fundamental limitations of the technique it is based on, whereas <code>zeitwerk</code> mode works like Ruby.</p>
+
+<p>For example, in <code>classic</code> mode defining classes or modules in namespaces with qualified constants this way</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">Admin::UsersController</span> <span class="o">&lt;</span> <span class="no">ApplicationController</span>
+<span class="k">end</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-bfef3903af36ad510cc2973d71c30e5d">class Admin::UsersController &lt; ApplicationController
+end
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-bfef3903af36ad510cc2973d71c30e5d">Copy</button>
+</div>
+<p>was not recommended because the resolution of constants inside their body was brittle. You'd better write them in this style:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">module</span> <span class="nn">Admin</span>
+  <span class="k">class</span> <span class="nc">UsersController</span> <span class="o">&lt;</span> <span class="no">ApplicationController</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-466576d9abc2d6b9331d5ddd67d56260">module Admin
+  class UsersController &lt; ApplicationController
+  end
+end
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-466576d9abc2d6b9331d5ddd67d56260">Copy</button>
+</div>
+<p>In <code>zeitwerk</code> mode that does not matter anymore, you can pick either style.</p>
+
+<p>The resolution of a constant could depend on load order, the definition of a class or module object could depend on load order, there was edge cases with singleton classes, oftentimes you had to use <code>require_dependency</code> as a workaround, .... The guide for <code>classic</code> mode documents <a href="autoloading_and_reloading_constants_classic_mode.html#common-gotchas">these issues</a>.</p>
+
+<p>All these problems are solved in <code>zeitwerk</code> mode, it just works as expected, and <code>require_dependency</code> should not be used anymore, it is no longer needed.</p>
+
+<h4 id="less-file-lookups"><a class="anchorlink" href="#less-file-lookups">12.2 Less File Lookups</a></h4>
+
+<p>In <code>classic</code> mode, every single missing constant triggers a file lookup that walks the autoload paths.</p>
+
+<p>In <code>zeitwerk</code> mode there is only one pass. That pass is done once, not per missing constant, and so it is generally more performant. Subdirectories are visited only if their namespace is used.</p>
+
+<h4 id="underscore-vs-camelize"><a class="anchorlink" href="#underscore-vs-camelize">12.3 Underscore vs Camelize</a></h4>
+
+<p>Inflections go the other way around.</p>
+
+<p>In <code>classic</code> mode, given a missing constant Rails <em>underscores</em> its name and performs a file lookup. On the other hand, <code>zeitwerk</code> mode checks first the file system, and <em>camelizes</em> file names to know the constant those files are expected to define.</p>
+
+<p>While in common names these operations match, if acronyms or custom inflection rules are configured, they may not. For example, by default <code>"HTMLParser".underscore</code> is <code>"html_parser"</code>, and <code>"html_parser".camelize</code> is <code>"HtmlParser"</code>.</p>
+
+<h4 id="more-differences"><a class="anchorlink" href="#more-differences">12.4 More Differences</a></h4>
+
+<p>There are some other subtle differences, please check <a href="upgrading_ruby_on_rails.html#autoloading">this section of <em>Upgrading Ruby on Rails</em></a> guide for details.</p>
+</body>
+</html>

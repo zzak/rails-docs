@@ -1,0 +1,54 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>9 Request Forgery Protection</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v7.0.4.2/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="request-forgery-protection"><a class="anchorlink" href="#request-forgery-protection">9 Request Forgery Protection</a></h3>
+<p>Cross-site request forgery is a type of attack in which a site tricks a user into making requests on another site, possibly adding, modifying, or deleting data on that site without the user's knowledge or permission.</p>
+
+<p>The first step to avoid this is to make sure all "destructive" actions (create, update, and destroy) can only be accessed with non-GET requests. If you're following RESTful conventions you're already doing this. However, a malicious site can still send a non-GET request to your site quite easily, and that's where the request forgery protection comes in. As the name says, it protects from forged requests.</p>
+
+<p>The way this is done is to add a non-guessable token which is only known to your server to each request. This way, if a request comes in without the proper token, it will be denied access.</p>
+
+<p>If you generate a form like this:</p>
+
+<div class="code_container">
+<pre><code class="highlight erb"><span class="cp">&lt;%=</span> <span class="n">form_with</span> <span class="ss">model: </span><span class="vi">@user</span> <span class="k">do</span> <span class="o">|</span><span class="n">form</span><span class="o">|</span> <span class="cp">%&gt;</span>
+  <span class="cp">&lt;%=</span> <span class="n">form</span><span class="p">.</span><span class="nf">text_field</span> <span class="ss">:username</span> <span class="cp">%&gt;</span>
+  <span class="cp">&lt;%=</span> <span class="n">form</span><span class="p">.</span><span class="nf">text_field</span> <span class="ss">:password</span> <span class="cp">%&gt;</span>
+<span class="cp">&lt;%</span> <span class="k">end</span> <span class="cp">%&gt;</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="&lt;%= form_with model: @user do |form| %&gt;
+  &lt;%= form.text_field :username %&gt;
+  &lt;%= form.text_field :password %&gt;
+&lt;% end %&gt;
+">Copy</button>
+</div>
+<p>You will see how the token gets added as a hidden field:</p>
+
+<div class="code_container">
+<pre><code class="highlight html"><span class="nt">&lt;form</span> <span class="na">accept-charset=</span><span class="s">"UTF-8"</span> <span class="na">action=</span><span class="s">"/users/1"</span> <span class="na">method=</span><span class="s">"post"</span><span class="nt">&gt;</span>
+<span class="nt">&lt;input</span> <span class="na">type=</span><span class="s">"hidden"</span>
+       <span class="na">value=</span><span class="s">"67250ab105eb5ad10851c00a5621854a23af5489"</span>
+       <span class="na">name=</span><span class="s">"authenticity_token"</span><span class="nt">/&gt;</span>
+<span class="c">&lt;!-- fields --&gt;</span>
+<span class="nt">&lt;/form&gt;</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='&lt;form accept-charset="UTF-8" action="/users/1" method="post"&gt;
+&lt;input type="hidden"
+       value="67250ab105eb5ad10851c00a5621854a23af5489"
+       name="authenticity_token"/&gt;
+&lt;!-- fields --&gt;
+&lt;/form&gt;
+'>Copy</button>
+</div>
+<p>Rails adds this token to every form that's generated using the <a href="form_helpers.html">form helpers</a>, so most of the time you don't have to worry about it. If you're writing a form manually or need to add the token for another reason, it's available through the method <code>form_authenticity_token</code>:</p>
+
+<p>The <code>form_authenticity_token</code> generates a valid authentication token. That's useful in places where Rails does not add it automatically, like in custom Ajax calls.</p>
+
+<p>The <a href="security.html">Security Guide</a> has more about this, and a lot of other security-related issues that you should be aware of when developing a web application.</p>
+</body>
+</html>

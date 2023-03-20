@@ -1,0 +1,1384 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html 
+     PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+  <head>
+    <title>Module: ActionDispatch::Routing::Mapper::Resources</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <link rel="stylesheet" href="../../../../rdoc-style.css" type="text/css" media="screen" />
+
+    <script language="JavaScript" type="text/javascript">
+    // <![CDATA[
+
+        function toggleSource( id )
+        {
+          var elem
+          var link
+
+          if( document.getElementById )
+          {
+            elem = document.getElementById( id )
+            link = document.getElementById( "l_" + id )
+          }
+          else if ( document.all )
+          {
+            elem = eval( "document.all." + id )
+            link = eval( "document.all.l_" + id )
+          }
+          else
+            return false;
+
+          if( elem.style.display == "block" )
+          {
+            elem.style.display = "none"
+            link.innerHTML = "show source"
+          }
+          else
+          {
+            elem.style.display = "block"
+            link.innerHTML = "hide source"
+          }
+        }
+
+        function openCode( url )
+        {
+          window.open( url, "SOURCE_CODE", "resizable=yes,scrollbars=yes,toolbar=no,status=no,height=480,width=750" ).focus();
+        }
+      // ]]>
+    </script>
+  </head>
+
+  <body>
+    <table width="100%" border='0' cellpadding='0' cellspacing='0' class='banner'>
+    <tr><td>Ruby on Rails v3.0.9</td></tr>
+    <tr>
+  <td class="file-title"><span class="file-title-prefix">Module</span><br />ActionDispatch::Routing::Mapper::Resources</td>
+  <td align="right">
+    <table cellspacing="0" cellpadding="2">
+      <tr valign="top">
+        <td>In:</td>
+        <td>
+<a href="../../../../files/actionpack/lib/action_dispatch/routing/mapper_rb.html">actionpack/lib/action_dispatch/routing/mapper.rb</a>:
+        </td>
+      </tr>
+         </table>
+        </td>
+        </tr>
+      </table>
+  <div id="bodyContent">
+  <div id="content">
+
+  <div class="description">
+<p>Resource routing allows you to quickly declare all of the common routes for
+a given resourceful controller. Instead of declaring separate routes for
+your <tt>index</tt>, <tt>show</tt>, <tt>new</tt>, <tt>edit</tt>,
+<tt>create</tt>, <tt>update</tt> and <tt>destroy</tt> actions, a
+resourceful route declares them in a single line of code:</p>
+
+<pre>resources :photos</pre>
+
+<p>Sometimes, you have a resource that clients always look up without
+referencing an ID. A common example, /profile always shows the profile of
+the currently logged in user. In this case, you can use a singular resource
+to map /profile (rather than /profile/:id) to the show action.</p>
+
+<pre>resource :profile</pre>
+
+<p>It’s common to have resources that are logically children of other
+resources:</p>
+
+<pre>resources :magazines do
+  resources :ads
+end</pre>
+
+<p>You may wish to organize groups of controllers under a namespace. Most
+commonly, you might group a number of administrative controllers under an
+<tt>admin</tt> namespace. You would place these controllers under the
+app/controllers/admin directory, and you can group them together in your
+router:</p>
+
+<pre>namespace &quot;admin&quot; do
+  resources :posts, :comments
+end</pre>
+
+<p>By default the :id parameter doesn’t accept dots. If you need to use dots
+as part of the :id parameter add a constraint which overrides this
+restriction, e.g:</p>
+
+<pre>resources :articles, :id =&gt; /[^\/]+/</pre>
+
+<p>This allows any character other than a slash as part of your :id.</p>
+</div>
+
+
+  <div class="sectiontitle">Methods</div>
+  <ul>
+                <li><a href="#method-i-action_options-3F">action_options?</a></li>
+                <li><a href="#method-i-action_path">action_path</a></li>
+                <li><a href="#method-i-apply_common_behavior_for">apply_common_behavior_for</a></li>
+                <li><a href="#method-i-canonical_action-3F">canonical_action?</a></li>
+                <li><a href="#method-i-collection">collection</a></li>
+                <li><a href="#method-i-id_constraint">id_constraint</a></li>
+                <li><a href="#method-i-id_constraint-3F">id_constraint?</a></li>
+                <li><a href="#method-i-match">match</a></li>
+                <li><a href="#method-i-member">member</a></li>
+                <li><a href="#method-i-name_for_action">name_for_action</a></li>
+                <li><a href="#method-i-namespace">namespace</a></li>
+                <li><a href="#method-i-nested">nested</a></li>
+                <li><a href="#method-i-nested_options">nested_options</a></li>
+                <li><a href="#method-i-new">new</a></li>
+                <li><a href="#method-i-path_for_action">path_for_action</a></li>
+                <li><a href="#method-i-prefix_name_for_action">prefix_name_for_action</a></li>
+                <li><a href="#method-i-resource">resource</a></li>
+                <li><a href="#method-i-resource_method_scope-3F">resource_method_scope?</a></li>
+                <li><a href="#method-i-resource_scope">resource_scope</a></li>
+                <li><a href="#method-i-resource_scope-3F">resource_scope?</a></li>
+                <li><a href="#method-i-resources">resources</a></li>
+                <li><a href="#method-i-resources_path_names">resources_path_names</a></li>
+                <li><a href="#method-i-root">root</a></li>
+                <li><a href="#method-i-scope_action_options">scope_action_options</a></li>
+                <li><a href="#method-i-scope_action_options-3F">scope_action_options?</a></li>
+                <li><a href="#method-i-shallow">shallow</a></li>
+                <li><a href="#method-i-shallow-3F">shallow?</a></li>
+                <li><a href="#method-i-shallow_scoping-3F">shallow_scoping?</a></li>
+                <li><a href="#method-i-with_exclusive_scope">with_exclusive_scope</a></li>
+                <li><a href="#method-i-with_scope_level">with_scope_level</a></li>
+      </ul>
+
+
+  <div class="sectiontitle">Constants</div>
+  <table border='0' cellpadding='5'>
+  <tr valign='top'>
+    <td class="attr-name">VALID_ON_OPTIONS</td>
+    <td>=</td>
+    <td class="attr-value">[:new, :collection, :member]</td>
+  </tr>
+  <tr valign='top'>
+    <td>&nbsp;</td>
+    <td colspan="2" class="attr-desc"><p><a href="Resources.html#CANONICAL_ACTIONS">CANONICAL_ACTIONS</a> holds all
+actions that does not need a prefix or a path appended since they fit
+properly in their scope level.</p></td>
+  </tr>
+  <tr valign='top'>
+    <td class="attr-name">RESOURCE_OPTIONS</td>
+    <td>=</td>
+    <td class="attr-value">[:as, :controller, :path, :only, :except]</td>
+  </tr>
+  <tr valign='top'>
+    <td class="attr-name">CANONICAL_ACTIONS</td>
+    <td>=</td>
+    <td class="attr-value">%w(index create new show update destroy)</td>
+  </tr>
+  </table>
+
+
+                        
+    <div class="sectiontitle">
+      Public      Instance      methods
+    </div>
+
+          
+      <div class="method">
+        <div class="title">
+                      <a name="method-i-collection"></a>
+            <b>collection</b>()          
+        </div>
+
+                  <div class="description">
+            <p>To add a route to the collection:</p>
+
+<pre>resources :photos do
+  collection do
+    get 'search'
+  end
+end</pre>
+
+<p>This will enable <a href="../../../Rails.html">Rails</a> to recognize paths
+such as <tt>/photos/search</tt> with GET, and route to the search action of
+PhotosController. It will also create the <tt>search_photos_url</tt> and
+<tt>search_photos_path</tt> route helpers.</p>          </div>
+        
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('collection_source')"
+                 id="l_method-i-collection_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="collection_source">
+<pre>
+  <span class="ruby-comment"># File actionpack/lib/action_dispatch/routing/mapper.rb, line 1045</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">collection</span>
+  <span class="ruby-keyword">unless</span> <span class="ruby-identifier">resource_scope?</span>
+    <span class="ruby-identifier">raise</span> <span class="ruby-constant">ArgumentError</span>, <span class="ruby-string">&quot;can't use collection outside resource(s) scope&quot;</span>
+  <span class="ruby-keyword">end</span>
+
+  <span class="ruby-identifier">with_scope_level</span>(<span class="ruby-value">:collection</span>) <span class="ruby-keyword">do</span>
+    <span class="ruby-identifier">scope</span>(<span class="ruby-identifier">parent_resource</span>.<span class="ruby-identifier">collection_scope</span>) <span class="ruby-keyword">do</span>
+      <span class="ruby-keyword">yield</span>
+    <span class="ruby-keyword">end</span>
+  <span class="ruby-keyword">end</span>
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+          
+      <div class="method">
+        <div class="title">
+                      <a name="method-i-match"></a>
+            <b>match</b>(*args)          
+        </div>
+
+                  <div class="description">
+                      </div>
+        
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('match_source')"
+                 id="l_method-i-match_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="match_source">
+<pre>
+  <span class="ruby-comment"># File actionpack/lib/action_dispatch/routing/mapper.rb, line 1133</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">match</span>(*<span class="ruby-identifier">args</span>)
+  <span class="ruby-identifier">options</span> = <span class="ruby-identifier">args</span>.<span class="ruby-identifier">extract_options!</span>.<span class="ruby-identifier">dup</span>
+  <span class="ruby-identifier">options</span>[<span class="ruby-value">:anchor</span>] = <span class="ruby-keyword">true</span> <span class="ruby-keyword">unless</span> <span class="ruby-identifier">options</span>.<span class="ruby-identifier">key?</span>(<span class="ruby-value">:anchor</span>)
+
+  <span class="ruby-keyword">if</span> <span class="ruby-identifier">args</span>.<span class="ruby-identifier">length</span> <span class="ruby-operator">&gt;</span> <span class="ruby-value">1</span>
+    <span class="ruby-identifier">args</span>.<span class="ruby-identifier">each</span> { <span class="ruby-operator">|</span><span class="ruby-identifier">path</span><span class="ruby-operator">|</span> <span class="ruby-identifier">match</span>(<span class="ruby-identifier">path</span>, <span class="ruby-identifier">options</span>.<span class="ruby-identifier">dup</span>) }
+    <span class="ruby-keyword">return</span> <span class="ruby-keyword">self</span>
+  <span class="ruby-keyword">end</span>
+
+  <span class="ruby-identifier">on</span> = <span class="ruby-identifier">options</span>.<span class="ruby-identifier">delete</span>(<span class="ruby-value">:on</span>)
+  <span class="ruby-keyword">if</span> <span class="ruby-constant">VALID_ON_OPTIONS</span>.<span class="ruby-identifier">include?</span>(<span class="ruby-identifier">on</span>)
+    <span class="ruby-identifier">args</span>.<span class="ruby-identifier">push</span>(<span class="ruby-identifier">options</span>)
+    <span class="ruby-keyword">return</span> <span class="ruby-identifier">send</span>(<span class="ruby-identifier">on</span>){ <span class="ruby-identifier">match</span>(*<span class="ruby-identifier">args</span>) }
+  <span class="ruby-keyword">elsif</span> <span class="ruby-identifier">on</span>
+    <span class="ruby-identifier">raise</span> <span class="ruby-constant">ArgumentError</span>, <span class="ruby-node">&quot;Unknown scope #{on.inspect} given to :on&quot;</span>
+  <span class="ruby-keyword">end</span>
+
+  <span class="ruby-keyword">if</span> <span class="ruby-ivar">@scope</span>[<span class="ruby-value">:scope_level</span>] <span class="ruby-operator">==</span> <span class="ruby-value">:resources</span>
+    <span class="ruby-identifier">args</span>.<span class="ruby-identifier">push</span>(<span class="ruby-identifier">options</span>)
+    <span class="ruby-keyword">return</span> <span class="ruby-identifier">nested</span> { <span class="ruby-identifier">match</span>(*<span class="ruby-identifier">args</span>) }
+  <span class="ruby-keyword">elsif</span> <span class="ruby-ivar">@scope</span>[<span class="ruby-value">:scope_level</span>] <span class="ruby-operator">==</span> <span class="ruby-value">:resource</span>
+    <span class="ruby-identifier">args</span>.<span class="ruby-identifier">push</span>(<span class="ruby-identifier">options</span>)
+    <span class="ruby-keyword">return</span> <span class="ruby-identifier">member</span> { <span class="ruby-identifier">match</span>(*<span class="ruby-identifier">args</span>) }
+  <span class="ruby-keyword">end</span>
+
+  <span class="ruby-identifier">action</span> = <span class="ruby-identifier">args</span>.<span class="ruby-identifier">first</span>
+  <span class="ruby-identifier">path</span> = <span class="ruby-identifier">path_for_action</span>(<span class="ruby-identifier">action</span>, <span class="ruby-identifier">options</span>.<span class="ruby-identifier">delete</span>(<span class="ruby-value">:path</span>))
+
+  <span class="ruby-keyword">if</span> <span class="ruby-identifier">action</span>.<span class="ruby-identifier">to_s</span> <span class="ruby-operator">=~</span> <span class="ruby-regexp">/^[\w\/]+$/</span>
+    <span class="ruby-identifier">options</span>[<span class="ruby-value">:action</span>] <span class="ruby-operator">||=</span> <span class="ruby-identifier">action</span> <span class="ruby-keyword">unless</span> <span class="ruby-identifier">action</span>.<span class="ruby-identifier">to_s</span>.<span class="ruby-identifier">include?</span>(<span class="ruby-string">&quot;/&quot;</span>)
+  <span class="ruby-keyword">else</span>
+    <span class="ruby-identifier">action</span> = <span class="ruby-keyword">nil</span>
+  <span class="ruby-keyword">end</span>
+
+  <span class="ruby-keyword">if</span> <span class="ruby-identifier">options</span>.<span class="ruby-identifier">key?</span>(<span class="ruby-value">:as</span>) <span class="ruby-operator">&amp;&amp;</span> <span class="ruby-operator">!</span><span class="ruby-identifier">options</span>[<span class="ruby-value">:as</span>]
+    <span class="ruby-identifier">options</span>.<span class="ruby-identifier">delete</span>(<span class="ruby-value">:as</span>)
+  <span class="ruby-keyword">else</span>
+    <span class="ruby-identifier">options</span>[<span class="ruby-value">:as</span>] = <span class="ruby-identifier">name_for_action</span>(<span class="ruby-identifier">options</span>[<span class="ruby-value">:as</span>], <span class="ruby-identifier">action</span>)
+  <span class="ruby-keyword">end</span>
+
+  <span class="ruby-keyword">super</span>(<span class="ruby-identifier">path</span>, <span class="ruby-identifier">options</span>)
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+          
+      <div class="method">
+        <div class="title">
+                      <a name="method-i-member"></a>
+            <b>member</b>()          
+        </div>
+
+                  <div class="description">
+            <p>To add a member route, add a member block into the resource block:</p>
+
+<pre>resources :photos do
+  member do
+    get 'preview'
+  end
+end</pre>
+
+<p>This will recognize <tt>/photos/1/preview</tt> with GET, and route to the
+preview action of PhotosController. It will also create the
+<tt>preview_photo_url</tt> and <tt>preview_photo_path</tt> helpers.</p>          </div>
+        
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('member_source')"
+                 id="l_method-i-member_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="member_source">
+<pre>
+  <span class="ruby-comment"># File actionpack/lib/action_dispatch/routing/mapper.rb, line 1068</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">member</span>
+  <span class="ruby-keyword">unless</span> <span class="ruby-identifier">resource_scope?</span>
+    <span class="ruby-identifier">raise</span> <span class="ruby-constant">ArgumentError</span>, <span class="ruby-string">&quot;can't use member outside resource(s) scope&quot;</span>
+  <span class="ruby-keyword">end</span>
+
+  <span class="ruby-identifier">with_scope_level</span>(<span class="ruby-value">:member</span>) <span class="ruby-keyword">do</span>
+    <span class="ruby-identifier">scope</span>(<span class="ruby-identifier">parent_resource</span>.<span class="ruby-identifier">member_scope</span>) <span class="ruby-keyword">do</span>
+      <span class="ruby-keyword">yield</span>
+    <span class="ruby-keyword">end</span>
+  <span class="ruby-keyword">end</span>
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+          
+      <div class="method">
+        <div class="title">
+                      <a name="method-i-namespace"></a>
+            <b>namespace</b>(path, options = {})          
+        </div>
+
+                  <div class="description">
+            <p>See <a
+href="Scoping.html#method-i-namespace">ActionDispatch::Routing::Mapper::Scoping#namespace</a></p>          </div>
+        
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('namespace_source')"
+                 id="l_method-i-namespace_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="namespace_source">
+<pre>
+  <span class="ruby-comment"># File actionpack/lib/action_dispatch/routing/mapper.rb, line 1115</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">namespace</span>(<span class="ruby-identifier">path</span>, <span class="ruby-identifier">options</span> = {})
+  <span class="ruby-keyword">if</span> <span class="ruby-identifier">resource_scope?</span>
+    <span class="ruby-identifier">nested</span> { <span class="ruby-keyword">super</span> }
+  <span class="ruby-keyword">else</span>
+    <span class="ruby-keyword">super</span>
+  <span class="ruby-keyword">end</span>
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+          
+      <div class="method">
+        <div class="title">
+                      <a name="method-i-nested"></a>
+            <b>nested</b>()          
+        </div>
+
+                  <div class="description">
+                      </div>
+        
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('nested_source')"
+                 id="l_method-i-nested_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="nested_source">
+<pre>
+  <span class="ruby-comment"># File actionpack/lib/action_dispatch/routing/mapper.rb, line 1092</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">nested</span>
+  <span class="ruby-keyword">unless</span> <span class="ruby-identifier">resource_scope?</span>
+    <span class="ruby-identifier">raise</span> <span class="ruby-constant">ArgumentError</span>, <span class="ruby-string">&quot;can't use nested outside resource(s) scope&quot;</span>
+  <span class="ruby-keyword">end</span>
+
+  <span class="ruby-identifier">with_scope_level</span>(<span class="ruby-value">:nested</span>) <span class="ruby-keyword">do</span>
+    <span class="ruby-keyword">if</span> <span class="ruby-identifier">shallow?</span>
+      <span class="ruby-identifier">with_exclusive_scope</span> <span class="ruby-keyword">do</span>
+        <span class="ruby-keyword">if</span> <span class="ruby-ivar">@scope</span>[<span class="ruby-value">:shallow_path</span>].<span class="ruby-identifier">blank?</span>
+          <span class="ruby-identifier">scope</span>(<span class="ruby-identifier">parent_resource</span>.<span class="ruby-identifier">nested_scope</span>, <span class="ruby-identifier">nested_options</span>) { <span class="ruby-keyword">yield</span> }
+        <span class="ruby-keyword">else</span>
+          <span class="ruby-identifier">scope</span>(<span class="ruby-ivar">@scope</span>[<span class="ruby-value">:shallow_path</span>], <span class="ruby-value">:as</span> =<span class="ruby-operator">&gt;</span> <span class="ruby-ivar">@scope</span>[<span class="ruby-value">:shallow_prefix</span>]) <span class="ruby-keyword">do</span>
+            <span class="ruby-identifier">scope</span>(<span class="ruby-identifier">parent_resource</span>.<span class="ruby-identifier">nested_scope</span>, <span class="ruby-identifier">nested_options</span>) { <span class="ruby-keyword">yield</span> }
+          <span class="ruby-keyword">end</span>
+        <span class="ruby-keyword">end</span>
+      <span class="ruby-keyword">end</span>
+    <span class="ruby-keyword">else</span>
+      <span class="ruby-identifier">scope</span>(<span class="ruby-identifier">parent_resource</span>.<span class="ruby-identifier">nested_scope</span>, <span class="ruby-identifier">nested_options</span>) { <span class="ruby-keyword">yield</span> }
+    <span class="ruby-keyword">end</span>
+  <span class="ruby-keyword">end</span>
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+          
+      <div class="method">
+        <div class="title">
+                      <a name="method-i-new"></a>
+            <b>new</b>()          
+        </div>
+
+                  <div class="description">
+                      </div>
+        
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('new_source')"
+                 id="l_method-i-new_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="new_source">
+<pre>
+  <span class="ruby-comment"># File actionpack/lib/action_dispatch/routing/mapper.rb, line 1080</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">new</span>
+  <span class="ruby-keyword">unless</span> <span class="ruby-identifier">resource_scope?</span>
+    <span class="ruby-identifier">raise</span> <span class="ruby-constant">ArgumentError</span>, <span class="ruby-string">&quot;can't use new outside resource(s) scope&quot;</span>
+  <span class="ruby-keyword">end</span>
+
+  <span class="ruby-identifier">with_scope_level</span>(<span class="ruby-value">:new</span>) <span class="ruby-keyword">do</span>
+    <span class="ruby-identifier">scope</span>(<span class="ruby-identifier">parent_resource</span>.<span class="ruby-identifier">new_scope</span>(<span class="ruby-identifier">action_path</span>(<span class="ruby-value">:new</span>))) <span class="ruby-keyword">do</span>
+      <span class="ruby-keyword">yield</span>
+    <span class="ruby-keyword">end</span>
+  <span class="ruby-keyword">end</span>
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+          
+      <div class="method">
+        <div class="title">
+                      <a name="method-i-resource"></a>
+            <b>resource</b>(*resources, &block)          
+        </div>
+
+                  <div class="description">
+            <p>Sometimes, you have a resource that clients always look up without
+referencing an ID. A common example, /profile always shows the profile of
+the currently logged in user. In this case, you can use a singular resource
+to map /profile (rather than /profile/:id) to the show action:</p>
+
+<pre>resource :geocoder</pre>
+
+<p>creates six different routes in your application, all mapping to the
+GeoCoders controller (note that the controller is named after the plural):</p>
+
+<pre>GET     /geocoder/new
+POST    /geocoder
+GET     /geocoder
+GET     /geocoder/edit
+PUT     /geocoder
+DELETE  /geocoder</pre>          </div>
+        
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('resource_source')"
+                 id="l_method-i-resource_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="resource_source">
+<pre>
+  <span class="ruby-comment"># File actionpack/lib/action_dispatch/routing/mapper.rb, line 919</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">resource</span>(*<span class="ruby-identifier">resources</span>, &amp;<span class="ruby-identifier">block</span>)
+  <span class="ruby-identifier">options</span> = <span class="ruby-identifier">resources</span>.<span class="ruby-identifier">extract_options!</span>
+
+  <span class="ruby-keyword">if</span> <span class="ruby-identifier">apply_common_behavior_for</span>(<span class="ruby-value">:resource</span>, <span class="ruby-identifier">resources</span>, <span class="ruby-identifier">options</span>, &amp;<span class="ruby-identifier">block</span>)
+    <span class="ruby-keyword">return</span> <span class="ruby-keyword">self</span>
+  <span class="ruby-keyword">end</span>
+
+  <span class="ruby-identifier">resource_scope</span>(<span class="ruby-constant">SingletonResource</span>.<span class="ruby-identifier">new</span>(<span class="ruby-identifier">resources</span>.<span class="ruby-identifier">pop</span>, <span class="ruby-identifier">options</span>)) <span class="ruby-keyword">do</span>
+    <span class="ruby-keyword">yield</span> <span class="ruby-keyword">if</span> <span class="ruby-identifier">block_given?</span>
+
+    <span class="ruby-identifier">collection</span> <span class="ruby-keyword">do</span>
+      <span class="ruby-identifier">post</span> <span class="ruby-value">:create</span>
+    <span class="ruby-keyword">end</span> <span class="ruby-keyword">if</span> <span class="ruby-identifier">parent_resource</span>.<span class="ruby-identifier">actions</span>.<span class="ruby-identifier">include?</span>(<span class="ruby-value">:create</span>)
+
+    <span class="ruby-identifier">new</span> <span class="ruby-keyword">do</span>
+      <span class="ruby-identifier">get</span> <span class="ruby-value">:new</span>
+    <span class="ruby-keyword">end</span> <span class="ruby-keyword">if</span> <span class="ruby-identifier">parent_resource</span>.<span class="ruby-identifier">actions</span>.<span class="ruby-identifier">include?</span>(<span class="ruby-value">:new</span>)
+
+    <span class="ruby-identifier">member</span> <span class="ruby-keyword">do</span>
+      <span class="ruby-identifier">get</span>    <span class="ruby-value">:edit</span> <span class="ruby-keyword">if</span> <span class="ruby-identifier">parent_resource</span>.<span class="ruby-identifier">actions</span>.<span class="ruby-identifier">include?</span>(<span class="ruby-value">:edit</span>)
+      <span class="ruby-identifier">get</span>    <span class="ruby-value">:show</span> <span class="ruby-keyword">if</span> <span class="ruby-identifier">parent_resource</span>.<span class="ruby-identifier">actions</span>.<span class="ruby-identifier">include?</span>(<span class="ruby-value">:show</span>)
+      <span class="ruby-identifier">put</span>    <span class="ruby-value">:update</span> <span class="ruby-keyword">if</span> <span class="ruby-identifier">parent_resource</span>.<span class="ruby-identifier">actions</span>.<span class="ruby-identifier">include?</span>(<span class="ruby-value">:update</span>)
+      <span class="ruby-identifier">delete</span> <span class="ruby-value">:destroy</span> <span class="ruby-keyword">if</span> <span class="ruby-identifier">parent_resource</span>.<span class="ruby-identifier">actions</span>.<span class="ruby-identifier">include?</span>(<span class="ruby-value">:destroy</span>)
+    <span class="ruby-keyword">end</span>
+  <span class="ruby-keyword">end</span>
+
+  <span class="ruby-keyword">self</span>
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+          
+      <div class="method">
+        <div class="title">
+                      <a name="method-i-resources"></a>
+            <b>resources</b>(*resources, &block)          
+        </div>
+
+                  <div class="description">
+            <p>In <a href="../../../Rails.html">Rails</a>, a resourceful route provides a
+mapping between HTTP verbs and URLs and controller actions. By convention,
+each action also maps to particular CRUD operations in a database. A single
+entry in the routing file, such as</p>
+
+<pre>resources :photos</pre>
+
+<p>creates seven different routes in your application, all mapping to the
+Photos controller:</p>
+
+<pre>GET     /photos/new
+POST    /photos
+GET     /photos/:id
+GET     /photos/:id/edit
+PUT     /photos/:id
+DELETE  /photos/:id</pre>
+
+<p><a href="Resources.html">Resources</a> can also be nested infinitely by
+using this block syntax:</p>
+
+<pre>resources :photos do
+  resources :comments
+end</pre>
+
+<p>This generates the following comments routes:</p>
+
+<pre>GET     /photos/:id/comments/new
+POST    /photos/:id/comments
+GET     /photos/:id/comments/:id
+GET     /photos/:id/comments/:id/edit
+PUT     /photos/:id/comments/:id
+DELETE  /photos/:id/comments/:id</pre>
+
+<h3>Supported options</h3>
+<dl><dt>:path_names</dt>
+<dd>
+<p>Allows you to change the paths of the seven default actions. Paths not
+specified are not changed.</p>
+
+<pre>resources :posts, :path_names =&gt; { :new =&gt; &quot;brand_new&quot; }</pre>
+
+<p>The above example will now change /posts/new to /posts/brand_new</p>
+</dd><dt>:module</dt>
+<dd>
+<p>Set the module where the controller can be found. Defaults to nothing.</p>
+
+<pre>resources :posts, :module =&gt; &quot;admin&quot;</pre>
+
+<p>All requests to the posts resources will now go to
++Admin::PostsController+.</p>
+</dd><dt>:path</dt>
+<dd>
+<p>Set a path prefix for this resource.</p>
+
+<pre>resources :posts, :path =&gt; &quot;admin&quot;</pre>
+
+<p>All actions for this resource will now be at <tt>/admin/posts</tt>.</p>
+</dd></dl>          </div>
+        
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('resources_source')"
+                 id="l_method-i-resources_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="resources_source">
+<pre>
+  <span class="ruby-comment"># File actionpack/lib/action_dispatch/routing/mapper.rb, line 1003</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">resources</span>(*<span class="ruby-identifier">resources</span>, &amp;<span class="ruby-identifier">block</span>)
+  <span class="ruby-identifier">options</span> = <span class="ruby-identifier">resources</span>.<span class="ruby-identifier">extract_options!</span>
+
+  <span class="ruby-keyword">if</span> <span class="ruby-identifier">apply_common_behavior_for</span>(<span class="ruby-value">:resources</span>, <span class="ruby-identifier">resources</span>, <span class="ruby-identifier">options</span>, &amp;<span class="ruby-identifier">block</span>)
+    <span class="ruby-keyword">return</span> <span class="ruby-keyword">self</span>
+  <span class="ruby-keyword">end</span>
+
+  <span class="ruby-identifier">resource_scope</span>(<span class="ruby-constant">Resource</span>.<span class="ruby-identifier">new</span>(<span class="ruby-identifier">resources</span>.<span class="ruby-identifier">pop</span>, <span class="ruby-identifier">options</span>)) <span class="ruby-keyword">do</span>
+    <span class="ruby-keyword">yield</span> <span class="ruby-keyword">if</span> <span class="ruby-identifier">block_given?</span>
+
+    <span class="ruby-identifier">collection</span> <span class="ruby-keyword">do</span>
+      <span class="ruby-identifier">get</span>  <span class="ruby-value">:index</span> <span class="ruby-keyword">if</span> <span class="ruby-identifier">parent_resource</span>.<span class="ruby-identifier">actions</span>.<span class="ruby-identifier">include?</span>(<span class="ruby-value">:index</span>)
+      <span class="ruby-identifier">post</span> <span class="ruby-value">:create</span> <span class="ruby-keyword">if</span> <span class="ruby-identifier">parent_resource</span>.<span class="ruby-identifier">actions</span>.<span class="ruby-identifier">include?</span>(<span class="ruby-value">:create</span>)
+    <span class="ruby-keyword">end</span>
+
+    <span class="ruby-identifier">new</span> <span class="ruby-keyword">do</span>
+      <span class="ruby-identifier">get</span> <span class="ruby-value">:new</span>
+    <span class="ruby-keyword">end</span> <span class="ruby-keyword">if</span> <span class="ruby-identifier">parent_resource</span>.<span class="ruby-identifier">actions</span>.<span class="ruby-identifier">include?</span>(<span class="ruby-value">:new</span>)
+
+    <span class="ruby-identifier">member</span> <span class="ruby-keyword">do</span>
+      <span class="ruby-identifier">get</span>    <span class="ruby-value">:edit</span> <span class="ruby-keyword">if</span> <span class="ruby-identifier">parent_resource</span>.<span class="ruby-identifier">actions</span>.<span class="ruby-identifier">include?</span>(<span class="ruby-value">:edit</span>)
+      <span class="ruby-identifier">get</span>    <span class="ruby-value">:show</span> <span class="ruby-keyword">if</span> <span class="ruby-identifier">parent_resource</span>.<span class="ruby-identifier">actions</span>.<span class="ruby-identifier">include?</span>(<span class="ruby-value">:show</span>)
+      <span class="ruby-identifier">put</span>    <span class="ruby-value">:update</span> <span class="ruby-keyword">if</span> <span class="ruby-identifier">parent_resource</span>.<span class="ruby-identifier">actions</span>.<span class="ruby-identifier">include?</span>(<span class="ruby-value">:update</span>)
+      <span class="ruby-identifier">delete</span> <span class="ruby-value">:destroy</span> <span class="ruby-keyword">if</span> <span class="ruby-identifier">parent_resource</span>.<span class="ruby-identifier">actions</span>.<span class="ruby-identifier">include?</span>(<span class="ruby-value">:destroy</span>)
+    <span class="ruby-keyword">end</span>
+  <span class="ruby-keyword">end</span>
+
+  <span class="ruby-keyword">self</span>
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+          
+      <div class="method">
+        <div class="title">
+                      <a name="method-i-resources_path_names"></a>
+            <b>resources_path_names</b>(options)          
+        </div>
+
+                  <div class="description">
+                      </div>
+        
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('resources_path_names_source')"
+                 id="l_method-i-resources_path_names_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="resources_path_names_source">
+<pre>
+  <span class="ruby-comment"># File actionpack/lib/action_dispatch/routing/mapper.rb, line 897</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">resources_path_names</span>(<span class="ruby-identifier">options</span>)
+  <span class="ruby-ivar">@scope</span>[<span class="ruby-value">:path_names</span>].<span class="ruby-identifier">merge!</span>(<span class="ruby-identifier">options</span>)
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+          
+      <div class="method">
+        <div class="title">
+                      <a name="method-i-root"></a>
+            <b>root</b>(options={})          
+        </div>
+
+                  <div class="description">
+                      </div>
+        
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('root_source')"
+                 id="l_method-i-root_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="root_source">
+<pre>
+  <span class="ruby-comment"># File actionpack/lib/action_dispatch/routing/mapper.rb, line 1176</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">root</span>(<span class="ruby-identifier">options</span>={})
+  <span class="ruby-keyword">if</span> <span class="ruby-ivar">@scope</span>[<span class="ruby-value">:scope_level</span>] <span class="ruby-operator">==</span> <span class="ruby-value">:resources</span>
+    <span class="ruby-identifier">with_scope_level</span>(<span class="ruby-value">:root</span>) <span class="ruby-keyword">do</span>
+      <span class="ruby-identifier">scope</span>(<span class="ruby-identifier">parent_resource</span>.<span class="ruby-identifier">path</span>) <span class="ruby-keyword">do</span>
+        <span class="ruby-keyword">super</span>(<span class="ruby-identifier">options</span>)
+      <span class="ruby-keyword">end</span>
+    <span class="ruby-keyword">end</span>
+  <span class="ruby-keyword">else</span>
+    <span class="ruby-keyword">super</span>(<span class="ruby-identifier">options</span>)
+  <span class="ruby-keyword">end</span>
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+          
+      <div class="method">
+        <div class="title">
+                      <a name="method-i-shallow"></a>
+            <b>shallow</b>()          
+        </div>
+
+                  <div class="description">
+                      </div>
+        
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('shallow_source')"
+                 id="l_method-i-shallow_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="shallow_source">
+<pre>
+  <span class="ruby-comment"># File actionpack/lib/action_dispatch/routing/mapper.rb, line 1123</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">shallow</span>
+  <span class="ruby-identifier">scope</span>(<span class="ruby-value">:shallow</span> =<span class="ruby-operator">&gt;</span> <span class="ruby-keyword">true</span>) <span class="ruby-keyword">do</span>
+    <span class="ruby-keyword">yield</span>
+  <span class="ruby-keyword">end</span>
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+          
+      <div class="method">
+        <div class="title">
+                      <a name="method-i-shallow-3F"></a>
+            <b>shallow?</b>()          
+        </div>
+
+                  <div class="description">
+                      </div>
+        
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('shallow-3F_source')"
+                 id="l_method-i-shallow-3F_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="shallow-3F_source">
+<pre>
+  <span class="ruby-comment"># File actionpack/lib/action_dispatch/routing/mapper.rb, line 1129</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">shallow?</span>
+  <span class="ruby-identifier">parent_resource</span>.<span class="ruby-identifier">instance_of?</span>(<span class="ruby-constant">Resource</span>) <span class="ruby-operator">&amp;&amp;</span> <span class="ruby-ivar">@scope</span>[<span class="ruby-value">:shallow</span>]
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+          
+    <div class="sectiontitle">
+      Protected      Instance      methods
+    </div>
+
+          
+      <div class="method">
+        <div class="title">
+                      <a name="method-i-action_options-3F"></a>
+            <b>action_options?</b>(options)          
+        </div>
+
+                  <div class="description">
+                      </div>
+        
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('action_options-3F_source')"
+                 id="l_method-i-action_options-3F_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="action_options-3F_source">
+<pre>
+  <span class="ruby-comment"># File actionpack/lib/action_dispatch/routing/mapper.rb, line 1224</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">action_options?</span>(<span class="ruby-identifier">options</span>)
+  <span class="ruby-identifier">options</span>[<span class="ruby-value">:only</span>] <span class="ruby-operator">||</span> <span class="ruby-identifier">options</span>[<span class="ruby-value">:except</span>]
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+          
+      <div class="method">
+        <div class="title">
+                      <a name="method-i-action_path"></a>
+            <b>action_path</b>(name, path = nil)          
+        </div>
+
+                  <div class="description">
+                      </div>
+        
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('action_path_source')"
+                 id="l_method-i-action_path_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="action_path_source">
+<pre>
+  <span class="ruby-comment"># File actionpack/lib/action_dispatch/routing/mapper.rb, line 1308</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">action_path</span>(<span class="ruby-identifier">name</span>, <span class="ruby-identifier">path</span> = <span class="ruby-keyword">nil</span>)
+  <span class="ruby-identifier">path</span> <span class="ruby-operator">||</span> <span class="ruby-ivar">@scope</span>[<span class="ruby-value">:path_names</span>][<span class="ruby-identifier">name</span>.<span class="ruby-identifier">to_sym</span>] <span class="ruby-operator">||</span> <span class="ruby-identifier">name</span>.<span class="ruby-identifier">to_s</span>
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+          
+      <div class="method">
+        <div class="title">
+                      <a name="method-i-apply_common_behavior_for"></a>
+            <b>apply_common_behavior_for</b>(method, resources, options, &block)          
+        </div>
+
+                  <div class="description">
+                      </div>
+        
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('apply_common_behavior_for_source')"
+                 id="l_method-i-apply_common_behavior_for_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="apply_common_behavior_for_source">
+<pre>
+  <span class="ruby-comment"># File actionpack/lib/action_dispatch/routing/mapper.rb, line 1194</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">apply_common_behavior_for</span>(<span class="ruby-identifier">method</span>, <span class="ruby-identifier">resources</span>, <span class="ruby-identifier">options</span>, &amp;<span class="ruby-identifier">block</span>)
+  <span class="ruby-keyword">if</span> <span class="ruby-identifier">resources</span>.<span class="ruby-identifier">length</span> <span class="ruby-operator">&gt;</span> <span class="ruby-value">1</span>
+    <span class="ruby-identifier">resources</span>.<span class="ruby-identifier">each</span> { <span class="ruby-operator">|</span><span class="ruby-identifier">r</span><span class="ruby-operator">|</span> <span class="ruby-identifier">send</span>(<span class="ruby-identifier">method</span>, <span class="ruby-identifier">r</span>, <span class="ruby-identifier">options</span>, &amp;<span class="ruby-identifier">block</span>) }
+    <span class="ruby-keyword">return</span> <span class="ruby-keyword">true</span>
+  <span class="ruby-keyword">end</span>
+
+  <span class="ruby-keyword">if</span> <span class="ruby-identifier">resource_scope?</span>
+    <span class="ruby-identifier">nested</span> { <span class="ruby-identifier">send</span>(<span class="ruby-identifier">method</span>, <span class="ruby-identifier">resources</span>.<span class="ruby-identifier">pop</span>, <span class="ruby-identifier">options</span>, &amp;<span class="ruby-identifier">block</span>) }
+    <span class="ruby-keyword">return</span> <span class="ruby-keyword">true</span>
+  <span class="ruby-keyword">end</span>
+
+  <span class="ruby-identifier">options</span>.<span class="ruby-identifier">keys</span>.<span class="ruby-identifier">each</span> <span class="ruby-keyword">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">k</span><span class="ruby-operator">|</span>
+    (<span class="ruby-identifier">options</span>[<span class="ruby-value">:constraints</span>] <span class="ruby-operator">||=</span> {})[<span class="ruby-identifier">k</span>] = <span class="ruby-identifier">options</span>.<span class="ruby-identifier">delete</span>(<span class="ruby-identifier">k</span>) <span class="ruby-keyword">if</span> <span class="ruby-identifier">options</span>[<span class="ruby-identifier">k</span>].<span class="ruby-identifier">is_a?</span>(<span class="ruby-constant">Regexp</span>)
+  <span class="ruby-keyword">end</span>
+
+  <span class="ruby-identifier">scope_options</span> = <span class="ruby-identifier">options</span>.<span class="ruby-identifier">slice!</span>(*<span class="ruby-constant">RESOURCE_OPTIONS</span>)
+  <span class="ruby-keyword">unless</span> <span class="ruby-identifier">scope_options</span>.<span class="ruby-identifier">empty?</span>
+    <span class="ruby-identifier">scope</span>(<span class="ruby-identifier">scope_options</span>) <span class="ruby-keyword">do</span>
+      <span class="ruby-identifier">send</span>(<span class="ruby-identifier">method</span>, <span class="ruby-identifier">resources</span>.<span class="ruby-identifier">pop</span>, <span class="ruby-identifier">options</span>, &amp;<span class="ruby-identifier">block</span>)
+    <span class="ruby-keyword">end</span>
+    <span class="ruby-keyword">return</span> <span class="ruby-keyword">true</span>
+  <span class="ruby-keyword">end</span>
+
+  <span class="ruby-keyword">unless</span> <span class="ruby-identifier">action_options?</span>(<span class="ruby-identifier">options</span>)
+    <span class="ruby-identifier">options</span>.<span class="ruby-identifier">merge!</span>(<span class="ruby-identifier">scope_action_options</span>) <span class="ruby-keyword">if</span> <span class="ruby-identifier">scope_action_options?</span>
+  <span class="ruby-keyword">end</span>
+
+  <span class="ruby-keyword">false</span>
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+          
+      <div class="method">
+        <div class="title">
+                      <a name="method-i-canonical_action-3F"></a>
+            <b>canonical_action?</b>(action, flag)          
+        </div>
+
+                  <div class="description">
+                      </div>
+        
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('canonical_action-3F_source')"
+                 id="l_method-i-canonical_action-3F_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="canonical_action-3F_source">
+<pre>
+  <span class="ruby-comment"># File actionpack/lib/action_dispatch/routing/mapper.rb, line 1289</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">canonical_action?</span>(<span class="ruby-identifier">action</span>, <span class="ruby-identifier">flag</span>)
+  <span class="ruby-identifier">flag</span> <span class="ruby-operator">&amp;&amp;</span> <span class="ruby-identifier">resource_method_scope?</span> <span class="ruby-operator">&amp;&amp;</span> <span class="ruby-constant">CANONICAL_ACTIONS</span>.<span class="ruby-identifier">include?</span>(<span class="ruby-identifier">action</span>.<span class="ruby-identifier">to_s</span>)
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+          
+      <div class="method">
+        <div class="title">
+                      <a name="method-i-id_constraint"></a>
+            <b>id_constraint</b>()          
+        </div>
+
+                  <div class="description">
+                      </div>
+        
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('id_constraint_source')"
+                 id="l_method-i-id_constraint_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="id_constraint_source">
+<pre>
+  <span class="ruby-comment"># File actionpack/lib/action_dispatch/routing/mapper.rb, line 1285</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">id_constraint</span>
+  <span class="ruby-ivar">@scope</span>[<span class="ruby-value">:constraints</span>][<span class="ruby-value">:id</span>]
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+          
+      <div class="method">
+        <div class="title">
+                      <a name="method-i-id_constraint-3F"></a>
+            <b>id_constraint?</b>()          
+        </div>
+
+                  <div class="description">
+                      </div>
+        
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('id_constraint-3F_source')"
+                 id="l_method-i-id_constraint-3F_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="id_constraint-3F_source">
+<pre>
+  <span class="ruby-comment"># File actionpack/lib/action_dispatch/routing/mapper.rb, line 1281</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">id_constraint?</span>
+  <span class="ruby-ivar">@scope</span>[<span class="ruby-value">:constraints</span>] <span class="ruby-operator">&amp;&amp;</span> <span class="ruby-ivar">@scope</span>[<span class="ruby-value">:constraints</span>][<span class="ruby-value">:id</span>].<span class="ruby-identifier">is_a?</span>(<span class="ruby-constant">Regexp</span>)
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+          
+      <div class="method">
+        <div class="title">
+                      <a name="method-i-name_for_action"></a>
+            <b>name_for_action</b>(as, action)          
+        </div>
+
+                  <div class="description">
+                      </div>
+        
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('name_for_action_source')"
+                 id="l_method-i-name_for_action_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="name_for_action_source">
+<pre>
+  <span class="ruby-comment"># File actionpack/lib/action_dispatch/routing/mapper.rb, line 1320</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">name_for_action</span>(<span class="ruby-identifier">as</span>, <span class="ruby-identifier">action</span>)
+  <span class="ruby-identifier">prefix</span> = <span class="ruby-identifier">prefix_name_for_action</span>(<span class="ruby-identifier">as</span>, <span class="ruby-identifier">action</span>)
+  <span class="ruby-identifier">prefix</span> = <span class="ruby-constant">Mapper</span>.<span class="ruby-identifier">normalize_name</span>(<span class="ruby-identifier">prefix</span>) <span class="ruby-keyword">if</span> <span class="ruby-identifier">prefix</span>
+  <span class="ruby-identifier">name_prefix</span> = <span class="ruby-ivar">@scope</span>[<span class="ruby-value">:as</span>]
+
+  <span class="ruby-keyword">if</span> <span class="ruby-identifier">parent_resource</span>
+    <span class="ruby-keyword">return</span> <span class="ruby-keyword">nil</span> <span class="ruby-keyword">if</span> <span class="ruby-identifier">as</span>.<span class="ruby-identifier">nil?</span> <span class="ruby-operator">&amp;&amp;</span> <span class="ruby-identifier">action</span>.<span class="ruby-identifier">nil?</span>
+
+    <span class="ruby-identifier">collection_name</span> = <span class="ruby-identifier">parent_resource</span>.<span class="ruby-identifier">collection_name</span>
+    <span class="ruby-identifier">member_name</span> = <span class="ruby-identifier">parent_resource</span>.<span class="ruby-identifier">member_name</span>
+  <span class="ruby-keyword">end</span>
+
+  <span class="ruby-identifier">name</span> = <span class="ruby-keyword">case</span> <span class="ruby-ivar">@scope</span>[<span class="ruby-value">:scope_level</span>]
+  <span class="ruby-keyword">when</span> <span class="ruby-value">:nested</span>
+    [<span class="ruby-identifier">name_prefix</span>, <span class="ruby-identifier">prefix</span>]
+  <span class="ruby-keyword">when</span> <span class="ruby-value">:collection</span>
+    [<span class="ruby-identifier">prefix</span>, <span class="ruby-identifier">name_prefix</span>, <span class="ruby-identifier">collection_name</span>]
+  <span class="ruby-keyword">when</span> <span class="ruby-value">:new</span>
+    [<span class="ruby-identifier">prefix</span>, <span class="ruby-value">:new</span>, <span class="ruby-identifier">name_prefix</span>, <span class="ruby-identifier">member_name</span>]
+  <span class="ruby-keyword">when</span> <span class="ruby-value">:member</span>
+    [<span class="ruby-identifier">prefix</span>, <span class="ruby-identifier">shallow_scoping?</span> <span class="ruby-operator">?</span> <span class="ruby-ivar">@scope</span>[<span class="ruby-value">:shallow_prefix</span>] <span class="ruby-operator">:</span> <span class="ruby-identifier">name_prefix</span>, <span class="ruby-identifier">member_name</span>]
+  <span class="ruby-keyword">when</span> <span class="ruby-value">:root</span>
+    [<span class="ruby-identifier">name_prefix</span>, <span class="ruby-identifier">collection_name</span>, <span class="ruby-identifier">prefix</span>]
+  <span class="ruby-keyword">else</span>
+    [<span class="ruby-identifier">name_prefix</span>, <span class="ruby-identifier">member_name</span>, <span class="ruby-identifier">prefix</span>]
+  <span class="ruby-keyword">end</span>
+
+  <span class="ruby-identifier">candidate</span> = <span class="ruby-identifier">name</span>.<span class="ruby-identifier">select</span>(&amp;<span class="ruby-value">:present?</span>).<span class="ruby-identifier">join</span>(<span class="ruby-string">&quot;_&quot;</span>).<span class="ruby-identifier">presence</span>
+  <span class="ruby-identifier">candidate</span> <span class="ruby-keyword">unless</span> <span class="ruby-identifier">as</span>.<span class="ruby-identifier">nil?</span> <span class="ruby-operator">&amp;&amp;</span> <span class="ruby-ivar">@set</span>.<span class="ruby-identifier">routes</span>.<span class="ruby-identifier">find</span> { <span class="ruby-operator">|</span><span class="ruby-identifier">r</span><span class="ruby-operator">|</span> <span class="ruby-identifier">r</span>.<span class="ruby-identifier">name</span> <span class="ruby-operator">==</span> <span class="ruby-identifier">candidate</span> }
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+          
+      <div class="method">
+        <div class="title">
+                      <a name="method-i-nested_options"></a>
+            <b>nested_options</b>()          
+        </div>
+
+                  <div class="description">
+                      </div>
+        
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('nested_options_source')"
+                 id="l_method-i-nested_options_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="nested_options_source">
+<pre>
+  <span class="ruby-comment"># File actionpack/lib/action_dispatch/routing/mapper.rb, line 1274</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">nested_options</span>
+  {}.<span class="ruby-identifier">tap</span> <span class="ruby-keyword">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">options</span><span class="ruby-operator">|</span>
+    <span class="ruby-identifier">options</span>[<span class="ruby-value">:as</span>] = <span class="ruby-identifier">parent_resource</span>.<span class="ruby-identifier">member_name</span>
+    <span class="ruby-identifier">options</span>[<span class="ruby-value">:constraints</span>] = { <span class="ruby-node">&quot;#{parent_resource.singular}_id&quot;</span>.<span class="ruby-identifier">to_sym</span> =<span class="ruby-operator">&gt;</span> <span class="ruby-identifier">id_constraint</span> } <span class="ruby-keyword">if</span> <span class="ruby-identifier">id_constraint?</span>
+  <span class="ruby-keyword">end</span>
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+          
+      <div class="method">
+        <div class="title">
+                      <a name="method-i-path_for_action"></a>
+            <b>path_for_action</b>(action, path)          
+        </div>
+
+                  <div class="description">
+                      </div>
+        
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('path_for_action_source')"
+                 id="l_method-i-path_for_action_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="path_for_action_source">
+<pre>
+  <span class="ruby-comment"># File actionpack/lib/action_dispatch/routing/mapper.rb, line 1297</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">path_for_action</span>(<span class="ruby-identifier">action</span>, <span class="ruby-identifier">path</span>)
+  <span class="ruby-identifier">prefix</span> = <span class="ruby-identifier">shallow_scoping?</span> <span class="ruby-operator">?</span>
+    <span class="ruby-node">&quot;#{@scope[:shallow_path]}/#{parent_resource.path}/:id&quot;</span> <span class="ruby-operator">:</span> <span class="ruby-ivar">@scope</span>[<span class="ruby-value">:path</span>]
+
+  <span class="ruby-identifier">path</span> = <span class="ruby-keyword">if</span> <span class="ruby-identifier">canonical_action?</span>(<span class="ruby-identifier">action</span>, <span class="ruby-identifier">path</span>.<span class="ruby-identifier">blank?</span>)
+    <span class="ruby-identifier">prefix</span>.<span class="ruby-identifier">to_s</span>
+  <span class="ruby-keyword">else</span>
+    <span class="ruby-node">&quot;#{prefix}/#{action_path(action, path)}&quot;</span>
+  <span class="ruby-keyword">end</span>
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+          
+      <div class="method">
+        <div class="title">
+                      <a name="method-i-prefix_name_for_action"></a>
+            <b>prefix_name_for_action</b>(as, action)          
+        </div>
+
+                  <div class="description">
+                      </div>
+        
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('prefix_name_for_action_source')"
+                 id="l_method-i-prefix_name_for_action_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="prefix_name_for_action_source">
+<pre>
+  <span class="ruby-comment"># File actionpack/lib/action_dispatch/routing/mapper.rb, line 1312</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">prefix_name_for_action</span>(<span class="ruby-identifier">as</span>, <span class="ruby-identifier">action</span>)
+  <span class="ruby-keyword">if</span> <span class="ruby-identifier">as</span>
+    <span class="ruby-identifier">as</span>.<span class="ruby-identifier">to_s</span>
+  <span class="ruby-keyword">elsif</span> <span class="ruby-operator">!</span><span class="ruby-identifier">canonical_action?</span>(<span class="ruby-identifier">action</span>, <span class="ruby-ivar">@scope</span>[<span class="ruby-value">:scope_level</span>])
+    <span class="ruby-identifier">action</span>.<span class="ruby-identifier">to_s</span>
+  <span class="ruby-keyword">end</span>
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+          
+      <div class="method">
+        <div class="title">
+                      <a name="method-i-resource_method_scope-3F"></a>
+            <b>resource_method_scope?</b>()          
+        </div>
+
+                  <div class="description">
+                      </div>
+        
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('resource_method_scope-3F_source')"
+                 id="l_method-i-resource_method_scope-3F_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="resource_method_scope-3F_source">
+<pre>
+  <span class="ruby-comment"># File actionpack/lib/action_dispatch/routing/mapper.rb, line 1240</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">resource_method_scope?</span>
+  [<span class="ruby-value">:collection</span>, <span class="ruby-value">:member</span>, <span class="ruby-value">:new</span>].<span class="ruby-identifier">include?</span>(<span class="ruby-ivar">@scope</span>[<span class="ruby-value">:scope_level</span>])
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+          
+      <div class="method">
+        <div class="title">
+                      <a name="method-i-resource_scope"></a>
+            <b>resource_scope</b>(resource)          
+        </div>
+
+                  <div class="description">
+                      </div>
+        
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('resource_scope_source')"
+                 id="l_method-i-resource_scope_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="resource_scope_source">
+<pre>
+  <span class="ruby-comment"># File actionpack/lib/action_dispatch/routing/mapper.rb, line 1266</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">resource_scope</span>(<span class="ruby-identifier">resource</span>)
+  <span class="ruby-identifier">with_scope_level</span>(<span class="ruby-identifier">resource</span>.<span class="ruby-identifier">is_a?</span>(<span class="ruby-constant">SingletonResource</span>) <span class="ruby-operator">?</span> <span class="ruby-value">:resource</span> <span class="ruby-operator">:</span> <span class="ruby-value">:resources</span>, <span class="ruby-identifier">resource</span>) <span class="ruby-keyword">do</span>
+    <span class="ruby-identifier">scope</span>(<span class="ruby-identifier">parent_resource</span>.<span class="ruby-identifier">resource_scope</span>) <span class="ruby-keyword">do</span>
+      <span class="ruby-keyword">yield</span>
+    <span class="ruby-keyword">end</span>
+  <span class="ruby-keyword">end</span>
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+          
+      <div class="method">
+        <div class="title">
+                      <a name="method-i-resource_scope-3F"></a>
+            <b>resource_scope?</b>()          
+        </div>
+
+                  <div class="description">
+                      </div>
+        
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('resource_scope-3F_source')"
+                 id="l_method-i-resource_scope-3F_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="resource_scope-3F_source">
+<pre>
+  <span class="ruby-comment"># File actionpack/lib/action_dispatch/routing/mapper.rb, line 1236</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">resource_scope?</span>
+  [<span class="ruby-value">:resource</span>, <span class="ruby-value">:resources</span>].<span class="ruby-identifier">include?</span>(<span class="ruby-ivar">@scope</span>[<span class="ruby-value">:scope_level</span>])
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+          
+      <div class="method">
+        <div class="title">
+                      <a name="method-i-scope_action_options"></a>
+            <b>scope_action_options</b>()          
+        </div>
+
+                  <div class="description">
+                      </div>
+        
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('scope_action_options_source')"
+                 id="l_method-i-scope_action_options_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="scope_action_options_source">
+<pre>
+  <span class="ruby-comment"># File actionpack/lib/action_dispatch/routing/mapper.rb, line 1232</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">scope_action_options</span>
+  <span class="ruby-ivar">@scope</span>[<span class="ruby-value">:options</span>].<span class="ruby-identifier">slice</span>(<span class="ruby-value">:only</span>, <span class="ruby-value">:except</span>)
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+          
+      <div class="method">
+        <div class="title">
+                      <a name="method-i-scope_action_options-3F"></a>
+            <b>scope_action_options?</b>()          
+        </div>
+
+                  <div class="description">
+                      </div>
+        
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('scope_action_options-3F_source')"
+                 id="l_method-i-scope_action_options-3F_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="scope_action_options-3F_source">
+<pre>
+  <span class="ruby-comment"># File actionpack/lib/action_dispatch/routing/mapper.rb, line 1228</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">scope_action_options?</span>
+  <span class="ruby-ivar">@scope</span>[<span class="ruby-value">:options</span>].<span class="ruby-identifier">is_a?</span>(<span class="ruby-constant">Hash</span>) <span class="ruby-operator">&amp;&amp;</span> (<span class="ruby-ivar">@scope</span>[<span class="ruby-value">:options</span>][<span class="ruby-value">:only</span>] <span class="ruby-operator">||</span> <span class="ruby-ivar">@scope</span>[<span class="ruby-value">:options</span>][<span class="ruby-value">:except</span>])
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+          
+      <div class="method">
+        <div class="title">
+                      <a name="method-i-shallow_scoping-3F"></a>
+            <b>shallow_scoping?</b>()          
+        </div>
+
+                  <div class="description">
+                      </div>
+        
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('shallow_scoping-3F_source')"
+                 id="l_method-i-shallow_scoping-3F_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="shallow_scoping-3F_source">
+<pre>
+  <span class="ruby-comment"># File actionpack/lib/action_dispatch/routing/mapper.rb, line 1293</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">shallow_scoping?</span>
+  <span class="ruby-identifier">shallow?</span> <span class="ruby-operator">&amp;&amp;</span> <span class="ruby-ivar">@scope</span>[<span class="ruby-value">:scope_level</span>] <span class="ruby-operator">==</span> <span class="ruby-value">:member</span>
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+          
+      <div class="method">
+        <div class="title">
+                      <a name="method-i-with_exclusive_scope"></a>
+            <b>with_exclusive_scope</b>()          
+        </div>
+
+                  <div class="description">
+                      </div>
+        
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('with_exclusive_scope_source')"
+                 id="l_method-i-with_exclusive_scope_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="with_exclusive_scope_source">
+<pre>
+  <span class="ruby-comment"># File actionpack/lib/action_dispatch/routing/mapper.rb, line 1244</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">with_exclusive_scope</span>
+  <span class="ruby-keyword">begin</span>
+    <span class="ruby-identifier">old_name_prefix</span>, <span class="ruby-identifier">old_path</span> = <span class="ruby-ivar">@scope</span>[<span class="ruby-value">:as</span>], <span class="ruby-ivar">@scope</span>[<span class="ruby-value">:path</span>]
+    <span class="ruby-ivar">@scope</span>[<span class="ruby-value">:as</span>], <span class="ruby-ivar">@scope</span>[<span class="ruby-value">:path</span>] = <span class="ruby-keyword">nil</span>, <span class="ruby-keyword">nil</span>
+
+    <span class="ruby-identifier">with_scope_level</span>(<span class="ruby-value">:exclusive</span>) <span class="ruby-keyword">do</span>
+      <span class="ruby-keyword">yield</span>
+    <span class="ruby-keyword">end</span>
+  <span class="ruby-keyword">ensure</span>
+    <span class="ruby-ivar">@scope</span>[<span class="ruby-value">:as</span>], <span class="ruby-ivar">@scope</span>[<span class="ruby-value">:path</span>] = <span class="ruby-identifier">old_name_prefix</span>, <span class="ruby-identifier">old_path</span>
+  <span class="ruby-keyword">end</span>
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+          
+      <div class="method">
+        <div class="title">
+                      <a name="method-i-with_scope_level"></a>
+            <b>with_scope_level</b>(kind, resource = parent_resource)          
+        </div>
+
+                  <div class="description">
+                      </div>
+        
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('with_scope_level_source')"
+                 id="l_method-i-with_scope_level_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="with_scope_level_source">
+<pre>
+  <span class="ruby-comment"># File actionpack/lib/action_dispatch/routing/mapper.rb, line 1257</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">with_scope_level</span>(<span class="ruby-identifier">kind</span>, <span class="ruby-identifier">resource</span> = <span class="ruby-identifier">parent_resource</span>)
+  <span class="ruby-identifier">old</span>, <span class="ruby-ivar">@scope</span>[<span class="ruby-value">:scope_level</span>] = <span class="ruby-ivar">@scope</span>[<span class="ruby-value">:scope_level</span>], <span class="ruby-identifier">kind</span>
+  <span class="ruby-identifier">old_resource</span>, <span class="ruby-ivar">@scope</span>[<span class="ruby-value">:scope_level_resource</span>] = <span class="ruby-ivar">@scope</span>[<span class="ruby-value">:scope_level_resource</span>], <span class="ruby-identifier">resource</span>
+  <span class="ruby-keyword">yield</span>
+<span class="ruby-keyword">ensure</span>
+  <span class="ruby-ivar">@scope</span>[<span class="ruby-value">:scope_level</span>] = <span class="ruby-identifier">old</span>
+  <span class="ruby-ivar">@scope</span>[<span class="ruby-value">:scope_level_resource</span>] = <span class="ruby-identifier">old_resource</span>
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+          </div>
+  </div>
+  </body>
+</html>

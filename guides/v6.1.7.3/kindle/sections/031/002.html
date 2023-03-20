@@ -1,0 +1,27 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>3 Project Structure</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v6.1.7.3/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="project-structure"><a class="anchorlink" href="#project-structure">3 Project Structure</a></h3>
+<p>In a Rails application file names have to match the constants they define, with directories acting as namespaces.</p>
+
+<p>For example, the file <code>app/helpers/users_helper.rb</code> should define <code>UsersHelper</code> and the file <code>app/controllers/admin/payments_controller.rb</code> should define <code>Admin::PaymentsController</code>.</p>
+
+<p>By default, Rails configures Zeitwerk to inflect file names with <code>String#camelize</code>. For example, it expects that <code>app/controllers/users_controller.rb</code> defines the constant <code>UsersController</code> because</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="s2">"users_controller"</span><span class="p">.</span><span class="nf">camelize</span> <span class="c1"># =&gt; UsersController</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-3577718f65ce612aa03131af40e12c02">"users_controller".camelize # =&gt; UsersController
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-3577718f65ce612aa03131af40e12c02">Copy</button>
+</div>
+<p>The section <em>Customizing Inflections</em> below documents ways to override this default.</p>
+
+<p>Please, check the <a href="https://github.com/fxn/zeitwerk#file-structure">Zeitwerk documentation</a> for further details.</p>
+</body>
+</html>

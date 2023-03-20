@@ -1,0 +1,66 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>4 Partial Layouts</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v7.0.4.2/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="partial-layouts"><a class="anchorlink" href="#partial-layouts">4 Partial Layouts</a></h3>
+<p>Partials can have their own layouts applied to them. These layouts are different from those applied to a controller action, but they work in a similar fashion.</p>
+
+<p>Let's say we're displaying an article on a page which should be wrapped in a <code>div</code> for display purposes. Firstly, we'll create a new <code>Article</code>:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="no">Article</span><span class="p">.</span><span class="nf">create</span><span class="p">(</span><span class="ss">body: </span><span class="s1">'Partial Layouts are cool!'</span><span class="p">)</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="Article.create(body: 'Partial Layouts are cool!')
+">Copy</button>
+</div>
+<p>In the <code>show</code> template, we'll render the <code>_article</code> partial wrapped in the <code>box</code> layout:</p>
+
+<p><strong>articles/show.html.erb</strong></p>
+
+<div class="code_container">
+<pre><code class="highlight erb"><span class="cp">&lt;%=</span> <span class="n">render</span> <span class="ss">partial: </span><span class="s1">'article'</span><span class="p">,</span> <span class="ss">layout: </span><span class="s1">'box'</span><span class="p">,</span> <span class="ss">locals: </span><span class="p">{</span> <span class="ss">article: </span><span class="vi">@article</span> <span class="p">}</span> <span class="cp">%&gt;</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="&lt;%= render partial: 'article', layout: 'box', locals: { article: @article } %&gt;
+">Copy</button>
+</div>
+<p>The <code>box</code> layout simply wraps the <code>_article</code> partial in a <code>div</code>:</p>
+
+<p><strong>articles/_box.html.erb</strong></p>
+
+<div class="code_container">
+<pre><code class="highlight erb"><span class="nt">&lt;div</span> <span class="na">class=</span><span class="s">'box'</span><span class="nt">&gt;</span>
+  <span class="cp">&lt;%=</span> <span class="k">yield</span> <span class="cp">%&gt;</span>
+<span class="nt">&lt;/div&gt;</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="&lt;div class='box'&gt;
+  &lt;%= yield %&gt;
+&lt;/div&gt;
+">Copy</button>
+</div>
+<p>Note that the partial layout has access to the local <code>article</code> variable that was passed into the <code>render</code> call. However, unlike application-wide layouts, partial layouts still have the underscore prefix.</p>
+
+<p>You can also render a block of code within a partial layout instead of calling <code>yield</code>. For example, if we didn't have the <code>_article</code> partial, we could do this instead:</p>
+
+<p><strong>articles/show.html.erb</strong></p>
+
+<div class="code_container">
+<pre><code class="highlight erb"><span class="cp">&lt;%</span> <span class="n">render</span><span class="p">(</span><span class="ss">layout: </span><span class="s1">'box'</span><span class="p">,</span> <span class="ss">locals: </span><span class="p">{</span> <span class="ss">article: </span><span class="vi">@article</span> <span class="p">})</span> <span class="k">do</span> <span class="cp">%&gt;</span>
+  <span class="nt">&lt;div&gt;</span>
+    <span class="nt">&lt;p&gt;</span><span class="cp">&lt;%=</span> <span class="n">article</span><span class="p">.</span><span class="nf">body</span> <span class="cp">%&gt;</span><span class="nt">&lt;/p&gt;</span>
+  <span class="nt">&lt;/div&gt;</span>
+<span class="cp">&lt;%</span> <span class="k">end</span> <span class="cp">%&gt;</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="&lt;% render(layout: 'box', locals: { article: @article }) do %&gt;
+  &lt;div&gt;
+    &lt;p&gt;&lt;%= article.body %&gt;&lt;/p&gt;
+  &lt;/div&gt;
+&lt;% end %&gt;
+">Copy</button>
+</div>
+<p>Supposing we use the same <code>_box</code> partial from above, this would produce the same output as the previous example.</p>
+</body>
+</html>

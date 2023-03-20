@@ -1,0 +1,566 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>11 Extensions to Array</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v7.0.4.2/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="extensions-to-array"><a class="anchorlink" href="#extensions-to-array">11 Extensions to <code>Array</code></a></h3>
+<h4 id="accessing"><a class="anchorlink" href="#accessing">11.1 Accessing</a></h4>
+
+<p>Active Support augments the API of arrays to ease certain ways of accessing them. For example, <a href="https://api.rubyonrails.org/v7.0.4.2/classes/Array.html#method-i-to"><code>to</code></a> returns the subarray of elements up to the one at the passed index:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="sx">%w(a b c d)</span><span class="p">.</span><span class="nf">to</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span> <span class="c1"># =&gt; ["a", "b", "c"]</span>
+<span class="p">[].</span><span class="nf">to</span><span class="p">(</span><span class="mi">7</span><span class="p">)</span>          <span class="c1"># =&gt; []</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='%w(a b c d).to(2) # =&gt; ["a", "b", "c"]
+[].to(7)          # =&gt; []
+'>Copy</button>
+</div>
+<p>Similarly, <a href="https://api.rubyonrails.org/v7.0.4.2/classes/Array.html#method-i-from"><code>from</code></a> returns the tail from the element at the passed index to the end. If the index is greater than the length of the array, it returns an empty array.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="sx">%w(a b c d)</span><span class="p">.</span><span class="nf">from</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>  <span class="c1"># =&gt; ["c", "d"]</span>
+<span class="sx">%w(a b c d)</span><span class="p">.</span><span class="nf">from</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span> <span class="c1"># =&gt; []</span>
+<span class="p">[].</span><span class="nf">from</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>           <span class="c1"># =&gt; []</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='%w(a b c d).from(2)  # =&gt; ["c", "d"]
+%w(a b c d).from(10) # =&gt; []
+[].from(0)           # =&gt; []
+'>Copy</button>
+</div>
+<p>The method <a href="https://api.rubyonrails.org/v7.0.4.2/classes/Array.html#method-i-including"><code>including</code></a> returns a new array that includes the passed elements:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="p">[</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span> <span class="p">].</span><span class="nf">including</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>          <span class="c1"># =&gt; [ 1, 2, 3, 4, 5 ]</span>
+<span class="p">[</span> <span class="p">[</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span> <span class="p">]</span> <span class="p">].</span><span class="nf">including</span><span class="p">([</span> <span class="p">[</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span> <span class="p">]</span> <span class="p">])</span> <span class="c1"># =&gt; [ [ 0, 1 ], [ 1, 0 ] ]</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="[ 1, 2, 3 ].including(4, 5)          # =&gt; [ 1, 2, 3, 4, 5 ]
+[ [ 0, 1 ] ].including([ [ 1, 0 ] ]) # =&gt; [ [ 0, 1 ], [ 1, 0 ] ]
+">Copy</button>
+</div>
+<p>The method <a href="https://api.rubyonrails.org/v7.0.4.2/classes/Array.html#method-i-excluding"><code>excluding</code></a> returns a copy of the Array excluding the specified elements.
+This is an optimization of <code>Enumerable#excluding</code> that uses <code>Array#-</code>
+instead of <code>Array#reject</code> for performance reasons.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="p">[</span><span class="s2">"David"</span><span class="p">,</span> <span class="s2">"Rafael"</span><span class="p">,</span> <span class="s2">"Aaron"</span><span class="p">,</span> <span class="s2">"Todd"</span><span class="p">].</span><span class="nf">excluding</span><span class="p">(</span><span class="s2">"Aaron"</span><span class="p">,</span> <span class="s2">"Todd"</span><span class="p">)</span> <span class="c1"># =&gt; ["David", "Rafael"]</span>
+<span class="p">[</span> <span class="p">[</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span> <span class="p">],</span> <span class="p">[</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span> <span class="p">]</span> <span class="p">].</span><span class="nf">excluding</span><span class="p">([</span> <span class="p">[</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span> <span class="p">]</span> <span class="p">])</span>                  <span class="c1"># =&gt; [ [ 0, 1 ] ]</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='["David", "Rafael", "Aaron", "Todd"].excluding("Aaron", "Todd") # =&gt; ["David", "Rafael"]
+[ [ 0, 1 ], [ 1, 0 ] ].excluding([ [ 1, 0 ] ])                  # =&gt; [ [ 0, 1 ] ]
+'>Copy</button>
+</div>
+<p>The methods <a href="https://api.rubyonrails.org/v7.0.4.2/classes/Array.html#method-i-second"><code>second</code></a>, <a href="https://api.rubyonrails.org/v7.0.4.2/classes/Array.html#method-i-third"><code>third</code></a>, <a href="https://api.rubyonrails.org/v7.0.4.2/classes/Array.html#method-i-fourth"><code>fourth</code></a>, and <a href="https://api.rubyonrails.org/v7.0.4.2/classes/Array.html#method-i-fifth"><code>fifth</code></a> return the corresponding element, as do <a href="https://api.rubyonrails.org/v7.0.4.2/classes/Array.html#method-i-second_to_last"><code>second_to_last</code></a> and <a href="https://api.rubyonrails.org/v7.0.4.2/classes/Array.html#method-i-third_to_last"><code>third_to_last</code></a> (<code>first</code> and <code>last</code> are built-in). Thanks to social wisdom and positive constructiveness all around, <a href="https://api.rubyonrails.org/v7.0.4.2/classes/Array.html#method-i-forty_two"><code>forty_two</code></a> is also available.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="sx">%w(a b c d)</span><span class="p">.</span><span class="nf">third</span> <span class="c1"># =&gt; "c"</span>
+<span class="sx">%w(a b c d)</span><span class="p">.</span><span class="nf">fifth</span> <span class="c1"># =&gt; nil</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='%w(a b c d).third # =&gt; "c"
+%w(a b c d).fifth # =&gt; nil
+'>Copy</button>
+</div>
+<div class="note"><p>Defined in <code><a href="https://github.com/rails/rails/tree/v7.0.4.2/activesupport/lib/active_support/core_ext/array/access.rb">active_support/core_ext/array/access.rb</a></code>.</p></div>
+
+<h4 id="extensions-to-array-extracting"><a class="anchorlink" href="#extensions-to-array-extracting">11.2 Extracting</a></h4>
+
+<p>The method <a href="https://api.rubyonrails.org/v7.0.4.2/classes/Array.html#method-i-extract-21"><code>extract!</code></a> removes and returns the elements for which the block returns a true value.
+If no block is given, an Enumerator is returned instead.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">numbers</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">9</span><span class="p">]</span>
+<span class="n">odd_numbers</span> <span class="o">=</span> <span class="n">numbers</span><span class="p">.</span><span class="nf">extract!</span> <span class="p">{</span> <span class="o">|</span><span class="n">number</span><span class="o">|</span> <span class="n">number</span><span class="p">.</span><span class="nf">odd?</span> <span class="p">}</span> <span class="c1"># =&gt; [1, 3, 5, 7, 9]</span>
+<span class="n">numbers</span> <span class="c1"># =&gt; [0, 2, 4, 6, 8]</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="numbers = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+odd_numbers = numbers.extract! { |number| number.odd? } # =&gt; [1, 3, 5, 7, 9]
+numbers # =&gt; [0, 2, 4, 6, 8]
+">Copy</button>
+</div>
+<div class="note"><p>Defined in <code><a href="https://github.com/rails/rails/tree/v7.0.4.2/activesupport/lib/active_support/core_ext/array/extract.rb">active_support/core_ext/array/extract.rb</a></code>.</p></div>
+
+<h4 id="options-extraction"><a class="anchorlink" href="#options-extraction">11.3 Options Extraction</a></h4>
+
+<p>When the last argument in a method call is a hash, except perhaps for a <code>&amp;block</code> argument, Ruby allows you to omit the brackets:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="no">User</span><span class="p">.</span><span class="nf">exists?</span><span class="p">(</span><span class="ss">email: </span><span class="n">params</span><span class="p">[</span><span class="ss">:email</span><span class="p">])</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="User.exists?(email: params[:email])
+">Copy</button>
+</div>
+<p>That syntactic sugar is used a lot in Rails to avoid positional arguments where there would be too many, offering instead interfaces that emulate named parameters. In particular it is very idiomatic to use a trailing hash for options.</p>
+
+<p>If a method expects a variable number of arguments and uses <code>*</code> in its declaration, however, such an options hash ends up being an item of the array of arguments, where it loses its role.</p>
+
+<p>In those cases, you may give an options hash a distinguished treatment with <a href="https://api.rubyonrails.org/v7.0.4.2/classes/Array.html#method-i-extract_options-21"><code>extract_options!</code></a>. This method checks the type of the last item of an array. If it is a hash it pops it and returns it, otherwise it returns an empty hash.</p>
+
+<p>Let's see for example the definition of the <code>caches_action</code> controller macro:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">def</span> <span class="nf">caches_action</span><span class="p">(</span><span class="o">*</span><span class="n">actions</span><span class="p">)</span>
+  <span class="k">return</span> <span class="k">unless</span> <span class="n">cache_configured?</span>
+  <span class="n">options</span> <span class="o">=</span> <span class="n">actions</span><span class="p">.</span><span class="nf">extract_options!</span>
+  <span class="c1"># ...</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="def caches_action(*actions)
+  return unless cache_configured?
+  options = actions.extract_options!
+  # ...
+end
+">Copy</button>
+</div>
+<p>This method receives an arbitrary number of action names, and an optional hash of options as last argument. With the call to <code>extract_options!</code> you obtain the options hash and remove it from <code>actions</code> in a simple and explicit way.</p>
+
+<div class="note"><p>Defined in <code><a href="https://github.com/rails/rails/tree/v7.0.4.2/activesupport/lib/active_support/core_ext/array/extract_options.rb">active_support/core_ext/array/extract_options.rb</a></code>.</p></div>
+
+<h4 id="extensions-to-array-conversions"><a class="anchorlink" href="#extensions-to-array-conversions">11.4 Conversions</a></h4>
+
+<h5 id="to-sentence"><a class="anchorlink" href="#to-sentence">11.4.1 <code>to_sentence</code></a></h5>
+
+<p>The method <a href="https://api.rubyonrails.org/v7.0.4.2/classes/Array.html#method-i-to_sentence"><code>to_sentence</code></a> turns an array into a string containing a sentence that enumerates its items:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="sx">%w()</span><span class="p">.</span><span class="nf">to_sentence</span>                <span class="c1"># =&gt; ""</span>
+<span class="sx">%w(Earth)</span><span class="p">.</span><span class="nf">to_sentence</span>           <span class="c1"># =&gt; "Earth"</span>
+<span class="sx">%w(Earth Wind)</span><span class="p">.</span><span class="nf">to_sentence</span>      <span class="c1"># =&gt; "Earth and Wind"</span>
+<span class="sx">%w(Earth Wind Fire)</span><span class="p">.</span><span class="nf">to_sentence</span> <span class="c1"># =&gt; "Earth, Wind, and Fire"</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='%w().to_sentence                # =&gt; ""
+%w(Earth).to_sentence           # =&gt; "Earth"
+%w(Earth Wind).to_sentence      # =&gt; "Earth and Wind"
+%w(Earth Wind Fire).to_sentence # =&gt; "Earth, Wind, and Fire"
+'>Copy</button>
+</div>
+<p>This method accepts three options:</p>
+<ul>
+<li>
+<code>:two_words_connector</code>: What is used for arrays of length 2. Default is " and ".</li>
+<li>
+<code>:words_connector</code>: What is used to join the elements of arrays with 3 or more elements, except for the last two. Default is ", ".</li>
+<li>
+<code>:last_word_connector</code>: What is used to join the last items of an array with 3 or more elements. Default is ", and ".</li>
+</ul>
+<p>The defaults for these options can be localized, their keys are:</p>
+<table>
+<thead>
+<tr>
+<th>Option</th>
+<th>I18n key</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>:two_words_connector</code></td>
+<td><code>support.array.two_words_connector</code></td>
+</tr>
+<tr>
+<td><code>:words_connector</code></td>
+<td><code>support.array.words_connector</code></td>
+</tr>
+<tr>
+<td><code>:last_word_connector</code></td>
+<td><code>support.array.last_word_connector</code></td>
+</tr>
+</tbody>
+</table>
+<div class="note"><p>Defined in <code><a href="https://github.com/rails/rails/tree/v7.0.4.2/activesupport/lib/active_support/core_ext/array/conversions.rb">active_support/core_ext/array/conversions.rb</a></code>.</p></div>
+
+<h5 id="to-fs"><a class="anchorlink" href="#to-fs">11.4.2 <code>to_fs</code></a></h5>
+
+<p>The method <a href="https://api.rubyonrails.org/v7.0.4.2/classes/Array.html#method-i-to_fs"><code>to_fs</code></a> acts like <code>to_s</code> by default.</p>
+
+<p>If the array contains items that respond to <code>id</code>, however, the symbol
+<code>:db</code> may be passed as argument. That's typically used with
+collections of Active Record objects. Returned strings are:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="p">[].</span><span class="nf">to_fs</span><span class="p">(</span><span class="ss">:db</span><span class="p">)</span>            <span class="c1"># =&gt; "null"</span>
+<span class="p">[</span><span class="n">user</span><span class="p">].</span><span class="nf">to_fs</span><span class="p">(</span><span class="ss">:db</span><span class="p">)</span>        <span class="c1"># =&gt; "8456"</span>
+<span class="n">invoice</span><span class="p">.</span><span class="nf">lines</span><span class="p">.</span><span class="nf">to_fs</span><span class="p">(</span><span class="ss">:db</span><span class="p">)</span> <span class="c1"># =&gt; "23,567,556,12"</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='[].to_fs(:db)            # =&gt; "null"
+[user].to_fs(:db)        # =&gt; "8456"
+invoice.lines.to_fs(:db) # =&gt; "23,567,556,12"
+'>Copy</button>
+</div>
+<p>Integers in the example above are supposed to come from the respective calls to <code>id</code>.</p>
+
+<div class="note"><p>Defined in <code><a href="https://github.com/rails/rails/tree/v7.0.4.2/activesupport/lib/active_support/core_ext/array/conversions.rb">active_support/core_ext/array/conversions.rb</a></code>.</p></div>
+
+<h5 id="extensions-to-array-conversions-to-xml"><a class="anchorlink" href="#extensions-to-array-conversions-to-xml">11.4.3 <code>to_xml</code></a></h5>
+
+<p>The method <a href="https://api.rubyonrails.org/v7.0.4.2/classes/Array.html#method-i-to_xml"><code>to_xml</code></a> returns a string containing an XML representation of its receiver:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="no">Contributor</span><span class="p">.</span><span class="nf">limit</span><span class="p">(</span><span class="mi">2</span><span class="p">).</span><span class="nf">order</span><span class="p">(</span><span class="ss">:rank</span><span class="p">).</span><span class="nf">to_xml</span>
+<span class="c1"># =&gt;</span>
+<span class="c1"># &lt;?xml version="1.0" encoding="UTF-8"?&gt;</span>
+<span class="c1"># &lt;contributors type="array"&gt;</span>
+<span class="c1">#   &lt;contributor&gt;</span>
+<span class="c1">#     &lt;id type="integer"&gt;4356&lt;/id&gt;</span>
+<span class="c1">#     &lt;name&gt;Jeremy Kemper&lt;/name&gt;</span>
+<span class="c1">#     &lt;rank type="integer"&gt;1&lt;/rank&gt;</span>
+<span class="c1">#     &lt;url-id&gt;jeremy-kemper&lt;/url-id&gt;</span>
+<span class="c1">#   &lt;/contributor&gt;</span>
+<span class="c1">#   &lt;contributor&gt;</span>
+<span class="c1">#     &lt;id type="integer"&gt;4404&lt;/id&gt;</span>
+<span class="c1">#     &lt;name&gt;David Heinemeier Hansson&lt;/name&gt;</span>
+<span class="c1">#     &lt;rank type="integer"&gt;2&lt;/rank&gt;</span>
+<span class="c1">#     &lt;url-id&gt;david-heinemeier-hansson&lt;/url-id&gt;</span>
+<span class="c1">#   &lt;/contributor&gt;</span>
+<span class="c1"># &lt;/contributors&gt;</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='Contributor.limit(2).order(:rank).to_xml
+# =&gt;
+# &lt;?xml version="1.0" encoding="UTF-8"?&gt;
+# &lt;contributors type="array"&gt;
+#   &lt;contributor&gt;
+#     &lt;id type="integer"&gt;4356&lt;/id&gt;
+#     &lt;name&gt;Jeremy Kemper&lt;/name&gt;
+#     &lt;rank type="integer"&gt;1&lt;/rank&gt;
+#     &lt;url-id&gt;jeremy-kemper&lt;/url-id&gt;
+#   &lt;/contributor&gt;
+#   &lt;contributor&gt;
+#     &lt;id type="integer"&gt;4404&lt;/id&gt;
+#     &lt;name&gt;David Heinemeier Hansson&lt;/name&gt;
+#     &lt;rank type="integer"&gt;2&lt;/rank&gt;
+#     &lt;url-id&gt;david-heinemeier-hansson&lt;/url-id&gt;
+#   &lt;/contributor&gt;
+# &lt;/contributors&gt;
+'>Copy</button>
+</div>
+<p>To do so it sends <code>to_xml</code> to every item in turn, and collects the results under a root node. All items must respond to <code>to_xml</code>, an exception is raised otherwise.</p>
+
+<p>By default, the name of the root element is the underscored and dasherized plural of the name of the class of the first item, provided the rest of elements belong to that type (checked with <code>is_a?</code>) and they are not hashes. In the example above that's "contributors".</p>
+
+<p>If there's any element that does not belong to the type of the first one the root node becomes "objects":</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="p">[</span><span class="no">Contributor</span><span class="p">.</span><span class="nf">first</span><span class="p">,</span> <span class="no">Commit</span><span class="p">.</span><span class="nf">first</span><span class="p">].</span><span class="nf">to_xml</span>
+<span class="c1"># =&gt;</span>
+<span class="c1"># &lt;?xml version="1.0" encoding="UTF-8"?&gt;</span>
+<span class="c1"># &lt;objects type="array"&gt;</span>
+<span class="c1">#   &lt;object&gt;</span>
+<span class="c1">#     &lt;id type="integer"&gt;4583&lt;/id&gt;</span>
+<span class="c1">#     &lt;name&gt;Aaron Batalion&lt;/name&gt;</span>
+<span class="c1">#     &lt;rank type="integer"&gt;53&lt;/rank&gt;</span>
+<span class="c1">#     &lt;url-id&gt;aaron-batalion&lt;/url-id&gt;</span>
+<span class="c1">#   &lt;/object&gt;</span>
+<span class="c1">#   &lt;object&gt;</span>
+<span class="c1">#     &lt;author&gt;Joshua Peek&lt;/author&gt;</span>
+<span class="c1">#     &lt;authored-timestamp type="datetime"&gt;2009-09-02T16:44:36Z&lt;/authored-timestamp&gt;</span>
+<span class="c1">#     &lt;branch&gt;origin/master&lt;/branch&gt;</span>
+<span class="c1">#     &lt;committed-timestamp type="datetime"&gt;2009-09-02T16:44:36Z&lt;/committed-timestamp&gt;</span>
+<span class="c1">#     &lt;committer&gt;Joshua Peek&lt;/committer&gt;</span>
+<span class="c1">#     &lt;git-show nil="true"&gt;&lt;/git-show&gt;</span>
+<span class="c1">#     &lt;id type="integer"&gt;190316&lt;/id&gt;</span>
+<span class="c1">#     &lt;imported-from-svn type="boolean"&gt;false&lt;/imported-from-svn&gt;</span>
+<span class="c1">#     &lt;message&gt;Kill AMo observing wrap_with_notifications since ARes was only using it&lt;/message&gt;</span>
+<span class="c1">#     &lt;sha1&gt;723a47bfb3708f968821bc969a9a3fc873a3ed58&lt;/sha1&gt;</span>
+<span class="c1">#   &lt;/object&gt;</span>
+<span class="c1"># &lt;/objects&gt;</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='[Contributor.first, Commit.first].to_xml
+# =&gt;
+# &lt;?xml version="1.0" encoding="UTF-8"?&gt;
+# &lt;objects type="array"&gt;
+#   &lt;object&gt;
+#     &lt;id type="integer"&gt;4583&lt;/id&gt;
+#     &lt;name&gt;Aaron Batalion&lt;/name&gt;
+#     &lt;rank type="integer"&gt;53&lt;/rank&gt;
+#     &lt;url-id&gt;aaron-batalion&lt;/url-id&gt;
+#   &lt;/object&gt;
+#   &lt;object&gt;
+#     &lt;author&gt;Joshua Peek&lt;/author&gt;
+#     &lt;authored-timestamp type="datetime"&gt;2009-09-02T16:44:36Z&lt;/authored-timestamp&gt;
+#     &lt;branch&gt;origin/master&lt;/branch&gt;
+#     &lt;committed-timestamp type="datetime"&gt;2009-09-02T16:44:36Z&lt;/committed-timestamp&gt;
+#     &lt;committer&gt;Joshua Peek&lt;/committer&gt;
+#     &lt;git-show nil="true"&gt;&lt;/git-show&gt;
+#     &lt;id type="integer"&gt;190316&lt;/id&gt;
+#     &lt;imported-from-svn type="boolean"&gt;false&lt;/imported-from-svn&gt;
+#     &lt;message&gt;Kill AMo observing wrap_with_notifications since ARes was only using it&lt;/message&gt;
+#     &lt;sha1&gt;723a47bfb3708f968821bc969a9a3fc873a3ed58&lt;/sha1&gt;
+#   &lt;/object&gt;
+# &lt;/objects&gt;
+'>Copy</button>
+</div>
+<p>If the receiver is an array of hashes the root element is by default also "objects":</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="p">[{</span><span class="ss">a: </span><span class="mi">1</span><span class="p">,</span> <span class="ss">b: </span><span class="mi">2</span><span class="p">},</span> <span class="p">{</span><span class="ss">c: </span><span class="mi">3</span><span class="p">}].</span><span class="nf">to_xml</span>
+<span class="c1"># =&gt;</span>
+<span class="c1"># &lt;?xml version="1.0" encoding="UTF-8"?&gt;</span>
+<span class="c1"># &lt;objects type="array"&gt;</span>
+<span class="c1">#   &lt;object&gt;</span>
+<span class="c1">#     &lt;b type="integer"&gt;2&lt;/b&gt;</span>
+<span class="c1">#     &lt;a type="integer"&gt;1&lt;/a&gt;</span>
+<span class="c1">#   &lt;/object&gt;</span>
+<span class="c1">#   &lt;object&gt;</span>
+<span class="c1">#     &lt;c type="integer"&gt;3&lt;/c&gt;</span>
+<span class="c1">#   &lt;/object&gt;</span>
+<span class="c1"># &lt;/objects&gt;</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='[{a: 1, b: 2}, {c: 3}].to_xml
+# =&gt;
+# &lt;?xml version="1.0" encoding="UTF-8"?&gt;
+# &lt;objects type="array"&gt;
+#   &lt;object&gt;
+#     &lt;b type="integer"&gt;2&lt;/b&gt;
+#     &lt;a type="integer"&gt;1&lt;/a&gt;
+#   &lt;/object&gt;
+#   &lt;object&gt;
+#     &lt;c type="integer"&gt;3&lt;/c&gt;
+#   &lt;/object&gt;
+# &lt;/objects&gt;
+'>Copy</button>
+</div>
+<div class="warning"><p>If the collection is empty the root element is by default "nil-classes". That's a gotcha, for example the root element of the list of contributors above would not be "contributors" if the collection was empty, but "nil-classes". You may use the <code>:root</code> option to ensure a consistent root element.</p></div>
+
+<p>The name of children nodes is by default the name of the root node singularized. In the examples above we've seen "contributor" and "object". The option <code>:children</code> allows you to set these node names.</p>
+
+<p>The default XML builder is a fresh instance of <code>Builder::XmlMarkup</code>. You can configure your own builder via the <code>:builder</code> option. The method also accepts options like <code>:dasherize</code> and friends, they are forwarded to the builder:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="no">Contributor</span><span class="p">.</span><span class="nf">limit</span><span class="p">(</span><span class="mi">2</span><span class="p">).</span><span class="nf">order</span><span class="p">(</span><span class="ss">:rank</span><span class="p">).</span><span class="nf">to_xml</span><span class="p">(</span><span class="ss">skip_types: </span><span class="kp">true</span><span class="p">)</span>
+<span class="c1"># =&gt;</span>
+<span class="c1"># &lt;?xml version="1.0" encoding="UTF-8"?&gt;</span>
+<span class="c1"># &lt;contributors&gt;</span>
+<span class="c1">#   &lt;contributor&gt;</span>
+<span class="c1">#     &lt;id&gt;4356&lt;/id&gt;</span>
+<span class="c1">#     &lt;name&gt;Jeremy Kemper&lt;/name&gt;</span>
+<span class="c1">#     &lt;rank&gt;1&lt;/rank&gt;</span>
+<span class="c1">#     &lt;url-id&gt;jeremy-kemper&lt;/url-id&gt;</span>
+<span class="c1">#   &lt;/contributor&gt;</span>
+<span class="c1">#   &lt;contributor&gt;</span>
+<span class="c1">#     &lt;id&gt;4404&lt;/id&gt;</span>
+<span class="c1">#     &lt;name&gt;David Heinemeier Hansson&lt;/name&gt;</span>
+<span class="c1">#     &lt;rank&gt;2&lt;/rank&gt;</span>
+<span class="c1">#     &lt;url-id&gt;david-heinemeier-hansson&lt;/url-id&gt;</span>
+<span class="c1">#   &lt;/contributor&gt;</span>
+<span class="c1"># &lt;/contributors&gt;</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='Contributor.limit(2).order(:rank).to_xml(skip_types: true)
+# =&gt;
+# &lt;?xml version="1.0" encoding="UTF-8"?&gt;
+# &lt;contributors&gt;
+#   &lt;contributor&gt;
+#     &lt;id&gt;4356&lt;/id&gt;
+#     &lt;name&gt;Jeremy Kemper&lt;/name&gt;
+#     &lt;rank&gt;1&lt;/rank&gt;
+#     &lt;url-id&gt;jeremy-kemper&lt;/url-id&gt;
+#   &lt;/contributor&gt;
+#   &lt;contributor&gt;
+#     &lt;id&gt;4404&lt;/id&gt;
+#     &lt;name&gt;David Heinemeier Hansson&lt;/name&gt;
+#     &lt;rank&gt;2&lt;/rank&gt;
+#     &lt;url-id&gt;david-heinemeier-hansson&lt;/url-id&gt;
+#   &lt;/contributor&gt;
+# &lt;/contributors&gt;
+'>Copy</button>
+</div>
+<div class="note"><p>Defined in <code><a href="https://github.com/rails/rails/tree/v7.0.4.2/activesupport/lib/active_support/core_ext/array/conversions.rb">active_support/core_ext/array/conversions.rb</a></code>.</p></div>
+
+<h4 id="wrapping"><a class="anchorlink" href="#wrapping">11.5 Wrapping</a></h4>
+
+<p>The method <a href="https://api.rubyonrails.org/v7.0.4.2/classes/Array.html#method-c-wrap"><code>Array.wrap</code></a> wraps its argument in an array unless it is already an array (or array-like).</p>
+
+<p>Specifically:</p>
+<ul>
+<li>If the argument is <code>nil</code> an empty array is returned.</li>
+<li>Otherwise, if the argument responds to <code>to_ary</code> it is invoked, and if the value of <code>to_ary</code> is not <code>nil</code>, it is returned.</li>
+<li>Otherwise, an array with the argument as its single element is returned.</li>
+</ul>
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="no">Array</span><span class="p">.</span><span class="nf">wrap</span><span class="p">(</span><span class="kp">nil</span><span class="p">)</span>       <span class="c1"># =&gt; []</span>
+<span class="no">Array</span><span class="p">.</span><span class="nf">wrap</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">])</span> <span class="c1"># =&gt; [1, 2, 3]</span>
+<span class="no">Array</span><span class="p">.</span><span class="nf">wrap</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>         <span class="c1"># =&gt; [0]</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="Array.wrap(nil)       # =&gt; []
+Array.wrap([1, 2, 3]) # =&gt; [1, 2, 3]
+Array.wrap(0)         # =&gt; [0]
+">Copy</button>
+</div>
+<p>This method is similar in purpose to <code>Kernel#Array</code>, but there are some differences:</p>
+<ul>
+<li>If the argument responds to <code>to_ary</code> the method is invoked. <code>Kernel#Array</code> moves on to try <code>to_a</code> if the returned value is <code>nil</code>, but <code>Array.wrap</code> returns an array with the argument as its single element right away.</li>
+<li>If the returned value from <code>to_ary</code> is neither <code>nil</code> nor an <code>Array</code> object, <code>Kernel#Array</code> raises an exception, while <code>Array.wrap</code> does not, it just returns the value.</li>
+<li>It does not call <code>to_a</code> on the argument, if the argument does not respond to <code>to_ary</code> it returns an array with the argument as its single element.</li>
+</ul>
+<p>The last point is particularly worth comparing for some enumerables:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="no">Array</span><span class="p">.</span><span class="nf">wrap</span><span class="p">(</span><span class="ss">foo: :bar</span><span class="p">)</span> <span class="c1"># =&gt; [{:foo=&gt;:bar}]</span>
+<span class="no">Array</span><span class="p">(</span><span class="ss">foo: :bar</span><span class="p">)</span>      <span class="c1"># =&gt; [[:foo, :bar]]</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="Array.wrap(foo: :bar) # =&gt; [{:foo=&gt;:bar}]
+Array(foo: :bar)      # =&gt; [[:foo, :bar]]
+">Copy</button>
+</div>
+<p>There's also a related idiom that uses the splat operator:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="p">[</span><span class="o">*</span><span class="n">object</span><span class="p">]</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="[*object]
+">Copy</button>
+</div>
+<div class="note"><p>Defined in <code><a href="https://github.com/rails/rails/tree/v7.0.4.2/activesupport/lib/active_support/core_ext/array/wrap.rb">active_support/core_ext/array/wrap.rb</a></code>.</p></div>
+
+<h4 id="duplicating"><a class="anchorlink" href="#duplicating">11.6 Duplicating</a></h4>
+
+<p>The method <a href="https://api.rubyonrails.org/v7.0.4.2/classes/Array.html#method-i-deep_dup"><code>Array#deep_dup</code></a> duplicates itself and all objects inside
+recursively with the Active Support method <code>Object#deep_dup</code>. It works like <code>Array#map</code>, sending <code>deep_dup</code> method to each object inside.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">array</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]]</span>
+<span class="nb">dup</span> <span class="o">=</span> <span class="n">array</span><span class="p">.</span><span class="nf">deep_dup</span>
+<span class="nb">dup</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="mi">4</span>
+<span class="n">array</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">2</span><span class="p">]</span> <span class="o">==</span> <span class="kp">nil</span>   <span class="c1"># =&gt; true</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="array = [1, [2, 3]]
+dup = array.deep_dup
+dup[1][2] = 4
+array[1][2] == nil   # =&gt; true
+">Copy</button>
+</div>
+<div class="note"><p>Defined in <code><a href="https://github.com/rails/rails/tree/v7.0.4.2/activesupport/lib/active_support/core_ext/object/deep_dup.rb">active_support/core_ext/object/deep_dup.rb</a></code>.</p></div>
+
+<h4 id="grouping"><a class="anchorlink" href="#grouping">11.7 Grouping</a></h4>
+
+<h5 id="in-groups-of-number-fill-with-nil"><a class="anchorlink" href="#in-groups-of-number-fill-with-nil">11.7.1 <code>in_groups_of(number, fill_with = nil)</code></a></h5>
+
+<p>The method <a href="https://api.rubyonrails.org/v7.0.4.2/classes/Array.html#method-i-in_groups_of"><code>in_groups_of</code></a> splits an array into consecutive groups of a certain size. It returns an array with the groups:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">].</span><span class="nf">in_groups_of</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span> <span class="c1"># =&gt; [[1, 2], [3, nil]]</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="[1, 2, 3].in_groups_of(2) # =&gt; [[1, 2], [3, nil]]
+">Copy</button>
+</div>
+<p>or yields them in turn if a block is passed:</p>
+
+<div class="code_container">
+<pre><code class="highlight erb"><span class="cp">&lt;%</span> <span class="n">sample</span><span class="p">.</span><span class="nf">in_groups_of</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">c</span><span class="o">|</span> <span class="cp">%&gt;</span>
+  <span class="nt">&lt;tr&gt;</span>
+    <span class="nt">&lt;td&gt;</span><span class="cp">&lt;%=</span> <span class="n">a</span> <span class="cp">%&gt;</span><span class="nt">&lt;/td&gt;</span>
+    <span class="nt">&lt;td&gt;</span><span class="cp">&lt;%=</span> <span class="n">b</span> <span class="cp">%&gt;</span><span class="nt">&lt;/td&gt;</span>
+    <span class="nt">&lt;td&gt;</span><span class="cp">&lt;%=</span> <span class="n">c</span> <span class="cp">%&gt;</span><span class="nt">&lt;/td&gt;</span>
+  <span class="nt">&lt;/tr&gt;</span>
+<span class="cp">&lt;%</span> <span class="k">end</span> <span class="cp">%&gt;</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="&lt;% sample.in_groups_of(3) do |a, b, c| %&gt;
+  &lt;tr&gt;
+    &lt;td&gt;&lt;%= a %&gt;&lt;/td&gt;
+    &lt;td&gt;&lt;%= b %&gt;&lt;/td&gt;
+    &lt;td&gt;&lt;%= c %&gt;&lt;/td&gt;
+  &lt;/tr&gt;
+&lt;% end %&gt;
+">Copy</button>
+</div>
+<p>The first example shows how <code>in_groups_of</code> fills the last group with as many <code>nil</code> elements as needed to have the requested size. You can change this padding value using the second optional argument:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">].</span><span class="nf">in_groups_of</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="c1"># =&gt; [[1, 2], [3, 0]]</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="[1, 2, 3].in_groups_of(2, 0) # =&gt; [[1, 2], [3, 0]]
+">Copy</button>
+</div>
+<p>And you can tell the method not to fill the last group by passing <code>false</code>:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">].</span><span class="nf">in_groups_of</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="kp">false</span><span class="p">)</span> <span class="c1"># =&gt; [[1, 2], [3]]</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="[1, 2, 3].in_groups_of(2, false) # =&gt; [[1, 2], [3]]
+">Copy</button>
+</div>
+<p>As a consequence <code>false</code> can't be used as a padding value.</p>
+
+<div class="note"><p>Defined in <code><a href="https://github.com/rails/rails/tree/v7.0.4.2/activesupport/lib/active_support/core_ext/array/grouping.rb">active_support/core_ext/array/grouping.rb</a></code>.</p></div>
+
+<h5 id="in-groups-number-fill-with-nil"><a class="anchorlink" href="#in-groups-number-fill-with-nil">11.7.2 <code>in_groups(number, fill_with = nil)</code></a></h5>
+
+<p>The method <a href="https://api.rubyonrails.org/v7.0.4.2/classes/Array.html#method-i-in_groups"><code>in_groups</code></a> splits an array into a certain number of groups. The method returns an array with the groups:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="sx">%w(1 2 3 4 5 6 7)</span><span class="p">.</span><span class="nf">in_groups</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+<span class="c1"># =&gt; [["1", "2", "3"], ["4", "5", nil], ["6", "7", nil]]</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='%w(1 2 3 4 5 6 7).in_groups(3)
+# =&gt; [["1", "2", "3"], ["4", "5", nil], ["6", "7", nil]]
+'>Copy</button>
+</div>
+<p>or yields them in turn if a block is passed:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="sx">%w(1 2 3 4 5 6 7)</span><span class="p">.</span><span class="nf">in_groups</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span> <span class="p">{</span><span class="o">|</span><span class="n">group</span><span class="o">|</span> <span class="nb">p</span> <span class="n">group</span><span class="p">}</span>
+<span class="p">[</span><span class="s2">"1"</span><span class="p">,</span> <span class="s2">"2"</span><span class="p">,</span> <span class="s2">"3"</span><span class="p">]</span>
+<span class="p">[</span><span class="s2">"4"</span><span class="p">,</span> <span class="s2">"5"</span><span class="p">,</span> <span class="kp">nil</span><span class="p">]</span>
+<span class="p">[</span><span class="s2">"6"</span><span class="p">,</span> <span class="s2">"7"</span><span class="p">,</span> <span class="kp">nil</span><span class="p">]</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='%w(1 2 3 4 5 6 7).in_groups(3) {|group| p group}
+["1", "2", "3"]
+["4", "5", nil]
+["6", "7", nil]
+'>Copy</button>
+</div>
+<p>The examples above show that <code>in_groups</code> fills some groups with a trailing <code>nil</code> element as needed. A group can get at most one of these extra elements, the rightmost one if any. And the groups that have them are always the last ones.</p>
+
+<p>You can change this padding value using the second optional argument:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="sx">%w(1 2 3 4 5 6 7)</span><span class="p">.</span><span class="nf">in_groups</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="s2">"0"</span><span class="p">)</span>
+<span class="c1"># =&gt; [["1", "2", "3"], ["4", "5", "0"], ["6", "7", "0"]]</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='%w(1 2 3 4 5 6 7).in_groups(3, "0")
+# =&gt; [["1", "2", "3"], ["4", "5", "0"], ["6", "7", "0"]]
+'>Copy</button>
+</div>
+<p>And you can tell the method not to fill the smaller groups by passing <code>false</code>:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="sx">%w(1 2 3 4 5 6 7)</span><span class="p">.</span><span class="nf">in_groups</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="kp">false</span><span class="p">)</span>
+<span class="c1"># =&gt; [["1", "2", "3"], ["4", "5"], ["6", "7"]]</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='%w(1 2 3 4 5 6 7).in_groups(3, false)
+# =&gt; [["1", "2", "3"], ["4", "5"], ["6", "7"]]
+'>Copy</button>
+</div>
+<p>As a consequence <code>false</code> can't be used as a padding value.</p>
+
+<div class="note"><p>Defined in <code><a href="https://github.com/rails/rails/tree/v7.0.4.2/activesupport/lib/active_support/core_ext/array/grouping.rb">active_support/core_ext/array/grouping.rb</a></code>.</p></div>
+
+<h5 id="split-value-nil"><a class="anchorlink" href="#split-value-nil">11.7.3 <code>split(value = nil)</code></a></h5>
+
+<p>The method <a href="https://api.rubyonrails.org/v7.0.4.2/classes/Array.html#method-i-split"><code>split</code></a> divides an array by a separator and returns the resulting chunks.</p>
+
+<p>If a block is passed the separators are those elements of the array for which the block returns true:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="p">(</span><span class="o">-</span><span class="mi">5</span><span class="o">..</span><span class="mi">5</span><span class="p">).</span><span class="nf">to_a</span><span class="p">.</span><span class="nf">split</span> <span class="p">{</span> <span class="o">|</span><span class="n">i</span><span class="o">|</span> <span class="n">i</span><span class="p">.</span><span class="nf">multiple_of?</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span> <span class="p">}</span>
+<span class="c1"># =&gt; [[-5], [-3, -2, -1], [1, 2, 3], [5]]</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="(-5..5).to_a.split { |i| i.multiple_of?(4) }
+# =&gt; [[-5], [-3, -2, -1], [1, 2, 3], [5]]
+">Copy</button>
+</div>
+<p>Otherwise, the value received as argument, which defaults to <code>nil</code>, is the separator:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">5</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">"foo"</span><span class="p">,</span> <span class="s2">"bar"</span><span class="p">].</span><span class="nf">split</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<span class="c1"># =&gt; [[0], [-5], [], ["foo", "bar"]]</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='[0, 1, -5, 1, 1, "foo", "bar"].split(1)
+# =&gt; [[0], [-5], [], ["foo", "bar"]]
+'>Copy</button>
+</div>
+<div class="info"><p>Observe in the previous example that consecutive separators result in empty arrays.</p></div>
+
+<div class="note"><p>Defined in <code><a href="https://github.com/rails/rails/tree/v7.0.4.2/activesupport/lib/active_support/core_ext/array/grouping.rb">active_support/core_ext/array/grouping.rb</a></code>.</p></div>
+</body>
+</html>

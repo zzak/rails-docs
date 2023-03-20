@@ -1,0 +1,376 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html 
+     PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+  <head>
+    <title>Class: Class</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <link rel="stylesheet" href="../rdoc-style.css" type="text/css" media="screen" />
+
+    <script language="JavaScript" type="text/javascript">
+    // <![CDATA[
+
+        function toggleSource( id )
+        {
+          var elem
+          var link
+
+          if( document.getElementById )
+          {
+            elem = document.getElementById( id )
+            link = document.getElementById( "l_" + id )
+          }
+          else if ( document.all )
+          {
+            elem = eval( "document.all." + id )
+            link = eval( "document.all.l_" + id )
+          }
+          else
+            return false;
+
+          if( elem.style.display == "block" )
+          {
+            elem.style.display = "none"
+            link.innerHTML = "show source"
+          }
+          else
+          {
+            elem.style.display = "block"
+            link.innerHTML = "hide source"
+          }
+        }
+
+        function openCode( url )
+        {
+          window.open( url, "SOURCE_CODE", "resizable=yes,scrollbars=yes,toolbar=no,status=no,height=480,width=750" ).focus();
+        }
+      // ]]>
+    </script>
+  </head>
+
+  <body>
+    <table width="100%" border='0' cellpadding='0' cellspacing='0' class='banner'>
+    <tr><td>Ruby on Rails v3.0.9</td></tr>
+    <tr>
+  <td class="file-title"><span class="file-title-prefix">Class</span><br />Class</td>
+  <td align="right">
+    <table cellspacing="0" cellpadding="2">
+      <tr valign="top">
+        <td>In:</td>
+        <td>
+<a href="../files/activesupport/lib/active_support/core_ext/object/duplicable_rb.html">activesupport/lib/active_support/core_ext/object/duplicable.rb</a>:
+<a href="../files/activesupport/lib/active_support/core_ext/class/attribute_accessors_rb.html">activesupport/lib/active_support/core_ext/class/attribute_accessors.rb</a>:
+<a href="../files/activesupport/lib/active_support/core_ext/class/delegating_attributes_rb.html">activesupport/lib/active_support/core_ext/class/delegating_attributes.rb</a>:
+<a href="../files/activesupport/lib/active_support/core_ext/class/inheritable_attributes_rb.html">activesupport/lib/active_support/core_ext/class/inheritable_attributes.rb</a>:
+<a href="../files/activesupport/lib/active_support/core_ext/class/attribute_rb.html">activesupport/lib/active_support/core_ext/class/attribute.rb</a>:
+<a href="../files/activesupport/lib/active_support/core_ext/class/subclasses_rb.html">activesupport/lib/active_support/core_ext/class/subclasses.rb</a>:
+        </td>
+      </tr>
+      <tr>
+        <td>Parent:</td>
+        <td>
+
+      <a href="Object.html">Object</a>         </td>
+     </tr>
+         </table>
+        </td>
+        </tr>
+      </table>
+  <div id="bodyContent">
+  <div id="content">
+
+  <div class="description">
+<p>Extends the class object with class and instance accessors for class
+attributes, just like the native attr* accessors for instance attributes.</p>
+
+<p>Note that unlike <tt><a
+href="Class.html#method-i-class_attribute">class_attribute</a></tt>, if a
+subclass changes the value then that would also change the value for parent
+class. Similarly if parent class changes the value then that would change
+the value of subclasses too.</p>
+
+<pre>class Person
+  cattr_accessor :hair_colors
+end
+
+Person.hair_colors = [:brown, :black, :blonde, :red]
+Person.hair_colors     # =&gt; [:brown, :black, :blonde, :red]
+Person.new.hair_colors # =&gt; [:brown, :black, :blonde, :red]</pre>
+
+<p>To opt out of the instance writer method, pass :instance_writer =&gt;
+false. To opt out of the instance reader method, pass :instance_reader
+=&gt; false.</p>
+
+<pre>class Person
+  cattr_accessor :hair_colors, :instance_writer =&gt; false, :instance_reader =&gt; false
+end
+
+Person.new.hair_colors = [:brown]  # =&gt; NoMethodError
+Person.new.hair_colors             # =&gt; NoMethodError</pre>
+</div>
+
+
+  <div class="sectiontitle">Methods</div>
+  <ul>
+                <li><a href="#method-i-cattr_accessor">cattr_accessor</a></li>
+                <li><a href="#method-i-cattr_reader">cattr_reader</a></li>
+                <li><a href="#method-i-cattr_writer">cattr_writer</a></li>
+                <li><a href="#method-i-class_attribute">class_attribute</a></li>
+                <li><a href="#method-i-superclass_delegating_accessor">superclass_delegating_accessor</a></li>
+      </ul>
+
+
+
+
+                        
+    <div class="sectiontitle">
+      Public      Instance      methods
+    </div>
+
+          
+      <div class="method">
+        <div class="title">
+                      <a name="method-i-cattr_accessor"></a>
+            <b>cattr_accessor</b>(*syms, &blk)          
+        </div>
+
+                  <div class="description">
+                      </div>
+        
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('cattr_accessor_source')"
+                 id="l_method-i-cattr_accessor_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="cattr_accessor_source">
+<pre>
+  <span class="ruby-comment"># File activesupport/lib/active_support/core_ext/class/attribute_accessors.rb, line 75</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">cattr_accessor</span>(*<span class="ruby-identifier">syms</span>, &amp;<span class="ruby-identifier">blk</span>)
+  <span class="ruby-identifier">cattr_reader</span>(*<span class="ruby-identifier">syms</span>)
+  <span class="ruby-identifier">cattr_writer</span>(*<span class="ruby-identifier">syms</span>, &amp;<span class="ruby-identifier">blk</span>)
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+          
+      <div class="method">
+        <div class="title">
+                      <a name="method-i-cattr_reader"></a>
+            <b>cattr_reader</b>(*syms)          
+        </div>
+
+                  <div class="description">
+                      </div>
+        
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('cattr_reader_source')"
+                 id="l_method-i-cattr_reader_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="cattr_reader_source">
+<pre>
+  <span class="ruby-comment"># File activesupport/lib/active_support/core_ext/class/attribute_accessors.rb, line 28</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">cattr_reader</span>(*<span class="ruby-identifier">syms</span>)
+  <span class="ruby-identifier">options</span> = <span class="ruby-identifier">syms</span>.<span class="ruby-identifier">extract_options!</span>
+  <span class="ruby-identifier">syms</span>.<span class="ruby-identifier">each</span> <span class="ruby-keyword">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">sym</span><span class="ruby-operator">|</span>
+    <span class="ruby-identifier">class_eval</span>(<span class="ruby-string">        unless defined? @@#{sym}          @@#{sym} = nil        end        def self.#{sym}          @@#{sym}        end</span>, <span class="ruby-keyword">__FILE__</span>, <span class="ruby-keyword">__LINE__</span> <span class="ruby-operator">+</span> <span class="ruby-value">1</span>)
+
+    <span class="ruby-keyword">unless</span> <span class="ruby-identifier">options</span>[<span class="ruby-value">:instance_reader</span>] <span class="ruby-operator">==</span> <span class="ruby-keyword">false</span>
+      <span class="ruby-identifier">class_eval</span>(<span class="ruby-string">          def #{sym}            @@#{sym}          end</span>, <span class="ruby-keyword">__FILE__</span>, <span class="ruby-keyword">__LINE__</span> <span class="ruby-operator">+</span> <span class="ruby-value">1</span>)
+    <span class="ruby-keyword">end</span>
+  <span class="ruby-keyword">end</span>
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+          
+      <div class="method">
+        <div class="title">
+                      <a name="method-i-cattr_writer"></a>
+            <b>cattr_writer</b>(*syms)          
+        </div>
+
+                  <div class="description">
+                      </div>
+        
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('cattr_writer_source')"
+                 id="l_method-i-cattr_writer_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="cattr_writer_source">
+<pre>
+  <span class="ruby-comment"># File activesupport/lib/active_support/core_ext/class/attribute_accessors.rb, line 51</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">cattr_writer</span>(*<span class="ruby-identifier">syms</span>)
+  <span class="ruby-identifier">options</span> = <span class="ruby-identifier">syms</span>.<span class="ruby-identifier">extract_options!</span>
+  <span class="ruby-identifier">syms</span>.<span class="ruby-identifier">each</span> <span class="ruby-keyword">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">sym</span><span class="ruby-operator">|</span>
+    <span class="ruby-identifier">class_eval</span>(<span class="ruby-string">        unless defined? @@#{sym}          @@#{sym} = nil        end        def self.#{sym}=(obj)          @@#{sym} = obj        end</span>, <span class="ruby-keyword">__FILE__</span>, <span class="ruby-keyword">__LINE__</span> <span class="ruby-operator">+</span> <span class="ruby-value">1</span>)
+
+    <span class="ruby-keyword">unless</span> <span class="ruby-identifier">options</span>[<span class="ruby-value">:instance_writer</span>] <span class="ruby-operator">==</span> <span class="ruby-keyword">false</span>
+      <span class="ruby-identifier">class_eval</span>(<span class="ruby-string">          def #{sym}=(obj)            @@#{sym} = obj          end</span>, <span class="ruby-keyword">__FILE__</span>, <span class="ruby-keyword">__LINE__</span> <span class="ruby-operator">+</span> <span class="ruby-value">1</span>)
+    <span class="ruby-keyword">end</span>
+    <span class="ruby-keyword">self</span>.<span class="ruby-identifier">send</span>(<span class="ruby-node">&quot;#{sym}=&quot;</span>, <span class="ruby-keyword">yield</span>) <span class="ruby-keyword">if</span> <span class="ruby-identifier">block_given?</span>
+  <span class="ruby-keyword">end</span>
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+          
+      <div class="method">
+        <div class="title">
+                      <a name="method-i-class_attribute"></a>
+            <b>class_attribute</b>(*attrs)          
+        </div>
+
+                  <div class="description">
+            <p>Declare a class-level attribute whose value is inheritable by subclasses.
+Subclasses can change their own value and it will not impact parent class.</p>
+
+<pre>class Base
+  class_attribute :setting
+end
+
+class Subclass &lt; Base
+end
+
+Base.setting = true
+Subclass.setting            # =&gt; true
+Subclass.setting = false
+Subclass.setting            # =&gt; false
+Base.setting                # =&gt; true</pre>
+
+<p>In the above case as long as Subclass does not assign a value to setting by
+performing <tt>Subclass.setting = <em>something</em> </tt>,
+<tt>Subclass.setting</tt> would read value assigned to parent class. Once
+Subclass assigns a value then the value assigned by Subclass would be
+returned.</p>
+
+<p>This matches normal Ruby method inheritance: think of writing an attribute
+on a subclass as overriding the reader method. However, you need to be
+aware when using <tt><a
+href="Class.html#method-i-class_attribute">class_attribute</a></tt> with
+mutable structures as <tt><a href="Array.html">Array</a></tt> or <tt><a
+href="Hash.html">Hash</a></tt>. In such cases, you don’t want to do
+changes in places but use setters:</p>
+
+<pre>Base.setting = []
+Base.setting                # =&gt; []
+Subclass.setting            # =&gt; []
+
+# Appending in child changes both parent and child because it is the same object:
+Subclass.setting &lt;&lt; :foo
+Base.setting               # =&gt; [:foo]
+Subclass.setting           # =&gt; [:foo]
+
+# Use setters to not propagate changes:
+Base.setting = []
+Subclass.setting += [:foo]
+Base.setting               # =&gt; []
+Subclass.setting           # =&gt; [:foo]</pre>
+
+<p>For convenience, a query method is defined as well:</p>
+
+<pre>Subclass.setting?       # =&gt; false</pre>
+
+<p>Instances may overwrite the class value in the same way:</p>
+
+<pre>Base.setting = true
+object = Base.new
+object.setting          # =&gt; true
+object.setting = false
+object.setting          # =&gt; false
+Base.setting            # =&gt; true</pre>
+
+<p>To opt out of the instance writer method, pass :instance_writer =&gt;
+false.</p>
+
+<pre>object.setting = false  # =&gt; NoMethodError</pre>          </div>
+        
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('class_attribute_source')"
+                 id="l_method-i-class_attribute_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="class_attribute_source">
+<pre>
+  <span class="ruby-comment"># File activesupport/lib/active_support/core_ext/class/attribute.rb, line 62</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">class_attribute</span>(*<span class="ruby-identifier">attrs</span>)
+  <span class="ruby-identifier">instance_writer</span> = <span class="ruby-operator">!</span><span class="ruby-identifier">attrs</span>.<span class="ruby-identifier">last</span>.<span class="ruby-identifier">is_a?</span>(<span class="ruby-constant">Hash</span>) <span class="ruby-operator">||</span> <span class="ruby-identifier">attrs</span>.<span class="ruby-identifier">pop</span>[<span class="ruby-value">:instance_writer</span>]
+
+  <span class="ruby-identifier">attrs</span>.<span class="ruby-identifier">each</span> <span class="ruby-keyword">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">name</span><span class="ruby-operator">|</span>
+    <span class="ruby-identifier">class_eval</span> <span class="ruby-string">        def self.#{name}() nil end        def self.#{name}?() !!#{name} end        def self.#{name}=(val)          singleton_class.class_eval do            remove_possible_method(:#{name})            define_method(:#{name}) { val }          end          val        end        def #{name}          defined?(@#{name}) ? @#{name} : singleton_class.#{name}        end        def #{name}?          !!#{name}        end</span>, <span class="ruby-keyword">__FILE__</span>, <span class="ruby-keyword">__LINE__</span> <span class="ruby-operator">+</span> <span class="ruby-value">1</span>
+
+    <span class="ruby-identifier">attr_writer</span> <span class="ruby-identifier">name</span> <span class="ruby-keyword">if</span> <span class="ruby-identifier">instance_writer</span>
+  <span class="ruby-keyword">end</span>
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+          
+      <div class="method">
+        <div class="title">
+                      <a name="method-i-superclass_delegating_accessor"></a>
+            <b>superclass_delegating_accessor</b>(name, options = {})          
+        </div>
+
+                  <div class="description">
+                      </div>
+        
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('superclass_delegating_accessor_source')"
+                 id="l_method-i-superclass_delegating_accessor_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="superclass_delegating_accessor_source">
+<pre>
+  <span class="ruby-comment"># File activesupport/lib/active_support/core_ext/class/delegating_attributes.rb, line 7</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">superclass_delegating_accessor</span>(<span class="ruby-identifier">name</span>, <span class="ruby-identifier">options</span> = {})
+  <span class="ruby-comment"># Create private _name and _name= methods that can still be used if the public</span>
+  <span class="ruby-comment"># methods are overridden. This allows</span>
+  <span class="ruby-identifier">_superclass_delegating_accessor</span>(<span class="ruby-node">&quot;_#{name}&quot;</span>)
+
+  <span class="ruby-comment"># Generate the public methods name, name=, and name?</span>
+  <span class="ruby-comment"># These methods dispatch to the private _name, and _name= methods, making them</span>
+  <span class="ruby-comment"># overridable</span>
+  <span class="ruby-identifier">singleton_class</span>.<span class="ruby-identifier">send</span>(<span class="ruby-value">:define_method</span>, <span class="ruby-identifier">name</span>) { <span class="ruby-identifier">send</span>(<span class="ruby-node">&quot;_#{name}&quot;</span>) }
+  <span class="ruby-identifier">singleton_class</span>.<span class="ruby-identifier">send</span>(<span class="ruby-value">:define_method</span>, <span class="ruby-node">&quot;#{name}?&quot;</span>) { <span class="ruby-operator">!</span><span class="ruby-operator">!</span><span class="ruby-identifier">send</span>(<span class="ruby-node">&quot;_#{name}&quot;</span>) }
+  <span class="ruby-identifier">singleton_class</span>.<span class="ruby-identifier">send</span>(<span class="ruby-value">:define_method</span>, <span class="ruby-node">&quot;#{name}=&quot;</span>) { <span class="ruby-operator">|</span><span class="ruby-identifier">value</span><span class="ruby-operator">|</span> <span class="ruby-identifier">send</span>(<span class="ruby-node">&quot;_#{name}=&quot;</span>, <span class="ruby-identifier">value</span>) }
+
+  <span class="ruby-comment"># If an instance_reader is needed, generate methods for name and name= on the</span>
+  <span class="ruby-comment"># class itself, so instances will be able to see them</span>
+  <span class="ruby-identifier">define_method</span>(<span class="ruby-identifier">name</span>) { <span class="ruby-identifier">send</span>(<span class="ruby-node">&quot;_#{name}&quot;</span>) } <span class="ruby-keyword">if</span> <span class="ruby-identifier">options</span>[<span class="ruby-value">:instance_reader</span>] <span class="ruby-operator">!=</span> <span class="ruby-keyword">false</span>
+  <span class="ruby-identifier">define_method</span>(<span class="ruby-node">&quot;#{name}?&quot;</span>) { <span class="ruby-operator">!</span><span class="ruby-operator">!</span><span class="ruby-identifier">send</span>(<span class="ruby-node">&quot;#{name}&quot;</span>) } <span class="ruby-keyword">if</span> <span class="ruby-identifier">options</span>[<span class="ruby-value">:instance_reader</span>] <span class="ruby-operator">!=</span> <span class="ruby-keyword">false</span>
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+              </div>
+  </div>
+  </body>
+</html>

@@ -1,0 +1,61 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>6 Uploading Files</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v6.1.7.3/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="uploading-files"><a class="anchorlink" href="#uploading-files">6 Uploading Files</a></h3>
+<p>A common task is uploading some sort of file, whether it's a picture of a person or a CSV file containing data to process. File upload fields can be rendered with the <a href="https://api.rubyonrails.org/v6.1.7.3/classes/ActionView/Helpers/FormBuilder.html#method-i-file_field"><code>file_field</code></a> helper. The most important thing to remember with file uploads is that the rendered form's <code>enctype</code> attribute <strong>must</strong> be set to "multipart/form-data". If you use <code>form_with</code> with <code>:model</code>, this is done automatically:</p>
+
+<div class="code_container">
+<pre><code class="highlight erb"><span class="cp">&lt;%=</span> <span class="n">form_with</span> <span class="ss">model: </span><span class="vi">@person</span> <span class="k">do</span> <span class="o">|</span><span class="n">form</span><span class="o">|</span> <span class="cp">%&gt;</span>
+  <span class="cp">&lt;%=</span> <span class="n">form</span><span class="p">.</span><span class="nf">file_field</span> <span class="ss">:picture</span> <span class="cp">%&gt;</span>
+<span class="cp">&lt;%</span> <span class="k">end</span> <span class="cp">%&gt;</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-6b12130dcd04733a8132b7808ca2618f">&lt;%= form_with model: @person do |form| %&gt;
+  &lt;%= form.file_field :picture %&gt;
+&lt;% end %&gt;
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-6b12130dcd04733a8132b7808ca2618f">Copy</button>
+</div>
+<p>If you use <code>form_with</code> without <code>:model</code>, you must set it yourself:</p>
+
+<div class="code_container">
+<pre><code class="highlight erb"><span class="cp">&lt;%=</span> <span class="n">form_with</span> <span class="ss">url: </span><span class="s2">"/uploads"</span><span class="p">,</span> <span class="ss">multipart: </span><span class="kp">true</span> <span class="k">do</span> <span class="o">|</span><span class="n">form</span><span class="o">|</span> <span class="cp">%&gt;</span>
+  <span class="cp">&lt;%=</span> <span class="n">form</span><span class="p">.</span><span class="nf">file_field</span> <span class="ss">:picture</span> <span class="cp">%&gt;</span>
+<span class="cp">&lt;%</span> <span class="k">end</span> <span class="cp">%&gt;</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-155775b3301b88dbdb0034c7bbab7f0d">&lt;%= form_with url: "/uploads", multipart: true do |form| %&gt;
+  &lt;%= form.file_field :picture %&gt;
+&lt;% end %&gt;
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-155775b3301b88dbdb0034c7bbab7f0d">Copy</button>
+</div>
+<p>Note that, in accordance with <code>form_with</code> conventions, the field names in the two forms above will also differ.  That is, the field name in the first form will be <code>person[picture]</code> (accessible via <code>params[:person][:picture]</code>), and the field name in the second form will be just <code>picture</code> (accessible via <code>params[:picture]</code>).</p>
+
+<h4 id="what-gets-uploaded"><a class="anchorlink" href="#what-gets-uploaded">6.1 What Gets Uploaded</a></h4>
+
+<p>The object in the <code>params</code> hash is an instance of <a href="https://api.rubyonrails.org/v6.1.7.3/classes/ActionDispatch/Http/UploadedFile.html"><code>ActionDispatch::Http::UploadedFile</code></a>. The following snippet saves the uploaded file in <code>#{Rails.root}/public/uploads</code> under the same name as the original file.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">def</span> <span class="nf">upload</span>
+  <span class="n">uploaded_file</span> <span class="o">=</span> <span class="n">params</span><span class="p">[</span><span class="ss">:picture</span><span class="p">]</span>
+  <span class="no">File</span><span class="p">.</span><span class="nf">open</span><span class="p">(</span><span class="no">Rails</span><span class="p">.</span><span class="nf">root</span><span class="p">.</span><span class="nf">join</span><span class="p">(</span><span class="s1">'public'</span><span class="p">,</span> <span class="s1">'uploads'</span><span class="p">,</span> <span class="n">uploaded_file</span><span class="p">.</span><span class="nf">original_filename</span><span class="p">),</span> <span class="s1">'wb'</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">file</span><span class="o">|</span>
+    <span class="n">file</span><span class="p">.</span><span class="nf">write</span><span class="p">(</span><span class="n">uploaded_file</span><span class="p">.</span><span class="nf">read</span><span class="p">)</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-a82b6fb90ec4965939972e2dd621c34e">def upload
+  uploaded_file = params[:picture]
+  File.open(Rails.root.join('public', 'uploads', uploaded_file.original_filename), 'wb') do |file|
+    file.write(uploaded_file.read)
+  end
+end
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-a82b6fb90ec4965939972e2dd621c34e">Copy</button>
+</div>
+<p>Once a file has been uploaded, there are a multitude of potential tasks, ranging from where to store the files (on Disk, Amazon S3, etc), associating them with models, resizing image files, and generating thumbnails, etc. <a href="active_storage_overview.html">Active Storage</a> is designed to assist with these tasks.</p>
+</body>
+</html>

@@ -1,0 +1,49 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>3 Receiving Emails</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v5.1.7/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="receiving-emails">3 Receiving Emails</h3>
+<p>Receiving and parsing emails with Action Mailer can be a rather complex
+endeavor. Before your email reaches your Rails app, you would have had to
+configure your system to somehow forward emails to your app, which needs to be
+listening for that. So, to receive emails in your Rails app you'll need to:</p>
+<ul>
+<li>Implement a <code>receive</code> method in your mailer.</li>
+<li>Configure your email server to forward emails from the address(es) you would
+like your app to receive to <code>/path/to/app/bin/rails runner
+'UserMailer.receive(STDIN.read)'</code>.</li>
+</ul>
+<p>Once a method called <code>receive</code> is defined in any mailer, Action Mailer will
+parse the raw incoming email into an email object, decode it, instantiate a new
+mailer, and pass the email object to the mailer <code>receive</code> instance
+method. Here's an example:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class UserMailer &lt; ApplicationMailer
+  def receive(email)
+    page = Page.find_by(address: email.to.first)
+    page.emails.create(
+      subject: email.subject,
+      body: email.body
+    )
+
+    if email.has_attachments?
+      email.attachments.each do |attachment|
+        page.attachments.create({
+          file: attachment,
+          description: email.subject
+        })
+      end
+    end
+  end
+end
+
+</pre>
+</div>
+</body>
+</html>

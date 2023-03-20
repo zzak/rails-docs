@@ -1,0 +1,318 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>2 Constants Refresher</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v5.0.7.2/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="constants-refresher">2 Constants Refresher</h3>
+<p>While constants are trivial in most programming languages, they are a rich
+topic in Ruby.</p>
+
+<p>It is beyond the scope of this guide to document Ruby constants, but we are
+nevertheless going to highlight a few key topics. Truly grasping the following
+sections is instrumental to understanding constant autoloading and reloading.</p>
+
+<h4 id="nesting">2.1 Nesting</h4>
+
+<p>Class and module definitions can be nested to create namespaces:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+module XML
+  class SAXParser
+    # (1)
+  end
+end
+
+</pre>
+</div>
+<p>The <em>nesting</em> at any given place is the collection of enclosing nested class and
+module objects outwards. The nesting at any given place can be inspected with
+<code>Module.nesting</code>. For example, in the previous example, the nesting at
+(1) is</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+[XML::SAXParser, XML]
+
+</pre>
+</div>
+<p>It is important to understand that the nesting is composed of class and module
+<em>objects</em>, it has nothing to do with the constants used to access them, and is
+also unrelated to their names.</p>
+
+<p>For instance, while this definition is similar to the previous one:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class XML::SAXParser
+  # (2)
+end
+
+</pre>
+</div>
+<p>the nesting in (2) is different:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+[XML::SAXParser]
+
+</pre>
+</div>
+<p><code>XML</code> does not belong to it.</p>
+
+<p>We can see in this example that the name of a class or module that belongs to a
+certain nesting does not necessarily correlate with the namespaces at the spot.</p>
+
+<p>Even more, they are totally independent, take for instance</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+module X
+  module Y
+  end
+end
+
+module A
+  module B
+  end
+end
+
+module X::Y
+  module A::B
+    # (3)
+  end
+end
+
+</pre>
+</div>
+<p>The nesting in (3) consists of two module objects:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+[A::B, X::Y]
+
+</pre>
+</div>
+<p>So, it not only doesn't end in <code>A</code>, which does not even belong to the nesting,
+but it also contains <code>X::Y</code>, which is independent from <code>A::B</code>.</p>
+
+<p>The nesting is an internal stack maintained by the interpreter, and it gets
+modified according to these rules:</p>
+<ul>
+<li>The class object following a <code>class</code> keyword gets pushed when its body is
+executed, and popped after it.</li>
+<li>The module object following a <code>module</code> keyword gets pushed when its body is
+executed, and popped after it.</li>
+<li>A singleton class opened with <code>class &lt;&lt; object</code> gets pushed, and popped later.</li>
+<li>When <code>instance_eval</code> is called using a string argument,
+the singleton class of the receiver is pushed to the nesting of the eval'ed
+code. When <code>class_eval</code> or <code>module_eval</code> is called using a string argument,
+the receiver is pushed to the nesting of the eval'ed code.</li>
+<li>The nesting at the top-level of code interpreted by <code>Kernel#load</code> is empty
+unless the <code>load</code> call receives a true value as second argument, in which case
+a newly created anonymous module is pushed by Ruby.</li>
+</ul>
+<p>It is interesting to observe that blocks do not modify the stack. In particular
+the blocks that may be passed to <code>Class.new</code> and <code>Module.new</code> do not get the
+class or module being defined pushed to their nesting. That's one of the
+differences between defining classes and modules in one way or another.</p>
+
+<h4 id="class-and-module-definitions-are-constant-assignments">2.2 Class and Module Definitions are Constant Assignments</h4>
+
+<p>Let's suppose the following snippet creates a class (rather than reopening it):</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class C
+end
+
+</pre>
+</div>
+<p>Ruby creates a constant <code>C</code> in <code>Object</code> and stores in that constant a class
+object. The name of the class instance is "C", a string, named after the
+constant.</p>
+
+<p>That is,</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class Project &lt; ApplicationRecord
+end
+
+</pre>
+</div>
+<p>performs a constant assignment equivalent to</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+Project = Class.new(ApplicationRecord)
+
+</pre>
+</div>
+<p>including setting the name of the class as a side-effect:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+Project.name # =&gt; "Project"
+
+</pre>
+</div>
+<p>Constant assignment has a special rule to make that happen: if the object
+being assigned is an anonymous class or module, Ruby sets the object's name to
+the name of the constant.</p>
+
+<div class="info"><p>From then on, what happens to the constant and the instance does not
+matter. For example, the constant could be deleted, the class object could be
+assigned to a different constant, be stored in no constant anymore, etc. Once
+the name is set, it doesn't change.</p></div>
+
+<p>Similarly, module creation using the <code>module</code> keyword as in</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+module Admin
+end
+
+</pre>
+</div>
+<p>performs a constant assignment equivalent to</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+Admin = Module.new
+
+</pre>
+</div>
+<p>including setting the name as a side-effect:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+Admin.name # =&gt; "Admin"
+
+</pre>
+</div>
+<div class="warning"><p>The execution context of a block passed to <code>Class.new</code> or <code>Module.new</code>
+is not entirely equivalent to the one of the body of the definitions using the
+<code>class</code> and <code>module</code> keywords. But both idioms result in the same constant
+assignment.</p></div>
+
+<p>Thus, when one informally says "the <code>String</code> class", that really means: the
+class object stored in the constant called "String" in the class object stored
+in the <code>Object</code> constant. <code>String</code> is otherwise an ordinary Ruby constant and
+everything related to constants such as resolution algorithms applies to it.</p>
+
+<p>Likewise, in the controller</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class PostsController &lt; ApplicationController
+  def index
+    @posts = Post.all
+  end
+end
+
+</pre>
+</div>
+<p><code>Post</code> is not syntax for a class. Rather, <code>Post</code> is a regular Ruby constant. If
+all is good, the constant is evaluated to an object that responds to <code>all</code>.</p>
+
+<p>That is why we talk about <em>constant</em> autoloading, Rails has the ability to
+load constants on the fly.</p>
+
+<h4 id="constants-are-stored-in-modules">2.3 Constants are Stored in Modules</h4>
+
+<p>Constants belong to modules in a very literal sense. Classes and modules have
+a constant table; think of it as a hash table.</p>
+
+<p>Let's analyze an example to really understand what that means. While common
+abuses of language like "the <code>String</code> class" are convenient, the exposition is
+going to be precise here for didactic purposes.</p>
+
+<p>Let's consider the following module definition:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+module Colors
+  RED = '0xff0000'
+end
+
+</pre>
+</div>
+<p>First, when the <code>module</code> keyword is processed, the interpreter creates a new
+entry in the constant table of the class object stored in the <code>Object</code> constant.
+Said entry associates the name "Colors" to a newly created module object.
+Furthermore, the interpreter sets the name of the new module object to be the
+string "Colors".</p>
+
+<p>Later, when the body of the module definition is interpreted, a new entry is
+created in the constant table of the module object stored in the <code>Colors</code>
+constant. That entry maps the name "RED" to the string "0xff0000".</p>
+
+<p>In particular, <code>Colors::RED</code> is totally unrelated to any other <code>RED</code> constant
+that may live in any other class or module object. If there were any, they
+would have separate entries in their respective constant tables.</p>
+
+<p>Pay special attention in the previous paragraphs to the distinction between
+class and module objects, constant names, and value objects associated to them
+in constant tables.</p>
+
+<h4 id="resolution-algorithms">2.4 Resolution Algorithms</h4>
+
+<h5 id="resolution-algorithm-for-relative-constants">2.4.1 Resolution Algorithm for Relative Constants</h5>
+
+<p>At any given place in the code, let's define <em>cref</em> to be the first element of
+the nesting if it is not empty, or <code>Object</code> otherwise.</p>
+
+<p>Without getting too much into the details, the resolution algorithm for relative
+constant references goes like this:</p>
+<ol>
+<li>If the nesting is not empty the constant is looked up in its elements and in
+order. The ancestors of those elements are ignored.</li>
+<li>If not found, then the algorithm walks up the ancestor chain of the cref.</li>
+<li>If not found and the cref is a module, the constant is looked up in <code>Object</code>.</li>
+<li>If not found, <code>const_missing</code> is invoked on the cref. The default
+implementation of <code>const_missing</code> raises <code>NameError</code>, but it can be overridden.</li>
+</ol>
+<p>Rails autoloading <strong>does not emulate this algorithm</strong>, but its starting point is
+the name of the constant to be autoloaded, and the cref. See more in <a href="#autoloading-algorithms-relative-references">Relative
+References</a>.</p>
+
+<h5 id="resolution-algorithm-for-qualified-constants">2.4.2 Resolution Algorithm for Qualified Constants</h5>
+
+<p>Qualified constants look like this:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+Billing::Invoice
+
+</pre>
+</div>
+<p><code>Billing::Invoice</code> is composed of two constants: <code>Billing</code> is relative and is
+resolved using the algorithm of the previous section.</p>
+
+<div class="info"><p>Leading colons would make the first segment absolute rather than
+relative: <code>::Billing::Invoice</code>. That would force <code>Billing</code> to be looked up
+only as a top-level constant.</p></div>
+
+<p><code>Invoice</code> on the other hand is qualified by <code>Billing</code> and we are going to see
+its resolution next. Let's define <em>parent</em> to be that qualifying class or module
+object, that is, <code>Billing</code> in the example above. The algorithm for qualified
+constants goes like this:</p>
+<ol>
+<li>The constant is looked up in the parent and its ancestors.</li>
+<li>If the lookup fails, <code>const_missing</code> is invoked in the parent. The default
+implementation of <code>const_missing</code> raises <code>NameError</code>, but it can be overridden.</li>
+</ol>
+<p>As you see, this algorithm is simpler than the one for relative constants. In
+particular, the nesting plays no role here, and modules are not special-cased,
+if neither they nor their ancestors have the constants, <code>Object</code> is <strong>not</strong>
+checked.</p>
+
+<p>Rails autoloading <strong>does not emulate this algorithm</strong>, but its starting point is
+the name of the constant to be autoloaded, and the parent. See more in
+<a href="#autoloading-algorithms-qualified-references">Qualified References</a>.</p>
+</body>
+</html>

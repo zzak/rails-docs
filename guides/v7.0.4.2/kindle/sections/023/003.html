@@ -1,0 +1,799 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>4 Overview of the I18n API Features</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v7.0.4.2/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="overview-of-the-i18n-api-features"><a class="anchorlink" href="#overview-of-the-i18n-api-features">4 Overview of the I18n API Features</a></h3>
+<p>You should have a good understanding of using the i18n library now and know how
+to internationalize a basic Rails application. In the following chapters, we'll
+cover its features in more depth.</p>
+
+<p>These chapters will show examples using both the <code>I18n.translate</code> method as well as the <a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActionView/Helpers/TranslationHelper.html#method-i-translate"><code>translate</code> view helper method</a> (noting the additional feature provide by the view helper method).</p>
+
+<p>Covered are features like these:</p>
+<ul>
+<li>looking up translations</li>
+<li>interpolating data into translations</li>
+<li>pluralizing translations</li>
+<li>using safe HTML translations (view helper method only)</li>
+<li>localizing dates, numbers, currency, etc.</li>
+</ul>
+<h4 id="looking-up-translations"><a class="anchorlink" href="#looking-up-translations">4.1 Looking up Translations</a></h4>
+
+<h5 id="basic-lookup-scopes-and-nested-keys"><a class="anchorlink" href="#basic-lookup-scopes-and-nested-keys">4.1.1 Basic Lookup, Scopes, and Nested Keys</a></h5>
+
+<p>Translations are looked up by keys which can be both Symbols or Strings, so these calls are equivalent:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="no">I18n</span><span class="p">.</span><span class="nf">t</span> <span class="ss">:message</span>
+<span class="no">I18n</span><span class="p">.</span><span class="nf">t</span> <span class="s1">'message'</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="I18n.t :message
+I18n.t 'message'
+">Copy</button>
+</div>
+<p>The <code>translate</code> method also takes a <code>:scope</code> option which can contain one or more additional keys that will be used to specify a "namespace" or scope for a translation key:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="no">I18n</span><span class="p">.</span><span class="nf">t</span> <span class="ss">:record_invalid</span><span class="p">,</span> <span class="ss">scope: </span><span class="p">[</span><span class="ss">:activerecord</span><span class="p">,</span> <span class="ss">:errors</span><span class="p">,</span> <span class="ss">:messages</span><span class="p">]</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="I18n.t :record_invalid, scope: [:activerecord, :errors, :messages]
+">Copy</button>
+</div>
+<p>This looks up the <code>:record_invalid</code> message in the Active Record error messages.</p>
+
+<p>Additionally, both the key and scopes can be specified as dot-separated keys as in:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="no">I18n</span><span class="p">.</span><span class="nf">translate</span> <span class="s2">"activerecord.errors.messages.record_invalid"</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='I18n.translate "activerecord.errors.messages.record_invalid"
+'>Copy</button>
+</div>
+<p>Thus the following calls are equivalent:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="no">I18n</span><span class="p">.</span><span class="nf">t</span> <span class="s1">'activerecord.errors.messages.record_invalid'</span>
+<span class="no">I18n</span><span class="p">.</span><span class="nf">t</span> <span class="s1">'errors.messages.record_invalid'</span><span class="p">,</span> <span class="ss">scope: :activerecord</span>
+<span class="no">I18n</span><span class="p">.</span><span class="nf">t</span> <span class="ss">:record_invalid</span><span class="p">,</span> <span class="ss">scope: </span><span class="s1">'activerecord.errors.messages'</span>
+<span class="no">I18n</span><span class="p">.</span><span class="nf">t</span> <span class="ss">:record_invalid</span><span class="p">,</span> <span class="ss">scope: </span><span class="p">[</span><span class="ss">:activerecord</span><span class="p">,</span> <span class="ss">:errors</span><span class="p">,</span> <span class="ss">:messages</span><span class="p">]</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="I18n.t 'activerecord.errors.messages.record_invalid'
+I18n.t 'errors.messages.record_invalid', scope: :activerecord
+I18n.t :record_invalid, scope: 'activerecord.errors.messages'
+I18n.t :record_invalid, scope: [:activerecord, :errors, :messages]
+">Copy</button>
+</div>
+<h5 id="defaults"><a class="anchorlink" href="#defaults">4.1.2 Defaults</a></h5>
+
+<p>When a <code>:default</code> option is given, its value will be returned if the translation is missing:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="no">I18n</span><span class="p">.</span><span class="nf">t</span> <span class="ss">:missing</span><span class="p">,</span> <span class="ss">default: </span><span class="s1">'Not here'</span>
+<span class="c1"># =&gt; 'Not here'</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="I18n.t :missing, default: 'Not here'
+# =&gt; 'Not here'
+">Copy</button>
+</div>
+<p>If the <code>:default</code> value is a Symbol, it will be used as a key and translated. One can provide multiple values as default. The first one that results in a value will be returned.</p>
+
+<p>E.g., the following first tries to translate the key <code>:missing</code> and then the key <code>:also_missing.</code> As both do not yield a result, the string "Not here" will be returned:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="no">I18n</span><span class="p">.</span><span class="nf">t</span> <span class="ss">:missing</span><span class="p">,</span> <span class="ss">default: </span><span class="p">[</span><span class="ss">:also_missing</span><span class="p">,</span> <span class="s1">'Not here'</span><span class="p">]</span>
+<span class="c1"># =&gt; 'Not here'</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="I18n.t :missing, default: [:also_missing, 'Not here']
+# =&gt; 'Not here'
+">Copy</button>
+</div>
+<h5 id="bulk-and-namespace-lookup"><a class="anchorlink" href="#bulk-and-namespace-lookup">4.1.3 Bulk and Namespace Lookup</a></h5>
+
+<p>To look up multiple translations at once, an array of keys can be passed:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="no">I18n</span><span class="p">.</span><span class="nf">t</span> <span class="p">[</span><span class="ss">:odd</span><span class="p">,</span> <span class="ss">:even</span><span class="p">],</span> <span class="ss">scope: </span><span class="s1">'errors.messages'</span>
+<span class="c1"># =&gt; ["must be odd", "must be even"]</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="I18n.t [:odd, :even], scope: 'errors.messages'
+# =&gt; [&quot;must be odd&quot;, &quot;must be even&quot;]
+">Copy</button>
+</div>
+<p>Also, a key can translate to a (potentially nested) hash of grouped translations. E.g., one can receive <em>all</em> Active Record error messages as a Hash with:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="no">I18n</span><span class="p">.</span><span class="nf">t</span> <span class="s1">'errors.messages'</span>
+<span class="c1"># =&gt; {:inclusion=&gt;"is not included in the list", :exclusion=&gt; ... }</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="I18n.t 'errors.messages'
+# =&gt; {:inclusion=&gt;&quot;is not included in the list&quot;, :exclusion=&gt; ... }
+">Copy</button>
+</div>
+<p>If you want to perform interpolation on a bulk hash of translations, you need to pass <code>deep_interpolation: true</code> as a parameter. When you have the following dictionary:</p>
+
+<div class="code_container">
+<pre><code class="highlight yaml"><span class="na">en</span><span class="pi">:</span>
+  <span class="na">welcome</span><span class="pi">:</span>
+    <span class="na">title</span><span class="pi">:</span> <span class="s2">"</span><span class="s">Welcome!"</span>
+    <span class="na">content</span><span class="pi">:</span> <span class="s2">"</span><span class="s">Welcome</span><span class="nv"> </span><span class="s">to</span><span class="nv"> </span><span class="s">the</span><span class="nv"> </span><span class="s">%{app_name}"</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='en:
+  welcome:
+    title: "Welcome!"
+    content: "Welcome to the %{app_name}"
+'>Copy</button>
+</div>
+<p>then the nested interpolation will be ignored without the setting:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="no">I18n</span><span class="p">.</span><span class="nf">t</span> <span class="s1">'welcome'</span><span class="p">,</span> <span class="ss">app_name: </span><span class="s1">'book store'</span>
+<span class="c1"># =&gt; {:title=&gt;"Welcome!", :content=&gt;"Welcome to the %{app_name}"}</span>
+
+<span class="no">I18n</span><span class="p">.</span><span class="nf">t</span> <span class="s1">'welcome'</span><span class="p">,</span> <span class="ss">deep_interpolation: </span><span class="kp">true</span><span class="p">,</span> <span class="ss">app_name: </span><span class="s1">'book store'</span>
+<span class="c1"># =&gt; {:title=&gt;"Welcome!", :content=&gt;"Welcome to the book store"}</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="I18n.t 'welcome', app_name: 'book store'
+# =&gt; {:title=&gt;&quot;Welcome!&quot;, :content=&gt;&quot;Welcome to the %{app_name}&quot;}
+
+I18n.t 'welcome', deep_interpolation: true, app_name: 'book store'
+# =&gt; {:title=&gt;&quot;Welcome!&quot;, :content=&gt;&quot;Welcome to the book store&quot;}
+">Copy</button>
+</div>
+<h5 id="lazy-lookup"><a class="anchorlink" href="#lazy-lookup">4.1.4 "Lazy" Lookup</a></h5>
+
+<p>Rails implements a convenient way to look up the locale inside <em>views</em>. When you have the following dictionary:</p>
+
+<div class="code_container">
+<pre><code class="highlight yaml"><span class="na">es</span><span class="pi">:</span>
+  <span class="na">books</span><span class="pi">:</span>
+    <span class="na">index</span><span class="pi">:</span>
+      <span class="na">title</span><span class="pi">:</span> <span class="s2">"</span><span class="s">Título"</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='es:
+  books:
+    index:
+      title: "Título"
+'>Copy</button>
+</div>
+<p>you can look up the <code>books.index.title</code> value <strong>inside</strong> <code>app/views/books/index.html.erb</code> template like this (note the dot):</p>
+
+<div class="code_container">
+<pre><code class="highlight erb"><span class="cp">&lt;%=</span> <span class="n">t</span> <span class="s1">'.title'</span> <span class="cp">%&gt;</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="&lt;%= t '.title' %&gt;
+">Copy</button>
+</div>
+<div class="note"><p>Automatic translation scoping by partial is only available from the <code>translate</code> view helper method.</p></div>
+
+<p>"Lazy" lookup can also be used in controllers:</p>
+
+<div class="code_container">
+<pre><code class="highlight yaml"><span class="na">en</span><span class="pi">:</span>
+  <span class="na">books</span><span class="pi">:</span>
+    <span class="na">create</span><span class="pi">:</span>
+      <span class="na">success</span><span class="pi">:</span> <span class="s">Book created!</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="en:
+  books:
+    create:
+      success: Book created!
+">Copy</button>
+</div>
+<p>This is useful for setting flash messages for instance:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">BooksController</span> <span class="o">&lt;</span> <span class="no">ApplicationController</span>
+  <span class="k">def</span> <span class="nf">create</span>
+    <span class="c1"># ...</span>
+    <span class="n">redirect_to</span> <span class="n">books_url</span><span class="p">,</span> <span class="ss">notice: </span><span class="n">t</span><span class="p">(</span><span class="s1">'.success'</span><span class="p">)</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="class BooksController &lt; ApplicationController
+  def create
+    # ...
+    redirect_to books_url, notice: t('.success')
+  end
+end
+">Copy</button>
+</div>
+<h4 id="pluralization"><a class="anchorlink" href="#pluralization">4.2 Pluralization</a></h4>
+
+<p>In many languages — including English — there are only two forms, a singular and a plural, for
+a given string, e.g. "1 message" and "2 messages". Other languages (<a href="http://www.unicode.org/cldr/charts/latest/supplemental/language_plural_rules.html#ar">Arabic</a>, <a href="http://www.unicode.org/cldr/charts/latest/supplemental/language_plural_rules.html#ja">Japanese</a>, <a href="http://www.unicode.org/cldr/charts/latest/supplemental/language_plural_rules.html#ru">Russian</a> and many more) have different grammars that have additional or fewer <a href="http://cldr.unicode.org/index/cldr-spec/plural-rules">plural forms</a>. Thus, the I18n API provides a flexible pluralization feature.</p>
+
+<p>The <code>:count</code> interpolation variable has a special role in that it both is interpolated to the translation and used to pick a pluralization from the translations according to the pluralization rules defined in the
+pluralization backend. By default, only the English pluralization rules are applied.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="no">I18n</span><span class="p">.</span><span class="nf">backend</span><span class="p">.</span><span class="nf">store_translations</span> <span class="ss">:en</span><span class="p">,</span> <span class="ss">inbox: </span><span class="p">{</span>
+  <span class="ss">zero: </span><span class="s1">'no messages'</span><span class="p">,</span> <span class="c1"># optional</span>
+  <span class="ss">one: </span><span class="s1">'one message'</span><span class="p">,</span>
+  <span class="ss">other: </span><span class="s1">'%{count} messages'</span>
+<span class="p">}</span>
+<span class="no">I18n</span><span class="p">.</span><span class="nf">translate</span> <span class="ss">:inbox</span><span class="p">,</span> <span class="ss">count: </span><span class="mi">2</span>
+<span class="c1"># =&gt; '2 messages'</span>
+
+<span class="no">I18n</span><span class="p">.</span><span class="nf">translate</span> <span class="ss">:inbox</span><span class="p">,</span> <span class="ss">count: </span><span class="mi">1</span>
+<span class="c1"># =&gt; 'one message'</span>
+
+<span class="no">I18n</span><span class="p">.</span><span class="nf">translate</span> <span class="ss">:inbox</span><span class="p">,</span> <span class="ss">count: </span><span class="mi">0</span>
+<span class="c1"># =&gt; 'no messages'</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="I18n.backend.store_translations :en, inbox: {
+  zero: 'no messages', # optional
+  one: 'one message',
+  other: '%{count} messages'
+}
+I18n.translate :inbox, count: 2
+# =&gt; '2 messages'
+
+I18n.translate :inbox, count: 1
+# =&gt; 'one message'
+
+I18n.translate :inbox, count: 0
+# =&gt; 'no messages'
+">Copy</button>
+</div>
+<p>The algorithm for pluralizations in <code>:en</code> is as simple as:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">lookup_key</span> <span class="o">=</span> <span class="ss">:zero</span> <span class="k">if</span> <span class="n">count</span> <span class="o">==</span> <span class="mi">0</span> <span class="o">&amp;&amp;</span> <span class="n">entry</span><span class="p">.</span><span class="nf">has_key?</span><span class="p">(</span><span class="ss">:zero</span><span class="p">)</span>
+<span class="n">lookup_key</span> <span class="o">||=</span> <span class="n">count</span> <span class="o">==</span> <span class="mi">1</span> <span class="p">?</span> <span class="ss">:one</span> <span class="p">:</span> <span class="ss">:other</span>
+<span class="n">entry</span><span class="p">[</span><span class="n">lookup_key</span><span class="p">]</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="lookup_key = :zero if count == 0 &amp;&amp; entry.has_key?(:zero)
+lookup_key ||= count == 1 ? :one : :other
+entry[lookup_key]
+">Copy</button>
+</div>
+<p>The translation denoted as <code>:one</code> is regarded as singular, and the <code>:other</code> is used as plural. If the count is zero, and a <code>:zero</code> entry is present, then it will be used instead of <code>:other</code>.</p>
+
+<p>If the lookup for the key does not return a Hash suitable for pluralization, an <code>I18n::InvalidPluralizationData</code> exception is raised.</p>
+
+<h5 id="locale-specific-rules"><a class="anchorlink" href="#locale-specific-rules">4.2.1 Locale-specific rules</a></h5>
+
+<p>The I18n gem provides a Pluralization backend that can be used to enable locale-specific rules. Include it
+to the Simple backend, then add the localized pluralization algorithms to translation store, as <code>i18n.plural.rule</code>.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="no">I18n</span><span class="o">::</span><span class="no">Backend</span><span class="o">::</span><span class="no">Simple</span><span class="p">.</span><span class="nf">include</span><span class="p">(</span><span class="no">I18n</span><span class="o">::</span><span class="no">Backend</span><span class="o">::</span><span class="no">Pluralization</span><span class="p">)</span>
+<span class="no">I18n</span><span class="p">.</span><span class="nf">backend</span><span class="p">.</span><span class="nf">store_translations</span> <span class="ss">:pt</span><span class="p">,</span> <span class="ss">i18n: </span><span class="p">{</span> <span class="ss">plural: </span><span class="p">{</span> <span class="ss">rule: </span><span class="nb">lambda</span> <span class="p">{</span> <span class="o">|</span><span class="n">n</span><span class="o">|</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">].</span><span class="nf">include?</span><span class="p">(</span><span class="n">n</span><span class="p">)</span> <span class="p">?</span> <span class="ss">:one</span> <span class="p">:</span> <span class="ss">:other</span> <span class="p">}</span> <span class="p">}</span> <span class="p">}</span>
+<span class="no">I18n</span><span class="p">.</span><span class="nf">backend</span><span class="p">.</span><span class="nf">store_translations</span> <span class="ss">:pt</span><span class="p">,</span> <span class="ss">apples: </span><span class="p">{</span> <span class="ss">one: </span><span class="s1">'one or none'</span><span class="p">,</span> <span class="ss">other: </span><span class="s1">'more than one'</span> <span class="p">}</span>
+
+<span class="no">I18n</span><span class="p">.</span><span class="nf">t</span> <span class="ss">:apples</span><span class="p">,</span> <span class="ss">count: </span><span class="mi">0</span><span class="p">,</span> <span class="ss">locale: :pt</span>
+<span class="c1"># =&gt; 'one or none'</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="I18n::Backend::Simple.include(I18n::Backend::Pluralization)
+I18n.backend.store_translations :pt, i18n: { plural: { rule: lambda { |n| [0, 1].include?(n) ? :one : :other } } }
+I18n.backend.store_translations :pt, apples: { one: 'one or none', other: 'more than one' }
+
+I18n.t :apples, count: 0, locale: :pt
+# =&gt; 'one or none'
+">Copy</button>
+</div>
+<p>Alternatively, the separate gem <a href="https://github.com/svenfuchs/rails-i18n">rails-i18n</a> can be used to provide a fuller set of locale-specific pluralization rules.</p>
+
+<h4 id="setting-and-passing-a-locale"><a class="anchorlink" href="#setting-and-passing-a-locale">4.3 Setting and Passing a Locale</a></h4>
+
+<p>The locale can be either set pseudo-globally to <code>I18n.locale</code> (which uses <code>Thread.current</code> like, e.g., <code>Time.zone</code>) or can be passed as an option to <code>#translate</code> and <code>#localize</code>.</p>
+
+<p>If no locale is passed, <code>I18n.locale</code> is used:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="no">I18n</span><span class="p">.</span><span class="nf">locale</span> <span class="o">=</span> <span class="ss">:de</span>
+<span class="no">I18n</span><span class="p">.</span><span class="nf">t</span> <span class="ss">:foo</span>
+<span class="no">I18n</span><span class="p">.</span><span class="nf">l</span> <span class="no">Time</span><span class="p">.</span><span class="nf">now</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="I18n.locale = :de
+I18n.t :foo
+I18n.l Time.now
+">Copy</button>
+</div>
+<p>Explicitly passing a locale:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="no">I18n</span><span class="p">.</span><span class="nf">t</span> <span class="ss">:foo</span><span class="p">,</span> <span class="ss">locale: :de</span>
+<span class="no">I18n</span><span class="p">.</span><span class="nf">l</span> <span class="no">Time</span><span class="p">.</span><span class="nf">now</span><span class="p">,</span> <span class="ss">locale: :de</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="I18n.t :foo, locale: :de
+I18n.l Time.now, locale: :de
+">Copy</button>
+</div>
+<p>The <code>I18n.locale</code> defaults to <code>I18n.default_locale</code> which defaults to :<code>en</code>. The default locale can be set like this:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="no">I18n</span><span class="p">.</span><span class="nf">default_locale</span> <span class="o">=</span> <span class="ss">:de</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="I18n.default_locale = :de
+">Copy</button>
+</div>
+<h4 id="using-safe-html-translations"><a class="anchorlink" href="#using-safe-html-translations">4.4 Using Safe HTML Translations</a></h4>
+
+<p>Keys with a '_html' suffix and keys named 'html' are marked as HTML safe. When you use them in views the HTML will not be escaped.</p>
+
+<div class="code_container">
+<pre><code class="highlight yaml"><span class="c1"># config/locales/en.yml</span>
+<span class="na">en</span><span class="pi">:</span>
+  <span class="na">welcome</span><span class="pi">:</span> <span class="s">&lt;b&gt;welcome!&lt;/b&gt;</span>
+  <span class="na">hello_html</span><span class="pi">:</span> <span class="s">&lt;b&gt;hello!&lt;/b&gt;</span>
+  <span class="na">title</span><span class="pi">:</span>
+    <span class="na">html</span><span class="pi">:</span> <span class="s">&lt;b&gt;title!&lt;/b&gt;</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="# config/locales/en.yml
+en:
+  welcome: &lt;b&gt;welcome!&lt;/b&gt;
+  hello_html: &lt;b&gt;hello!&lt;/b&gt;
+  title:
+    html: &lt;b&gt;title!&lt;/b&gt;
+">Copy</button>
+</div>
+<div class="code_container">
+<pre><code class="highlight erb"><span class="c">&lt;!-- app/views/home/index.html.erb --&gt;</span>
+<span class="nt">&lt;div&gt;</span><span class="cp">&lt;%=</span> <span class="n">t</span><span class="p">(</span><span class="s1">'welcome'</span><span class="p">)</span> <span class="cp">%&gt;</span><span class="nt">&lt;/div&gt;</span>
+<span class="nt">&lt;div&gt;</span><span class="cp">&lt;%=</span> <span class="n">raw</span> <span class="n">t</span><span class="p">(</span><span class="s1">'welcome'</span><span class="p">)</span> <span class="cp">%&gt;</span><span class="nt">&lt;/div&gt;</span>
+<span class="nt">&lt;div&gt;</span><span class="cp">&lt;%=</span> <span class="n">t</span><span class="p">(</span><span class="s1">'hello_html'</span><span class="p">)</span> <span class="cp">%&gt;</span><span class="nt">&lt;/div&gt;</span>
+<span class="nt">&lt;div&gt;</span><span class="cp">&lt;%=</span> <span class="n">t</span><span class="p">(</span><span class="s1">'title.html'</span><span class="p">)</span> <span class="cp">%&gt;</span><span class="nt">&lt;/div&gt;</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="&lt;!-- app/views/home/index.html.erb --&gt;
+&lt;div&gt;&lt;%= t('welcome') %&gt;&lt;/div&gt;
+&lt;div&gt;&lt;%= raw t('welcome') %&gt;&lt;/div&gt;
+&lt;div&gt;&lt;%= t('hello_html') %&gt;&lt;/div&gt;
+&lt;div&gt;&lt;%= t('title.html') %&gt;&lt;/div&gt;
+">Copy</button>
+</div>
+<p>Interpolation escapes as needed though. For example, given:</p>
+
+<div class="code_container">
+<pre><code class="highlight yaml"><span class="na">en</span><span class="pi">:</span>
+  <span class="na">welcome_html</span><span class="pi">:</span> <span class="s2">"</span><span class="s">&lt;b&gt;Welcome</span><span class="nv"> </span><span class="s">%{username}!&lt;/b&gt;"</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='en:
+  welcome_html: "&lt;b&gt;Welcome %{username}!&lt;/b&gt;"
+'>Copy</button>
+</div>
+<p>you can safely pass the username as set by the user:</p>
+
+<div class="code_container">
+<pre><code class="highlight erb"><span class="c">&lt;%# This is safe, it is going to be escaped if needed. %&gt;</span>
+<span class="cp">&lt;%=</span> <span class="n">t</span><span class="p">(</span><span class="s1">'welcome_html'</span><span class="p">,</span> <span class="ss">username: </span><span class="vi">@current_user</span><span class="p">.</span><span class="nf">username</span><span class="p">)</span> <span class="cp">%&gt;</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="&lt;%# This is safe, it is going to be escaped if needed. %&gt;
+&lt;%= t('welcome_html', username: @current_user.username) %&gt;
+">Copy</button>
+</div>
+<p>Safe strings on the other hand are interpolated verbatim.</p>
+
+<div class="note"><p>Automatic conversion to HTML safe translate text is only available from the <code>translate</code> view helper method.</p></div>
+
+<p><img src="/home/rails/v7.0.4.2/guides/output/kindle/images/i18n/demo_html_safe.png" alt="i18n demo html safe"></p>
+
+<h4 id="translations-for-active-record-models"><a class="anchorlink" href="#translations-for-active-record-models">4.5 Translations for Active Record Models</a></h4>
+
+<p>You can use the methods <code>Model.model_name.human</code> and <code>Model.human_attribute_name(attribute)</code> to transparently look up translations for your model and attribute names.</p>
+
+<p>For example when you add the following translations:</p>
+
+<div class="code_container">
+<pre><code class="highlight yaml"><span class="na">en</span><span class="pi">:</span>
+  <span class="na">activerecord</span><span class="pi">:</span>
+    <span class="na">models</span><span class="pi">:</span>
+      <span class="na">user</span><span class="pi">:</span> <span class="s">Customer</span>
+    <span class="na">attributes</span><span class="pi">:</span>
+      <span class="na">user</span><span class="pi">:</span>
+        <span class="na">login</span><span class="pi">:</span> <span class="s2">"</span><span class="s">Handle"</span>
+      <span class="c1"># will translate User attribute "login" as "Handle"</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='en:
+  activerecord:
+    models:
+      user: Customer
+    attributes:
+      user:
+        login: "Handle"
+      # will translate User attribute "login" as "Handle"
+'>Copy</button>
+</div>
+<p>Then <code>User.model_name.human</code> will return "Customer" and <code>User.human_attribute_name("login")</code> will return "Handle".</p>
+
+<p>You can also set a plural form for model names, adding as following:</p>
+
+<div class="code_container">
+<pre><code class="highlight yaml"><span class="na">en</span><span class="pi">:</span>
+  <span class="na">activerecord</span><span class="pi">:</span>
+    <span class="na">models</span><span class="pi">:</span>
+      <span class="na">user</span><span class="pi">:</span>
+        <span class="na">one</span><span class="pi">:</span> <span class="s">Customer</span>
+        <span class="na">other</span><span class="pi">:</span> <span class="s">Customers</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="en:
+  activerecord:
+    models:
+      user:
+        one: Customer
+        other: Customers
+">Copy</button>
+</div>
+<p>Then <code>User.model_name.human(count: 2)</code> will return "Customers". With <code>count: 1</code> or without params will return "Customer".</p>
+
+<p>In the event you need to access nested attributes within a given model, you should nest these under <code>model/attribute</code> at the model level of your translation file:</p>
+
+<div class="code_container">
+<pre><code class="highlight yaml"><span class="na">en</span><span class="pi">:</span>
+  <span class="na">activerecord</span><span class="pi">:</span>
+    <span class="na">attributes</span><span class="pi">:</span>
+      <span class="na">user/role</span><span class="pi">:</span>
+        <span class="na">admin</span><span class="pi">:</span> <span class="s2">"</span><span class="s">Admin"</span>
+        <span class="na">contributor</span><span class="pi">:</span> <span class="s2">"</span><span class="s">Contributor"</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='en:
+  activerecord:
+    attributes:
+      user/role:
+        admin: "Admin"
+        contributor: "Contributor"
+'>Copy</button>
+</div>
+<p>Then <code>User.human_attribute_name("role.admin")</code> will return "Admin".</p>
+
+<div class="note"><p>If you are using a class which includes <code>ActiveModel</code> and does not inherit from <code>ActiveRecord::Base</code>, replace <code>activerecord</code> with <code>activemodel</code> in the above key paths.</p></div>
+
+<h5 id="error-message-scopes"><a class="anchorlink" href="#error-message-scopes">4.5.1 Error Message Scopes</a></h5>
+
+<p>Active Record validation error messages can also be translated easily. Active Record gives you a couple of namespaces where you can place your message translations in order to provide different messages and translation for certain models, attributes, and/or validations. It also transparently takes single table inheritance into account.</p>
+
+<p>This gives you quite powerful means to flexibly adjust your messages to your application's needs.</p>
+
+<p>Consider a User model with a validation for the name attribute like this:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">User</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="n">validates</span> <span class="ss">:name</span><span class="p">,</span> <span class="ss">presence: </span><span class="kp">true</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="class User &lt; ApplicationRecord
+  validates :name, presence: true
+end
+">Copy</button>
+</div>
+<p>The key for the error message in this case is <code>:blank</code>. Active Record will look up this key in the namespaces:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">activerecord</span><span class="p">.</span><span class="nf">errors</span><span class="p">.</span><span class="nf">models</span><span class="p">.</span><span class="nf">[</span><span class="n">model_name</span><span class="p">].</span><span class="nf">attributes</span><span class="p">.</span><span class="nf">[</span><span class="n">attribute_name</span><span class="p">]</span>
+<span class="n">activerecord</span><span class="p">.</span><span class="nf">errors</span><span class="p">.</span><span class="nf">models</span><span class="p">.</span><span class="nf">[</span><span class="n">model_name</span><span class="p">]</span>
+<span class="n">activerecord</span><span class="p">.</span><span class="nf">errors</span><span class="p">.</span><span class="nf">messages</span>
+<span class="n">errors</span><span class="p">.</span><span class="nf">attributes</span><span class="p">.</span><span class="nf">[</span><span class="n">attribute_name</span><span class="p">]</span>
+<span class="n">errors</span><span class="p">.</span><span class="nf">messages</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="activerecord.errors.models.[model_name].attributes.[attribute_name]
+activerecord.errors.models.[model_name]
+activerecord.errors.messages
+errors.attributes.[attribute_name]
+errors.messages
+">Copy</button>
+</div>
+<p>Thus, in our example it will try the following keys in this order and return the first result:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">activerecord</span><span class="p">.</span><span class="nf">errors</span><span class="p">.</span><span class="nf">models</span><span class="p">.</span><span class="nf">user</span><span class="p">.</span><span class="nf">attributes</span><span class="p">.</span><span class="nf">name</span><span class="p">.</span><span class="nf">blank</span>
+<span class="n">activerecord</span><span class="p">.</span><span class="nf">errors</span><span class="p">.</span><span class="nf">models</span><span class="p">.</span><span class="nf">user</span><span class="p">.</span><span class="nf">blank</span>
+<span class="n">activerecord</span><span class="p">.</span><span class="nf">errors</span><span class="p">.</span><span class="nf">messages</span><span class="p">.</span><span class="nf">blank</span>
+<span class="n">errors</span><span class="p">.</span><span class="nf">attributes</span><span class="p">.</span><span class="nf">name</span><span class="p">.</span><span class="nf">blank</span>
+<span class="n">errors</span><span class="p">.</span><span class="nf">messages</span><span class="p">.</span><span class="nf">blank</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="activerecord.errors.models.user.attributes.name.blank
+activerecord.errors.models.user.blank
+activerecord.errors.messages.blank
+errors.attributes.name.blank
+errors.messages.blank
+">Copy</button>
+</div>
+<p>When your models are additionally using inheritance then the messages are looked up in the inheritance chain.</p>
+
+<p>For example, you might have an Admin model inheriting from User:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">Admin</span> <span class="o">&lt;</span> <span class="no">User</span>
+  <span class="n">validates</span> <span class="ss">:name</span><span class="p">,</span> <span class="ss">presence: </span><span class="kp">true</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="class Admin &lt; User
+  validates :name, presence: true
+end
+">Copy</button>
+</div>
+<p>Then Active Record will look for messages in this order:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">activerecord</span><span class="p">.</span><span class="nf">errors</span><span class="p">.</span><span class="nf">models</span><span class="p">.</span><span class="nf">admin</span><span class="p">.</span><span class="nf">attributes</span><span class="p">.</span><span class="nf">name</span><span class="p">.</span><span class="nf">blank</span>
+<span class="n">activerecord</span><span class="p">.</span><span class="nf">errors</span><span class="p">.</span><span class="nf">models</span><span class="p">.</span><span class="nf">admin</span><span class="p">.</span><span class="nf">blank</span>
+<span class="n">activerecord</span><span class="p">.</span><span class="nf">errors</span><span class="p">.</span><span class="nf">models</span><span class="p">.</span><span class="nf">user</span><span class="p">.</span><span class="nf">attributes</span><span class="p">.</span><span class="nf">name</span><span class="p">.</span><span class="nf">blank</span>
+<span class="n">activerecord</span><span class="p">.</span><span class="nf">errors</span><span class="p">.</span><span class="nf">models</span><span class="p">.</span><span class="nf">user</span><span class="p">.</span><span class="nf">blank</span>
+<span class="n">activerecord</span><span class="p">.</span><span class="nf">errors</span><span class="p">.</span><span class="nf">messages</span><span class="p">.</span><span class="nf">blank</span>
+<span class="n">errors</span><span class="p">.</span><span class="nf">attributes</span><span class="p">.</span><span class="nf">name</span><span class="p">.</span><span class="nf">blank</span>
+<span class="n">errors</span><span class="p">.</span><span class="nf">messages</span><span class="p">.</span><span class="nf">blank</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="activerecord.errors.models.admin.attributes.name.blank
+activerecord.errors.models.admin.blank
+activerecord.errors.models.user.attributes.name.blank
+activerecord.errors.models.user.blank
+activerecord.errors.messages.blank
+errors.attributes.name.blank
+errors.messages.blank
+">Copy</button>
+</div>
+<p>This way you can provide special translations for various error messages at different points in your model's inheritance chain and in the attributes, models, or default scopes.</p>
+
+<h5 id="error-message-interpolation"><a class="anchorlink" href="#error-message-interpolation">4.5.2 Error Message Interpolation</a></h5>
+
+<p>The translated model name, translated attribute name, and value are always available for interpolation as <code>model</code>, <code>attribute</code> and <code>value</code> respectively.</p>
+
+<p>So, for example, instead of the default error message <code>"cannot be blank"</code> you could use the attribute name like this : <code>"Please fill in your %{attribute}"</code>.</p>
+<ul>
+<li>
+<code>count</code>, where available, can be used for pluralization if present:</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>validation</th>
+<th>with option</th>
+<th>message</th>
+<th>interpolation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>confirmation</td>
+<td>-</td>
+<td>:confirmation</td>
+<td>attribute</td>
+</tr>
+<tr>
+<td>acceptance</td>
+<td>-</td>
+<td>:accepted</td>
+<td>-</td>
+</tr>
+<tr>
+<td>presence</td>
+<td>-</td>
+<td>:blank</td>
+<td>-</td>
+</tr>
+<tr>
+<td>absence</td>
+<td>-</td>
+<td>:present</td>
+<td>-</td>
+</tr>
+<tr>
+<td>length</td>
+<td>:within, :in</td>
+<td>:too_short</td>
+<td>count</td>
+</tr>
+<tr>
+<td>length</td>
+<td>:within, :in</td>
+<td>:too_long</td>
+<td>count</td>
+</tr>
+<tr>
+<td>length</td>
+<td>:is</td>
+<td>:wrong_length</td>
+<td>count</td>
+</tr>
+<tr>
+<td>length</td>
+<td>:minimum</td>
+<td>:too_short</td>
+<td>count</td>
+</tr>
+<tr>
+<td>length</td>
+<td>:maximum</td>
+<td>:too_long</td>
+<td>count</td>
+</tr>
+<tr>
+<td>uniqueness</td>
+<td>-</td>
+<td>:taken</td>
+<td>-</td>
+</tr>
+<tr>
+<td>format</td>
+<td>-</td>
+<td>:invalid</td>
+<td>-</td>
+</tr>
+<tr>
+<td>inclusion</td>
+<td>-</td>
+<td>:inclusion</td>
+<td>-</td>
+</tr>
+<tr>
+<td>exclusion</td>
+<td>-</td>
+<td>:exclusion</td>
+<td>-</td>
+</tr>
+<tr>
+<td>associated</td>
+<td>-</td>
+<td>:invalid</td>
+<td>-</td>
+</tr>
+<tr>
+<td>non-optional association</td>
+<td>-</td>
+<td>:required</td>
+<td>-</td>
+</tr>
+<tr>
+<td>numericality</td>
+<td>-</td>
+<td>:not_a_number</td>
+<td>-</td>
+</tr>
+<tr>
+<td>numericality</td>
+<td>:greater_than</td>
+<td>:greater_than</td>
+<td>count</td>
+</tr>
+<tr>
+<td>numericality</td>
+<td>:greater_than_or_equal_to</td>
+<td>:greater_than_or_equal_to</td>
+<td>count</td>
+</tr>
+<tr>
+<td>numericality</td>
+<td>:equal_to</td>
+<td>:equal_to</td>
+<td>count</td>
+</tr>
+<tr>
+<td>numericality</td>
+<td>:less_than</td>
+<td>:less_than</td>
+<td>count</td>
+</tr>
+<tr>
+<td>numericality</td>
+<td>:less_than_or_equal_to</td>
+<td>:less_than_or_equal_to</td>
+<td>count</td>
+</tr>
+<tr>
+<td>numericality</td>
+<td>:other_than</td>
+<td>:other_than</td>
+<td>count</td>
+</tr>
+<tr>
+<td>numericality</td>
+<td>:only_integer</td>
+<td>:not_an_integer</td>
+<td>-</td>
+</tr>
+<tr>
+<td>numericality</td>
+<td>:in</td>
+<td>:in</td>
+<td>count</td>
+</tr>
+<tr>
+<td>numericality</td>
+<td>:odd</td>
+<td>:odd</td>
+<td>-</td>
+</tr>
+<tr>
+<td>numericality</td>
+<td>:even</td>
+<td>:even</td>
+<td>-</td>
+</tr>
+</tbody>
+</table>
+<h4 id="translations-for-action-mailer-e-mail-subjects"><a class="anchorlink" href="#translations-for-action-mailer-e-mail-subjects">4.6 Translations for Action Mailer E-Mail Subjects</a></h4>
+
+<p>If you don't pass a subject to the <code>mail</code> method, Action Mailer will try to find
+it in your translations. The performed lookup will use the pattern
+<code>&lt;mailer_scope&gt;.&lt;action_name&gt;.subject</code> to construct the key.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="c1"># user_mailer.rb</span>
+<span class="k">class</span> <span class="nc">UserMailer</span> <span class="o">&lt;</span> <span class="no">ActionMailer</span><span class="o">::</span><span class="no">Base</span>
+  <span class="k">def</span> <span class="nf">welcome</span><span class="p">(</span><span class="n">user</span><span class="p">)</span>
+    <span class="c1">#...</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="# user_mailer.rb
+class UserMailer &lt; ActionMailer::Base
+  def welcome(user)
+    #...
+  end
+end
+">Copy</button>
+</div>
+<div class="code_container">
+<pre><code class="highlight yaml"><span class="na">en</span><span class="pi">:</span>
+  <span class="na">user_mailer</span><span class="pi">:</span>
+    <span class="na">welcome</span><span class="pi">:</span>
+      <span class="na">subject</span><span class="pi">:</span> <span class="s2">"</span><span class="s">Welcome</span><span class="nv"> </span><span class="s">to</span><span class="nv"> </span><span class="s">Rails</span><span class="nv"> </span><span class="s">Guides!"</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='en:
+  user_mailer:
+    welcome:
+      subject: "Welcome to Rails Guides!"
+'>Copy</button>
+</div>
+<p>To send parameters to interpolation use the <code>default_i18n_subject</code> method on the mailer.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="c1"># user_mailer.rb</span>
+<span class="k">class</span> <span class="nc">UserMailer</span> <span class="o">&lt;</span> <span class="no">ActionMailer</span><span class="o">::</span><span class="no">Base</span>
+  <span class="k">def</span> <span class="nf">welcome</span><span class="p">(</span><span class="n">user</span><span class="p">)</span>
+    <span class="n">mail</span><span class="p">(</span><span class="ss">to: </span><span class="n">user</span><span class="p">.</span><span class="nf">email</span><span class="p">,</span> <span class="ss">subject: </span><span class="n">default_i18n_subject</span><span class="p">(</span><span class="ss">user: </span><span class="n">user</span><span class="p">.</span><span class="nf">name</span><span class="p">))</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="# user_mailer.rb
+class UserMailer &lt; ActionMailer::Base
+  def welcome(user)
+    mail(to: user.email, subject: default_i18n_subject(user: user.name))
+  end
+end
+">Copy</button>
+</div>
+<div class="code_container">
+<pre><code class="highlight yaml"><span class="na">en</span><span class="pi">:</span>
+  <span class="na">user_mailer</span><span class="pi">:</span>
+    <span class="na">welcome</span><span class="pi">:</span>
+      <span class="na">subject</span><span class="pi">:</span> <span class="s2">"</span><span class="s">%{user},</span><span class="nv"> </span><span class="s">welcome</span><span class="nv"> </span><span class="s">to</span><span class="nv"> </span><span class="s">Rails</span><span class="nv"> </span><span class="s">Guides!"</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='en:
+  user_mailer:
+    welcome:
+      subject: "%{user}, welcome to Rails Guides!"
+'>Copy</button>
+</div>
+<h4 id="overview-of-other-built-in-methods-that-provide-i18n-support"><a class="anchorlink" href="#overview-of-other-built-in-methods-that-provide-i18n-support">4.7 Overview of Other Built-In Methods that Provide I18n Support</a></h4>
+
+<p>Rails uses fixed strings and other localizations, such as format strings and other format information in a couple of helpers. Here's a brief overview.</p>
+
+<h5 id="action-view-helper-methods"><a class="anchorlink" href="#action-view-helper-methods">4.7.1 Action View Helper Methods</a></h5>
+<ul>
+<li>
+<code>distance_of_time_in_words</code> translates and pluralizes its result and interpolates the number of seconds, minutes, hours, and so on. See <a href="https://github.com/rails/rails/blob/main/actionview/lib/action_view/locale/en.yml#L4">datetime.distance_in_words</a> translations.</li>
+<li>
+<code>datetime_select</code> and <code>select_month</code> use translated month names for populating the resulting select tag. See <a href="https://github.com/rails/rails/blob/main/activesupport/lib/active_support/locale/en.yml#L15">date.month_names</a> for translations. <code>datetime_select</code> also looks up the order option from <a href="https://github.com/rails/rails/blob/main/activesupport/lib/active_support/locale/en.yml#L18">date.order</a> (unless you pass the option explicitly). All date selection helpers translate the prompt using the translations in the <a href="https://github.com/rails/rails/blob/main/actionview/lib/action_view/locale/en.yml#L39">datetime.prompts</a> scope if applicable.</li>
+<li>The <code>number_to_currency</code>, <code>number_with_precision</code>, <code>number_to_percentage</code>, <code>number_with_delimiter</code>, and <code>number_to_human_size</code> helpers use the number format settings located in the <a href="https://github.com/rails/rails/blob/main/activesupport/lib/active_support/locale/en.yml#L37">number</a> scope.</li>
+</ul>
+<h5 id="active-model-methods"><a class="anchorlink" href="#active-model-methods">4.7.2 Active Model Methods</a></h5>
+<ul>
+<li>
+<code>model_name.human</code> and <code>human_attribute_name</code> use translations for model names and attribute names if available in the <a href="https://github.com/rails/rails/blob/main/activerecord/lib/active_record/locale/en.yml#L36">activerecord.models</a> scope. They also support translations for inherited class names (e.g. for use with STI) as explained above in "Error message scopes".</li>
+<li>
+<code>ActiveModel::Errors#generate_message</code> (which is used by Active Model validations but may also be used manually) uses <code>model_name.human</code> and <code>human_attribute_name</code> (see above). It also translates the error message and supports translations for inherited class names as explained above in "Error message scopes".</li>
+<li>
+<code>ActiveModel::Error#full_message</code> and <code>ActiveModel::Errors#full_messages</code> prepend the attribute name to the error message using a format looked up from <code>errors.format</code> (default: <a href="https://github.com/rails/rails/blob/main/activemodel/lib/active_model/locale/en.yml#L4"><code>"%{attribute} %{message}"</code></a>). To customize the default format, override it in the app's locale files. To customize the format per model or per attribute, see <a href="configuring.html#config-active-model-i18n-customize-full-message"><code>config.active_model.i18n_customize_full_message</code></a>.</li>
+</ul>
+<h5 id="active-support-methods"><a class="anchorlink" href="#active-support-methods">4.7.3 Active Support Methods</a></h5>
+<ul>
+<li>
+<code>Array#to_sentence</code> uses format settings as given in the <a href="https://github.com/rails/rails/blob/main/activesupport/lib/active_support/locale/en.yml#L33">support.array</a> scope.</li>
+</ul>
+</body>
+</html>

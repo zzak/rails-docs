@@ -1,0 +1,80 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>3 Creating Generators with Generators</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v5.1.7/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="creating-generators-with-generators">3 Creating Generators with Generators</h3>
+<p>Generators themselves have a generator:</p>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+$ bin/rails generate generator initializer
+      create  lib/generators/initializer
+      create  lib/generators/initializer/initializer_generator.rb
+      create  lib/generators/initializer/USAGE
+      create  lib/generators/initializer/templates
+
+</pre>
+</div>
+<p>This is the generator just created:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class InitializerGenerator &lt; Rails::Generators::NamedBase
+  source_root File.expand_path("../templates", __FILE__)
+end
+
+</pre>
+</div>
+<p>First, notice that we are inheriting from <code>Rails::Generators::NamedBase</code> instead of <code>Rails::Generators::Base</code>. This means that our generator expects at least one argument, which will be the name of the initializer, and will be available in our code in the variable <code>name</code>.</p>
+
+<p>We can see that by invoking the description of this new generator (don't forget to delete the old generator file):</p>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+$ bin/rails generate initializer --help
+Usage:
+  rails generate initializer NAME [options]
+
+</pre>
+</div>
+<p>We can also see that our new generator has a class method called <code>source_root</code>. This method points to where our generator templates will be placed, if any, and by default it points to the created directory <code>lib/generators/initializer/templates</code>.</p>
+
+<p>In order to understand what a generator template means, let's create the file <code>lib/generators/initializer/templates/initializer.rb</code> with the following content:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+# Add initialization content here
+
+</pre>
+</div>
+<p>And now let's change the generator to copy this template when invoked:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class InitializerGenerator &lt; Rails::Generators::NamedBase
+  source_root File.expand_path("../templates", __FILE__)
+
+  def copy_initializer_file
+    copy_file "initializer.rb", "config/initializers/#{file_name}.rb"
+  end
+end
+
+</pre>
+</div>
+<p>And let's execute our generator:</p>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+$ bin/rails generate initializer core_extensions
+
+</pre>
+</div>
+<p>We can see that now an initializer named core_extensions was created at <code>config/initializers/core_extensions.rb</code> with the contents of our template. That means that <code>copy_file</code> copied a file in our source root to the destination path we gave. The method <code>file_name</code> is automatically created when we inherit from <code>Rails::Generators::NamedBase</code>.</p>
+
+<p>The methods that are available for generators are covered in the <a href="#generator-methods">final section</a> of this guide.</p>
+</body>
+</html>

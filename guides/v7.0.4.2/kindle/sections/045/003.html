@@ -1,0 +1,76 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>4 Translating Rails Guides</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v7.0.4.2/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="translating-rails-guides"><a class="anchorlink" href="#translating-rails-guides">4 Translating Rails Guides</a></h3>
+<p>We are happy to have people volunteer to translate the Rails guides. Just follow these steps:</p>
+<ul>
+<li>Fork <a href="https://github.com/rails/rails">https://github.com/rails/rails</a>.</li>
+<li>Add a source folder for your language, for example: <em>guides/source/it-IT</em> for Italian.</li>
+<li>Copy the contents of <em>guides/source</em> into your language directory and translate them.</li>
+<li>Do NOT translate the HTML files, as they are automatically generated.</li>
+</ul>
+<p>Note that translations are not submitted to the Rails repository; your work lives in your fork, as described above. This is because, in practice, documentation maintenance via patches is only sustainable in English.</p>
+
+<p>To generate the guides in HTML format, you will need to install the guides dependencies, <code>cd</code> into the <em>guides</em> directory, and then run (e.g., for it-IT):</p>
+
+<div class="code_container">
+<pre><code class="highlight console"><span class="gp">#</span><span class="w"> </span>only <span class="nb">install </span>gems necessary <span class="k">for </span>the guides. To undo run: <span class="nb">bundle </span>config <span class="nt">--delete</span> without
+<span class="gp">$</span><span class="w"> </span><span class="nb">bundle install</span> <span class="nt">--without</span> job cable storage ujs <span class="nb">test </span>db
+<span class="gp">$</span><span class="w"> </span><span class="nb">cd </span>guides/
+<span class="gp">$</span><span class="w"> </span><span class="nb">bundle exec rake </span>guides:generate:html <span class="nv">GUIDES_LANGUAGE</span><span class="o">=</span>it-IT
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="bundle install --without job cable storage ujs test db
+cd guides/
+bundle exec rake guides:generate:html GUIDES_LANGUAGE=it-IT
+">Copy</button>
+</div>
+<p>This will generate the guides in an <em>output</em> directory.</p>
+
+<div class="note"><p>The Redcarpet Gem doesn't work with JRuby.</p></div>
+
+<p>Translation efforts we know about (various versions):</p>
+<ul>
+<li>
+<strong>Italian</strong>: <a href="https://github.com/rixlabs/docrails">https://github.com/rixlabs/docrails</a>
+</li>
+<li>
+<strong>Spanish</strong>: <a href="https://github.com/latinadeveloper/railsguides.es">https://github.com/latinadeveloper/railsguides.es</a>
+</li>
+<li>
+<strong>Polish</strong>: <a href="https://github.com/apohllo/docrails">https://github.com/apohllo/docrails</a>
+</li>
+<li>
+<strong>French</strong> : <a href="https://github.com/railsfrance/docrails">https://github.com/railsfrance/docrails</a>
+</li>
+<li>
+<strong>Czech</strong> : <a href="https://github.com/rubyonrails-cz/docrails/tree/czech">https://github.com/rubyonrails-cz/docrails/tree/czech</a>
+</li>
+<li>
+<strong>Turkish</strong> : <a href="https://github.com/ujk/docrails">https://github.com/ujk/docrails</a>
+</li>
+<li>
+<strong>Korean</strong> : <a href="https://github.com/rorlakr/rails-guides">https://github.com/rorlakr/rails-guides</a>
+</li>
+<li>
+<strong>Simplified Chinese</strong> : <a href="https://github.com/ruby-china/guides">https://github.com/ruby-china/guides</a>
+</li>
+<li>
+<strong>Traditional Chinese</strong> : <a href="https://github.com/docrails-tw/guides">https://github.com/docrails-tw/guides</a>
+</li>
+<li>
+<strong>Russian</strong> : <a href="https://github.com/morsbox/rusrails">https://github.com/morsbox/rusrails</a>
+</li>
+<li>
+<strong>Japanese</strong> : <a href="https://github.com/yasslab/railsguides.jp">https://github.com/yasslab/railsguides.jp</a>
+</li>
+<li>
+<strong>Brazilian Portuguese</strong> : <a href="https://github.com/campuscode/rails-guides-pt-BR">https://github.com/campuscode/rails-guides-pt-BR</a>
+</li>
+</ul>
+</body>
+</html>

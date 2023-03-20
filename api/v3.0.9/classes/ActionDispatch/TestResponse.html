@@ -1,0 +1,303 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html 
+     PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+  <head>
+    <title>Class: ActionDispatch::TestResponse</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <link rel="stylesheet" href="../../rdoc-style.css" type="text/css" media="screen" />
+
+    <script language="JavaScript" type="text/javascript">
+    // <![CDATA[
+
+        function toggleSource( id )
+        {
+          var elem
+          var link
+
+          if( document.getElementById )
+          {
+            elem = document.getElementById( id )
+            link = document.getElementById( "l_" + id )
+          }
+          else if ( document.all )
+          {
+            elem = eval( "document.all." + id )
+            link = eval( "document.all.l_" + id )
+          }
+          else
+            return false;
+
+          if( elem.style.display == "block" )
+          {
+            elem.style.display = "none"
+            link.innerHTML = "show source"
+          }
+          else
+          {
+            elem.style.display = "block"
+            link.innerHTML = "hide source"
+          }
+        }
+
+        function openCode( url )
+        {
+          window.open( url, "SOURCE_CODE", "resizable=yes,scrollbars=yes,toolbar=no,status=no,height=480,width=750" ).focus();
+        }
+      // ]]>
+    </script>
+  </head>
+
+  <body>
+    <table width="100%" border='0' cellpadding='0' cellspacing='0' class='banner'>
+    <tr><td>Ruby on Rails v3.0.9</td></tr>
+    <tr>
+  <td class="file-title"><span class="file-title-prefix">Class</span><br />ActionDispatch::TestResponse</td>
+  <td align="right">
+    <table cellspacing="0" cellpadding="2">
+      <tr valign="top">
+        <td>In:</td>
+        <td>
+<a href="../../files/actionpack/lib/action_dispatch/testing/test_response_rb.html">actionpack/lib/action_dispatch/testing/test_response.rb</a>:
+        </td>
+      </tr>
+      <tr>
+        <td>Parent:</td>
+        <td>
+
+      <a href="Response.html">ActionDispatch::Response</a>         </td>
+     </tr>
+         </table>
+        </td>
+        </tr>
+      </table>
+  <div id="bodyContent">
+  <div id="content">
+
+  <div class="description">
+<p><a href="Integration.html">Integration</a> test methods such as <a
+href="Integration/RequestHelpers.html#method-i-get">ActionDispatch::Integration::Session#get</a>
+and <a
+href="Integration/RequestHelpers.html#method-i-post">ActionDispatch::Integration::Session#post</a>
+return objects of class <a href="TestResponse.html">TestResponse</a>, which
+represent the HTTP response results of the requested controller actions.</p>
+
+<p>See <a href="Response.html">Response</a> for more information on controller
+response objects.</p>
+</div>
+
+
+  <div class="sectiontitle">Methods</div>
+  <ul>
+                <li><a href="#method-i-client_error-3F">client_error?</a></li>
+                <li><a href="#method-i-error-3F">error?</a></li>
+                <li><a href="#method-c-from_response">from_response</a></li>
+                <li><a href="#method-i-missing-3F">missing?</a></li>
+                <li><a href="#method-i-redirect-3F">redirect?</a></li>
+                      <li><a href="#method-i-success-3F">success?</a></li>
+      </ul>
+
+<div class="sectiontitle">Included Modules</div>
+<ul>
+  <li>
+          <a href="TestResponse/DeprecatedHelpers.html">ActionDispatch::TestResponse::DeprecatedHelpers</a>      </li>
+</ul>
+
+
+
+        
+    <div class="sectiontitle">
+      Public      Class      methods
+    </div>
+
+          
+      <div class="method">
+        <div class="title">
+                      <a name="method-c-from_response"></a>
+            <b>from_response</b>(response)          
+        </div>
+
+                  <div class="description">
+                      </div>
+        
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('from_response_source')"
+                 id="l_method-c-from_response_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="from_response_source">
+<pre>
+  <span class="ruby-comment"># File actionpack/lib/action_dispatch/testing/test_response.rb, line 9</span>
+<span class="ruby-keyword">def</span> <span class="ruby-keyword">self</span>.<span class="ruby-identifier">from_response</span>(<span class="ruby-identifier">response</span>)
+  <span class="ruby-identifier">new</span>.<span class="ruby-identifier">tap</span> <span class="ruby-keyword">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">resp</span><span class="ruby-operator">|</span>
+    <span class="ruby-identifier">resp</span>.<span class="ruby-identifier">status</span>  = <span class="ruby-identifier">response</span>.<span class="ruby-identifier">status</span>
+    <span class="ruby-identifier">resp</span>.<span class="ruby-identifier">headers</span> = <span class="ruby-identifier">response</span>.<span class="ruby-identifier">headers</span>
+    <span class="ruby-identifier">resp</span>.<span class="ruby-identifier">body</span>    = <span class="ruby-identifier">response</span>.<span class="ruby-identifier">body</span>
+  <span class="ruby-keyword">end</span>
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+                      
+    <div class="sectiontitle">
+      Public      Instance      methods
+    </div>
+
+          
+      <div class="method">
+        <div class="title">
+                      <a name="method-i-client_error-3F"></a>
+            <b>client_error?</b>()          
+        </div>
+
+                  <div class="description">
+            <p>Was there a client client?</p>          </div>
+        
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('client_error-3F_source')"
+                 id="l_method-i-client_error-3F_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="client_error-3F_source">
+<pre>
+  <span class="ruby-comment"># File actionpack/lib/action_dispatch/testing/test_response.rb, line 132</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">client_error?</span>
+  (<span class="ruby-value">400</span><span class="ruby-operator">..</span><span class="ruby-value">499</span>).<span class="ruby-identifier">include?</span>(<span class="ruby-identifier">response_code</span>)
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+          
+      <div class="method">
+        <div class="title">
+                      <a name="method-i-error-3F"></a>
+            <b>error?</b>()          
+        </div>
+
+                  <div class="description">
+            <p>Was there a server-side error?</p>          </div>
+        
+                  <div class="aka">
+            This method is also aliased as
+                          <a href="TestResponse.html#method-i-server_error-3F">server_error?</a>                      </div>
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('error-3F_source')"
+                 id="l_method-i-error-3F_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="error-3F_source">
+<pre>
+  <span class="ruby-comment"># File actionpack/lib/action_dispatch/testing/test_response.rb, line 126</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">error?</span>
+  (<span class="ruby-value">500</span><span class="ruby-operator">..</span><span class="ruby-value">599</span>).<span class="ruby-identifier">include?</span>(<span class="ruby-identifier">response_code</span>)
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+          
+      <div class="method">
+        <div class="title">
+                      <a name="method-i-missing-3F"></a>
+            <b>missing?</b>()          
+        </div>
+
+                  <div class="description">
+            <p>Was the URL not found?</p>          </div>
+        
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('missing-3F_source')"
+                 id="l_method-i-missing-3F_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="missing-3F_source">
+<pre>
+  <span class="ruby-comment"># File actionpack/lib/action_dispatch/testing/test_response.rb, line 116</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">missing?</span>
+  <span class="ruby-identifier">response_code</span> <span class="ruby-operator">==</span> <span class="ruby-value">404</span>
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+          
+      <div class="method">
+        <div class="title">
+                      <a name="method-i-redirect-3F"></a>
+            <b>redirect?</b>()          
+        </div>
+
+                  <div class="description">
+            <p>Were we redirected?</p>          </div>
+        
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('redirect-3F_source')"
+                 id="l_method-i-redirect-3F_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="redirect-3F_source">
+<pre>
+  <span class="ruby-comment"># File actionpack/lib/action_dispatch/testing/test_response.rb, line 121</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">redirect?</span>
+  (<span class="ruby-value">300</span><span class="ruby-operator">..</span><span class="ruby-value">399</span>).<span class="ruby-identifier">include?</span>(<span class="ruby-identifier">response_code</span>)
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+                
+      <div class="method">
+        <div class="title">
+                      <a name="method-i-success-3F"></a>
+            <b>success?</b>()          
+        </div>
+
+                  <div class="description">
+            <p>Was the response successful?</p>          </div>
+        
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('success-3F_source')"
+                 id="l_method-i-success-3F_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="success-3F_source">
+<pre>
+  <span class="ruby-comment"># File actionpack/lib/action_dispatch/testing/test_response.rb, line 111</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">success?</span>
+  (<span class="ruby-value">200</span><span class="ruby-operator">..</span><span class="ruby-value">299</span>).<span class="ruby-identifier">include?</span>(<span class="ruby-identifier">response_code</span>)
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+              </div>
+  </div>
+  </body>
+</html>

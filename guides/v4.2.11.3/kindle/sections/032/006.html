@@ -1,0 +1,70 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>7 Fonts</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v4.2.11.3/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="fonts">7 Fonts</h3>
+<h4 id="fixed-width-font">7.1 Fixed-width Font</h4>
+
+<p>Use fixed-width fonts for:</p>
+<ul>
+<li>Constants, in particular class and module names.</li>
+<li>Method names.</li>
+<li>Literals like <code>nil</code>, <code>false</code>, <code>true</code>, <code>self</code>.</li>
+<li>Symbols.</li>
+<li>Method parameters.</li>
+<li>File names.</li>
+</ul>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class Array
+  # Calls +to_param+ on all its elements and joins the result with
+  # slashes. This is used by +url_for+ in Action Pack.
+  def to_param
+    collect { |e| e.to_param }.join '/'
+  end
+end
+
+</pre>
+</div>
+<div class="warning"><p>Using <code>+...+</code> for fixed-width font only works with simple content like
+ordinary method names, symbols, paths (with forward slashes), etc. Please use
+<code>&lt;tt&gt;...&lt;/tt&gt;</code> for everything else, notably class or module names with a
+namespace as in <code>&lt;tt&gt;ActiveRecord::Base&lt;/tt&gt;</code>.</p></div>
+
+<p>You can quickly test the RDoc output with the following command:</p>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+$ echo "+:to_param+" | rdoc --pipe
+#=&gt; &lt;p&gt;&lt;code&gt;:to_param&lt;/code&gt;&lt;/p&gt;
+
+</pre>
+</div>
+<h4 id="regular-font">7.2 Regular Font</h4>
+
+<p>When "true" and "false" are English words rather than Ruby keywords use a regular font:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+# Runs all the validations within the specified context.
+# Returns true if no errors are found, false otherwise.
+#
+# If the argument is false (default is +nil+), the context is
+# set to &lt;tt&gt;:create&lt;/tt&gt; if &lt;tt&gt;new_record?&lt;/tt&gt; is true,
+# and to &lt;tt&gt;:update&lt;/tt&gt; if it is not.
+#
+# Validations with no &lt;tt&gt;:on&lt;/tt&gt; option will run no
+# matter the context. Validations with # some &lt;tt&gt;:on&lt;/tt&gt;
+# option will only run in the specified context.
+def valid?(context = nil)
+  ...
+end
+
+</pre>
+</div>
+</body>
+</html>

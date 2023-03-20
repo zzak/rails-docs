@@ -1,0 +1,37 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>3 Choosing Between Import Maps and a JavaScript Bundler</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v7.0.4.2/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="choosing-between-import-maps-and-a-javascript-bundler"><a class="anchorlink" href="#choosing-between-import-maps-and-a-javascript-bundler">3 Choosing Between Import Maps and a JavaScript Bundler</a></h3>
+<p>When you create a new Rails application, you will need to choose between import maps and a
+JavaScript bundling solution. Every application has different requirements, and you should
+consider your requirements carefully before choosing a JavaScript option, as migrating from one
+option to another may be time-consuming for large, complex applications.</p>
+
+<p>Import maps are the default option because the Rails team believes in import maps' potential for
+reducing complexity, improving developer experience, and delivering performance gains.</p>
+
+<p>For many applications, especially those that rely primarily on the <a href="https://hotwired.dev/">Hotwire</a>
+stack for their JavaScript needs, import maps will be the right option for the long term. You
+can read more about the reasoning behind making import maps the default in Rails 7
+<a href="https://world.hey.com/dhh/rails-7-will-have-three-great-answers-to-javascript-in-2021-8d68191b">here</a>.</p>
+
+<p>Other applications may still need a traditional JavaScript bundler. Requirements that indicate
+that you should choose a traditional bundler include:</p>
+<ul>
+<li>If your code requires a transpilation step, such as JSX or TypeScript.</li>
+<li>If you need to use JavaScript libraries that include CSS or otherwise rely on
+<a href="https://webpack.js.org/loaders/">Webpack loaders</a>.</li>
+<li>If you are absolutely sure that you need
+<a href="https://webpack.js.org/guides/tree-shaking/">tree-shaking</a>.</li>
+<li>If you will install Bootstrap, Bulma, PostCSS, or Dart CSS through the
+<a href="https://github.com/rails/cssbundling-rails">cssbundling-rails gem</a>. All options provided by this
+gem except Tailwind will automatically install <code>esbuild</code> for you if you do not specify a different
+option in <code>rails new</code>.</li>
+</ul>
+</body>
+</html>

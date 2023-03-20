@@ -1,0 +1,27 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>2 Migrations</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v6.0.6.1/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="migrations"><a class="anchorlink" href="#migrations">2 Migrations</a></h3>
+<p>Migrations for multiple databases should live in their own folders prefixed with the
+name of the database key in the configuration.</p>
+
+<p>You also need to set the <code>migrations_paths</code> in the database configurations to tell Rails
+where to find the migrations.</p>
+
+<p>For example the <code>animals</code> database would look in the <code>db/animals_migrate</code> directory and
+<code>primary</code> would look in <code>db/migrate</code>. Rails generators now take a <code>--database</code> option
+so that the file is generated in the correct directory. The command can be run like so:</p>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+$ rails g migration CreateDogs name:string --database animals
+
+</pre>
+</div>
+</body>
+</html>

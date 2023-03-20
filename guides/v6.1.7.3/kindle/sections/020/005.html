@@ -1,0 +1,40 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>6 Downloading Files</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v6.1.7.3/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="downloading-files"><a class="anchorlink" href="#downloading-files">6 Downloading Files</a></h3>
+<p>Sometimes you need to process a blob after it’s uploaded—for example, to convert
+it to a different format. Use the attachment's <a href="https://api.rubyonrails.org/v6.1.7.3/classes/ActiveStorage/Blob.html#method-i-download"><code>download</code></a> method to read a blob’s
+binary data into memory:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">binary</span> <span class="o">=</span> <span class="n">user</span><span class="p">.</span><span class="nf">avatar</span><span class="p">.</span><span class="nf">download</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-874f40bc874e306394fc0a96a5260fbc">binary = user.avatar.download
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-874f40bc874e306394fc0a96a5260fbc">Copy</button>
+</div>
+<p>You might want to download a blob to a file on disk so an external program (e.g.
+a virus scanner or media transcoder) can operate on it. Use the attachment's
+<a href="https://api.rubyonrails.org/v6.1.7.3/classes/ActiveStorage/Blob.html#method-i-open"><code>open</code></a> method to download a blob to a tempfile on disk:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">message</span><span class="p">.</span><span class="nf">video</span><span class="p">.</span><span class="nf">open</span> <span class="k">do</span> <span class="o">|</span><span class="n">file</span><span class="o">|</span>
+  <span class="nb">system</span> <span class="s1">'/path/to/virus/scanner'</span><span class="p">,</span> <span class="n">file</span><span class="p">.</span><span class="nf">path</span>
+  <span class="c1"># ...</span>
+<span class="k">end</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-67d83ea15022e20edac6790bcc8351bc">message.video.open do |file|
+  system '/path/to/virus/scanner', file.path
+  # ...
+end
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-67d83ea15022e20edac6790bcc8351bc">Copy</button>
+</div>
+<p>It's important to know that the file is not yet available in the <code>after_create</code> callback but in the <code>after_create_commit</code> only.</p>
+</body>
+</html>

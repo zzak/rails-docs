@@ -1,0 +1,113 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>4 Examples</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v6.1.7.3/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="examples"><a class="anchorlink" href="#examples">4 Examples</a></h3>
+<p>Configure basic routing:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="c1"># app/mailboxes/application_mailbox.rb</span>
+<span class="k">class</span> <span class="nc">ApplicationMailbox</span> <span class="o">&lt;</span> <span class="no">ActionMailbox</span><span class="o">::</span><span class="no">Base</span>
+  <span class="n">routing</span> <span class="sr">/^save@/i</span>     <span class="o">=&gt;</span> <span class="ss">:forwards</span>
+  <span class="n">routing</span> <span class="sr">/@replies\./i</span> <span class="o">=&gt;</span> <span class="ss">:replies</span>
+<span class="k">end</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-92a5b5558ad5e0d8b07b31cdab239482"># app/mailboxes/application_mailbox.rb
+class ApplicationMailbox &lt; ActionMailbox::Base
+  routing /^save@/i     =&gt; :forwards
+  routing /@replies\./i =&gt; :replies
+end
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-92a5b5558ad5e0d8b07b31cdab239482">Copy</button>
+</div>
+<p>Then set up a mailbox:</p>
+
+<div class="code_container">
+<pre><code class="highlight console"><span class="gp">#</span><span class="w"> </span>Generate new mailbox
+<span class="gp">$</span><span class="w"> </span><span class="nb">bin/rails </span>generate mailbox forwards
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-835f34d73119d91f5ef1254a9b1b918f">bin/rails generate mailbox forwards
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-835f34d73119d91f5ef1254a9b1b918f">Copy</button>
+</div>
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="c1"># app/mailboxes/forwards_mailbox.rb</span>
+<span class="k">class</span> <span class="nc">ForwardsMailbox</span> <span class="o">&lt;</span> <span class="no">ApplicationMailbox</span>
+  <span class="c1"># Callbacks specify prerequisites to processing</span>
+  <span class="n">before_processing</span> <span class="ss">:require_projects</span>
+
+  <span class="k">def</span> <span class="nf">process</span>
+    <span class="c1"># Record the forward on the one project, or…</span>
+    <span class="k">if</span> <span class="n">forwarder</span><span class="p">.</span><span class="nf">projects</span><span class="p">.</span><span class="nf">one?</span>
+      <span class="n">record_forward</span>
+    <span class="k">else</span>
+      <span class="c1"># …involve a second Action Mailer to ask which project to forward into.</span>
+      <span class="n">request_forwarding_project</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+
+  <span class="kp">private</span>
+    <span class="k">def</span> <span class="nf">require_projects</span>
+      <span class="k">if</span> <span class="n">forwarder</span><span class="p">.</span><span class="nf">projects</span><span class="p">.</span><span class="nf">none?</span>
+        <span class="c1"># Use Action Mailers to bounce incoming emails back to sender – this halts processing</span>
+        <span class="n">bounce_with</span> <span class="no">Forwards</span><span class="o">::</span><span class="no">BounceMailer</span><span class="p">.</span><span class="nf">no_projects</span><span class="p">(</span><span class="n">inbound_email</span><span class="p">,</span> <span class="ss">forwarder: </span><span class="n">forwarder</span><span class="p">)</span>
+      <span class="k">end</span>
+    <span class="k">end</span>
+
+    <span class="k">def</span> <span class="nf">record_forward</span>
+      <span class="n">forwarder</span><span class="p">.</span><span class="nf">forwards</span><span class="p">.</span><span class="nf">create</span> <span class="ss">subject: </span><span class="n">mail</span><span class="p">.</span><span class="nf">subject</span><span class="p">,</span> <span class="ss">content: </span><span class="n">mail</span><span class="p">.</span><span class="nf">content</span>
+    <span class="k">end</span>
+
+    <span class="k">def</span> <span class="nf">request_forwarding_project</span>
+      <span class="no">Forwards</span><span class="o">::</span><span class="no">RoutingMailer</span><span class="p">.</span><span class="nf">choose_project</span><span class="p">(</span><span class="n">inbound_email</span><span class="p">,</span> <span class="ss">forwarder: </span><span class="n">forwarder</span><span class="p">).</span><span class="nf">deliver_now</span>
+    <span class="k">end</span>
+
+    <span class="k">def</span> <span class="nf">forwarder</span>
+      <span class="vi">@forwarder</span> <span class="o">||=</span> <span class="no">User</span><span class="p">.</span><span class="nf">find_by</span><span class="p">(</span><span class="ss">email_address: </span><span class="n">mail</span><span class="p">.</span><span class="nf">from</span><span class="p">)</span>
+    <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-2cc65f1e3550f1d04a3a43f9b7717593"># app/mailboxes/forwards_mailbox.rb
+class ForwardsMailbox &lt; ApplicationMailbox
+  # Callbacks specify prerequisites to processing
+  before_processing :require_projects
+
+  def process
+    # Record the forward on the one project, or…
+    if forwarder.projects.one?
+      record_forward
+    else
+      # …involve a second Action Mailer to ask which project to forward into.
+      request_forwarding_project
+    end
+  end
+
+  private
+    def require_projects
+      if forwarder.projects.none?
+        # Use Action Mailers to bounce incoming emails back to sender – this halts processing
+        bounce_with Forwards::BounceMailer.no_projects(inbound_email, forwarder: forwarder)
+      end
+    end
+
+    def record_forward
+      forwarder.forwards.create subject: mail.subject, content: mail.content
+    end
+
+    def request_forwarding_project
+      Forwards::RoutingMailer.choose_project(inbound_email, forwarder: forwarder).deliver_now
+    end
+
+    def forwarder
+      @forwarder ||= User.find_by(email_address: mail.from)
+    end
+end
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-2cc65f1e3550f1d04a3a43f9b7717593">Copy</button>
+</div>
+</body>
+</html>

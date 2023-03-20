@@ -1,0 +1,84 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>14 Extensions to Range</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v7.0.4.2/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="extensions-to-range"><a class="anchorlink" href="#extensions-to-range">14 Extensions to <code>Range</code></a></h3>
+<h4 id="extensions-to-range-to-s"><a class="anchorlink" href="#extensions-to-range-to-s">14.1 <code>to_s</code></a></h4>
+
+<p>Active Support extends the method <code>Range#to_s</code> so that it understands an optional format argument. As of this writing the only supported non-default format is <code>:db</code>:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="p">(</span><span class="no">Date</span><span class="p">.</span><span class="nf">today</span><span class="o">..</span><span class="no">Date</span><span class="p">.</span><span class="nf">tomorrow</span><span class="p">).</span><span class="nf">to_s</span>
+<span class="c1"># =&gt; "2009-10-25..2009-10-26"</span>
+
+<span class="p">(</span><span class="no">Date</span><span class="p">.</span><span class="nf">today</span><span class="o">..</span><span class="no">Date</span><span class="p">.</span><span class="nf">tomorrow</span><span class="p">).</span><span class="nf">to_s</span><span class="p">(</span><span class="ss">:db</span><span class="p">)</span>
+<span class="c1"># =&gt; "BETWEEN '2009-10-25' AND '2009-10-26'"</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="(Date.today..Date.tomorrow).to_s
+# =&gt; &quot;2009-10-25..2009-10-26&quot;
+
+(Date.today..Date.tomorrow).to_s(:db)
+# =&gt; &quot;BETWEEN '2009-10-25' AND '2009-10-26'&quot;
+">Copy</button>
+</div>
+<p>As the example depicts, the <code>:db</code> format generates a <code>BETWEEN</code> SQL clause. That is used by Active Record in its support for range values in conditions.</p>
+
+<div class="note"><p>Defined in <code><a href="https://github.com/rails/rails/tree/v7.0.4.2/activesupport/lib/active_support/core_ext/range/conversions.rb">active_support/core_ext/range/conversions.rb</a></code>.</p></div>
+
+<h4 id="and-include-questionmark"><a class="anchorlink" href="#and-include-questionmark">14.2 <code>===</code> and <code>include?</code></a></h4>
+
+<p>The methods <code>Range#===</code> and <code>Range#include?</code> say whether some value falls between the ends of a given instance:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="p">(</span><span class="mi">2</span><span class="o">..</span><span class="mi">3</span><span class="p">).</span><span class="nf">include?</span><span class="p">(</span><span class="no">Math</span><span class="o">::</span><span class="no">E</span><span class="p">)</span> <span class="c1"># =&gt; true</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="(2..3).include?(Math::E) # =&gt; true
+">Copy</button>
+</div>
+<p>Active Support extends these methods so that the argument may be another range in turn. In that case we test whether the ends of the argument range belong to the receiver themselves:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="p">(</span><span class="mi">1</span><span class="o">..</span><span class="mi">10</span><span class="p">)</span> <span class="o">===</span> <span class="p">(</span><span class="mi">3</span><span class="o">..</span><span class="mi">7</span><span class="p">)</span>  <span class="c1"># =&gt; true</span>
+<span class="p">(</span><span class="mi">1</span><span class="o">..</span><span class="mi">10</span><span class="p">)</span> <span class="o">===</span> <span class="p">(</span><span class="mi">0</span><span class="o">..</span><span class="mi">7</span><span class="p">)</span>  <span class="c1"># =&gt; false</span>
+<span class="p">(</span><span class="mi">1</span><span class="o">..</span><span class="mi">10</span><span class="p">)</span> <span class="o">===</span> <span class="p">(</span><span class="mi">3</span><span class="o">..</span><span class="mi">11</span><span class="p">)</span> <span class="c1"># =&gt; false</span>
+<span class="p">(</span><span class="mi">1</span><span class="o">...</span><span class="mi">9</span><span class="p">)</span> <span class="o">===</span> <span class="p">(</span><span class="mi">3</span><span class="o">..</span><span class="mi">9</span><span class="p">)</span>  <span class="c1"># =&gt; false</span>
+
+<span class="p">(</span><span class="mi">1</span><span class="o">..</span><span class="mi">10</span><span class="p">).</span><span class="nf">include?</span><span class="p">(</span><span class="mi">3</span><span class="o">..</span><span class="mi">7</span><span class="p">)</span>  <span class="c1"># =&gt; true</span>
+<span class="p">(</span><span class="mi">1</span><span class="o">..</span><span class="mi">10</span><span class="p">).</span><span class="nf">include?</span><span class="p">(</span><span class="mi">0</span><span class="o">..</span><span class="mi">7</span><span class="p">)</span>  <span class="c1"># =&gt; false</span>
+<span class="p">(</span><span class="mi">1</span><span class="o">..</span><span class="mi">10</span><span class="p">).</span><span class="nf">include?</span><span class="p">(</span><span class="mi">3</span><span class="o">..</span><span class="mi">11</span><span class="p">)</span> <span class="c1"># =&gt; false</span>
+<span class="p">(</span><span class="mi">1</span><span class="o">...</span><span class="mi">9</span><span class="p">).</span><span class="nf">include?</span><span class="p">(</span><span class="mi">3</span><span class="o">..</span><span class="mi">9</span><span class="p">)</span>  <span class="c1"># =&gt; false</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="(1..10) === (3..7)  # =&gt; true
+(1..10) === (0..7)  # =&gt; false
+(1..10) === (3..11) # =&gt; false
+(1...9) === (3..9)  # =&gt; false
+
+(1..10).include?(3..7)  # =&gt; true
+(1..10).include?(0..7)  # =&gt; false
+(1..10).include?(3..11) # =&gt; false
+(1...9).include?(3..9)  # =&gt; false
+">Copy</button>
+</div>
+<div class="note"><p>Defined in <code><a href="https://github.com/rails/rails/tree/v7.0.4.2/activesupport/lib/active_support/core_ext/range/compare_range.rb">active_support/core_ext/range/compare_range.rb</a></code>.</p></div>
+
+<h4 id="overlaps-questionmark"><a class="anchorlink" href="#overlaps-questionmark">14.3 <code>overlaps?</code></a></h4>
+
+<p>The method <a href="https://api.rubyonrails.org/v7.0.4.2/classes/Range.html#method-i-overlaps-3F"><code>Range#overlaps?</code></a> says whether any two given ranges have non-void intersection:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="p">(</span><span class="mi">1</span><span class="o">..</span><span class="mi">10</span><span class="p">).</span><span class="nf">overlaps?</span><span class="p">(</span><span class="mi">7</span><span class="o">..</span><span class="mi">11</span><span class="p">)</span>  <span class="c1"># =&gt; true</span>
+<span class="p">(</span><span class="mi">1</span><span class="o">..</span><span class="mi">10</span><span class="p">).</span><span class="nf">overlaps?</span><span class="p">(</span><span class="mi">0</span><span class="o">..</span><span class="mi">7</span><span class="p">)</span>   <span class="c1"># =&gt; true</span>
+<span class="p">(</span><span class="mi">1</span><span class="o">..</span><span class="mi">10</span><span class="p">).</span><span class="nf">overlaps?</span><span class="p">(</span><span class="mi">11</span><span class="o">..</span><span class="mi">27</span><span class="p">)</span> <span class="c1"># =&gt; false</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="(1..10).overlaps?(7..11)  # =&gt; true
+(1..10).overlaps?(0..7)   # =&gt; true
+(1..10).overlaps?(11..27) # =&gt; false
+">Copy</button>
+</div>
+<div class="note"><p>Defined in <code><a href="https://github.com/rails/rails/tree/v7.0.4.2/activesupport/lib/active_support/core_ext/range/overlaps.rb">active_support/core_ext/range/overlaps.rb</a></code>.</p></div>
+</body>
+</html>

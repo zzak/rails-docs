@@ -1,0 +1,50 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>6 Validations</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v6.1.7.3/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="validations"><a class="anchorlink" href="#validations">6 Validations</a></h3>
+<p>Active Record allows you to validate the state of a model before it gets written
+into the database. There are several methods that you can use to check your
+models and validate that an attribute value is not empty, is unique and not
+already in the database, follows a specific format, and many more.</p>
+
+<p>Validation is a very important issue to consider when persisting to the database, so
+the methods <code>save</code> and <code>update</code> take it into account when
+running: they return <code>false</code> when validation fails and they don't actually
+perform any operations on the database. All of these have a bang counterpart (that
+is, <code>save!</code> and <code>update!</code>), which are stricter in that
+they raise the exception <code>ActiveRecord::RecordInvalid</code> if validation fails.
+A quick example to illustrate:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">User</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="n">validates</span> <span class="ss">:name</span><span class="p">,</span> <span class="ss">presence: </span><span class="kp">true</span>
+<span class="k">end</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-72d2e37dafa0e8b444984a6e3398ea42">class User &lt; ApplicationRecord
+  validates :name, presence: true
+end
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-72d2e37dafa0e8b444984a6e3398ea42">Copy</button>
+</div>
+<div class="code_container">
+<pre><code class="highlight irb"><span class="gp">irb&gt;</span><span class="w"> </span><span class="n">user</span> <span class="o">=</span> <span class="no">User</span><span class="p">.</span><span class="nf">new</span>
+<span class="gp">irb&gt;</span><span class="w"> </span><span class="n">user</span><span class="p">.</span><span class="nf">save</span>
+<span class="p">=&gt;</span> <span class="kp">false</span>
+<span class="gp">irb&gt;</span><span class="w"> </span><span class="n">user</span><span class="p">.</span><span class="nf">save!</span>
+<span class="go">ActiveRecord::RecordInvalid: Validation failed: Name can't be blank
+</span></code></pre>
+<textarea class="clipboard-content" id="clipboard-047b678216d6df9516b91d2171a97c8c">user = User.new
+user.save
+user.save!
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-047b678216d6df9516b91d2171a97c8c">Copy</button>
+</div>
+<p>You can learn more about validations in the <a href="active_record_validations.html">Active Record Validations
+guide</a>.</p>
+</body>
+</html>

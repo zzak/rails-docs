@@ -1,0 +1,110 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>14 Rescue</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v7.0.4.2/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="rescue"><a class="anchorlink" href="#rescue">14 Rescue</a></h3>
+<p>Most likely your application is going to contain bugs or otherwise throw an exception that needs to be handled. For example, if the user follows a link to a resource that no longer exists in the database, Active Record will throw the <code>ActiveRecord::RecordNotFound</code> exception.</p>
+
+<p>Rails default exception handling displays a "500 Server Error" message for all exceptions. If the request was made locally, a nice traceback and some added information gets displayed, so you can figure out what went wrong and deal with it. If the request was remote Rails will just display a simple "500 Server Error" message to the user, or a "404 Not Found" if there was a routing error, or a record could not be found. Sometimes you might want to customize how these errors are caught and how they're displayed to the user. There are several levels of exception handling available in a Rails application:</p>
+
+<h4 id="the-default-500-and-404-templates"><a class="anchorlink" href="#the-default-500-and-404-templates">14.1 The Default 500 and 404 Templates</a></h4>
+
+<p>By default, in the production environment the application will render either a 404, or a 500 error message. In the development environment all unhandled exceptions are simply raised. These messages are contained in static HTML files in the public folder, in <code>404.html</code> and <code>500.html</code> respectively. You can customize these files to add some extra information and style, but remember that they are static HTML; i.e. you can't use ERB, SCSS, CoffeeScript, or layouts for them.</p>
+
+<h4 id="rescue-from"><a class="anchorlink" href="#rescue-from">14.2 <code>rescue_from</code></a></h4>
+
+<p>If you want to do something a bit more elaborate when catching errors, you can use <a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveSupport/Rescuable/ClassMethods.html#method-i-rescue_from"><code>rescue_from</code></a>, which handles exceptions of a certain type (or multiple types) in an entire controller and its subclasses.</p>
+
+<p>When an exception occurs which is caught by a <code>rescue_from</code> directive, the exception object is passed to the handler. The handler can be a method or a <code>Proc</code> object passed to the <code>:with</code> option. You can also use a block directly instead of an explicit <code>Proc</code> object.</p>
+
+<p>Here's how you can use <code>rescue_from</code> to intercept all <code>ActiveRecord::RecordNotFound</code> errors and do something with them.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">ApplicationController</span> <span class="o">&lt;</span> <span class="no">ActionController</span><span class="o">::</span><span class="no">Base</span>
+  <span class="n">rescue_from</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">RecordNotFound</span><span class="p">,</span> <span class="ss">with: :record_not_found</span>
+
+  <span class="kp">private</span>
+    <span class="k">def</span> <span class="nf">record_not_found</span>
+      <span class="n">render</span> <span class="ss">plain: </span><span class="s2">"404 Not Found"</span><span class="p">,</span> <span class="ss">status: </span><span class="mi">404</span>
+    <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='class ApplicationController &lt; ActionController::Base
+  rescue_from ActiveRecord::RecordNotFound, with: :record_not_found
+
+  private
+    def record_not_found
+      render plain: "404 Not Found", status: 404
+    end
+end
+'>Copy</button>
+</div>
+<p>Of course, this example is anything but elaborate and doesn't improve on the default exception handling at all, but once you can catch all those exceptions you're free to do whatever you want with them. For example, you could create custom exception classes that will be thrown when a user doesn't have access to a certain section of your application:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">ApplicationController</span> <span class="o">&lt;</span> <span class="no">ActionController</span><span class="o">::</span><span class="no">Base</span>
+  <span class="n">rescue_from</span> <span class="no">User</span><span class="o">::</span><span class="no">NotAuthorized</span><span class="p">,</span> <span class="ss">with: :user_not_authorized</span>
+
+  <span class="kp">private</span>
+    <span class="k">def</span> <span class="nf">user_not_authorized</span>
+      <span class="n">flash</span><span class="p">[</span><span class="ss">:error</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"You don't have access to this section."</span>
+      <span class="n">redirect_back</span><span class="p">(</span><span class="ss">fallback_location: </span><span class="n">root_path</span><span class="p">)</span>
+    <span class="k">end</span>
+<span class="k">end</span>
+
+<span class="k">class</span> <span class="nc">ClientsController</span> <span class="o">&lt;</span> <span class="no">ApplicationController</span>
+  <span class="c1"># Check that the user has the right authorization to access clients.</span>
+  <span class="n">before_action</span> <span class="ss">:check_authorization</span>
+
+  <span class="c1"># Note how the actions don't have to worry about all the auth stuff.</span>
+  <span class="k">def</span> <span class="nf">edit</span>
+    <span class="vi">@client</span> <span class="o">=</span> <span class="no">Client</span><span class="p">.</span><span class="nf">find</span><span class="p">(</span><span class="n">params</span><span class="p">[</span><span class="ss">:id</span><span class="p">])</span>
+  <span class="k">end</span>
+
+  <span class="kp">private</span>
+    <span class="c1"># If the user is not authorized, just throw the exception.</span>
+    <span class="k">def</span> <span class="nf">check_authorization</span>
+      <span class="k">raise</span> <span class="no">User</span><span class="o">::</span><span class="no">NotAuthorized</span> <span class="k">unless</span> <span class="n">current_user</span><span class="p">.</span><span class="nf">admin?</span>
+    <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="class ApplicationController &lt; ActionController::Base
+  rescue_from User::NotAuthorized, with: :user_not_authorized
+
+  private
+    def user_not_authorized
+      flash[:error] = &quot;You don't have access to this section.&quot;
+      redirect_back(fallback_location: root_path)
+    end
+end
+
+class ClientsController &lt; ApplicationController
+  # Check that the user has the right authorization to access clients.
+  before_action :check_authorization
+
+  # Note how the actions don't have to worry about all the auth stuff.
+  def edit
+    @client = Client.find(params[:id])
+  end
+
+  private
+    # If the user is not authorized, just throw the exception.
+    def check_authorization
+      raise User::NotAuthorized unless current_user.admin?
+    end
+end
+">Copy</button>
+</div>
+<div class="warning"><p>Using <code>rescue_from</code> with <code>Exception</code> or <code>StandardError</code> would cause serious side-effects as it prevents Rails from handling exceptions properly. As such, it is not recommended to do so unless there is a strong reason.</p></div>
+
+<div class="note"><p>When running in the production environment, all
+<code>ActiveRecord::RecordNotFound</code> errors render the 404 error page. Unless you need
+a custom behavior you don't need to handle this.</p></div>
+
+<div class="note"><p>Certain exceptions are only rescuable from the <code>ApplicationController</code> class, as they are raised before the controller gets initialized, and the action gets executed.</p></div>
+</body>
+</html>

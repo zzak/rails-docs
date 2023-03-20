@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html 
+     PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+  <head>
+    <title>Module: RackLintPatch::AllowStringSubclass</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <link rel="stylesheet" href="../.././rdoc-style.css" type="text/css" media="screen" />
+
+    <script language="JavaScript" type="text/javascript">
+    // <![CDATA[
+
+        function toggleSource( id )
+        {
+          var elem
+          var link
+
+          if( document.getElementById )
+          {
+            elem = document.getElementById( id )
+            link = document.getElementById( "l_" + id )
+          }
+          else if ( document.all )
+          {
+            elem = eval( "document.all." + id )
+            link = eval( "document.all.l_" + id )
+          }
+          else
+            return false;
+
+          if( elem.style.display == "block" )
+          {
+            elem.style.display = "none"
+            link.innerHTML = "show source"
+          }
+          else
+          {
+            elem.style.display = "block"
+            link.innerHTML = "hide source"
+          }
+        }
+
+        function openCode( url )
+        {
+          window.open( url, "SOURCE_CODE", "resizable=yes,scrollbars=yes,toolbar=no,status=no,height=480,width=750" ).focus();
+        }
+      // ]]>
+    </script>
+  </head>
+
+  <body>
+  <table width="100%" border='0' cellpadding='0' cellspacing='0' class='banner'><tr>
+  <td class="file-title"><span class="file-title-prefix">Module</span><br />RackLintPatch::AllowStringSubclass</td>
+  <td align="right">
+    <table cellspacing="0" cellpadding="2">
+      <tr valign="top">
+        <td>In:</td>
+        <td>
+<a href="../../files/actionpack/lib/action_controller/rack_lint_patch_rb.html">actionpack/lib/action_controller/rack_lint_patch.rb</a>
+        </td>
+      </tr>
+         </table>
+        </td>
+        </tr>
+      </table>
+ <!-- banner header -->
+
+  <div id="bodyContent">
+      <div id="content">
+
+
+
+
+  <div class="sectiontitle">Methods</div>
+  <ul>
+  <li><a href="#M001914">each_with_hack</a></li>
+  <li><a href="#M001913">included</a></li>
+  </ul>
+
+
+
+
+
+
+<div class="sectiontitle">Public Class methods</div>
+<div class="method">
+  <div class="title">
+    <a name="M001913"></a><b>included</b>(base)
+  </div>
+<div class="sourcecode">
+  <p class="source-link">[ <a href="javascript:toggleSource('M001913_source')" id="l_M001913_source">show source</a> ]</p>
+  <div id="M001913_source" class="dyn-source">
+<pre>
+   <span class="ruby-comment cmt"># File actionpack/lib/action_controller/rack_lint_patch.rb, line 7</span>
+7:     <span class="ruby-keyword kw">def</span> <span class="ruby-keyword kw">self</span>.<span class="ruby-identifier">included</span>(<span class="ruby-identifier">base</span>)
+8:       <span class="ruby-identifier">base</span>.<span class="ruby-identifier">send</span> <span class="ruby-identifier">:alias_method</span>, <span class="ruby-identifier">:each</span>, <span class="ruby-identifier">:each_with_hack</span>
+9:     <span class="ruby-keyword kw">end</span>
+</pre>
+  </div>
+</div>
+</div>
+<div class="sectiontitle">Public Instance methods</div>
+<div class="method">
+  <div class="title">
+    <a name="M001914"></a><b>each_with_hack</b>() {|part| ...}
+  </div>
+<div class="sourcecode">
+  <p class="source-link">[ <a href="javascript:toggleSource('M001914_source')" id="l_M001914_source">show source</a> ]</p>
+  <div id="M001914_source" class="dyn-source">
+<pre>
+    <span class="ruby-comment cmt"># File actionpack/lib/action_controller/rack_lint_patch.rb, line 11</span>
+11:     <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">each_with_hack</span>
+12:       <span class="ruby-ivar">@closed</span> = <span class="ruby-keyword kw">false</span>
+13: 
+14:       <span class="ruby-ivar">@body</span>.<span class="ruby-identifier">each</span> { <span class="ruby-operator">|</span><span class="ruby-identifier">part</span><span class="ruby-operator">|</span>
+15:         <span class="ruby-identifier">assert</span>(<span class="ruby-node">&quot;Body yielded non-string value #{part.inspect}&quot;</span>) {
+16:           <span class="ruby-identifier">part</span>.<span class="ruby-identifier">kind_of?</span>(<span class="ruby-constant">String</span>)
+17:         }
+18:         <span class="ruby-keyword kw">yield</span> <span class="ruby-identifier">part</span>
+19:       }
+20: 
+21:       <span class="ruby-keyword kw">if</span> <span class="ruby-ivar">@body</span>.<span class="ruby-identifier">respond_to?</span>(<span class="ruby-identifier">:to_path</span>)
+22:         <span class="ruby-identifier">assert</span>(<span class="ruby-value str">&quot;The file identified by body.to_path does not exist&quot;</span>) {
+23:           <span class="ruby-operator">::</span><span class="ruby-constant">File</span>.<span class="ruby-identifier">exist?</span> <span class="ruby-ivar">@body</span>.<span class="ruby-identifier">to_path</span>
+24:         }
+25:       <span class="ruby-keyword kw">end</span>
+26:     <span class="ruby-keyword kw">end</span>
+</pre>
+  </div>
+</div>
+</div>
+</div>
+
+  </div>
+
+    </body>
+</html>

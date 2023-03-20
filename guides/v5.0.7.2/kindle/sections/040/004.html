@@ -1,0 +1,376 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>5 Upgrading from Rails 3.2 to Rails 4.0</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v5.0.7.2/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="upgrading-from-rails-3-2-to-rails-4-0">5 Upgrading from Rails 3.2 to Rails 4.0</h3>
+<p>If your application is currently on any version of Rails older than 3.2.x, you should upgrade to Rails 3.2 before attempting one to Rails 4.0.</p>
+
+<p>The following changes are meant for upgrading your application to Rails 4.0.</p>
+
+<h4 id="http-patch">5.1 HTTP PATCH</h4>
+
+<p>Rails 4 now uses <code>PATCH</code> as the primary HTTP verb for updates when a RESTful
+resource is declared in <code>config/routes.rb</code>. The <code>update</code> action is still used,
+and <code>PUT</code> requests will continue to be routed to the <code>update</code> action as well.
+So, if you're using only the standard RESTful routes, no changes need to be made:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+resources :users
+
+</pre>
+</div>
+<div class="code_container">
+<pre class="brush: ruby; html-script: true; gutter: false; toolbar: false">
+&lt;%= form_for @user do |f| %&gt;
+
+</pre>
+</div>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class UsersController &lt; ApplicationController
+  def update
+    # No change needed; PATCH will be preferred, and PUT will still work.
+  end
+end
+
+</pre>
+</div>
+<p>However, you will need to make a change if you are using <code>form_for</code> to update
+a resource in conjunction with a custom route using the <code>PUT</code> HTTP method:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+resources :users, do
+  put :update_name, on: :member
+end
+
+</pre>
+</div>
+<div class="code_container">
+<pre class="brush: ruby; html-script: true; gutter: false; toolbar: false">
+&lt;%= form_for [ :update_name, @user ] do |f| %&gt;
+
+</pre>
+</div>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class UsersController &lt; ApplicationController
+  def update_name
+    # Change needed; form_for will try to use a non-existent PATCH route.
+  end
+end
+
+</pre>
+</div>
+<p>If the action is not being used in a public API and you are free to change the
+HTTP method, you can update your route to use <code>patch</code> instead of <code>put</code>:</p>
+
+<p><code>PUT</code> requests to <code>/users/:id</code> in Rails 4 get routed to <code>update</code> as they are
+today. So, if you have an API that gets real PUT requests it is going to work.
+The router also routes <code>PATCH</code> requests to <code>/users/:id</code> to the <code>update</code> action.</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+resources :users do
+  patch :update_name, on: :member
+end
+
+</pre>
+</div>
+<p>If the action is being used in a public API and you can't change to HTTP method
+being used, you can update your form to use the <code>PUT</code> method instead:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; html-script: true; gutter: false; toolbar: false">
+&lt;%= form_for [ :update_name, @user ], method: :put do |f| %&gt;
+
+</pre>
+</div>
+<p>For more on PATCH and why this change was made, see <a href="http://weblog.rubyonrails.org/2012/2/26/edge-rails-patch-is-the-new-primary-http-method-for-updates/">this post</a>
+on the Rails blog.</p>
+
+<h5 id="a-note-about-media-types">5.1.1 A note about media types</h5>
+
+<p>The errata for the <code>PATCH</code> verb <a href="http://www.rfc-editor.org/errata_search.php?rfc=5789">specifies that a 'diff' media type should be
+used with <code>PATCH</code></a>. One
+such format is <a href="http://tools.ietf.org/html/rfc6902">JSON Patch</a>. While Rails
+does not support JSON Patch natively, it's easy enough to add support:</p>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+# in your controller
+def update
+  respond_to do |format|
+    format.json do
+      # perform a partial update
+      @article.update params[:article]
+    end
+
+    format.json_patch do
+      # perform sophisticated change
+    end
+  end
+end
+
+# In config/initializers/json_patch.rb:
+Mime::Type.register 'application/json-patch+json', :json_patch
+
+</pre>
+</div>
+<p>As JSON Patch was only recently made into an RFC, there aren't a lot of great
+Ruby libraries yet. Aaron Patterson's
+<a href="https://github.com/tenderlove/hana">hana</a> is one such gem, but doesn't have
+full support for the last few changes in the specification.</p>
+
+<h4 id="upgrading-from-rails-3-2-to-rails-4-0-gemfile">5.2 Gemfile</h4>
+
+<p>Rails 4.0 removed the <code>assets</code> group from Gemfile. You'd need to remove that
+line from your Gemfile when upgrading. You should also update your application
+file (in <code>config/application.rb</code>):</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+# Require the gems listed in Gemfile, including any gems
+# you've limited to :test, :development, or :production.
+Bundler.require(*Rails.groups)
+
+</pre>
+</div>
+<h4 id="upgrading-from-rails-3-2-to-rails-4-0-vendor-plugins">5.3 vendor/plugins</h4>
+
+<p>Rails 4.0 no longer supports loading plugins from <code>vendor/plugins</code>. You must replace any plugins by extracting them to gems and adding them to your Gemfile. If you choose not to make them gems, you can move them into, say, <code>lib/my_plugin/*</code> and add an appropriate initializer in <code>config/initializers/my_plugin.rb</code>.</p>
+
+<h4 id="upgrading-from-rails-3-2-to-rails-4-0-active-record">5.4 Active Record</h4>
+<ul>
+<li>Rails 4.0 has removed the identity map from Active Record, due to <a href="https://github.com/rails/rails/commit/302c912bf6bcd0fa200d964ec2dc4a44abe328a6">some inconsistencies with associations</a>. If you have manually enabled it in your application, you will have to remove the following config that has no effect anymore: <code>config.active_record.identity_map</code>.</li>
+<li>The <code>delete</code> method in collection associations can now receive <code>Integer</code> or <code>String</code> arguments as record ids, besides records, pretty much like the <code>destroy</code> method does. Previously it raised <code>ActiveRecord::AssociationTypeMismatch</code> for such arguments. From Rails 4.0 on <code>delete</code> automatically tries to find the records matching the given ids before deleting them.</li>
+<li>In Rails 4.0 when a column or a table is renamed the related indexes are also renamed. If you have migrations which rename the indexes, they are no longer needed.</li>
+<li>Rails 4.0 has changed <code>serialized_attributes</code> and <code>attr_readonly</code> to class methods only. You shouldn't use instance methods since it's now deprecated. You should change them to use class methods, e.g. <code>self.serialized_attributes</code> to <code>self.class.serialized_attributes</code>.</li>
+<li>When using the default coder, assigning <code>nil</code> to a serialized attribute will save it
+to the database as <code>NULL</code> instead of passing the <code>nil</code> value through YAML (<code>"--- \n...\n"</code>).</li>
+<li>Rails 4.0 has removed <code>attr_accessible</code> and <code>attr_protected</code> feature in favor of Strong Parameters. You can use the <a href="https://github.com/rails/protected_attributes">Protected Attributes gem</a> for a smooth upgrade path.</li>
+<li>If you are not using Protected Attributes, you can remove any options related to
+this gem such as <code>whitelist_attributes</code> or <code>mass_assignment_sanitizer</code> options.</li>
+<li>Rails 4.0 requires that scopes use a callable object such as a Proc or lambda:</li>
+</ul>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+  scope :active, where(active: true)
+
+  # becomes
+  scope :active, -&gt; { where active: true }
+
+</pre>
+</div>
+<ul>
+<li>Rails 4.0 has deprecated <code>ActiveRecord::Fixtures</code> in favor of <code>ActiveRecord::FixtureSet</code>.</li>
+<li>Rails 4.0 has deprecated <code>ActiveRecord::TestCase</code> in favor of <code>ActiveSupport::TestCase</code>.</li>
+<li>Rails 4.0 has deprecated the old-style hash based finder API. This means that
+methods which previously accepted "finder options" no longer do.  For example, <code>Book.find(:all, conditions: { name: '1984' })</code> has been deprecated in favor of <code>Book.where(name: '1984')</code>
+</li>
+<li>
+All dynamic methods except for <code>find_by_...</code> and <code>find_by_...!</code> are deprecated.
+Here's how you can handle the changes:
+<ul>
+<li>
+<code>find_all_by_...</code>           becomes <code>where(...)</code>.</li>
+<li>
+<code>find_last_by_...</code>          becomes <code>where(...).last</code>.</li>
+<li>
+<code>scoped_by_...</code>             becomes <code>where(...)</code>.</li>
+<li>
+<code>find_or_initialize_by_...</code> becomes <code>find_or_initialize_by(...)</code>.</li>
+<li>
+<code>find_or_create_by_...</code>     becomes <code>find_or_create_by(...)</code>.</li>
+</ul>
+</li>
+<li>Note that <code>where(...)</code> returns a relation, not an array like the old finders. If you require an <code>Array</code>, use <code>where(...).to_a</code>.</li>
+<li>These equivalent methods may not execute the same SQL as the previous implementation.</li>
+<li>To re-enable the old finders, you can use the <a href="https://github.com/rails/activerecord-deprecated_finders">activerecord-deprecated_finders gem</a>.</li>
+<li>Rails 4.0 has changed to default join table for <code>has_and_belongs_to_many</code> relations to strip the common prefix off the second table name. Any existing <code>has_and_belongs_to_many</code> relationship between models with a common prefix must be specified with the <code>join_table</code> option. For example:</li>
+</ul>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+CatalogCategory &lt; ActiveRecord::Base
+  has_and_belongs_to_many :catalog_products, join_table: 'catalog_categories_catalog_products'
+end
+
+CatalogProduct &lt; ActiveRecord::Base
+  has_and_belongs_to_many :catalog_categories, join_table: 'catalog_categories_catalog_products'
+end
+
+</pre>
+</div>
+<ul>
+<li>Note that the prefix takes scopes into account as well, so relations between <code>Catalog::Category</code> and <code>Catalog::Product</code> or <code>Catalog::Category</code> and <code>CatalogProduct</code> need to be updated similarly.</li>
+</ul>
+<h4 id="active-resource">5.5 Active Resource</h4>
+
+<p>Rails 4.0 extracted Active Resource to its own gem. If you still need the feature you can add the <a href="https://github.com/rails/activeresource">Active Resource gem</a> in your Gemfile.</p>
+
+<h4 id="active-model">5.6 Active Model</h4>
+<ul>
+<li>Rails 4.0 has changed how errors attach with the <code>ActiveModel::Validations::ConfirmationValidator</code>. Now when confirmation validations fail, the error will be attached to <code>:#{attribute}_confirmation</code> instead of <code>attribute</code>.</li>
+<li>Rails 4.0 has changed <code>ActiveModel::Serializers::JSON.include_root_in_json</code> default value to <code>false</code>. Now, Active Model Serializers and Active Record objects have the same default behavior. This means that you can comment or remove the following option in the <code>config/initializers/wrap_parameters.rb</code> file:</li>
+</ul>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+# Disable root element in JSON by default.
+# ActiveSupport.on_load(:active_record) do
+#   self.include_root_in_json = false
+# end
+
+</pre>
+</div>
+<h4 id="action-pack">5.7 Action Pack</h4>
+<ul>
+<li>Rails 4.0 introduces <code>ActiveSupport::KeyGenerator</code> and uses this as a base from which to generate and verify signed cookies (among other things). Existing signed cookies generated with Rails 3.x will be transparently upgraded if you leave your existing <code>secret_token</code> in place and add the new <code>secret_key_base</code>.</li>
+</ul>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+  # config/initializers/secret_token.rb
+  Myapp::Application.config.secret_token = 'existing secret token'
+  Myapp::Application.config.secret_key_base = 'new secret key base'
+
+</pre>
+</div>
+<p>Please note that you should wait to set <code>secret_key_base</code> until you have 100% of your userbase on Rails 4.x and are reasonably sure you will not need to rollback to Rails 3.x. This is because cookies signed based on the new <code>secret_key_base</code> in Rails 4.x are not backwards compatible with Rails 3.x. You are free to leave your existing <code>secret_token</code> in place, not set the new <code>secret_key_base</code>, and ignore the deprecation warnings until you are reasonably sure that your upgrade is otherwise complete.</p>
+
+<p>If you are relying on the ability for external applications or JavaScript to be able to read your Rails app's signed session cookies (or signed cookies in general) you should not set <code>secret_key_base</code> until you have decoupled these concerns.</p>
+<ul>
+<li>Rails 4.0 encrypts the contents of cookie-based sessions if <code>secret_key_base</code> has been set. Rails 3.x signed, but did not encrypt, the contents of cookie-based session. Signed cookies are "secure" in that they are verified to have been generated by your app and are tamper-proof. However, the contents can be viewed by end users, and encrypting the contents eliminates this caveat/concern without a significant performance penalty.</li>
+</ul>
+<p>Please read <a href="https://github.com/rails/rails/pull/9978">Pull Request #9978</a> for details on the move to encrypted session cookies.</p>
+<ul>
+<li>Rails 4.0 removed the <code>ActionController::Base.asset_path</code> option. Use the assets pipeline feature.</li>
+<li>Rails 4.0 has deprecated <code>ActionController::Base.page_cache_extension</code> option. Use <code>ActionController::Base.default_static_extension</code> instead.</li>
+<li>Rails 4.0 has removed Action and Page caching from Action Pack. You will need to add the <code>actionpack-action_caching</code> gem in order to use <code>caches_action</code> and the <code>actionpack-page_caching</code> to use <code>caches_page</code> in your controllers.</li>
+<li>Rails 4.0 has removed the XML parameters parser. You will need to add the <code>actionpack-xml_parser</code> gem if you require this feature.</li>
+<li>Rails 4.0 changes the default <code>layout</code> lookup set using symbols or procs that return nil. To get the "no layout" behavior, return false instead of nil.</li>
+<li>Rails 4.0 changes the default memcached client from <code>memcache-client</code> to <code>dalli</code>. To upgrade, simply add <code>gem 'dalli'</code> to your <code>Gemfile</code>.</li>
+<li>Rails 4.0 deprecates the <code>dom_id</code> and <code>dom_class</code> methods in controllers (they are fine in views). You will need to include the <code>ActionView::RecordIdentifier</code> module in controllers requiring this feature.</li>
+<li>Rails 4.0 deprecates the <code>:confirm</code> option for the <code>link_to</code> helper. You should
+instead rely on a data attribute (e.g. <code>data: { confirm: 'Are you sure?' }</code>).
+This deprecation also concerns the helpers based on this one (such as <code>link_to_if</code>
+or <code>link_to_unless</code>).</li>
+<li>Rails 4.0 changed how <code>assert_generates</code>, <code>assert_recognizes</code>, and <code>assert_routing</code> work. Now all these assertions raise <code>Assertion</code> instead of <code>ActionController::RoutingError</code>.</li>
+<li>Rails 4.0 raises an <code>ArgumentError</code> if clashing named routes are defined. This can be triggered by explicitly defined named routes or by the <code>resources</code> method. Here are two examples that clash with routes named <code>example_path</code>:</li>
+</ul>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+  get 'one' =&gt; 'test#example', as: :example
+  get 'two' =&gt; 'test#example', as: :example
+
+</pre>
+</div>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+  resources :examples
+  get 'clashing/:id' =&gt; 'test#example', as: :example
+
+</pre>
+</div>
+<p>In the first case, you can simply avoid using the same name for multiple
+routes. In the second, you can use the <code>only</code> or <code>except</code> options provided by
+the <code>resources</code> method to restrict the routes created as detailed in the
+<a href="routing.html#restricting-the-routes-created">Routing Guide</a>.</p>
+<ul>
+<li>Rails 4.0 also changed the way unicode character routes are drawn. Now you can draw unicode character routes directly. If you already draw such routes, you must change them, for example:</li>
+</ul>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+get Rack::Utils.escape('こんにちは'), controller: 'welcome', action: 'index'
+
+</pre>
+</div>
+<p>becomes</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+get 'こんにちは', controller: 'welcome', action: 'index'
+
+</pre>
+</div>
+<ul>
+<li>Rails 4.0 requires that routes using <code>match</code> must specify the request method. For example:</li>
+</ul>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+  # Rails 3.x
+  match '/' =&gt; 'root#index'
+
+  # becomes
+  match '/' =&gt; 'root#index', via: :get
+
+  # or
+  get '/' =&gt; 'root#index'
+
+</pre>
+</div>
+<ul>
+<li>Rails 4.0 has removed <code>ActionDispatch::BestStandardsSupport</code> middleware, <code>&lt;!DOCTYPE html&gt;</code> already triggers standards mode per <a href="http://msdn.microsoft.com/en-us/library/jj676915(v=vs.85).aspx">http://msdn.microsoft.com/en-us/library/jj676915(v=vs.85).aspx</a> and ChromeFrame header has been moved to <code>config.action_dispatch.default_headers</code>.</li>
+</ul>
+<p>Remember you must also remove any references to the middleware from your application code, for example:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+# Raise exception
+config.middleware.insert_before(Rack::Lock, ActionDispatch::BestStandardsSupport)
+
+</pre>
+</div>
+<p>Also check your environment settings for <code>config.action_dispatch.best_standards_support</code> and remove it if present.</p>
+<ul>
+<li>In Rails 4.0, precompiling assets no longer automatically copies non-JS/CSS assets from <code>vendor/assets</code> and <code>lib/assets</code>. Rails application and engine developers should put these assets in <code>app/assets</code> or configure <code>config.assets.precompile</code>.</li>
+<li>In Rails 4.0, <code>ActionController::UnknownFormat</code> is raised when the action doesn't handle the request format. By default, the exception is handled by responding with 406 Not Acceptable, but you can override that now. In Rails 3, 406 Not Acceptable was always returned. No overrides.</li>
+<li>In Rails 4.0, a generic <code>ActionDispatch::ParamsParser::ParseError</code> exception is raised when <code>ParamsParser</code> fails to parse request params. You will want to rescue this exception instead of the low-level <code>MultiJson::DecodeError</code>, for example.</li>
+<li>In Rails 4.0, <code>SCRIPT_NAME</code> is properly nested when engines are mounted on an app that's served from a URL prefix. You no longer have to set <code>default_url_options[:script_name]</code> to work around overwritten URL prefixes.</li>
+<li>Rails 4.0 deprecated <code>ActionController::Integration</code> in favor of <code>ActionDispatch::Integration</code>.</li>
+<li>Rails 4.0 deprecated <code>ActionController::IntegrationTest</code> in favor of <code>ActionDispatch::IntegrationTest</code>.</li>
+<li>Rails 4.0 deprecated <code>ActionController::PerformanceTest</code> in favor of <code>ActionDispatch::PerformanceTest</code>.</li>
+<li>Rails 4.0 deprecated <code>ActionController::AbstractRequest</code> in favor of <code>ActionDispatch::Request</code>.</li>
+<li>Rails 4.0 deprecated <code>ActionController::Request</code> in favor of <code>ActionDispatch::Request</code>.</li>
+<li>Rails 4.0 deprecated <code>ActionController::AbstractResponse</code> in favor of <code>ActionDispatch::Response</code>.</li>
+<li>Rails 4.0 deprecated <code>ActionController::Response</code> in favor of <code>ActionDispatch::Response</code>.</li>
+<li>Rails 4.0 deprecated <code>ActionController::Routing</code> in favor of <code>ActionDispatch::Routing</code>.</li>
+</ul>
+<h4 id="active-support">5.8 Active Support</h4>
+
+<p>Rails 4.0 removes the <code>j</code> alias for <code>ERB::Util#json_escape</code> since <code>j</code> is already used for <code>ActionView::Helpers::JavaScriptHelper#escape_javascript</code>.</p>
+
+<h5 id="cache">5.8.1 Cache</h5>
+
+<p>The caching method changed between Rails 3.x and 4.0. You should <a href="http://guides.rubyonrails.org/caching_with_rails.html#activesupport-cache-store">change the cache namespace</a> and roll out with a cold cache.</p>
+
+<h4 id="helpers-loading-order">5.9 Helpers Loading Order</h4>
+
+<p>The order in which helpers from more than one directory are loaded has changed in Rails 4.0. Previously, they were gathered and then sorted alphabetically. After upgrading to Rails 4.0, helpers will preserve the order of loaded directories and will be sorted alphabetically only within each directory. Unless you explicitly use the <code>helpers_path</code> parameter, this change will only impact the way of loading helpers from engines. If you rely on the ordering, you should check if correct methods are available after upgrade. If you would like to change the order in which engines are loaded, you can use <code>config.railties_order=</code> method.</p>
+
+<h4 id="active-record-observer-and-action-controller-sweeper">5.10 Active Record Observer and Action Controller Sweeper</h4>
+
+<p><code>ActiveRecord::Observer</code> and <code>ActionController::Caching::Sweeper</code> have been extracted to the <code>rails-observers</code> gem. You will need to add the <code>rails-observers</code> gem if you require these features.</p>
+
+<h4 id="sprockets-rails">5.11 sprockets-rails</h4>
+<ul>
+<li>
+<code>assets:precompile:primary</code> and <code>assets:precompile:all</code> have been removed. Use <code>assets:precompile</code> instead.</li>
+<li>The <code>config.assets.compress</code> option should be changed to <code>config.assets.js_compressor</code> like so for instance:</li>
+</ul>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+config.assets.js_compressor = :uglifier
+
+</pre>
+</div>
+<h4 id="sass-rails">5.12 sass-rails</h4>
+<ul>
+<li>
+<code>asset-url</code> with two arguments is deprecated. For example: <code>asset-url("rails.png", image)</code> becomes <code>asset-url("rails.png")</code>.</li>
+</ul>
+</body>
+</html>

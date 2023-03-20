@@ -1,0 +1,314 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>3 Writing a Migration</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v4.0.13/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="writing-a-migration">3 Writing a Migration</h3>
+<p>Once you have created your migration using one of the generators it's time to
+get to work!</p>
+<h4 id="creating-a-table">3.1 Creating a Table</h4>
+<p>The <code>create_table</code> method is one of the most fundamental, but most of the time,
+will be generated for you from using a model or scaffold generator. A typical
+use would be</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+create_table :products do |t|
+  t.string :name
+end
+
+</pre>
+</div>
+<p>which creates a <code>products</code> table with a column called <code>name</code> (and as discussed
+below, an implicit <code>id</code> column).</p>
+<p>By default, <code>create_table</code> will create a primary key called <code>id</code>. You can change
+the name of the primary key with the <code>:primary_key</code> option (don't forget to
+update the corresponding model) or, if you don't want a primary key at all, you
+can pass the option <code>id: false</code>. If you need to pass database specific options
+you can place an SQL fragment in the <code>:options</code> option. For example,</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+create_table :products, options: "ENGINE=BLACKHOLE" do |t|
+  t.string :name, null: false
+end
+
+</pre>
+</div>
+<p>will append <code>ENGINE=BLACKHOLE</code> to the SQL statement used to create the table
+(when using MySQL, the default is <code>ENGINE=InnoDB</code>).</p>
+<h4 id="creating-a-join-table">3.2 Creating a Join Table</h4>
+<p>Migration method <code>create_join_table</code> creates a HABTM join table. A typical use
+would be</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+create_join_table :products, :categories
+
+</pre>
+</div>
+<p>which creates a <code>categories_products</code> table with two columns called
+<code>category_id</code> and <code>product_id</code>. These columns have the option <code>:null</code> set to
+<code>false</code> by default.</p>
+<p>You can pass the option <code>:table_name</code> when you want to customize the table
+name. For example,</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+create_join_table :products, :categories, table_name: :categorization
+
+</pre>
+</div>
+<p>will create a <code>categorization</code> table.</p>
+<p>By default, <code>create_join_table</code> will create two columns with no options, but
+you can specify these options using the <code>:column_options</code> option. For example,</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+create_join_table :products, :categories, column_options: {null: true}
+
+</pre>
+</div>
+<p>will create the <code>product_id</code> and <code>category_id</code> with the <code>:null</code> option as
+<code>true</code>.</p>
+<p><code>create_join_table</code> also accepts a block, which you can use to add indices
+(which are not created by default) or additional columns:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+create_join_table :products, :categories do |t|
+  t.index :product_id
+  t.index :category_id
+end
+
+</pre>
+</div>
+<h4 id="changing-tables">3.3 Changing Tables</h4>
+<p>A close cousin of <code>create_table</code> is <code>change_table</code>, used for changing existing
+tables. It is used in a similar fashion to <code>create_table</code> but the object
+yielded to the block knows more tricks. For example</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+change_table :products do |t|
+  t.remove :description, :name
+  t.string :part_number
+  t.index :part_number
+  t.rename :upccode, :upc_code
+end
+
+</pre>
+</div>
+<p>removes the <code>description</code> and <code>name</code> columns, creates a <code>part_number</code> string
+column and adds an index on it. Finally it renames the <code>upccode</code> column.</p>
+<h4 id="when-helpers-aren-t-enough">3.4 When Helpers aren't Enough</h4>
+<p>If the helpers provided by Active Record aren't enough you can use the <code>execute</code>
+method to execute arbitrary SQL:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+Product.connection.execute('UPDATE `products` SET `price`=`free` WHERE 1')
+
+</pre>
+</div>
+<p>For more details and examples of individual methods, check the API documentation.
+In particular the documentation for
+<a href="http://api.rubyonrails.org/classes/ActiveRecord/ConnectionAdapters/SchemaStatements.html"><code>ActiveRecord::ConnectionAdapters::SchemaStatements</code></a>
+(which provides the methods available in the <code>change</code>, <code>up</code> and <code>down</code> methods),
+<a href="http://api.rubyonrails.org/classes/ActiveRecord/ConnectionAdapters/TableDefinition.html"><code>ActiveRecord::ConnectionAdapters::TableDefinition</code></a>
+(which provides the methods available on the object yielded by <code>create_table</code>)
+and
+<a href="http://api.rubyonrails.org/classes/ActiveRecord/ConnectionAdapters/Table.html"><code>ActiveRecord::ConnectionAdapters::Table</code></a>
+(which provides the methods available on the object yielded by <code>change_table</code>).</p>
+<h4 id="using-the-change-method">3.5 Using the <code>change</code> Method</h4>
+<p>The <code>change</code> method is the primary way of writing migrations. It works for the
+majority of cases, where Active Record knows how to reverse the migration
+automatically. Currently, the <code>change</code> method supports only these migration
+definitions:</p>
+<ul>
+<li><code>add_column</code></li>
+<li><code>add_index</code></li>
+<li><code>add_reference</code></li>
+<li><code>add_timestamps</code></li>
+<li><code>create_table</code></li>
+<li><code>create_join_table</code></li>
+<li>
+<code>drop_table</code> (must supply a block)</li>
+<li>
+<code>drop_join_table</code>  (must supply a block)</li>
+<li><code>remove_timestamps</code></li>
+<li><code>rename_column</code></li>
+<li><code>rename_index</code></li>
+<li><code>remove_reference</code></li>
+<li><code>rename_table</code></li>
+</ul>
+<p><code>change_table</code> is also reversible, as long as the block does not call <code>change</code>,
+<code>change_default</code> or <code>remove</code>.</p>
+<p>If you're going to need to use any other methods, you should use <code>reversible</code>
+or write the <code>up</code> and <code>down</code> methods instead of using the <code>change</code> method.</p>
+<h4 id="using-reversible">3.6 Using <code>reversible</code>
+</h4>
+<p>Complex migrations may require processing that Active Record doesn't know how
+to reverse. You can use <code>reversible</code> to specify what to do when running a
+migration what else to do when reverting it. For example,</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class ExampleMigration &lt; ActiveRecord::Migration
+  def change
+    create_table :products do |t|
+      t.references :category
+    end
+
+    reversible do |dir|
+      dir.up do
+        #add a foreign key
+        execute &lt;&lt;-SQL
+          ALTER TABLE products
+            ADD CONSTRAINT fk_products_categories
+            FOREIGN KEY (category_id)
+            REFERENCES categories(id)
+        SQL
+      end
+      dir.down do
+        execute &lt;&lt;-SQL
+          ALTER TABLE products
+            DROP FOREIGN KEY fk_products_categories
+        SQL
+      end
+    end
+
+    add_column :users, :home_page_url, :string
+    rename_column :users, :email, :email_address
+  end
+
+</pre>
+</div>
+<p>Using <code>reversible</code> will ensure that the instructions are executed in the
+right order too. If the previous example migration is reverted,
+the <code>down</code> block will be run after the <code>home_page_url</code> column is removed and
+right before the table <code>products</code> is dropped.</p>
+<p>Sometimes your migration will do something which is just plain irreversible; for
+example, it might destroy some data. In such cases, you can raise
+<code>ActiveRecord::IrreversibleMigration</code> in your <code>down</code> block. If someone tries
+to revert your migration, an error message will be displayed saying that it
+can't be done.</p>
+<h4 id="using-the-up-down-methods">3.7 Using the <code>up</code>/<code>down</code> Methods</h4>
+<p>You can also use the old style of migration using <code>up</code> and <code>down</code> methods
+instead of the <code>change</code> method.
+The <code>up</code> method should describe the transformation you'd like to make to your
+schema, and the <code>down</code> method of your migration should revert the
+transformations done by the <code>up</code> method. In other words, the database schema
+should be unchanged if you do an <code>up</code> followed by a <code>down</code>. For example, if you
+create a table in the <code>up</code> method, you should drop it in the <code>down</code> method. It
+is wise to reverse the transformations in precisely the reverse order they were
+made in the <code>up</code> method. The example in the <code>reversible</code> section is equivalent to:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class ExampleMigration &lt; ActiveRecord::Migration
+  def up
+    create_table :products do |t|
+      t.references :category
+    end
+
+    # add a foreign key
+    execute &lt;&lt;-SQL
+      ALTER TABLE products
+        ADD CONSTRAINT fk_products_categories
+        FOREIGN KEY (category_id)
+        REFERENCES categories(id)
+    SQL
+
+    add_column :users, :home_page_url, :string
+    rename_column :users, :email, :email_address
+  end
+
+  def down
+    rename_column :users, :email_address, :email
+    remove_column :users, :home_page_url
+
+    execute &lt;&lt;-SQL
+      ALTER TABLE products
+        DROP FOREIGN KEY fk_products_categories
+    SQL
+
+    drop_table :products
+  end
+end
+
+</pre>
+</div>
+<p>If your migration is irreversible, you should raise
+<code>ActiveRecord::IrreversibleMigration</code> from your <code>down</code> method. If someone tries
+to revert your migration, an error message will be displayed saying that it
+can't be done.</p>
+<h4 id="reverting-previous-migrations">3.8 Reverting Previous Migrations</h4>
+<p>You can use Active Record's ability to rollback migrations using the <code>revert</code> method:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+require_relative '2012121212_example_migration'
+
+class FixupExampleMigration &lt; ActiveRecord::Migration
+  def change
+    revert ExampleMigration
+
+    create_table(:apples) do |t|
+      t.string :variety
+    end
+  end
+end
+
+</pre>
+</div>
+<p>The <code>revert</code> method also accepts a block of instructions to reverse.
+This could be useful to revert selected parts of previous migrations.
+For example, let's imagine that <code>ExampleMigration</code> is committed and it
+is later decided it would be best to serialize the product list instead.
+One could write:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class SerializeProductListMigration &lt; ActiveRecord::Migration
+  def change
+    add_column :categories, :product_list
+
+    reversible do |dir|
+      dir.up do
+        # transfer data from Products to Category#product_list
+      end
+      dir.down do
+        # create Products from Category#product_list
+      end
+    end
+
+    revert do
+      # copy-pasted code from ExampleMigration
+      create_table :products do |t|
+        t.references :category
+      end
+
+      reversible do |dir|
+        dir.up do
+          #add a foreign key
+          execute &lt;&lt;-SQL
+            ALTER TABLE products
+              ADD CONSTRAINT fk_products_categories
+              FOREIGN KEY (category_id)
+              REFERENCES categories(id)
+          SQL
+        end
+        dir.down do
+          execute &lt;&lt;-SQL
+            ALTER TABLE products
+              DROP FOREIGN KEY fk_products_categories
+          SQL
+        end
+      end
+
+      # The rest of the migration was ok
+    end
+  end
+end
+
+</pre>
+</div>
+<p>The same migration could also have been written without using <code>revert</code>
+but this would have involved a few more steps: reversing the order
+of <code>create_table</code> and <code>reversible</code>, replacing <code>create_table</code>
+by <code>drop_table</code>, and finally replacing <code>up</code> by <code>down</code> and vice-versa.
+This is all taken care of by <code>revert</code>.</p>
+</body>
+</html>

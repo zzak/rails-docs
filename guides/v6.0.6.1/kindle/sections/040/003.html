@@ -1,0 +1,438 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>4 Hooking Into an Application</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v6.0.6.1/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="hooking-into-an-application"><a class="anchorlink" href="#hooking-into-an-application">4 Hooking Into an Application</a></h3>
+<p>Using an engine within an application is very easy. This section covers how to
+mount the engine into an application and the initial setup required, as well as
+linking the engine to a <code>User</code> class provided by the application to provide
+ownership for articles and comments within the engine.</p>
+
+<h4 id="mounting-the-engine"><a class="anchorlink" href="#mounting-the-engine">4.1 Mounting the Engine</a></h4>
+
+<p>First, the engine needs to be specified inside the application's <code>Gemfile</code>. If
+there isn't an application handy to test this out in, generate one using the
+<code>rails new</code> command outside of the engine directory like this:</p>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+$ rails new unicorn
+
+</pre>
+</div>
+<p>Usually, specifying the engine inside the <code>Gemfile</code> would be done by specifying it
+as a normal, everyday gem.</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+gem 'devise'
+
+</pre>
+</div>
+<p>However, because you are developing the <code>blorgh</code> engine on your local machine,
+you will need to specify the <code>:path</code> option in your <code>Gemfile</code>:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+gem 'blorgh', path: 'engines/blorgh'
+
+</pre>
+</div>
+<p>Then run <code>bundle</code> to install the gem.</p>
+
+<p>As described earlier, by placing the gem in the <code>Gemfile</code> it will be loaded when
+Rails is loaded. It will first require <code>lib/blorgh.rb</code> from the engine, then
+<code>lib/blorgh/engine.rb</code>, which is the file that defines the major pieces of
+functionality for the engine.</p>
+
+<p>To make the engine's functionality accessible from within an application, it
+needs to be mounted in that application's <code>config/routes.rb</code> file:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+mount Blorgh::Engine, at: "/blog"
+
+</pre>
+</div>
+<p>This line will mount the engine at <code>/blog</code> in the application. Making it
+accessible at <code>http://localhost:3000/blog</code> when the application runs with <code>rails
+server</code>.</p>
+
+<div class="note"><p>Other engines, such as Devise, handle this a little differently by making
+you specify custom helpers (such as <code>devise_for</code>) in the routes. These helpers
+do exactly the same thing, mounting pieces of the engines's functionality at a
+pre-defined path which may be customizable.</p></div>
+
+<h4 id="engine-setup"><a class="anchorlink" href="#engine-setup">4.2 Engine setup</a></h4>
+
+<p>The engine contains migrations for the <code>blorgh_articles</code> and <code>blorgh_comments</code>
+table which need to be created in the application's database so that the
+engine's models can query them correctly. To copy these migrations into the
+application run the following command from the application's root:</p>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+$ rails blorgh:install:migrations
+
+</pre>
+</div>
+<p>If you have multiple engines that need migrations copied over, use
+<code>railties:install:migrations</code> instead:</p>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+$ rails railties:install:migrations
+
+</pre>
+</div>
+<p>This command, when run for the first time, will copy over all the migrations
+from the engine. When run the next time, it will only copy over migrations that
+haven't been copied over already. The first run for this command will output
+something such as this:</p>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+Copied migration [timestamp_1]_create_blorgh_articles.blorgh.rb from blorgh
+Copied migration [timestamp_2]_create_blorgh_comments.blorgh.rb from blorgh
+
+</pre>
+</div>
+<p>The first timestamp (<code>[timestamp_1]</code>) will be the current time, and the second
+timestamp (<code>[timestamp_2]</code>) will be the current time plus a second. The reason
+for this is so that the migrations for the engine are run after any existing
+migrations in the application.</p>
+
+<p>To run these migrations within the context of the application, simply run <code>rails
+db:migrate</code>. When accessing the engine through <code>http://localhost:3000/blog</code>, the
+articles will be empty. This is because the table created inside the application is
+different from the one created within the engine. Go ahead, play around with the
+newly mounted engine. You'll find that it's the same as when it was only an
+engine.</p>
+
+<p>If you would like to run migrations only from one engine, you can do it by
+specifying <code>SCOPE</code>:</p>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+rails db:migrate SCOPE=blorgh
+
+</pre>
+</div>
+<p>This may be useful if you want to revert engine's migrations before removing it.
+To revert all migrations from blorgh engine you can run code such as:</p>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+rails db:migrate SCOPE=blorgh VERSION=0
+
+</pre>
+</div>
+<h4 id="using-a-class-provided-by-the-application"><a class="anchorlink" href="#using-a-class-provided-by-the-application">4.3 Using a Class Provided by the Application</a></h4>
+
+<h5 id="using-a-model-provided-by-the-application"><a class="anchorlink" href="#using-a-model-provided-by-the-application">4.3.1 Using a Model Provided by the Application</a></h5>
+
+<p>When an engine is created, it may want to use specific classes from an
+application to provide links between the pieces of the engine and the pieces of
+the application. In the case of the <code>blorgh</code> engine, making articles and comments
+have authors would make a lot of sense.</p>
+
+<p>A typical application might have a <code>User</code> class that would be used to represent
+authors for an article or a comment. But there could be a case where the
+application calls this class something different, such as <code>Person</code>. For this
+reason, the engine should not hardcode associations specifically for a <code>User</code>
+class.</p>
+
+<p>To keep it simple in this case, the application will have a class called <code>User</code>
+that represents the users of the application (we'll get into making this
+configurable further on). It can be generated using this command inside the
+application:</p>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+rails g model user name:string
+
+</pre>
+</div>
+<p>The <code>rails db:migrate</code> command needs to be run here to ensure that our
+application has the <code>users</code> table for future use.</p>
+
+<p>Also, to keep it simple, the articles form will have a new text field called
+<code>author_name</code>, where users can elect to put their name. The engine will then
+take this name and either create a new <code>User</code> object from it, or find one that
+already has that name. The engine will then associate the article with the found or
+created <code>User</code> object.</p>
+
+<p>First, the <code>author_name</code> text field needs to be added to the
+<code>app/views/blorgh/articles/_form.html.erb</code> partial inside the engine. This can be
+added above the <code>title</code> field with this code:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; html-script: true; gutter: false; toolbar: false">
+&lt;div class="field"&gt;
+  &lt;%= form.label :author_name %&gt;&lt;br&gt;
+  &lt;%= form.text_field :author_name %&gt;
+&lt;/div&gt;
+
+</pre>
+</div>
+<p>Next, we need to update our <code>Blorgh::ArticleController#article_params</code> method to
+permit the new form parameter:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+def article_params
+  params.require(:article).permit(:title, :text, :author_name)
+end
+
+</pre>
+</div>
+<p>The <code>Blorgh::Article</code> model should then have some code to convert the <code>author_name</code>
+field into an actual <code>User</code> object and associate it as that article's <code>author</code>
+before the article is saved. It will also need to have an <code>attr_accessor</code> set up
+for this field, so that the setter and getter methods are defined for it.</p>
+
+<p>To do all this, you'll need to add the <code>attr_accessor</code> for <code>author_name</code>, the
+association for the author and the <code>before_validation</code> call into
+<code>app/models/blorgh/article.rb</code>. The <code>author</code> association will be hard-coded to the
+<code>User</code> class for the time being.</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+attr_accessor :author_name
+belongs_to :author, class_name: "User"
+
+before_validation :set_author
+
+private
+  def set_author
+    self.author = User.find_or_create_by(name: author_name)
+  end
+
+</pre>
+</div>
+<p>By representing the <code>author</code> association's object with the <code>User</code> class, a link
+is established between the engine and the application. There needs to be a way
+of associating the records in the <code>blorgh_articles</code> table with the records in the
+<code>users</code> table. Because the association is called <code>author</code>, there should be an
+<code>author_id</code> column added to the <code>blorgh_articles</code> table.</p>
+
+<p>To generate this new column, run this command within the engine:</p>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+$ rails g migration add_author_id_to_blorgh_articles author_id:integer
+
+</pre>
+</div>
+<div class="note"><p>Due to the migration's name and the column specification after it, Rails
+will automatically know that you want to add a column to a specific table and
+write that into the migration for you. You don't need to tell it any more than
+this.</p></div>
+
+<p>This migration will need to be run on the application. To do that, it must first
+be copied using this command:</p>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+$ rails blorgh:install:migrations
+
+</pre>
+</div>
+<p>Notice that only <em>one</em> migration was copied over here. This is because the first
+two migrations were copied over the first time this command was run.</p>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+NOTE Migration [timestamp]_create_blorgh_articles.blorgh.rb from blorgh has been skipped. Migration with the same name already exists.
+NOTE Migration [timestamp]_create_blorgh_comments.blorgh.rb from blorgh has been skipped. Migration with the same name already exists.
+Copied migration [timestamp]_add_author_id_to_blorgh_articles.blorgh.rb from blorgh
+
+</pre>
+</div>
+<p>Run the migration using:</p>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+$ rails db:migrate
+
+</pre>
+</div>
+<p>Now with all the pieces in place, an action will take place that will associate
+an author - represented by a record in the <code>users</code> table - with an article,
+represented by the <code>blorgh_articles</code> table from the engine.</p>
+
+<p>Finally, the author's name should be displayed on the article's page. Add this code
+above the "Title" output inside <code>app/views/blorgh/articles/show.html.erb</code>:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; html-script: true; gutter: false; toolbar: false">
+&lt;p&gt;
+  &lt;b&gt;Author:&lt;/b&gt;
+  &lt;%= @article.author.name %&gt;
+&lt;/p&gt;
+
+</pre>
+</div>
+<h5 id="using-a-controller-provided-by-the-application"><a class="anchorlink" href="#using-a-controller-provided-by-the-application">4.3.2 Using a Controller Provided by the Application</a></h5>
+
+<p>Because Rails controllers generally share code for things like authentication
+and accessing session variables, they inherit from <code>ApplicationController</code> by
+default. Rails engines, however are scoped to run independently from the main
+application, so each engine gets a scoped <code>ApplicationController</code>. This
+namespace prevents code collisions, but often engine controllers need to access
+methods in the main application's <code>ApplicationController</code>. An easy way to
+provide this access is to change the engine's scoped <code>ApplicationController</code> to
+inherit from the main application's <code>ApplicationController</code>. For our Blorgh
+engine this would be done by changing
+<code>app/controllers/blorgh/application_controller.rb</code> to look like:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+module Blorgh
+  class ApplicationController &lt; ::ApplicationController
+  end
+end
+
+</pre>
+</div>
+<p>By default, the engine's controllers inherit from
+<code>Blorgh::ApplicationController</code>. So, after making this change they will have
+access to the main application's <code>ApplicationController</code>, as though they were
+part of the main application.</p>
+
+<p>This change does require that the engine is run from a Rails application that
+has an <code>ApplicationController</code>.</p>
+
+<h4 id="configuring-an-engine"><a class="anchorlink" href="#configuring-an-engine">4.4 Configuring an Engine</a></h4>
+
+<p>This section covers how to make the <code>User</code> class configurable, followed by
+general configuration tips for the engine.</p>
+
+<h5 id="setting-configuration-settings-in-the-application"><a class="anchorlink" href="#setting-configuration-settings-in-the-application">4.4.1 Setting Configuration Settings in the Application</a></h5>
+
+<p>The next step is to make the class that represents a <code>User</code> in the application
+customizable for the engine. This is because that class may not always be
+<code>User</code>, as previously explained. To make this setting customizable, the engine
+will have a configuration setting called <code>author_class</code> that will be used to
+specify which class represents users inside the application.</p>
+
+<p>To define this configuration setting, you should use a <code>mattr_accessor</code> inside
+the <code>Blorgh</code> module for the engine. Add this line to <code>lib/blorgh.rb</code> inside the
+engine:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+mattr_accessor :author_class
+
+</pre>
+</div>
+<p>This method works like its siblings, <code>attr_accessor</code> and <code>cattr_accessor</code>, but
+provides a setter and getter method on the module with the specified name. To
+use it, it must be referenced using <code>Blorgh.author_class</code>.</p>
+
+<p>The next step is to switch the <code>Blorgh::Article</code> model over to this new setting.
+Change the <code>belongs_to</code> association inside this model
+(<code>app/models/blorgh/article.rb</code>) to this:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+belongs_to :author, class_name: Blorgh.author_class
+
+</pre>
+</div>
+<p>The <code>set_author</code> method in the <code>Blorgh::Article</code> model should also use this class:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+self.author = Blorgh.author_class.constantize.find_or_create_by(name: author_name)
+
+</pre>
+</div>
+<p>To save having to call <code>constantize</code> on the <code>author_class</code> result all the time,
+you could instead just override the <code>author_class</code> getter method inside the
+<code>Blorgh</code> module in the <code>lib/blorgh.rb</code> file to always call <code>constantize</code> on the
+saved value before returning the result:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+def self.author_class
+  @@author_class.constantize
+end
+
+</pre>
+</div>
+<p>This would then turn the above code for <code>set_author</code> into this:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+self.author = Blorgh.author_class.find_or_create_by(name: author_name)
+
+</pre>
+</div>
+<p>Resulting in something a little shorter, and more implicit in its behavior. The
+<code>author_class</code> method should always return a <code>Class</code> object.</p>
+
+<p>Since we changed the <code>author_class</code> method to return a <code>Class</code> instead of a
+<code>String</code>, we must also modify our <code>belongs_to</code> definition in the <code>Blorgh::Article</code>
+model:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+belongs_to :author, class_name: Blorgh.author_class.to_s
+
+</pre>
+</div>
+<p>To set this configuration setting within the application, an initializer should
+be used. By using an initializer, the configuration will be set up before the
+application starts and calls the engine's models, which may depend on this
+configuration setting existing.</p>
+
+<p>Create a new initializer at <code>config/initializers/blorgh.rb</code> inside the
+application where the <code>blorgh</code> engine is installed and put this content in it:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+Blorgh.author_class = "User"
+
+</pre>
+</div>
+<div class="warning"><p>It's very important here to use the <code>String</code> version of the class,
+rather than the class itself. If you were to use the class, Rails would attempt
+to load that class and then reference the related table. This could lead to
+problems if the table didn't already exist. Therefore, a <code>String</code> should be
+used and then converted to a class using <code>constantize</code> in the engine later on.</p></div>
+
+<p>Go ahead and try to create a new article. You will see that it works exactly in the
+same way as before, except this time the engine is using the configuration
+setting in <code>config/initializers/blorgh.rb</code> to learn what the class is.</p>
+
+<p>There are now no strict dependencies on what the class is, only what the API for
+the class must be. The engine simply requires this class to define a
+<code>find_or_create_by</code> method which returns an object of that class, to be
+associated with an article when it's created. This object, of course, should have
+some sort of identifier by which it can be referenced.</p>
+
+<h5 id="general-engine-configuration"><a class="anchorlink" href="#general-engine-configuration">4.4.2 General Engine Configuration</a></h5>
+
+<p>Within an engine, there may come a time where you wish to use things such as
+initializers, internationalization, or other configuration options. The great
+news is that these things are entirely possible, because a Rails engine shares
+much the same functionality as a Rails application. In fact, a Rails
+application's functionality is actually a superset of what is provided by
+engines!</p>
+
+<p>If you wish to use an initializer - code that should run before the engine is
+loaded - the place for it is the <code>config/initializers</code> folder. This directory's
+functionality is explained in the <a href="configuring.html#initializers">Initializers
+section</a> of the Configuring guide, and works
+precisely the same way as the <code>config/initializers</code> directory inside an
+application. The same thing goes if you want to use a standard initializer.</p>
+
+<p>For locales, simply place the locale files in the <code>config/locales</code> directory,
+just like you would in an application.</p>
+</body>
+</html>

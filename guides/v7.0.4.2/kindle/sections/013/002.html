@@ -1,0 +1,46 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>3 Methods and Actions</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v7.0.4.2/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="methods-and-actions"><a class="anchorlink" href="#methods-and-actions">3 Methods and Actions</a></h3>
+<p>A controller is a Ruby class which inherits from <code>ApplicationController</code> and has methods just like any other class. When your application receives a request, the routing will determine which controller and action to run, then Rails creates an instance of that controller and runs the method with the same name as the action.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">ClientsController</span> <span class="o">&lt;</span> <span class="no">ApplicationController</span>
+  <span class="k">def</span> <span class="nf">new</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="class ClientsController &lt; ApplicationController
+  def new
+  end
+end
+">Copy</button>
+</div>
+<p>As an example, if a user goes to <code>/clients/new</code> in your application to add a new client, Rails will create an instance of <code>ClientsController</code> and call its <code>new</code> method. Note that the empty method from the example above would work just fine because Rails will by default render the <code>new.html.erb</code> view unless the action says otherwise. By creating a new <code>Client</code>, the <code>new</code> method can make a <code>@client</code> instance variable accessible in the view:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">def</span> <span class="nf">new</span>
+  <span class="vi">@client</span> <span class="o">=</span> <span class="no">Client</span><span class="p">.</span><span class="nf">new</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="def new
+  @client = Client.new
+end
+">Copy</button>
+</div>
+<p>The <a href="layouts_and_rendering.html">Layouts and Rendering Guide</a> explains this in more detail.</p>
+
+<p><code>ApplicationController</code> inherits from <a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActionController/Base.html"><code>ActionController::Base</code></a>, which defines a number of helpful methods. This guide will cover some of these, but if you're curious to see what's in there, you can see all of them in the <a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActionController.html">API documentation</a> or in the source itself.</p>
+
+<p>Only public methods are callable as actions. It is a best practice to lower the visibility of methods (with <code>private</code> or <code>protected</code>) which are not intended to be actions, like auxiliary methods or filters.</p>
+
+<div class="warning"><p>Some method names are reserved by Action Controller. Accidentally redefining them as actions, or even as auxiliary methods, could result in <code>SystemStackError</code>. If you limit your controllers to only RESTful <a href="routing.html#resource-routing-the-rails-default">Resource Routing</a> actions you should not need to worry about this.</p></div>
+
+<div class="note"><p>If you must use a reserved method as an action name, one workaround is to use a custom route to map the reserved method name to your non-reserved action method.</p></div>
+</body>
+</html>

@@ -1,0 +1,66 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>7 Activating automatic shard switching</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v7.0.4.2/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="activating-automatic-shard-switching"><a class="anchorlink" href="#activating-automatic-shard-switching">7 Activating automatic shard switching</a></h3>
+<p>Applications are able to automatically switch shards per request using the provided
+middleware.</p>
+
+<p>The ShardSelector Middleware provides a framework for automatically
+swapping shards. Rails provides a basic framework to determine which
+shard to switch to and allows for applications to write custom strategies
+for swapping if needed.</p>
+
+<p>The ShardSelector takes a set of options (currently only <code>lock</code> is supported)
+that can be used by the middleware to alter behavior. <code>lock</code> is
+true by default and will prohibit the request from switching shards once
+inside the block. If <code>lock</code> is false, then shard swapping will be allowed.
+For tenant based sharding, <code>lock</code> should always be true to prevent application
+code from mistakenly switching between tenants.</p>
+
+<p>The same generator as the database selector can be used to generate the file for
+automatic shard swapping:</p>
+
+<div class="code_container">
+<pre><code class="highlight plaintext">$ bin/rails g active_record:multi_db
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="$ bin/rails g active_record:multi_db
+">Copy</button>
+</div>
+<p>Then in the file uncomment the following:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="no">Rails</span><span class="p">.</span><span class="nf">application</span><span class="p">.</span><span class="nf">configure</span> <span class="k">do</span>
+  <span class="n">config</span><span class="p">.</span><span class="nf">active_record</span><span class="p">.</span><span class="nf">shard_selector</span> <span class="o">=</span> <span class="p">{</span> <span class="ss">lock: </span><span class="kp">true</span> <span class="p">}</span>
+  <span class="n">config</span><span class="p">.</span><span class="nf">active_record</span><span class="p">.</span><span class="nf">shard_resolver</span> <span class="o">=</span> <span class="o">-&gt;</span><span class="p">(</span><span class="n">request</span><span class="p">)</span> <span class="p">{</span> <span class="no">Tenant</span><span class="p">.</span><span class="nf">find_by!</span><span class="p">(</span><span class="ss">host: </span><span class="n">request</span><span class="p">.</span><span class="nf">host</span><span class="p">).</span><span class="nf">shard</span> <span class="p">}</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="Rails.application.configure do
+  config.active_record.shard_selector = { lock: true }
+  config.active_record.shard_resolver = -&gt;(request) { Tenant.find_by!(host: request.host).shard }
+end
+">Copy</button>
+</div>
+<p>Applications must provide the code for the resolver as it depends on application
+specific models. An example resolver would look like this:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">config</span><span class="p">.</span><span class="nf">active_record</span><span class="p">.</span><span class="nf">shard_resolver</span> <span class="o">=</span> <span class="o">-&gt;</span><span class="p">(</span><span class="n">request</span><span class="p">)</span> <span class="p">{</span>
+  <span class="n">subdomain</span> <span class="o">=</span> <span class="n">request</span><span class="p">.</span><span class="nf">subdomain</span>
+  <span class="n">tenant</span> <span class="o">=</span> <span class="no">Tenant</span><span class="p">.</span><span class="nf">find_by_subdomain!</span><span class="p">(</span><span class="n">subdomain</span><span class="p">)</span>
+  <span class="n">tenant</span><span class="p">.</span><span class="nf">shard</span>
+<span class="p">}</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="config.active_record.shard_resolver = -&gt;(request) {
+  subdomain = request.subdomain
+  tenant = Tenant.find_by_subdomain!(subdomain)
+  tenant.shard
+}
+">Copy</button>
+</div>
+</body>
+</html>

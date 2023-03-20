@@ -1,0 +1,310 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>7 Working with Validation Errors</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v6.1.7.3/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="working-with-validation-errors"><a class="anchorlink" href="#working-with-validation-errors">7 Working with Validation Errors</a></h3>
+<p>The <a href="https://api.rubyonrails.org/v6.1.7.3/classes/ActiveRecord/Validations.html#method-i-valid-3F"><code>valid?</code></a> and <a href="https://api.rubyonrails.org/v6.1.7.3/classes/ActiveModel/Validations.html#method-i-invalid-3F"><code>invalid?</code></a> methods only provide a summary status on validity. However you can dig deeper into each individual error by using various methods from the <a href="https://api.rubyonrails.org/v6.1.7.3/classes/ActiveModel/Validations.html#method-i-errors"><code>errors</code></a> collection.</p>
+
+<p>The following is a list of the most commonly used methods. Please refer to the <a href="https://api.rubyonrails.org/v6.1.7.3/classes/ActiveModel/Errors.html"><code>ActiveModel::Errors</code></a> documentation for a list of all the available methods.</p>
+
+<h4 id="working-with-validation-errors-errors"><a class="anchorlink" href="#working-with-validation-errors-errors">7.1 <code>errors</code></a></h4>
+
+<p>The gateway through which you can drill down into various details of each error.</p>
+
+<p>This returns an instance of the class <code>ActiveModel::Errors</code> containing all errors,
+each error is represented by an <a href="https://api.rubyonrails.org/v6.1.7.3/classes/ActiveModel/Error.html"><code>ActiveModel::Error</code></a> object.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">Person</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="n">validates</span> <span class="ss">:name</span><span class="p">,</span> <span class="ss">presence: </span><span class="kp">true</span><span class="p">,</span> <span class="ss">length: </span><span class="p">{</span> <span class="ss">minimum: </span><span class="mi">3</span> <span class="p">}</span>
+<span class="k">end</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-9762175ad5552c5e110789ae9be8f03f">class Person &lt; ApplicationRecord
+  validates :name, presence: true, length: { minimum: 3 }
+end
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-9762175ad5552c5e110789ae9be8f03f">Copy</button>
+</div>
+<div class="code_container">
+<pre><code class="highlight irb"><span class="gp">irb&gt;</span><span class="w"> </span><span class="n">person</span> <span class="o">=</span> <span class="no">Person</span><span class="p">.</span><span class="nf">new</span>
+<span class="gp">irb&gt;</span><span class="w"> </span><span class="n">person</span><span class="p">.</span><span class="nf">valid?</span>
+<span class="p">=&gt;</span> <span class="kp">false</span>
+<span class="gp">irb&gt;</span><span class="w"> </span><span class="n">person</span><span class="p">.</span><span class="nf">errors</span><span class="p">.</span><span class="nf">full_messages</span>
+<span class="p">=&gt;</span> <span class="p">[</span><span class="s2">"Name can't be blank"</span><span class="p">,</span> <span class="s2">"Name is too short (minimum is 3 characters)"</span><span class="p">]</span>
+
+<span class="gp">irb&gt;</span><span class="w"> </span><span class="n">person</span> <span class="o">=</span> <span class="no">Person</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="ss">name: </span><span class="s2">"John Doe"</span><span class="p">)</span>
+<span class="gp">irb&gt;</span><span class="w"> </span><span class="n">person</span><span class="p">.</span><span class="nf">valid?</span>
+<span class="p">=&gt;</span> <span class="kp">true</span>
+<span class="gp">irb&gt;</span><span class="w"> </span><span class="n">person</span><span class="p">.</span><span class="nf">errors</span><span class="p">.</span><span class="nf">full_messages</span>
+<span class="p">=&gt;</span> <span class="p">[]</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-05772b8fee3259ba9b7f01ab0aacd0dd">person = Person.new
+person.valid?
+person.errors.full_messages
+person = Person.new(name: "John Doe")
+person.valid?
+person.errors.full_messages
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-05772b8fee3259ba9b7f01ab0aacd0dd">Copy</button>
+</div>
+<h4 id="errors"><a class="anchorlink" href="#errors">7.2 <code>errors[]</code></a></h4>
+
+<p><a href="https://api.rubyonrails.org/v6.1.7.3/classes/ActiveModel/Errors.html#method-i-5B-5D"><code>errors[]</code></a> is used when you want to check the error messages for a specific attribute. It returns an array of strings with all error messages for the given attribute, each string with one error message. If there are no errors related to the attribute, it returns an empty array.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">Person</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="n">validates</span> <span class="ss">:name</span><span class="p">,</span> <span class="ss">presence: </span><span class="kp">true</span><span class="p">,</span> <span class="ss">length: </span><span class="p">{</span> <span class="ss">minimum: </span><span class="mi">3</span> <span class="p">}</span>
+<span class="k">end</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-1df842605294e053277ec6cd0fc7eb49">class Person &lt; ApplicationRecord
+  validates :name, presence: true, length: { minimum: 3 }
+end
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-1df842605294e053277ec6cd0fc7eb49">Copy</button>
+</div>
+<div class="code_container">
+<pre><code class="highlight irb"><span class="gp">irb&gt;</span><span class="w"> </span><span class="n">person</span> <span class="o">=</span> <span class="no">Person</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="ss">name: </span><span class="s2">"John Doe"</span><span class="p">)</span>
+<span class="gp">irb&gt;</span><span class="w"> </span><span class="n">person</span><span class="p">.</span><span class="nf">valid?</span>
+<span class="p">=&gt;</span> <span class="kp">true</span>
+<span class="gp">irb&gt;</span><span class="w"> </span><span class="n">person</span><span class="p">.</span><span class="nf">errors</span><span class="p">[</span><span class="ss">:name</span><span class="p">]</span>
+<span class="p">=&gt;</span> <span class="p">[]</span>
+
+<span class="gp">irb&gt;</span><span class="w"> </span><span class="n">person</span> <span class="o">=</span> <span class="no">Person</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="ss">name: </span><span class="s2">"JD"</span><span class="p">)</span>
+<span class="gp">irb&gt;</span><span class="w"> </span><span class="n">person</span><span class="p">.</span><span class="nf">valid?</span>
+<span class="p">=&gt;</span> <span class="kp">false</span>
+<span class="gp">irb&gt;</span><span class="w"> </span><span class="n">person</span><span class="p">.</span><span class="nf">errors</span><span class="p">[</span><span class="ss">:name</span><span class="p">]</span>
+<span class="p">=&gt;</span> <span class="p">[</span><span class="s2">"is too short (minimum is 3 characters)"</span><span class="p">]</span>
+
+<span class="gp">irb&gt;</span><span class="w"> </span><span class="n">person</span> <span class="o">=</span> <span class="no">Person</span><span class="p">.</span><span class="nf">new</span>
+<span class="gp">irb&gt;</span><span class="w"> </span><span class="n">person</span><span class="p">.</span><span class="nf">valid?</span>
+<span class="p">=&gt;</span> <span class="kp">false</span>
+<span class="gp">irb&gt;</span><span class="w"> </span><span class="n">person</span><span class="p">.</span><span class="nf">errors</span><span class="p">[</span><span class="ss">:name</span><span class="p">]</span>
+<span class="p">=&gt;</span> <span class="p">[</span><span class="s2">"can't be blank"</span><span class="p">,</span> <span class="s2">"is too short (minimum is 3 characters)"</span><span class="p">]</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-7be7cddd9c3293f368d1418d7a924ef1">person = Person.new(name: "John Doe")
+person.valid?
+person.errors[:name]
+person = Person.new(name: "JD")
+person.valid?
+person.errors[:name]
+person = Person.new
+person.valid?
+person.errors[:name]
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-7be7cddd9c3293f368d1418d7a924ef1">Copy</button>
+</div>
+<h4 id="errors-where-and-error-object"><a class="anchorlink" href="#errors-where-and-error-object">7.3 <code>errors.where</code> and error object</a></h4>
+
+<p>Sometimes we may need more information about each error beside its message. Each error is encapsulated as an <code>ActiveModel::Error</code> object, and <a href="https://api.rubyonrails.org/v6.1.7.3/classes/ActiveModel/Errors.html#method-i-where"><code>where</code></a> method is the most common way of access.</p>
+
+<p><code>where</code> returns an array of error objects, filtered by various degree of conditions.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">Person</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="n">validates</span> <span class="ss">:name</span><span class="p">,</span> <span class="ss">presence: </span><span class="kp">true</span><span class="p">,</span> <span class="ss">length: </span><span class="p">{</span> <span class="ss">minimum: </span><span class="mi">3</span> <span class="p">}</span>
+<span class="k">end</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-ca05a7bcbf0a542c8162c8d413f554ea">class Person &lt; ApplicationRecord
+  validates :name, presence: true, length: { minimum: 3 }
+end
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-ca05a7bcbf0a542c8162c8d413f554ea">Copy</button>
+</div>
+<div class="code_container">
+<pre><code class="highlight irb"><span class="gp">irb&gt;</span><span class="w"> </span><span class="n">person</span> <span class="o">=</span> <span class="no">Person</span><span class="p">.</span><span class="nf">new</span>
+<span class="gp">irb&gt;</span><span class="w"> </span><span class="n">person</span><span class="p">.</span><span class="nf">valid?</span>
+<span class="p">=&gt;</span> <span class="kp">false</span>
+
+<span class="gp">irb&gt;</span><span class="w"> </span><span class="n">person</span><span class="p">.</span><span class="nf">errors</span><span class="p">.</span><span class="nf">where</span><span class="p">(</span><span class="ss">:name</span><span class="p">)</span>
+<span class="p">=&gt;</span> <span class="p">[</span> <span class="o">...</span> <span class="p">]</span> <span class="c1"># all errors for :name attribute</span>
+
+<span class="gp">irb&gt;</span><span class="w"> </span><span class="n">person</span><span class="p">.</span><span class="nf">errors</span><span class="p">.</span><span class="nf">where</span><span class="p">(</span><span class="ss">:name</span><span class="p">,</span> <span class="ss">:too_short</span><span class="p">)</span>
+<span class="p">=&gt;</span> <span class="p">[</span> <span class="o">...</span> <span class="p">]</span> <span class="c1"># :too_short errors for :name attribute</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-0667445ba3966be829cc36b34dee324c">person = Person.new
+person.valid?
+person.errors.where(:name)
+person.errors.where(:name, :too_short)
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-0667445ba3966be829cc36b34dee324c">Copy</button>
+</div>
+<p>You can read various information from these error objects:</p>
+
+<div class="code_container">
+<pre><code class="highlight irb"><span class="gp">irb&gt;</span><span class="w"> </span><span class="n">error</span> <span class="o">=</span> <span class="n">person</span><span class="p">.</span><span class="nf">errors</span><span class="p">.</span><span class="nf">where</span><span class="p">(</span><span class="ss">:name</span><span class="p">).</span><span class="nf">last</span>
+<span class="err">
+</span><span class="gp">irb&gt;</span><span class="w"> </span><span class="n">error</span><span class="p">.</span><span class="nf">attribute</span>
+<span class="p">=&gt;</span> <span class="ss">:name</span>
+<span class="gp">irb&gt;</span><span class="w"> </span><span class="n">error</span><span class="p">.</span><span class="nf">type</span>
+<span class="p">=&gt;</span> <span class="ss">:too_short</span>
+<span class="gp">irb&gt;</span><span class="w"> </span><span class="n">error</span><span class="p">.</span><span class="nf">options</span><span class="p">[</span><span class="ss">:count</span><span class="p">]</span>
+<span class="p">=&gt;</span> <span class="mi">3</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-5b927c068ac13517a7b189278aefc043">error = person.errors.where(:name).last
+error.attribute
+error.type
+error.options[:count]
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-5b927c068ac13517a7b189278aefc043">Copy</button>
+</div>
+<p>You can also generate the error message:</p>
+
+<div class="code_container">
+<pre><code class="highlight irb"><span class="gp">irb&gt;</span><span class="w"> </span><span class="n">error</span><span class="p">.</span><span class="nf">message</span>
+<span class="p">=&gt;</span> <span class="s2">"is too short (minimum is 3 characters)"</span>
+<span class="gp">irb&gt;</span><span class="w"> </span><span class="n">error</span><span class="p">.</span><span class="nf">full_message</span>
+<span class="p">=&gt;</span> <span class="s2">"Name is too short (minimum is 3 characters)"</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-68cbbd313b79400ff3c899fe118f10db">error.message
+error.full_message
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-68cbbd313b79400ff3c899fe118f10db">Copy</button>
+</div>
+<p>The <a href="https://api.rubyonrails.org/v6.1.7.3/classes/ActiveModel/Errors.html#method-i-full_message"><code>full_message</code></a> method generates a more user-friendly message, with the capitalized attribute name prepended.</p>
+
+<h4 id="errors-add"><a class="anchorlink" href="#errors-add">7.4 <code>errors.add</code></a></h4>
+
+<p>The <a href="https://api.rubyonrails.org/v6.1.7.3/classes/ActiveModel/Errors.html#method-i-add"><code>add</code></a> method creates the error object by taking the <code>attribute</code>, the error <code>type</code> and additional options hash. This is useful for writing your own validator.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">Person</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="n">validate</span> <span class="k">do</span> <span class="o">|</span><span class="n">person</span><span class="o">|</span>
+    <span class="n">errors</span><span class="p">.</span><span class="nf">add</span> <span class="ss">:name</span><span class="p">,</span> <span class="ss">:too_plain</span><span class="p">,</span> <span class="ss">message: </span><span class="s2">"is not cool enough"</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-ab5ce9abed22744c68d74b58579cb3fa">class Person &lt; ApplicationRecord
+  validate do |person|
+    errors.add :name, :too_plain, message: "is not cool enough"
+  end
+end
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-ab5ce9abed22744c68d74b58579cb3fa">Copy</button>
+</div>
+<div class="code_container">
+<pre><code class="highlight irb"><span class="gp">irb&gt;</span><span class="w"> </span><span class="n">person</span> <span class="o">=</span> <span class="no">Person</span><span class="p">.</span><span class="nf">create</span>
+<span class="gp">irb&gt;</span><span class="w"> </span><span class="n">person</span><span class="p">.</span><span class="nf">errors</span><span class="p">.</span><span class="nf">where</span><span class="p">(</span><span class="ss">:name</span><span class="p">).</span><span class="nf">first</span><span class="p">.</span><span class="nf">type</span>
+<span class="p">=&gt;</span> <span class="ss">:too_plain</span>
+<span class="gp">irb&gt;</span><span class="w"> </span><span class="n">person</span><span class="p">.</span><span class="nf">errors</span><span class="p">.</span><span class="nf">where</span><span class="p">(</span><span class="ss">:name</span><span class="p">).</span><span class="nf">first</span><span class="p">.</span><span class="nf">full_message</span>
+<span class="p">=&gt;</span> <span class="s2">"Name is not cool enough"</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-e926814e94e6392a026b3d09d12b9fd8">person = Person.create
+person.errors.where(:name).first.type
+person.errors.where(:name).first.full_message
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-e926814e94e6392a026b3d09d12b9fd8">Copy</button>
+</div>
+<h4 id="errors-base"><a class="anchorlink" href="#errors-base">7.5 <code>errors[:base]</code></a></h4>
+
+<p>You can add errors that are related to the object's state as a whole, instead of being related to a specific attribute. You can add errors to <code>:base</code> when you want to say that the object is invalid, no matter the values of its attributes.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">Person</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="n">validate</span> <span class="k">do</span> <span class="o">|</span><span class="n">person</span><span class="o">|</span>
+    <span class="n">errors</span><span class="p">.</span><span class="nf">add</span> <span class="ss">:base</span><span class="p">,</span> <span class="ss">:invalid</span><span class="p">,</span> <span class="ss">message: </span><span class="s2">"This person is invalid because ..."</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-0bdf98a130a0c79184055a5d469ce299">class Person &lt; ApplicationRecord
+  validate do |person|
+    errors.add :base, :invalid, message: "This person is invalid because ..."
+  end
+end
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-0bdf98a130a0c79184055a5d469ce299">Copy</button>
+</div>
+<div class="code_container">
+<pre><code class="highlight irb"><span class="gp">irb&gt;</span><span class="w"> </span><span class="n">person</span> <span class="o">=</span> <span class="no">Person</span><span class="p">.</span><span class="nf">create</span>
+<span class="gp">irb&gt;</span><span class="w"> </span><span class="n">person</span><span class="p">.</span><span class="nf">errors</span><span class="p">.</span><span class="nf">where</span><span class="p">(</span><span class="ss">:base</span><span class="p">).</span><span class="nf">first</span><span class="p">.</span><span class="nf">full_message</span>
+<span class="p">=&gt;</span> <span class="s2">"This person is invalid because ..."</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-ac67ace4ce3447cadcdaaf5aa02687b9">person = Person.create
+person.errors.where(:base).first.full_message
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-ac67ace4ce3447cadcdaaf5aa02687b9">Copy</button>
+</div>
+<h4 id="errors-clear"><a class="anchorlink" href="#errors-clear">7.6 <code>errors.clear</code></a></h4>
+
+<p>The <code>clear</code> method is used when you intentionally want to clear the <code>errors</code> collection. Of course, calling <code>errors.clear</code> upon an invalid object won't actually make it valid: the <code>errors</code> collection will now be empty, but the next time you call <code>valid?</code> or any method that tries to save this object to the database, the validations will run again. If any of the validations fail, the <code>errors</code> collection will be filled again.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">Person</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="n">validates</span> <span class="ss">:name</span><span class="p">,</span> <span class="ss">presence: </span><span class="kp">true</span><span class="p">,</span> <span class="ss">length: </span><span class="p">{</span> <span class="ss">minimum: </span><span class="mi">3</span> <span class="p">}</span>
+<span class="k">end</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-eaf04a8a250b56ce1447a5e73380a644">class Person &lt; ApplicationRecord
+  validates :name, presence: true, length: { minimum: 3 }
+end
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-eaf04a8a250b56ce1447a5e73380a644">Copy</button>
+</div>
+<div class="code_container">
+<pre><code class="highlight irb"><span class="gp">irb&gt;</span><span class="w"> </span><span class="n">person</span> <span class="o">=</span> <span class="no">Person</span><span class="p">.</span><span class="nf">new</span>
+<span class="gp">irb&gt;</span><span class="w"> </span><span class="n">person</span><span class="p">.</span><span class="nf">valid?</span>
+<span class="p">=&gt;</span> <span class="kp">false</span>
+<span class="gp">irb&gt;</span><span class="w"> </span><span class="n">person</span><span class="p">.</span><span class="nf">errors</span><span class="p">.</span><span class="nf">empty?</span>
+<span class="p">=&gt;</span> <span class="kp">false</span>
+
+<span class="gp">irb&gt;</span><span class="w"> </span><span class="n">person</span><span class="p">.</span><span class="nf">errors</span><span class="p">.</span><span class="nf">clear</span>
+<span class="gp">irb&gt;</span><span class="w"> </span><span class="n">person</span><span class="p">.</span><span class="nf">errors</span><span class="p">.</span><span class="nf">empty?</span>
+<span class="p">=&gt;</span> <span class="kp">true</span>
+
+<span class="gp">irb&gt;</span><span class="w"> </span><span class="n">person</span><span class="p">.</span><span class="nf">save</span>
+<span class="p">=&gt;</span> <span class="kp">false</span>
+
+<span class="gp">irb&gt;</span><span class="w"> </span><span class="n">person</span><span class="p">.</span><span class="nf">errors</span><span class="p">.</span><span class="nf">empty?</span>
+<span class="p">=&gt;</span> <span class="kp">false</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-e82ee802a0a05b813a1ba817ae41f201">person = Person.new
+person.valid?
+person.errors.empty?
+person.errors.clear
+person.errors.empty?
+person.save
+person.errors.empty?
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-e82ee802a0a05b813a1ba817ae41f201">Copy</button>
+</div>
+<h4 id="errors-size"><a class="anchorlink" href="#errors-size">7.7 <code>errors.size</code></a></h4>
+
+<p>The <code>size</code> method returns the total number of errors for the object.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">Person</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="n">validates</span> <span class="ss">:name</span><span class="p">,</span> <span class="ss">presence: </span><span class="kp">true</span><span class="p">,</span> <span class="ss">length: </span><span class="p">{</span> <span class="ss">minimum: </span><span class="mi">3</span> <span class="p">}</span>
+<span class="k">end</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-ad1cdb2b76ad57259d311448248593c2">class Person &lt; ApplicationRecord
+  validates :name, presence: true, length: { minimum: 3 }
+end
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-ad1cdb2b76ad57259d311448248593c2">Copy</button>
+</div>
+<div class="code_container">
+<pre><code class="highlight irb"><span class="gp">irb&gt;</span><span class="w"> </span><span class="n">person</span> <span class="o">=</span> <span class="no">Person</span><span class="p">.</span><span class="nf">new</span>
+<span class="gp">irb&gt;</span><span class="w"> </span><span class="n">person</span><span class="p">.</span><span class="nf">valid?</span>
+<span class="p">=&gt;</span> <span class="kp">false</span>
+<span class="gp">irb&gt;</span><span class="w"> </span><span class="n">person</span><span class="p">.</span><span class="nf">errors</span><span class="p">.</span><span class="nf">size</span>
+<span class="p">=&gt;</span> <span class="mi">2</span>
+
+<span class="gp">irb&gt;</span><span class="w"> </span><span class="n">person</span> <span class="o">=</span> <span class="no">Person</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="ss">name: </span><span class="s2">"Andrea"</span><span class="p">,</span> <span class="ss">email: </span><span class="s2">"andrea@example.com"</span><span class="p">)</span>
+<span class="gp">irb&gt;</span><span class="w"> </span><span class="n">person</span><span class="p">.</span><span class="nf">valid?</span>
+<span class="p">=&gt;</span> <span class="kp">true</span>
+<span class="gp">irb&gt;</span><span class="w"> </span><span class="n">person</span><span class="p">.</span><span class="nf">errors</span><span class="p">.</span><span class="nf">size</span>
+<span class="p">=&gt;</span> <span class="mi">0</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-307eb58ffeaf73177efae934bdcc7d06">person = Person.new
+person.valid?
+person.errors.size
+person = Person.new(name: "Andrea", email: "andrea@example.com")
+person.valid?
+person.errors.size
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-307eb58ffeaf73177efae934bdcc7d06">Copy</button>
+</div>
+</body>
+</html>

@@ -1,0 +1,26 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>4 Using Action Mailer Helpers</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v7.0.4.2/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="using-action-mailer-helpers"><a class="anchorlink" href="#using-action-mailer-helpers">4 Using Action Mailer Helpers</a></h3>
+<p>Action Mailer inherits from <code>AbstractController</code>, so you have access to most
+of the same helpers as you do in Action Controller.</p>
+
+<p>There are also some Action Mailer-specific helper methods available in
+<a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActionMailer/MailHelper.html"><code>ActionMailer::MailHelper</code></a>. For example, these allow accessing the mailer
+instance from your view with <a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActionMailer/MailHelper.html#method-i-mailer"><code>mailer</code></a>, and accessing the message as <a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActionMailer/MailHelper.html#method-i-message"><code>message</code></a>:</p>
+
+<div class="code_container">
+<pre><code class="highlight erb"><span class="cp">&lt;%=</span> <span class="n">stylesheet_link_tag</span> <span class="n">mailer</span><span class="p">.</span><span class="nf">name</span><span class="p">.</span><span class="nf">underscore</span> <span class="cp">%&gt;</span>
+<span class="nt">&lt;h1&gt;</span><span class="cp">&lt;%=</span> <span class="n">message</span><span class="p">.</span><span class="nf">subject</span> <span class="cp">%&gt;</span><span class="nt">&lt;/h1&gt;</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="&lt;%= stylesheet_link_tag mailer.name.underscore %&gt;
+&lt;h1&gt;&lt;%= message.subject %&gt;&lt;/h1&gt;
+">Copy</button>
+</div>
+</body>
+</html>

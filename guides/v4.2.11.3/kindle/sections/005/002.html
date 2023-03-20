@@ -1,0 +1,132 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>3 Available Callbacks</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v4.2.11.3/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="available-callbacks">3 Available Callbacks</h3>
+<p>Here is a list with all the available Active Record callbacks, listed in the same order in which they will get called during the respective operations:</p>
+
+<h4 id="creating-an-object">3.1 Creating an Object</h4>
+<ul>
+<li><code>before_validation</code></li>
+<li><code>after_validation</code></li>
+<li><code>before_save</code></li>
+<li><code>around_save</code></li>
+<li><code>before_create</code></li>
+<li><code>around_create</code></li>
+<li><code>after_create</code></li>
+<li><code>after_save</code></li>
+<li><code>after_commit/after_rollback</code></li>
+</ul>
+<h4 id="updating-an-object">3.2 Updating an Object</h4>
+<ul>
+<li><code>before_validation</code></li>
+<li><code>after_validation</code></li>
+<li><code>before_save</code></li>
+<li><code>around_save</code></li>
+<li><code>before_update</code></li>
+<li><code>around_update</code></li>
+<li><code>after_update</code></li>
+<li><code>after_save</code></li>
+<li><code>after_commit/after_rollback</code></li>
+</ul>
+<h4 id="destroying-an-object">3.3 Destroying an Object</h4>
+<ul>
+<li><code>before_destroy</code></li>
+<li><code>around_destroy</code></li>
+<li><code>after_destroy</code></li>
+<li><code>after_commit/after_rollback</code></li>
+</ul>
+<div class="warning"><p><code>after_save</code> runs both on create and update, but always <em>after</em> the more specific callbacks <code>after_create</code> and <code>after_update</code>, no matter the order in which the macro calls were executed.</p></div>
+
+<h4 id="after-initialize-and-after-find">3.4 <code>after_initialize</code> and <code>after_find</code>
+</h4>
+
+<p>The <code>after_initialize</code> callback will be called whenever an Active Record object is instantiated, either by directly using <code>new</code> or when a record is loaded from the database. It can be useful to avoid the need to directly override your Active Record <code>initialize</code> method.</p>
+
+<p>The <code>after_find</code> callback will be called whenever Active Record loads a record from the database. <code>after_find</code> is called before <code>after_initialize</code> if both are defined.</p>
+
+<p>The <code>after_initialize</code> and <code>after_find</code> callbacks have no <code>before_*</code> counterparts, but they can be registered just like the other Active Record callbacks.</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class User &lt; ActiveRecord::Base
+  after_initialize do |user|
+    puts "You have initialized an object!"
+  end
+
+  after_find do |user|
+    puts "You have found an object!"
+  end
+end
+
+&gt;&gt; User.new
+You have initialized an object!
+=&gt; #&lt;User id: nil&gt;
+
+&gt;&gt; User.first
+You have found an object!
+You have initialized an object!
+=&gt; #&lt;User id: 1&gt;
+
+</pre>
+</div>
+<h4 id="after-touch">3.5 <code>after_touch</code>
+</h4>
+
+<p>The <code>after_touch</code> callback will be called whenever an Active Record object is touched.</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class User &lt; ActiveRecord::Base
+  after_touch do |user|
+    puts "You have touched an object"
+  end
+end
+
+&gt;&gt; u = User.create(name: 'Kuldeep')
+=&gt; #&lt;User id: 1, name: "Kuldeep", created_at: "2013-11-25 12:17:49", updated_at: "2013-11-25 12:17:49"&gt;
+
+&gt;&gt; u.touch
+You have touched an object
+=&gt; true
+
+</pre>
+</div>
+<p>It can be used along with <code>belongs_to</code>:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class Employee &lt; ActiveRecord::Base
+  belongs_to :company, touch: true
+  after_touch do
+    puts 'An Employee was touched'
+  end
+end
+
+class Company &lt; ActiveRecord::Base
+  has_many :employees
+  after_touch :log_when_employees_or_company_touched
+
+  private
+  def log_when_employees_or_company_touched
+    puts 'Employee/Company was touched'
+  end
+end
+
+&gt;&gt; @employee = Employee.last
+=&gt; #&lt;Employee id: 1, company_id: 1, created_at: "2013-11-25 17:04:22", updated_at: "2013-11-25 17:05:05"&gt;
+
+# triggers @employee.company.touch
+&gt;&gt; @employee.touch
+Employee/Company was touched
+An Employee was touched
+=&gt; true
+
+</pre>
+</div>
+</body>
+</html>

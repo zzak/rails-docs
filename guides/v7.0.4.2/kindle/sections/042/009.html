@@ -1,0 +1,314 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>10 Generator methods</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v7.0.4.2/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="generator-methods"><a class="anchorlink" href="#generator-methods">10 Generator methods</a></h3>
+<p>The following are methods available for both generators and templates for Rails.</p>
+
+<div class="note"><p>Methods provided by Thor are not covered this guide and can be found in <a href="https://www.rubydoc.info/gems/thor/Thor/Actions">Thor's documentation</a></p></div>
+
+<h4 id="gem"><a class="anchorlink" href="#gem">10.1 <code>gem</code></a></h4>
+
+<p>Specifies a gem dependency of the application.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">gem</span> <span class="s2">"rspec"</span><span class="p">,</span> <span class="ss">group: </span><span class="s2">"test"</span><span class="p">,</span> <span class="ss">version: </span><span class="s2">"2.1.0"</span>
+<span class="n">gem</span> <span class="s2">"devise"</span><span class="p">,</span> <span class="s2">"1.1.5"</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='gem "rspec", group: "test", version: "2.1.0"
+gem "devise", "1.1.5"
+'>Copy</button>
+</div>
+<p>Available options are:</p>
+<ul>
+<li>
+<code>:group</code> - The group in the <code>Gemfile</code> where this gem should go.</li>
+<li>
+<code>:version</code> - The version string of the gem you want to use. Can also be specified as the second argument to the method.</li>
+<li>
+<code>:git</code> - The URL to the git repository for this gem.</li>
+</ul>
+<p>Any additional options passed to this method are put on the end of the line:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">gem</span> <span class="s2">"devise"</span><span class="p">,</span> <span class="ss">git: </span><span class="s2">"https://github.com/plataformatec/devise.git"</span><span class="p">,</span> <span class="ss">branch: </span><span class="s2">"master"</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='gem "devise", git: "https://github.com/plataformatec/devise.git", branch: "master"
+'>Copy</button>
+</div>
+<p>The above code will put the following line into <code>Gemfile</code>:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">gem</span> <span class="s2">"devise"</span><span class="p">,</span> <span class="ss">git: </span><span class="s2">"https://github.com/plataformatec/devise.git"</span><span class="p">,</span> <span class="ss">branch: </span><span class="s2">"master"</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='gem "devise", git: "https://github.com/plataformatec/devise.git", branch: "master"
+'>Copy</button>
+</div>
+<h4 id="gem-group"><a class="anchorlink" href="#gem-group">10.2 <code>gem_group</code></a></h4>
+
+<p>Wraps gem entries inside a group:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">gem_group</span> <span class="ss">:development</span><span class="p">,</span> <span class="ss">:test</span> <span class="k">do</span>
+  <span class="n">gem</span> <span class="s2">"rspec-rails"</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='gem_group :development, :test do
+  gem "rspec-rails"
+end
+'>Copy</button>
+</div>
+<h4 id="add-source"><a class="anchorlink" href="#add-source">10.3 <code>add_source</code></a></h4>
+
+<p>Adds a specified source to <code>Gemfile</code>:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">add_source</span> <span class="s2">"http://gems.github.com"</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='add_source "http://gems.github.com"
+'>Copy</button>
+</div>
+<p>This method also takes a block:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">add_source</span> <span class="s2">"http://gems.github.com"</span> <span class="k">do</span>
+  <span class="n">gem</span> <span class="s2">"rspec-rails"</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='add_source "http://gems.github.com" do
+  gem "rspec-rails"
+end
+'>Copy</button>
+</div>
+<h4 id="inject-into-file"><a class="anchorlink" href="#inject-into-file">10.4 <code>inject_into_file</code></a></h4>
+
+<p>Injects a block of code into a defined position in your file.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">inject_into_file</span> <span class="s1">'name_of_file.rb'</span><span class="p">,</span> <span class="ss">after: </span><span class="s2">"#The code goes below this line. Don't forget the Line break at the end</span><span class="se">\n</span><span class="s2">"</span> <span class="k">do</span> <span class="o">&lt;&lt;-</span><span class="no">'RUBY'</span><span class="sh">
+  puts "Hello World"
+</span><span class="no">RUBY</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="inject_into_file 'name_of_file.rb', after: &quot;#The code goes below this line. Don't forget the Line break at the end\n&quot; do &lt;&lt;-'RUBY'
+  puts &quot;Hello World&quot;
+RUBY
+end
+">Copy</button>
+</div>
+<h4 id="gsub-file"><a class="anchorlink" href="#gsub-file">10.5 <code>gsub_file</code></a></h4>
+
+<p>Replaces text inside a file.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">gsub_file</span> <span class="s1">'name_of_file.rb'</span><span class="p">,</span> <span class="s1">'method.to_be_replaced'</span><span class="p">,</span> <span class="s1">'method.the_replacing_code'</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="gsub_file 'name_of_file.rb', 'method.to_be_replaced', 'method.the_replacing_code'
+">Copy</button>
+</div>
+<p>Regular Expressions can be used to make this method more precise. You can also use <code>append_file</code> and <code>prepend_file</code> in the same way to place code at the beginning and end of a file respectively.</p>
+
+<h4 id="application"><a class="anchorlink" href="#application">10.6 <code>application</code></a></h4>
+
+<p>Adds a line to <code>config/application.rb</code> directly after the application class definition.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">application</span> <span class="s2">"config.asset_host = 'http://example.com'"</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="application &quot;config.asset_host = 'http://example.com'&quot;
+">Copy</button>
+</div>
+<p>This method can also take a block:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">application</span> <span class="k">do</span>
+  <span class="s2">"config.asset_host = 'http://example.com'"</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="application do
+  &quot;config.asset_host = 'http://example.com'&quot;
+end
+">Copy</button>
+</div>
+<p>Available options are:</p>
+<ul>
+<li>
+<code>:env</code> - Specify an environment for this configuration option. If you wish to use this option with the block syntax the recommended syntax is as follows:</li>
+</ul>
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">application</span><span class="p">(</span><span class="kp">nil</span><span class="p">,</span> <span class="ss">env: </span><span class="s2">"development"</span><span class="p">)</span> <span class="k">do</span>
+  <span class="s2">"config.asset_host = 'http://localhost:3000'"</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="application(nil, env: &quot;development&quot;) do
+  &quot;config.asset_host = 'http://localhost:3000'&quot;
+end
+">Copy</button>
+</div>
+<h4 id="git"><a class="anchorlink" href="#git">10.7 <code>git</code></a></h4>
+
+<p>Runs the specified git command:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">git</span> <span class="ss">:init</span>
+<span class="n">git</span> <span class="ss">add: </span><span class="s2">"."</span>
+<span class="n">git</span> <span class="ss">commit: </span><span class="s2">"-m First commit!"</span>
+<span class="n">git</span> <span class="ss">add: </span><span class="s2">"onefile.rb"</span><span class="p">,</span> <span class="ss">rm: </span><span class="s2">"badfile.cxx"</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='git :init
+git add: "."
+git commit: "-m First commit!"
+git add: "onefile.rb", rm: "badfile.cxx"
+'>Copy</button>
+</div>
+<p>The values of the hash here being the arguments or options passed to the specific git command. As per the final example shown here, multiple git commands can be specified at a time, but the order of their running is not guaranteed to be the same as the order that they were specified in.</p>
+
+<h4 id="vendor"><a class="anchorlink" href="#vendor">10.8 <code>vendor</code></a></h4>
+
+<p>Places a file into <code>vendor</code> which contains the specified code.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">vendor</span> <span class="s2">"sekrit.rb"</span><span class="p">,</span> <span class="s1">'#top secret stuff'</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="vendor &quot;sekrit.rb&quot;, '#top secret stuff'
+">Copy</button>
+</div>
+<p>This method also takes a block:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">vendor</span> <span class="s2">"seeds.rb"</span> <span class="k">do</span>
+  <span class="s2">"puts 'in your app, seeding your database'"</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="vendor &quot;seeds.rb&quot; do
+  &quot;puts 'in your app, seeding your database'&quot;
+end
+">Copy</button>
+</div>
+<h4 id="lib"><a class="anchorlink" href="#lib">10.9 <code>lib</code></a></h4>
+
+<p>Places a file into <code>lib</code> which contains the specified code.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">lib</span> <span class="s2">"special.rb"</span><span class="p">,</span> <span class="s2">"p Rails.root"</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='lib "special.rb", "p Rails.root"
+'>Copy</button>
+</div>
+<p>This method also takes a block:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">lib</span> <span class="s2">"super_special.rb"</span> <span class="k">do</span>
+  <span class="s2">"puts 'Super special!'"</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="lib &quot;super_special.rb&quot; do
+  &quot;puts 'Super special!'&quot;
+end
+">Copy</button>
+</div>
+<h4 id="rakefile"><a class="anchorlink" href="#rakefile">10.10 <code>rakefile</code></a></h4>
+
+<p>Creates a Rake file in the <code>lib/tasks</code> directory of the application.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">rakefile</span> <span class="s2">"test.rake"</span><span class="p">,</span> <span class="s1">'task(:hello) { puts "Hello, there" }'</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="rakefile &quot;test.rake&quot;, 'task(:hello) { puts &quot;Hello, there&quot; }'
+">Copy</button>
+</div>
+<p>This method also takes a block:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">rakefile</span> <span class="s2">"test.rake"</span> <span class="k">do</span>
+  <span class="sx">%Q{
+    task rock: :environment do
+      puts "Rockin'"
+    end
+  }</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="rakefile &quot;test.rake&quot; do
+  %Q{
+    task rock: :environment do
+      puts &quot;Rockin'&quot;
+    end
+  }
+end
+">Copy</button>
+</div>
+<h4 id="initializer"><a class="anchorlink" href="#initializer">10.11 <code>initializer</code></a></h4>
+
+<p>Creates an initializer in the <code>config/initializers</code> directory of the application:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">initializer</span> <span class="s2">"begin.rb"</span><span class="p">,</span> <span class="s2">"puts 'this is the beginning'"</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="initializer &quot;begin.rb&quot;, &quot;puts 'this is the beginning'&quot;
+">Copy</button>
+</div>
+<p>This method also takes a block, expected to return a string:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">initializer</span> <span class="s2">"begin.rb"</span> <span class="k">do</span>
+  <span class="s2">"puts 'this is the beginning'"</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="initializer &quot;begin.rb&quot; do
+  &quot;puts 'this is the beginning'&quot;
+end
+">Copy</button>
+</div>
+<h4 id="generate"><a class="anchorlink" href="#generate">10.12 <code>generate</code></a></h4>
+
+<p>Runs the specified generator where the first argument is the generator name and the remaining arguments are passed directly to the generator.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">generate</span> <span class="s2">"scaffold"</span><span class="p">,</span> <span class="s2">"forums title:string description:text"</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='generate "scaffold", "forums title:string description:text"
+'>Copy</button>
+</div>
+<h4 id="rake"><a class="anchorlink" href="#rake">10.13 <code>rake</code></a></h4>
+
+<p>Runs the specified Rake task.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">rake</span> <span class="s2">"db:migrate"</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='rake "db:migrate"
+'>Copy</button>
+</div>
+<p>Available options are:</p>
+<ul>
+<li>
+<code>:env</code> - Specifies the environment in which to run this rake task.</li>
+<li>
+<code>:sudo</code> - Whether or not to run this task using <code>sudo</code>. Defaults to <code>false</code>.</li>
+</ul>
+<h4 id="route"><a class="anchorlink" href="#route">10.14 <code>route</code></a></h4>
+
+<p>Adds text to the <code>config/routes.rb</code> file:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">route</span> <span class="s2">"resources :people"</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='route "resources :people"
+'>Copy</button>
+</div>
+<h4 id="readme"><a class="anchorlink" href="#readme">10.15 <code>readme</code></a></h4>
+
+<p>Output the contents of a file in the template's <code>source_path</code>, usually a README.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">readme</span> <span class="s2">"README"</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='readme "README"
+'>Copy</button>
+</div>
+</body>
+</html>

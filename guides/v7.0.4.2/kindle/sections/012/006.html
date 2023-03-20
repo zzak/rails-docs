@@ -1,0 +1,74 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>7 Customizing Form Builders</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v7.0.4.2/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="customizing-form-builders"><a class="anchorlink" href="#customizing-form-builders">7 Customizing Form Builders</a></h3>
+<p>The object yielded by <code>form_with</code> and <code>fields_for</code> is an instance of <a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActionView/Helpers/FormBuilder.html"><code>ActionView::Helpers::FormBuilder</code></a>. Form builders encapsulate the notion of displaying form elements for a single object. While you can write helpers for your forms in the usual way, you can also create a subclass of <code>ActionView::Helpers::FormBuilder</code>, and add the helpers there. For example,</p>
+
+<div class="code_container">
+<pre><code class="highlight erb"><span class="cp">&lt;%=</span> <span class="n">form_with</span> <span class="ss">model: </span><span class="vi">@person</span> <span class="k">do</span> <span class="o">|</span><span class="n">form</span><span class="o">|</span> <span class="cp">%&gt;</span>
+  <span class="cp">&lt;%=</span> <span class="n">text_field_with_label</span> <span class="n">form</span><span class="p">,</span> <span class="ss">:first_name</span> <span class="cp">%&gt;</span>
+<span class="cp">&lt;%</span> <span class="k">end</span> <span class="cp">%&gt;</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="&lt;%= form_with model: @person do |form| %&gt;
+  &lt;%= text_field_with_label form, :first_name %&gt;
+&lt;% end %&gt;
+">Copy</button>
+</div>
+<p>can be replaced with</p>
+
+<div class="code_container">
+<pre><code class="highlight erb"><span class="cp">&lt;%=</span> <span class="n">form_with</span> <span class="ss">model: </span><span class="vi">@person</span><span class="p">,</span> <span class="ss">builder: </span><span class="no">LabellingFormBuilder</span> <span class="k">do</span> <span class="o">|</span><span class="n">form</span><span class="o">|</span> <span class="cp">%&gt;</span>
+  <span class="cp">&lt;%=</span> <span class="n">form</span><span class="p">.</span><span class="nf">text_field</span> <span class="ss">:first_name</span> <span class="cp">%&gt;</span>
+<span class="cp">&lt;%</span> <span class="k">end</span> <span class="cp">%&gt;</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="&lt;%= form_with model: @person, builder: LabellingFormBuilder do |form| %&gt;
+  &lt;%= form.text_field :first_name %&gt;
+&lt;% end %&gt;
+">Copy</button>
+</div>
+<p>by defining a <code>LabellingFormBuilder</code> class similar to the following:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">LabellingFormBuilder</span> <span class="o">&lt;</span> <span class="no">ActionView</span><span class="o">::</span><span class="no">Helpers</span><span class="o">::</span><span class="no">FormBuilder</span>
+  <span class="k">def</span> <span class="nf">text_field</span><span class="p">(</span><span class="n">attribute</span><span class="p">,</span> <span class="n">options</span><span class="o">=</span><span class="p">{})</span>
+    <span class="n">label</span><span class="p">(</span><span class="n">attribute</span><span class="p">)</span> <span class="o">+</span> <span class="k">super</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="class LabellingFormBuilder &lt; ActionView::Helpers::FormBuilder
+  def text_field(attribute, options={})
+    label(attribute) + super
+  end
+end
+">Copy</button>
+</div>
+<p>If you reuse this frequently you could define a <code>labeled_form_with</code> helper that automatically applies the <code>builder: LabellingFormBuilder</code> option:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">def</span> <span class="nf">labeled_form_with</span><span class="p">(</span><span class="ss">model: </span><span class="kp">nil</span><span class="p">,</span> <span class="ss">scope: </span><span class="kp">nil</span><span class="p">,</span> <span class="ss">url: </span><span class="kp">nil</span><span class="p">,</span> <span class="ss">format: </span><span class="kp">nil</span><span class="p">,</span> <span class="o">**</span><span class="n">options</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">block</span><span class="p">)</span>
+  <span class="n">options</span><span class="p">.</span><span class="nf">merge!</span> <span class="ss">builder: </span><span class="no">LabellingFormBuilder</span>
+  <span class="n">form_with</span> <span class="ss">model: </span><span class="n">model</span><span class="p">,</span> <span class="ss">scope: </span><span class="n">scope</span><span class="p">,</span> <span class="ss">url: </span><span class="n">url</span><span class="p">,</span> <span class="ss">format: </span><span class="nb">format</span><span class="p">,</span> <span class="o">**</span><span class="n">options</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">block</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="def labeled_form_with(model: nil, scope: nil, url: nil, format: nil, **options, &amp;block)
+  options.merge! builder: LabellingFormBuilder
+  form_with model: model, scope: scope, url: url, format: format, **options, &amp;block
+end
+">Copy</button>
+</div>
+<p>The form builder used also determines what happens when you do:</p>
+
+<div class="code_container">
+<pre><code class="highlight erb"><span class="cp">&lt;%=</span> <span class="n">render</span> <span class="ss">partial: </span><span class="n">f</span> <span class="cp">%&gt;</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="&lt;%= render partial: f %&gt;
+">Copy</button>
+</div>
+<p>If <code>f</code> is an instance of <code>ActionView::Helpers::FormBuilder</code>, then this will render the <code>form</code> partial, setting the partial's object to the form builder. If the form builder is of class <code>LabellingFormBuilder</code>, then the <code>labelling_form</code> partial would be rendered instead.</p>
+</body>
+</html>

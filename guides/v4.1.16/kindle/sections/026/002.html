@@ -1,0 +1,79 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>3 Extending Core Classes</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v4.1.16/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="extending-core-classes">3 Extending Core Classes</h3>
+<p>This section will explain how to add a method to String that will be available anywhere in your rails application.</p>
+<p>In this example you will add a method to String named <code>to_squawk</code>. To begin, create a new test file with a few assertions:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+# yaffle/test/core_ext_test.rb
+
+require 'test_helper'
+
+class CoreExtTest &lt; ActiveSupport::TestCase
+  def test_to_squawk_prepends_the_word_squawk
+    assert_equal "squawk! Hello World", "Hello World".to_squawk
+  end
+end
+
+</pre>
+</div>
+<p>Run <code>rake</code> to run the test. This test should fail because we haven't implemented the <code>to_squawk</code> method:</p>
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+    1) Error:
+  test_to_squawk_prepends_the_word_squawk(CoreExtTest):
+  NoMethodError: undefined method `to_squawk' for [Hello World](String)
+      test/core_ext_test.rb:5:in `test_to_squawk_prepends_the_word_squawk'
+
+</pre>
+</div>
+<p>Great - now you are ready to start development.</p>
+<p>In <code>lib/yaffle.rb</code>, add <code>require "yaffle/core_ext"</code>:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+# yaffle/lib/yaffle.rb
+
+require "yaffle/core_ext"
+
+module Yaffle
+end
+
+</pre>
+</div>
+<p>Finally, create the <code>core_ext.rb</code> file and add the <code>to_squawk</code> method:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+# yaffle/lib/yaffle/core_ext.rb
+
+String.class_eval do
+  def to_squawk
+    "squawk! #{self}".strip
+  end
+end
+
+</pre>
+</div>
+<p>To test that your method does what it says it does, run the unit tests with <code>rake</code> from your plugin directory.</p>
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+  3 tests, 3 assertions, 0 failures, 0 errors, 0 skips
+
+</pre>
+</div>
+<p>To see this in action, change to the test/dummy directory, fire up a console and start squawking:</p>
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+$ bin/rails console
+&gt;&gt; "Hello World".to_squawk
+=&gt; "squawk! Hello World"
+
+</pre>
+</div>
+</body>
+</html>

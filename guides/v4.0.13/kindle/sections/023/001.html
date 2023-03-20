@@ -1,0 +1,95 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>2 Unobtrusive JavaScript</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v4.0.13/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="unobtrusive-javascript">2 Unobtrusive JavaScript</h3>
+<p>Rails uses a technique called "Unobtrusive JavaScript" to handle attaching
+JavaScript to the DOM. This is generally considered to be a best-practice
+within the frontend community, but you may occasionally read tutorials that
+demonstrate other ways.</p>
+<p>Here's the simplest way to write JavaScript. You may see it referred to as
+'inline JavaScript':</p>
+<div class="code_container">
+<pre class="brush: xml; gutter: false; toolbar: false">
+&lt;a href="#" onclick="this.style.backgroundColor='#990000'"&gt;Paint it red&lt;/a&gt;
+
+</pre>
+</div>
+<p>When clicked, the link background will become red. Here's the problem: what
+happens when we have lots of JavaScript we want to execute on a click?</p>
+<div class="code_container">
+<pre class="brush: xml; gutter: false; toolbar: false">
+&lt;a href="#" onclick="this.style.backgroundColor='#009900';this.style.color='#FFFFFF';"&gt;Paint it green&lt;/a&gt;
+
+</pre>
+</div>
+<p>Awkward, right? We could pull the function definition out of the click handler,
+and turn it into CoffeeScript:</p>
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+paintIt = (element, backgroundColor, textColor) -&gt;
+  element.style.backgroundColor = backgroundColor
+  if textColor?
+    element.style.color = textColor
+
+</pre>
+</div>
+<p>And then on our page:</p>
+<div class="code_container">
+<pre class="brush: xml; gutter: false; toolbar: false">
+&lt;a href="#" onclick="paintIt(this, '#990000')"&gt;Paint it red&lt;/a&gt;
+
+</pre>
+</div>
+<p>That's a little bit better, but what about multiple links that have the same
+effect?</p>
+<div class="code_container">
+<pre class="brush: xml; gutter: false; toolbar: false">
+&lt;a href="#" onclick="paintIt(this, '#990000')"&gt;Paint it red&lt;/a&gt;
+&lt;a href="#" onclick="paintIt(this, '#009900', '#FFFFFF')"&gt;Paint it green&lt;/a&gt;
+&lt;a href="#" onclick="paintIt(this, '#000099', '#FFFFFF')"&gt;Paint it blue&lt;/a&gt;
+
+</pre>
+</div>
+<p>Not very DRY, eh? We can fix this by using events instead. We'll add a <code>data-*</code>
+attribute to our link, and then bind a handler to the click event of every link
+that has that attribute:</p>
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+paintIt = (element, backgroundColor, textColor) -&gt;
+  element.style.backgroundColor = backgroundColor
+  if textColor?
+    element.style.color = textColor
+
+$ -&gt;
+  $("a[data-background-color]").click -&gt;
+    backgroundColor = $(this).data("background-color")
+    textColor = $(this).data("text-color")
+    paintIt(this, backgroundColor, textColor)
+
+</pre>
+</div>
+<div class="code_container">
+<pre class="brush: xml; gutter: false; toolbar: false">
+&lt;a href="#" data-background-color="#990000"&gt;Paint it red&lt;/a&gt;
+&lt;a href="#" data-background-color="#009900" data-text-color="#FFFFFF"&gt;Paint it green&lt;/a&gt;
+&lt;a href="#" data-background-color="#000099" data-text-color="#FFFFFF"&gt;Paint it blue&lt;/a&gt;
+
+</pre>
+</div>
+<p>We call this 'unobtrusive' JavaScript because we're no longer mixing our
+JavaScript into our HTML. We've properly separated our concerns, making future
+change easy. We can easily add behavior to any link by adding the data
+attribute. We can run all of our JavaScript through a minimizer and
+concatenator. We can serve our entire JavaScript bundle on every page, which
+means that it'll get downloaded on the first page load and then be cached on
+every page after that. Lots of little benefits really add up.</p>
+<p>The Rails team strongly encourages you to write your CoffeeScript (and
+JavaScript) in this style, and you can expect that many libraries will also
+follow this pattern.</p>
+</body>
+</html>

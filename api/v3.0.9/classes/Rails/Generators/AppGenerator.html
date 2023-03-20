@@ -1,0 +1,1375 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html 
+     PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+  <head>
+    <title>Class: Rails::Generators::AppGenerator</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <link rel="stylesheet" href="../../../rdoc-style.css" type="text/css" media="screen" />
+
+    <script language="JavaScript" type="text/javascript">
+    // <![CDATA[
+
+        function toggleSource( id )
+        {
+          var elem
+          var link
+
+          if( document.getElementById )
+          {
+            elem = document.getElementById( id )
+            link = document.getElementById( "l_" + id )
+          }
+          else if ( document.all )
+          {
+            elem = eval( "document.all." + id )
+            link = eval( "document.all.l_" + id )
+          }
+          else
+            return false;
+
+          if( elem.style.display == "block" )
+          {
+            elem.style.display = "none"
+            link.innerHTML = "show source"
+          }
+          else
+          {
+            elem.style.display = "block"
+            link.innerHTML = "hide source"
+          }
+        }
+
+        function openCode( url )
+        {
+          window.open( url, "SOURCE_CODE", "resizable=yes,scrollbars=yes,toolbar=no,status=no,height=480,width=750" ).focus();
+        }
+      // ]]>
+    </script>
+  </head>
+
+  <body>
+    <table width="100%" border='0' cellpadding='0' cellspacing='0' class='banner'>
+    <tr><td>Ruby on Rails v3.0.9</td></tr>
+    <tr>
+  <td class="file-title"><span class="file-title-prefix">Class</span><br />Rails::Generators::AppGenerator</td>
+  <td align="right">
+    <table cellspacing="0" cellpadding="2">
+      <tr valign="top">
+        <td>In:</td>
+        <td>
+<a href="../../../files/railties/lib/rails/generators/rails/app/app_generator_rb.html">railties/lib/rails/generators/rails/app/app_generator.rb</a>:
+        </td>
+      </tr>
+      <tr>
+        <td>Parent:</td>
+        <td>
+
+      Base         </td>
+     </tr>
+         </table>
+        </td>
+        </tr>
+      </table>
+  <div id="bodyContent">
+  <div id="content">
+
+  <div class="description"></div>
+
+
+  <div class="sectiontitle">Methods</div>
+  <ul>
+                <li><a href="#method-i-app_const">app_const</a></li>
+                <li><a href="#method-i-app_const_base">app_const_base</a></li>
+                <li><a href="#method-i-app_name">app_name</a></li>
+                <li><a href="#method-i-app_secret">app_secret</a></li>
+                <li><a href="#method-i-apply_rails_template">apply_rails_template</a></li>
+                <li><a href="#method-c-banner">banner</a></li>
+                <li><a href="#method-i-build">build</a></li>
+                <li><a href="#method-i-builder">builder</a></li>
+                <li><a href="#method-i-bundle_if_dev_or_edge">bundle_if_dev_or_edge</a></li>
+                <li><a href="#method-i-create_active_record_files">create_active_record_files</a></li>
+                <li><a href="#method-i-create_app_files">create_app_files</a></li>
+                <li><a href="#method-i-create_boot_file">create_boot_file</a></li>
+                <li><a href="#method-i-create_config_files">create_config_files</a></li>
+                <li><a href="#method-i-create_db_files">create_db_files</a></li>
+                <li><a href="#method-i-create_doc_files">create_doc_files</a></li>
+                <li><a href="#method-i-create_lib_files">create_lib_files</a></li>
+                <li><a href="#method-i-create_log_files">create_log_files</a></li>
+                <li><a href="#method-i-create_prototype_files">create_prototype_files</a></li>
+                <li><a href="#method-i-create_public_files">create_public_files</a></li>
+                <li><a href="#method-i-create_public_image_files">create_public_image_files</a></li>
+                <li><a href="#method-i-create_public_stylesheets_files">create_public_stylesheets_files</a></li>
+                <li><a href="#method-i-create_root">create_root</a></li>
+                <li><a href="#method-i-create_root_files">create_root_files</a></li>
+                <li><a href="#method-i-create_script_files">create_script_files</a></li>
+                <li><a href="#method-i-create_test_files">create_test_files</a></li>
+                <li><a href="#method-i-create_tmp_files">create_tmp_files</a></li>
+                <li><a href="#method-i-create_vendor_files">create_vendor_files</a></li>
+                <li><a href="#method-i-defined_app_const_base">defined_app_const_base</a></li>
+                      <li><a href="#method-i-defined_app_name">defined_app_name</a></li>
+                <li><a href="#method-i-dev_or_edge-3F">dev_or_edge?</a></li>
+                <li><a href="#method-i-empty_directory_with_gitkeep">empty_directory_with_gitkeep</a></li>
+                <li><a href="#method-i-file">file</a></li>
+                <li><a href="#method-i-finish_template">finish_template</a></li>
+                <li><a href="#method-i-gem_for_database">gem_for_database</a></li>
+                <li><a href="#method-i-mysql_socket">mysql_socket</a></li>
+                <li><a href="#method-c-new">new</a></li>
+                <li><a href="#method-i-set_default_accessors-21">set_default_accessors!</a></li>
+                <li><a href="#method-i-valid_app_const-3F">valid_app_const?</a></li>
+                <li><a href="#method-i-version_constraint_for_database_gem">version_constraint_for_database_gem</a></li>
+      </ul>
+
+
+  <div class="sectiontitle">Constants</div>
+  <table border='0' cellpadding='5'>
+  <tr valign='top'>
+    <td class="attr-name">DATABASES</td>
+    <td>=</td>
+    <td class="attr-value">%w( mysql oracle postgresql sqlite3 frontbase ibm_db )</td>
+  </tr>
+  </table>
+
+  <div class="sectiontitle">Attributes</div>
+  <table border='0' cellpadding='5'>
+  <tr valign='top'>
+    <td class='attr-rw'>
+[RW]
+    </td>
+    <td class='attr-name'>rails_template</td>
+    <td class='attr-desc'>
+                        </td>
+  </tr>
+  </table>
+
+        
+    <div class="sectiontitle">
+      Public      Class      methods
+    </div>
+
+          
+      <div class="method">
+        <div class="title">
+                      <a name="method-c-new"></a>
+            <b>new</b>(*args)          
+        </div>
+
+                  <div class="description">
+                      </div>
+        
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('new_source')"
+                 id="l_method-c-new_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="new_source">
+<pre>
+  <span class="ruby-comment"># File railties/lib/rails/generators/rails/app/app_generator.rb, line 201</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">initialize</span>(*<span class="ruby-identifier">args</span>)
+  <span class="ruby-identifier">raise</span> <span class="ruby-constant">Error</span>, <span class="ruby-string">&quot;Options should be given after the application name. For details run: rails --help&quot;</span> <span class="ruby-keyword">if</span> <span class="ruby-identifier">args</span>[<span class="ruby-value">0</span>].<span class="ruby-identifier">blank?</span>
+
+  <span class="ruby-ivar">@original_wd</span> = <span class="ruby-constant">Dir</span>.<span class="ruby-identifier">pwd</span>
+
+  <span class="ruby-keyword">super</span>
+
+  <span class="ruby-keyword">if</span> <span class="ruby-operator">!</span><span class="ruby-identifier">options</span>[<span class="ruby-value">:skip_active_record</span>] <span class="ruby-operator">&amp;&amp;</span> <span class="ruby-operator">!</span><span class="ruby-constant">DATABASES</span>.<span class="ruby-identifier">include?</span>(<span class="ruby-identifier">options</span>[<span class="ruby-value">:database</span>])
+    <span class="ruby-identifier">raise</span> <span class="ruby-constant">Error</span>, <span class="ruby-node">&quot;Invalid value for --database option. Supported for preconfiguration are: #{DATABASES.join(&quot;, &quot;)}.&quot;</span>
+  <span class="ruby-keyword">end</span>
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+          
+    <div class="sectiontitle">
+      Protected      Class      methods
+    </div>
+
+          
+      <div class="method">
+        <div class="title">
+                      <a name="method-c-banner"></a>
+            <b>banner</b>()          
+        </div>
+
+                  <div class="description">
+                      </div>
+        
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('banner_source')"
+                 id="l_method-c-banner_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="banner_source">
+<pre>
+  <span class="ruby-comment"># File railties/lib/rails/generators/rails/app/app_generator.rb, line 312</span>
+<span class="ruby-keyword">def</span> <span class="ruby-keyword">self</span>.<span class="ruby-identifier">banner</span>
+  <span class="ruby-node">&quot;rails new #{self.arguments.map(&amp;:usage).join(' ')} [options]&quot;</span>
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+                  
+    <div class="sectiontitle">
+      Public      Instance      methods
+    </div>
+
+          
+      <div class="method">
+        <div class="title">
+                      <a name="method-i-apply_rails_template"></a>
+            <b>apply_rails_template</b>()          
+        </div>
+
+                  <div class="description">
+                      </div>
+        
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('apply_rails_template_source')"
+                 id="l_method-i-apply_rails_template_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="apply_rails_template_source">
+<pre>
+  <span class="ruby-comment"># File railties/lib/rails/generators/rails/app/app_generator.rb, line 299</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">apply_rails_template</span>
+  <span class="ruby-identifier">apply</span> <span class="ruby-identifier">rails_template</span> <span class="ruby-keyword">if</span> <span class="ruby-identifier">rails_template</span>
+<span class="ruby-keyword">rescue</span> <span class="ruby-constant">Thor</span><span class="ruby-operator">::</span><span class="ruby-constant">Error</span>, <span class="ruby-constant">LoadError</span>, <span class="ruby-constant">Errno</span><span class="ruby-operator">::</span><span class="ruby-constant">ENOENT</span> =<span class="ruby-operator">&gt;</span> <span class="ruby-identifier">e</span>
+  <span class="ruby-identifier">raise</span> <span class="ruby-constant">Error</span>, <span class="ruby-node">&quot;The template [#{rails_template}] could not be loaded. Error: #{e}&quot;</span>
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+          
+      <div class="method">
+        <div class="title">
+                      <a name="method-i-bundle_if_dev_or_edge"></a>
+            <b>bundle_if_dev_or_edge</b>()          
+        </div>
+
+                  <div class="description">
+                      </div>
+        
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('bundle_if_dev_or_edge_source')"
+                 id="l_method-i-bundle_if_dev_or_edge_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="bundle_if_dev_or_edge_source">
+<pre>
+  <span class="ruby-comment"># File railties/lib/rails/generators/rails/app/app_generator.rb, line 305</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">bundle_if_dev_or_edge</span>
+  <span class="ruby-identifier">bundle_command</span> = <span class="ruby-constant">File</span>.<span class="ruby-identifier">basename</span>(<span class="ruby-constant">Thor</span><span class="ruby-operator">::</span><span class="ruby-constant">Util</span>.<span class="ruby-identifier">ruby_command</span>).<span class="ruby-identifier">sub</span>(<span class="ruby-regexp">/ruby/</span>, <span class="ruby-string">'bundle'</span>)
+  <span class="ruby-identifier">run</span> <span class="ruby-node">&quot;#{bundle_command} install&quot;</span> <span class="ruby-keyword">if</span> <span class="ruby-identifier">dev_or_edge?</span>
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+          
+      <div class="method">
+        <div class="title">
+                      <a name="method-i-create_active_record_files"></a>
+            <b>create_active_record_files</b>()          
+        </div>
+
+                  <div class="description">
+                      </div>
+        
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('create_active_record_files_source')"
+                 id="l_method-i-create_active_record_files_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="create_active_record_files_source">
+<pre>
+  <span class="ruby-comment"># File railties/lib/rails/generators/rails/app/app_generator.rb, line 242</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">create_active_record_files</span>
+  <span class="ruby-keyword">return</span> <span class="ruby-keyword">if</span> <span class="ruby-identifier">options</span>[<span class="ruby-value">:skip_active_record</span>]
+  <span class="ruby-identifier">build</span>(<span class="ruby-value">:database_yml</span>)
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+          
+      <div class="method">
+        <div class="title">
+                      <a name="method-i-create_app_files"></a>
+            <b>create_app_files</b>()          
+        </div>
+
+                  <div class="description">
+                      </div>
+        
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('create_app_files_source')"
+                 id="l_method-i-create_app_files_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="create_app_files_source">
+<pre>
+  <span class="ruby-comment"># File railties/lib/rails/generators/rails/app/app_generator.rb, line 230</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">create_app_files</span>
+  <span class="ruby-identifier">build</span>(<span class="ruby-value">:app</span>)
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+          
+      <div class="method">
+        <div class="title">
+                      <a name="method-i-create_boot_file"></a>
+            <b>create_boot_file</b>()          
+        </div>
+
+                  <div class="description">
+                      </div>
+        
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('create_boot_file_source')"
+                 id="l_method-i-create_boot_file_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="create_boot_file_source">
+<pre>
+  <span class="ruby-comment"># File railties/lib/rails/generators/rails/app/app_generator.rb, line 238</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">create_boot_file</span>
+  <span class="ruby-identifier">template</span> <span class="ruby-string">&quot;config/boot.rb&quot;</span>
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+          
+      <div class="method">
+        <div class="title">
+                      <a name="method-i-create_config_files"></a>
+            <b>create_config_files</b>()          
+        </div>
+
+                  <div class="description">
+                      </div>
+        
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('create_config_files_source')"
+                 id="l_method-i-create_config_files_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="create_config_files_source">
+<pre>
+  <span class="ruby-comment"># File railties/lib/rails/generators/rails/app/app_generator.rb, line 234</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">create_config_files</span>
+  <span class="ruby-identifier">build</span>(<span class="ruby-value">:config</span>)
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+          
+      <div class="method">
+        <div class="title">
+                      <a name="method-i-create_db_files"></a>
+            <b>create_db_files</b>()          
+        </div>
+
+                  <div class="description">
+                      </div>
+        
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('create_db_files_source')"
+                 id="l_method-i-create_db_files_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="create_db_files_source">
+<pre>
+  <span class="ruby-comment"># File railties/lib/rails/generators/rails/app/app_generator.rb, line 247</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">create_db_files</span>
+  <span class="ruby-identifier">build</span>(<span class="ruby-value">:db</span>)
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+          
+      <div class="method">
+        <div class="title">
+                      <a name="method-i-create_doc_files"></a>
+            <b>create_doc_files</b>()          
+        </div>
+
+                  <div class="description">
+                      </div>
+        
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('create_doc_files_source')"
+                 id="l_method-i-create_doc_files_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="create_doc_files_source">
+<pre>
+  <span class="ruby-comment"># File railties/lib/rails/generators/rails/app/app_generator.rb, line 251</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">create_doc_files</span>
+  <span class="ruby-identifier">build</span>(<span class="ruby-value">:doc</span>)
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+          
+      <div class="method">
+        <div class="title">
+                      <a name="method-i-create_lib_files"></a>
+            <b>create_lib_files</b>()          
+        </div>
+
+                  <div class="description">
+                      </div>
+        
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('create_lib_files_source')"
+                 id="l_method-i-create_lib_files_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="create_lib_files_source">
+<pre>
+  <span class="ruby-comment"># File railties/lib/rails/generators/rails/app/app_generator.rb, line 255</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">create_lib_files</span>
+  <span class="ruby-identifier">build</span>(<span class="ruby-value">:lib</span>)
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+          
+      <div class="method">
+        <div class="title">
+                      <a name="method-i-create_log_files"></a>
+            <b>create_log_files</b>()          
+        </div>
+
+                  <div class="description">
+                      </div>
+        
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('create_log_files_source')"
+                 id="l_method-i-create_log_files_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="create_log_files_source">
+<pre>
+  <span class="ruby-comment"># File railties/lib/rails/generators/rails/app/app_generator.rb, line 259</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">create_log_files</span>
+  <span class="ruby-identifier">build</span>(<span class="ruby-value">:log</span>)
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+          
+      <div class="method">
+        <div class="title">
+                      <a name="method-i-create_prototype_files"></a>
+            <b>create_prototype_files</b>()          
+        </div>
+
+                  <div class="description">
+                      </div>
+        
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('create_prototype_files_source')"
+                 id="l_method-i-create_prototype_files_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="create_prototype_files_source">
+<pre>
+  <span class="ruby-comment"># File railties/lib/rails/generators/rails/app/app_generator.rb, line 275</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">create_prototype_files</span>
+  <span class="ruby-identifier">build</span>(<span class="ruby-value">:javascripts</span>)
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+          
+      <div class="method">
+        <div class="title">
+                      <a name="method-i-create_public_files"></a>
+            <b>create_public_files</b>()          
+        </div>
+
+                  <div class="description">
+                      </div>
+        
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('create_public_files_source')"
+                 id="l_method-i-create_public_files_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="create_public_files_source">
+<pre>
+  <span class="ruby-comment"># File railties/lib/rails/generators/rails/app/app_generator.rb, line 263</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">create_public_files</span>
+  <span class="ruby-identifier">build</span>(<span class="ruby-value">:public_directory</span>)
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+          
+      <div class="method">
+        <div class="title">
+                      <a name="method-i-create_public_image_files"></a>
+            <b>create_public_image_files</b>()          
+        </div>
+
+                  <div class="description">
+                      </div>
+        
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('create_public_image_files_source')"
+                 id="l_method-i-create_public_image_files_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="create_public_image_files_source">
+<pre>
+  <span class="ruby-comment"># File railties/lib/rails/generators/rails/app/app_generator.rb, line 267</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">create_public_image_files</span>
+  <span class="ruby-identifier">build</span>(<span class="ruby-value">:images</span>)
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+          
+      <div class="method">
+        <div class="title">
+                      <a name="method-i-create_public_stylesheets_files"></a>
+            <b>create_public_stylesheets_files</b>()          
+        </div>
+
+                  <div class="description">
+                      </div>
+        
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('create_public_stylesheets_files_source')"
+                 id="l_method-i-create_public_stylesheets_files_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="create_public_stylesheets_files_source">
+<pre>
+  <span class="ruby-comment"># File railties/lib/rails/generators/rails/app/app_generator.rb, line 271</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">create_public_stylesheets_files</span>
+  <span class="ruby-identifier">build</span>(<span class="ruby-value">:stylesheets</span>)
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+          
+      <div class="method">
+        <div class="title">
+                      <a name="method-i-create_root"></a>
+            <b>create_root</b>()          
+        </div>
+
+                  <div class="description">
+                      </div>
+        
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('create_root_source')"
+                 id="l_method-i-create_root_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="create_root_source">
+<pre>
+  <span class="ruby-comment"># File railties/lib/rails/generators/rails/app/app_generator.rb, line 213</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">create_root</span>
+  <span class="ruby-keyword">self</span>.<span class="ruby-identifier">destination_root</span> = <span class="ruby-constant">File</span>.<span class="ruby-identifier">expand_path</span>(<span class="ruby-identifier">app_path</span>, <span class="ruby-identifier">destination_root</span>)
+  <span class="ruby-identifier">valid_app_const?</span>
+
+  <span class="ruby-identifier">empty_directory</span> <span class="ruby-string">'.'</span>
+  <span class="ruby-identifier">set_default_accessors!</span>
+  <span class="ruby-constant">FileUtils</span>.<span class="ruby-identifier">cd</span>(<span class="ruby-identifier">destination_root</span>) <span class="ruby-keyword">unless</span> <span class="ruby-identifier">options</span>[<span class="ruby-value">:pretend</span>]
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+          
+      <div class="method">
+        <div class="title">
+                      <a name="method-i-create_root_files"></a>
+            <b>create_root_files</b>()          
+        </div>
+
+                  <div class="description">
+                      </div>
+        
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('create_root_files_source')"
+                 id="l_method-i-create_root_files_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="create_root_files_source">
+<pre>
+  <span class="ruby-comment"># File railties/lib/rails/generators/rails/app/app_generator.rb, line 222</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">create_root_files</span>
+  <span class="ruby-identifier">build</span>(<span class="ruby-value">:readme</span>)
+  <span class="ruby-identifier">build</span>(<span class="ruby-value">:rakefile</span>)
+  <span class="ruby-identifier">build</span>(<span class="ruby-value">:configru</span>)
+  <span class="ruby-identifier">build</span>(<span class="ruby-value">:gitignore</span>) <span class="ruby-keyword">unless</span> <span class="ruby-identifier">options</span>[<span class="ruby-value">:skip_git</span>]
+  <span class="ruby-identifier">build</span>(<span class="ruby-value">:gemfile</span>)   <span class="ruby-keyword">unless</span> <span class="ruby-identifier">options</span>[<span class="ruby-value">:skip_gemfile</span>]
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+          
+      <div class="method">
+        <div class="title">
+                      <a name="method-i-create_script_files"></a>
+            <b>create_script_files</b>()          
+        </div>
+
+                  <div class="description">
+                      </div>
+        
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('create_script_files_source')"
+                 id="l_method-i-create_script_files_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="create_script_files_source">
+<pre>
+  <span class="ruby-comment"># File railties/lib/rails/generators/rails/app/app_generator.rb, line 279</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">create_script_files</span>
+  <span class="ruby-identifier">build</span>(<span class="ruby-value">:script</span>)
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+          
+      <div class="method">
+        <div class="title">
+                      <a name="method-i-create_test_files"></a>
+            <b>create_test_files</b>()          
+        </div>
+
+                  <div class="description">
+                      </div>
+        
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('create_test_files_source')"
+                 id="l_method-i-create_test_files_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="create_test_files_source">
+<pre>
+  <span class="ruby-comment"># File railties/lib/rails/generators/rails/app/app_generator.rb, line 283</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">create_test_files</span>
+  <span class="ruby-identifier">build</span>(<span class="ruby-value">:test</span>) <span class="ruby-keyword">unless</span> <span class="ruby-identifier">options</span>[<span class="ruby-value">:skip_test_unit</span>]
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+          
+      <div class="method">
+        <div class="title">
+                      <a name="method-i-create_tmp_files"></a>
+            <b>create_tmp_files</b>()          
+        </div>
+
+                  <div class="description">
+                      </div>
+        
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('create_tmp_files_source')"
+                 id="l_method-i-create_tmp_files_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="create_tmp_files_source">
+<pre>
+  <span class="ruby-comment"># File railties/lib/rails/generators/rails/app/app_generator.rb, line 287</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">create_tmp_files</span>
+  <span class="ruby-identifier">build</span>(<span class="ruby-value">:tmp</span>)
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+          
+      <div class="method">
+        <div class="title">
+                      <a name="method-i-create_vendor_files"></a>
+            <b>create_vendor_files</b>()          
+        </div>
+
+                  <div class="description">
+                      </div>
+        
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('create_vendor_files_source')"
+                 id="l_method-i-create_vendor_files_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="create_vendor_files_source">
+<pre>
+  <span class="ruby-comment"># File railties/lib/rails/generators/rails/app/app_generator.rb, line 291</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">create_vendor_files</span>
+  <span class="ruby-identifier">build</span>(<span class="ruby-value">:vendor_plugins</span>)
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+          
+      <div class="method">
+        <div class="title">
+                      <a name="method-i-finish_template"></a>
+            <b>finish_template</b>()          
+        </div>
+
+                  <div class="description">
+                      </div>
+        
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('finish_template_source')"
+                 id="l_method-i-finish_template_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="finish_template_source">
+<pre>
+  <span class="ruby-comment"># File railties/lib/rails/generators/rails/app/app_generator.rb, line 295</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">finish_template</span>
+  <span class="ruby-identifier">build</span>(<span class="ruby-value">:leftovers</span>)
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+          
+    <div class="sectiontitle">
+      Protected      Instance      methods
+    </div>
+
+          
+      <div class="method">
+        <div class="title">
+                      <a name="method-i-app_const"></a>
+            <b>app_const</b>()          
+        </div>
+
+                  <div class="description">
+                      </div>
+        
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('app_const_source')"
+                 id="l_method-i-app_const_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="app_const_source">
+<pre>
+  <span class="ruby-comment"># File railties/lib/rails/generators/rails/app/app_generator.rb, line 374</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">app_const</span>
+  <span class="ruby-ivar">@app_const</span> <span class="ruby-operator">||=</span> <span class="ruby-node">&quot;#{app_const_base}::Application&quot;</span>
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+          
+      <div class="method">
+        <div class="title">
+                      <a name="method-i-app_const_base"></a>
+            <b>app_const_base</b>()          
+        </div>
+
+                  <div class="description">
+                      </div>
+        
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('app_const_base_source')"
+                 id="l_method-i-app_const_base_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="app_const_base_source">
+<pre>
+  <span class="ruby-comment"># File railties/lib/rails/generators/rails/app/app_generator.rb, line 370</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">app_const_base</span>
+  <span class="ruby-ivar">@app_const_base</span> <span class="ruby-operator">||=</span> <span class="ruby-identifier">defined_app_const_base</span> <span class="ruby-operator">||</span> <span class="ruby-identifier">app_name</span>.<span class="ruby-identifier">gsub</span>(<span class="ruby-regexp">/\W/</span>, <span class="ruby-string">'_'</span>).<span class="ruby-identifier">squeeze</span>(<span class="ruby-string">'_'</span>).<span class="ruby-identifier">camelize</span>
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+          
+      <div class="method">
+        <div class="title">
+                      <a name="method-i-app_name"></a>
+            <b>app_name</b>()          
+        </div>
+
+                  <div class="description">
+                      </div>
+        
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('app_name_source')"
+                 id="l_method-i-app_name_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="app_name_source">
+<pre>
+  <span class="ruby-comment"># File railties/lib/rails/generators/rails/app/app_generator.rb, line 355</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">app_name</span>
+  <span class="ruby-ivar">@app_name</span> <span class="ruby-operator">||=</span> <span class="ruby-identifier">defined_app_const_base?</span> <span class="ruby-operator">?</span> <span class="ruby-identifier">defined_app_name</span> <span class="ruby-operator">:</span> <span class="ruby-constant">File</span>.<span class="ruby-identifier">basename</span>(<span class="ruby-identifier">destination_root</span>)
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+          
+      <div class="method">
+        <div class="title">
+                      <a name="method-i-app_secret"></a>
+            <b>app_secret</b>()          
+        </div>
+
+                  <div class="description">
+                      </div>
+        
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('app_secret_source')"
+                 id="l_method-i-app_secret_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="app_secret_source">
+<pre>
+  <span class="ruby-comment"># File railties/lib/rails/generators/rails/app/app_generator.rb, line 388</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">app_secret</span>
+  <span class="ruby-constant">ActiveSupport</span><span class="ruby-operator">::</span><span class="ruby-constant">SecureRandom</span>.<span class="ruby-identifier">hex</span>(<span class="ruby-value">64</span>)
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+          
+      <div class="method">
+        <div class="title">
+                      <a name="method-i-build"></a>
+            <b>build</b>(meth, *args)          
+        </div>
+
+                  <div class="description">
+                      </div>
+        
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('build_source')"
+                 id="l_method-i-build_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="build_source">
+<pre>
+  <span class="ruby-comment"># File railties/lib/rails/generators/rails/app/app_generator.rb, line 335</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">build</span>(<span class="ruby-identifier">meth</span>, *<span class="ruby-identifier">args</span>)
+  <span class="ruby-identifier">builder</span>.<span class="ruby-identifier">send</span>(<span class="ruby-identifier">meth</span>, *<span class="ruby-identifier">args</span>) <span class="ruby-keyword">if</span> <span class="ruby-identifier">builder</span>.<span class="ruby-identifier">respond_to?</span>(<span class="ruby-identifier">meth</span>)
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+          
+      <div class="method">
+        <div class="title">
+                      <a name="method-i-builder"></a>
+            <b>builder</b>()          
+        </div>
+
+                  <div class="description">
+                      </div>
+        
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('builder_source')"
+                 id="l_method-i-builder_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="builder_source">
+<pre>
+  <span class="ruby-comment"># File railties/lib/rails/generators/rails/app/app_generator.rb, line 316</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">builder</span>
+  <span class="ruby-ivar">@builder</span> <span class="ruby-operator">||=</span> <span class="ruby-keyword">begin</span>
+    <span class="ruby-keyword">if</span> <span class="ruby-identifier">path</span> = <span class="ruby-identifier">options</span>[<span class="ruby-value">:builder</span>]
+      <span class="ruby-keyword">if</span> <span class="ruby-constant">URI</span>(<span class="ruby-identifier">path</span>).<span class="ruby-identifier">is_a?</span>(<span class="ruby-constant">URI</span><span class="ruby-operator">::</span><span class="ruby-constant">HTTP</span>)
+        <span class="ruby-identifier">contents</span> = <span class="ruby-identifier">open</span>(<span class="ruby-identifier">path</span>, <span class="ruby-string">&quot;Accept&quot;</span> =<span class="ruby-operator">&gt;</span> <span class="ruby-string">&quot;application/x-thor-template&quot;</span>) {<span class="ruby-operator">|</span><span class="ruby-identifier">io</span><span class="ruby-operator">|</span> <span class="ruby-identifier">io</span>.<span class="ruby-identifier">read</span> }
+      <span class="ruby-keyword">else</span>
+        <span class="ruby-identifier">contents</span> = <span class="ruby-identifier">open</span>(<span class="ruby-constant">File</span>.<span class="ruby-identifier">expand_path</span>(<span class="ruby-identifier">path</span>, <span class="ruby-ivar">@original_wd</span>)) {<span class="ruby-operator">|</span><span class="ruby-identifier">io</span><span class="ruby-operator">|</span> <span class="ruby-identifier">io</span>.<span class="ruby-identifier">read</span> }
+      <span class="ruby-keyword">end</span>
+
+      <span class="ruby-identifier">prok</span> = <span class="ruby-identifier">eval</span>(<span class="ruby-node">&quot;proc { #{contents} }&quot;</span>, <span class="ruby-constant">TOPLEVEL_BINDING</span>, <span class="ruby-identifier">path</span>, <span class="ruby-value">1</span>)
+      <span class="ruby-identifier">instance_eval</span>(&amp;<span class="ruby-identifier">prok</span>)
+    <span class="ruby-keyword">end</span>
+
+    <span class="ruby-identifier">builder_class</span> = <span class="ruby-keyword">defined?</span>(<span class="ruby-operator">::</span><span class="ruby-constant">AppBuilder</span>) <span class="ruby-operator">?</span> <span class="ruby-operator">::</span><span class="ruby-constant">AppBuilder</span> <span class="ruby-operator">:</span> <span class="ruby-constant">Rails</span><span class="ruby-operator">::</span><span class="ruby-constant">AppBuilder</span>
+    <span class="ruby-identifier">builder_class</span>.<span class="ruby-identifier">send</span>(<span class="ruby-value">:include</span>, <span class="ruby-constant">ActionMethods</span>)
+    <span class="ruby-identifier">builder_class</span>.<span class="ruby-identifier">new</span>(<span class="ruby-keyword">self</span>)
+  <span class="ruby-keyword">end</span>
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+          
+      <div class="method">
+        <div class="title">
+                      <a name="method-i-defined_app_const_base"></a>
+            <b>defined_app_const_base</b>()          
+        </div>
+
+                  <div class="description">
+                      </div>
+        
+                  <div class="aka">
+            This method is also aliased as
+                          <a href="AppGenerator.html#method-i-defined_app_const_base-3F">defined_app_const_base?</a>                      </div>
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('defined_app_const_base_source')"
+                 id="l_method-i-defined_app_const_base_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="defined_app_const_base_source">
+<pre>
+  <span class="ruby-comment"># File railties/lib/rails/generators/rails/app/app_generator.rb, line 363</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">defined_app_const_base</span>
+  <span class="ruby-constant">Rails</span>.<span class="ruby-identifier">respond_to?</span>(<span class="ruby-value">:application</span>) <span class="ruby-operator">&amp;&amp;</span> <span class="ruby-keyword">defined?</span>(<span class="ruby-constant">Rails</span><span class="ruby-operator">::</span><span class="ruby-constant">Application</span>) <span class="ruby-operator">&amp;&amp;</span>
+    <span class="ruby-constant">Rails</span>.<span class="ruby-identifier">application</span>.<span class="ruby-identifier">is_a?</span>(<span class="ruby-constant">Rails</span><span class="ruby-operator">::</span><span class="ruby-constant">Application</span>) <span class="ruby-operator">&amp;&amp;</span> <span class="ruby-constant">Rails</span>.<span class="ruby-identifier">application</span>.<span class="ruby-identifier">class</span>.<span class="ruby-identifier">name</span>.<span class="ruby-identifier">sub</span>(<span class="ruby-regexp">/::Application$/</span>, <span class="ruby-string">&quot;&quot;</span>)
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+                
+      <div class="method">
+        <div class="title">
+                      <a name="method-i-defined_app_name"></a>
+            <b>defined_app_name</b>()          
+        </div>
+
+                  <div class="description">
+                      </div>
+        
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('defined_app_name_source')"
+                 id="l_method-i-defined_app_name_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="defined_app_name_source">
+<pre>
+  <span class="ruby-comment"># File railties/lib/rails/generators/rails/app/app_generator.rb, line 359</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">defined_app_name</span>
+  <span class="ruby-identifier">defined_app_const_base</span>.<span class="ruby-identifier">underscore</span>
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+          
+      <div class="method">
+        <div class="title">
+                      <a name="method-i-dev_or_edge-3F"></a>
+            <b>dev_or_edge?</b>()          
+        </div>
+
+                  <div class="description">
+                      </div>
+        
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('dev_or_edge-3F_source')"
+                 id="l_method-i-dev_or_edge-3F_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="dev_or_edge-3F_source">
+<pre>
+  <span class="ruby-comment"># File railties/lib/rails/generators/rails/app/app_generator.rb, line 392</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">dev_or_edge?</span>
+  <span class="ruby-identifier">options</span>.<span class="ruby-identifier">dev?</span> <span class="ruby-operator">||</span> <span class="ruby-identifier">options</span>.<span class="ruby-identifier">edge?</span>
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+          
+      <div class="method">
+        <div class="title">
+                      <a name="method-i-empty_directory_with_gitkeep"></a>
+            <b>empty_directory_with_gitkeep</b>(destination, config = {})          
+        </div>
+
+                  <div class="description">
+                      </div>
+        
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('empty_directory_with_gitkeep_source')"
+                 id="l_method-i-empty_directory_with_gitkeep_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="empty_directory_with_gitkeep_source">
+<pre>
+  <span class="ruby-comment"># File railties/lib/rails/generators/rails/app/app_generator.rb, line 429</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">empty_directory_with_gitkeep</span>(<span class="ruby-identifier">destination</span>, <span class="ruby-identifier">config</span> = {})
+  <span class="ruby-identifier">empty_directory</span>(<span class="ruby-identifier">destination</span>, <span class="ruby-identifier">config</span>)
+  <span class="ruby-identifier">create_file</span>(<span class="ruby-node">&quot;#{destination}/.gitkeep&quot;</span>) <span class="ruby-keyword">unless</span> <span class="ruby-identifier">options</span>[<span class="ruby-value">:skip_git</span>]
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+          
+      <div class="method">
+        <div class="title">
+                      <a name="method-i-file"></a>
+            <b>file</b>(*args, &block)          
+        </div>
+
+                  <div class="description">
+            <p>Define file as an alias to create_file for backwards compatibility.</p>          </div>
+        
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('file_source')"
+                 id="l_method-i-file_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="file_source">
+<pre>
+  <span class="ruby-comment"># File railties/lib/rails/generators/rails/app/app_generator.rb, line 351</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">file</span>(*<span class="ruby-identifier">args</span>, &amp;<span class="ruby-identifier">block</span>)
+  <span class="ruby-identifier">create_file</span>(*<span class="ruby-identifier">args</span>, &amp;<span class="ruby-identifier">block</span>)
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+          
+      <div class="method">
+        <div class="title">
+                      <a name="method-i-gem_for_database"></a>
+            <b>gem_for_database</b>()          
+        </div>
+
+                  <div class="description">
+                      </div>
+        
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('gem_for_database_source')"
+                 id="l_method-i-gem_for_database_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="gem_for_database_source">
+<pre>
+  <span class="ruby-comment"># File railties/lib/rails/generators/rails/app/app_generator.rb, line 396</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">gem_for_database</span>
+  <span class="ruby-comment"># %w( mysql oracle postgresql sqlite3 frontbase ibm_db )</span>
+  <span class="ruby-keyword">case</span> <span class="ruby-identifier">options</span>[<span class="ruby-value">:database</span>]
+  <span class="ruby-keyword">when</span> <span class="ruby-string">&quot;oracle&quot;</span>     <span class="ruby-keyword">then</span> <span class="ruby-string">&quot;ruby-oci8&quot;</span>
+  <span class="ruby-keyword">when</span> <span class="ruby-string">&quot;postgresql&quot;</span> <span class="ruby-keyword">then</span> <span class="ruby-string">&quot;pg&quot;</span>
+  <span class="ruby-keyword">when</span> <span class="ruby-string">&quot;sqlite3&quot;</span>    <span class="ruby-keyword">then</span> <span class="ruby-string">&quot;sqlite3&quot;</span>
+  <span class="ruby-keyword">when</span> <span class="ruby-string">&quot;frontbase&quot;</span>  <span class="ruby-keyword">then</span> <span class="ruby-string">&quot;ruby-frontbase&quot;</span>
+  <span class="ruby-keyword">when</span> <span class="ruby-string">&quot;mysql&quot;</span>      <span class="ruby-keyword">then</span> <span class="ruby-string">&quot;mysql2&quot;</span>
+  <span class="ruby-keyword">else</span> <span class="ruby-identifier">options</span>[<span class="ruby-value">:database</span>]
+  <span class="ruby-keyword">end</span>
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+          
+      <div class="method">
+        <div class="title">
+                      <a name="method-i-mysql_socket"></a>
+            <b>mysql_socket</b>()          
+        </div>
+
+                  <div class="description">
+                      </div>
+        
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('mysql_socket_source')"
+                 id="l_method-i-mysql_socket_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="mysql_socket_source">
+<pre>
+  <span class="ruby-comment"># File railties/lib/rails/generators/rails/app/app_generator.rb, line 415</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">mysql_socket</span>
+  <span class="ruby-ivar">@mysql_socket</span> <span class="ruby-operator">||=</span> [
+    <span class="ruby-string">&quot;/tmp/mysql.sock&quot;</span>,                        <span class="ruby-comment"># default</span>
+    <span class="ruby-string">&quot;/var/run/mysqld/mysqld.sock&quot;</span>,            <span class="ruby-comment"># debian/gentoo</span>
+    <span class="ruby-string">&quot;/var/tmp/mysql.sock&quot;</span>,                    <span class="ruby-comment"># freebsd</span>
+    <span class="ruby-string">&quot;/var/lib/mysql/mysql.sock&quot;</span>,              <span class="ruby-comment"># fedora</span>
+    <span class="ruby-string">&quot;/opt/local/lib/mysql/mysql.sock&quot;</span>,        <span class="ruby-comment"># fedora</span>
+    <span class="ruby-string">&quot;/opt/local/var/run/mysqld/mysqld.sock&quot;</span>,  <span class="ruby-comment"># mac + darwinports + mysql</span>
+    <span class="ruby-string">&quot;/opt/local/var/run/mysql4/mysqld.sock&quot;</span>,  <span class="ruby-comment"># mac + darwinports + mysql4</span>
+    <span class="ruby-string">&quot;/opt/local/var/run/mysql5/mysqld.sock&quot;</span>,  <span class="ruby-comment"># mac + darwinports + mysql5</span>
+    <span class="ruby-string">&quot;/opt/lampp/var/mysql/mysql.sock&quot;</span>         <span class="ruby-comment"># xampp for linux</span>
+  ].<span class="ruby-identifier">find</span> { <span class="ruby-operator">|</span><span class="ruby-identifier">f</span><span class="ruby-operator">|</span> <span class="ruby-constant">File</span>.<span class="ruby-identifier">exist?</span>(<span class="ruby-identifier">f</span>) } <span class="ruby-keyword">unless</span> <span class="ruby-constant">RbConfig</span><span class="ruby-operator">::</span><span class="ruby-constant">CONFIG</span>[<span class="ruby-string">'host_os'</span>] <span class="ruby-operator">=~</span> <span class="ruby-regexp">/mswin|mingw/</span>
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+          
+      <div class="method">
+        <div class="title">
+                      <a name="method-i-set_default_accessors-21"></a>
+            <b>set_default_accessors!</b>()          
+        </div>
+
+                  <div class="description">
+                      </div>
+        
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('set_default_accessors-21_source')"
+                 id="l_method-i-set_default_accessors-21_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="set_default_accessors-21_source">
+<pre>
+  <span class="ruby-comment"># File railties/lib/rails/generators/rails/app/app_generator.rb, line 339</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">set_default_accessors!</span>
+  <span class="ruby-keyword">self</span>.<span class="ruby-identifier">rails_template</span> = <span class="ruby-keyword">case</span> <span class="ruby-identifier">options</span>[<span class="ruby-value">:template</span>]
+    <span class="ruby-keyword">when</span> <span class="ruby-regexp">/^https?:\/\//</span>
+      <span class="ruby-identifier">options</span>[<span class="ruby-value">:template</span>]
+    <span class="ruby-keyword">when</span> <span class="ruby-constant">String</span>
+      <span class="ruby-constant">File</span>.<span class="ruby-identifier">expand_path</span>(<span class="ruby-identifier">options</span>[<span class="ruby-value">:template</span>], <span class="ruby-constant">Dir</span>.<span class="ruby-identifier">pwd</span>)
+    <span class="ruby-keyword">else</span>
+      <span class="ruby-identifier">options</span>[<span class="ruby-value">:template</span>]
+  <span class="ruby-keyword">end</span>
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+          
+      <div class="method">
+        <div class="title">
+                      <a name="method-i-valid_app_const-3F"></a>
+            <b>valid_app_const?</b>()          
+        </div>
+
+                  <div class="description">
+                      </div>
+        
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('valid_app_const-3F_source')"
+                 id="l_method-i-valid_app_const-3F_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="valid_app_const-3F_source">
+<pre>
+  <span class="ruby-comment"># File railties/lib/rails/generators/rails/app/app_generator.rb, line 378</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">valid_app_const?</span>
+  <span class="ruby-keyword">if</span> <span class="ruby-identifier">app_const</span> <span class="ruby-operator">=~</span> <span class="ruby-regexp">/^\d/</span>
+    <span class="ruby-identifier">raise</span> <span class="ruby-constant">Error</span>, <span class="ruby-node">&quot;Invalid application name #{app_name}. Please give a name which does not start with numbers.&quot;</span>
+  <span class="ruby-keyword">elsif</span> <span class="ruby-constant">RESERVED_NAMES</span>.<span class="ruby-identifier">include?</span>(<span class="ruby-identifier">app_name</span>)
+    <span class="ruby-identifier">raise</span> <span class="ruby-constant">Error</span>, <span class="ruby-node">&quot;Invalid application name #{app_name}. Please give a name which does not match one of the reserved rails words.&quot;</span>
+  <span class="ruby-keyword">elsif</span> <span class="ruby-constant">Object</span>.<span class="ruby-identifier">const_defined?</span>(<span class="ruby-identifier">app_const_base</span>)
+    <span class="ruby-identifier">raise</span> <span class="ruby-constant">Error</span>, <span class="ruby-node">&quot;Invalid application name #{app_name}, constant #{app_const_base} is already in use. Please choose another application name.&quot;</span>
+  <span class="ruby-keyword">end</span>
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+          
+      <div class="method">
+        <div class="title">
+                      <a name="method-i-version_constraint_for_database_gem"></a>
+            <b>version_constraint_for_database_gem</b>()          
+        </div>
+
+                  <div class="description">
+                      </div>
+        
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('version_constraint_for_database_gem_source')"
+                 id="l_method-i-version_constraint_for_database_gem_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="version_constraint_for_database_gem_source">
+<pre>
+  <span class="ruby-comment"># File railties/lib/rails/generators/rails/app/app_generator.rb, line 408</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">version_constraint_for_database_gem</span>
+  <span class="ruby-keyword">case</span> <span class="ruby-identifier">options</span>[<span class="ruby-value">:database</span>]
+  <span class="ruby-keyword">when</span> <span class="ruby-string">&quot;mysql&quot;</span>      <span class="ruby-keyword">then</span> <span class="ruby-string">&quot;~&gt; 0.2.6&quot;</span>
+  <span class="ruby-keyword">else</span> <span class="ruby-keyword">nil</span>
+  <span class="ruby-keyword">end</span>
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+          </div>
+  </div>
+  </body>
+</html>

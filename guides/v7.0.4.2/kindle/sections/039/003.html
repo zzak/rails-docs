@@ -1,0 +1,153 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>4 Key Management</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v7.0.4.2/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="key-management"><a class="anchorlink" href="#key-management">4 Key Management</a></h3>
+<p>Key providers implement key management strategies. You can configure key providers globally, or on a per attribute basis.</p>
+
+<h4 id="built-in-key-providers"><a class="anchorlink" href="#built-in-key-providers">4.1 Built-in Key Providers</a></h4>
+
+<h5 id="derivedsecretkeyprovider"><a class="anchorlink" href="#derivedsecretkeyprovider">4.1.1 DerivedSecretKeyProvider</a></h5>
+
+<p>A key provider that will serve keys derived from the provided passwords using PBKDF2.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">config</span><span class="p">.</span><span class="nf">active_record</span><span class="p">.</span><span class="nf">encryption</span><span class="p">.</span><span class="nf">key_provider</span> <span class="o">=</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Encryption</span><span class="o">::</span><span class="no">DerivedSecretKeyProvider</span><span class="p">.</span><span class="nf">new</span><span class="p">([</span><span class="s2">"some passwords"</span><span class="p">,</span> <span class="s2">"to derive keys from. "</span><span class="p">,</span> <span class="s2">"These should be in"</span><span class="p">,</span> <span class="s2">"credentials"</span><span class="p">])</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='config.active_record.encryption.key_provider = ActiveRecord::Encryption::DerivedSecretKeyProvider.new(["some passwords", "to derive keys from. ", "These should be in", "credentials"])
+'>Copy</button>
+</div>
+<div class="note"><p>By default, <code>active_record.encryption</code> configures a <code>DerivedSecretKeyProvider</code> with the keys defined in <code>active_record.encryption.primary_key</code>.</p></div>
+
+<h5 id="envelopeencryptionkeyprovider"><a class="anchorlink" href="#envelopeencryptionkeyprovider">4.1.2 EnvelopeEncryptionKeyProvider</a></h5>
+
+<p>Implements a simple <a href="https://docs.aws.amazon.com/kms/latest/developerguide/concepts.html#enveloping">envelope encryption</a> strategy:</p>
+<ul>
+<li>It generates a random key for each data-encryption operation</li>
+<li>It stores the data-key with the data itself, encrypted with a primary key defined in the credential <code>active_record.encryption.primary_key</code>.</li>
+</ul>
+<p>You can configure Active Record to use this key provider by adding this to your <code>application.rb</code>:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">config</span><span class="p">.</span><span class="nf">active_record</span><span class="p">.</span><span class="nf">encryption</span><span class="p">.</span><span class="nf">key_provider</span> <span class="o">=</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Encryption</span><span class="o">::</span><span class="no">EnvelopeEncryptionKeyProvider</span><span class="p">.</span><span class="nf">new</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="config.active_record.encryption.key_provider = ActiveRecord::Encryption::EnvelopeEncryptionKeyProvider.new
+">Copy</button>
+</div>
+<p>As with other built-in key providers, you can provide a list of primary keys in <code>active_record.encryption.primary_key</code> to implement key-rotation schemes.</p>
+
+<h4 id="custom-key-providers"><a class="anchorlink" href="#custom-key-providers">4.2 Custom Key Providers</a></h4>
+
+<p>For more advanced key-management schemes, you can configure a custom key provider in an initializer:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Encryption</span><span class="p">.</span><span class="nf">key_provider</span> <span class="o">=</span> <span class="no">MyKeyProvider</span><span class="p">.</span><span class="nf">new</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="ActiveRecord::Encryption.key_provider = MyKeyProvider.new
+">Copy</button>
+</div>
+<p>A key provider must implement this interface:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">MyKeyProvider</span>
+  <span class="k">def</span> <span class="nf">encryption_key</span>
+  <span class="k">end</span>
+
+  <span class="k">def</span> <span class="nf">decryption_keys</span><span class="p">(</span><span class="n">encrypted_message</span><span class="p">)</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="class MyKeyProvider
+  def encryption_key
+  end
+
+  def decryption_keys(encrypted_message)
+  end
+end
+">Copy</button>
+</div>
+<p>Both methods return <code>ActiveRecord::Encryption::Key</code> objects:</p>
+<ul>
+<li>
+<code>encryption_key</code> returns the key used for encrypting some content</li>
+<li>
+<code>decryption keys</code> returns a list of potential keys for decrypting a given message</li>
+</ul>
+<p>A key can include arbitrary tags that will be stored unencrypted with the message. You can use <code>ActiveRecord::Encryption::Message#headers</code> to examine those values when decrypting.</p>
+
+<h4 id="model-specific-key-providers"><a class="anchorlink" href="#model-specific-key-providers">4.3 Model-specific Key Providers</a></h4>
+
+<p>You can configure a key provider on a per-class basis with the <code>:key_provider</code> option:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">Article</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="n">encrypts</span> <span class="ss">:summary</span><span class="p">,</span> <span class="ss">key_provider: </span><span class="no">ArticleKeyProvider</span><span class="p">.</span><span class="nf">new</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="class Article &lt; ApplicationRecord
+  encrypts :summary, key_provider: ArticleKeyProvider.new
+end
+">Copy</button>
+</div>
+<h4 id="model-specific-keys"><a class="anchorlink" href="#model-specific-keys">4.4 Model-specific Keys</a></h4>
+
+<p>You can configure a given key on a per-class basis with the <code>:key</code> option:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">Article</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="n">encrypts</span> <span class="ss">:summary</span><span class="p">,</span> <span class="ss">key: </span><span class="s2">"some secret key for article summaries"</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='class Article &lt; ApplicationRecord
+  encrypts :summary, key: "some secret key for article summaries"
+end
+'>Copy</button>
+</div>
+<p>Active Record uses the key to derive the key used to encrypt and decrypt the data.</p>
+
+<h4 id="rotating-keys"><a class="anchorlink" href="#rotating-keys">4.5 Rotating Keys</a></h4>
+
+<p><code>active_record.encryption</code> can work with lists of keys to support implementing key-rotation schemes:</p>
+<ul>
+<li>The <strong>last key</strong> will be used for encrypting new content.</li>
+<li>All the keys will be tried when decrypting content until one works.</li>
+</ul>
+<div class="code_container">
+<pre><code class="highlight yml"><span class="s">active_record</span>
+  <span class="s">encryption</span><span class="err">:</span>
+    <span class="na">primary_key</span><span class="pi">:</span>
+        <span class="pi">-</span> <span class="s">a1cc4d7b9f420e40a337b9e68c5ecec6</span> <span class="c1"># Previous keys can still decrypt existing content</span>
+        <span class="pi">-</span> <span class="s">bc17e7b413fd4720716a7633027f8cc4</span> <span class="c1"># Active, encrypts new content</span>
+    <span class="na">key_derivation_salt</span><span class="pi">:</span> <span class="s">a3226b97b3b2f8372d1fc6d497a0c0d3</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="active_record
+  encryption:
+    primary_key:
+        - a1cc4d7b9f420e40a337b9e68c5ecec6 # Previous keys can still decrypt existing content
+        - bc17e7b413fd4720716a7633027f8cc4 # Active, encrypts new content
+    key_derivation_salt: a3226b97b3b2f8372d1fc6d497a0c0d3
+">Copy</button>
+</div>
+<p>This enables workflows in which you keep a short list of keys by adding new keys, re-encrypting content, and deleting old keys.</p>
+
+<div class="note"><p>Rotating keys is not currently supported for deterministic encryption.</p></div>
+
+<div class="note"><p>Active Record Encryption doesn't provide automatic management of key rotation processes yet. All the pieces are there, but this hasn't been implemented yet.</p></div>
+
+<h4 id="storing-key-references"><a class="anchorlink" href="#storing-key-references">4.6 Storing Key References</a></h4>
+
+<p>You can configure <code>active_record.encryption.store_key_references</code> to make <code>active_record.encryption</code> store a reference to the encryption key in the encrypted message itself.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">config</span><span class="p">.</span><span class="nf">active_record</span><span class="p">.</span><span class="nf">encryption</span><span class="p">.</span><span class="nf">store_key_references</span> <span class="o">=</span> <span class="kp">true</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="config.active_record.encryption.store_key_references = true
+">Copy</button>
+</div>
+<p>Doing so makes for more performant decryption because the system can now locate keys directly instead of trying lists of keys. The price to pay is storage: encrypted data will be a bit bigger.</p>
+</body>
+</html>

@@ -1,0 +1,88 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>8 Deleting Comments</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v4.2.11.3/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="deleting-comments">8 Deleting Comments</h3>
+<p>Another important feature of a blog is being able to delete spam comments. To do
+this, we need to implement a link of some sort in the view and a <code>destroy</code>
+action in the <code>CommentsController</code>.</p>
+
+<p>So first, let's add the delete link in the
+<code>app/views/comments/_comment.html.erb</code> partial:</p>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+&lt;p&gt;
+  &lt;strong&gt;Commenter:&lt;/strong&gt;
+  &lt;%= comment.commenter %&gt;
+&lt;/p&gt;
+
+&lt;p&gt;
+  &lt;strong&gt;Comment:&lt;/strong&gt;
+  &lt;%= comment.body %&gt;
+&lt;/p&gt;
+
+&lt;p&gt;
+  &lt;%= link_to 'Destroy Comment', [comment.article, comment],
+               method: :delete,
+               data: { confirm: 'Are you sure?' } %&gt;
+&lt;/p&gt;
+
+</pre>
+</div>
+<p>Clicking this new "Destroy Comment" link will fire off a <code>DELETE
+/articles/:article_id/comments/:id</code> to our <code>CommentsController</code>, which can then
+use this to find the comment we want to delete, so let's add a <code>destroy</code> action
+to our controller (<code>app/controllers/comments_controller.rb</code>):</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class CommentsController &lt; ApplicationController
+  def create
+    @article = Article.find(params[:article_id])
+    @comment = @article.comments.create(comment_params)
+    redirect_to article_path(@article)
+  end
+
+  def destroy
+    @article = Article.find(params[:article_id])
+    @comment = @article.comments.find(params[:id])
+    @comment.destroy
+    redirect_to article_path(@article)
+  end
+
+  private
+    def comment_params
+      params.require(:comment).permit(:commenter, :body)
+    end
+end
+
+</pre>
+</div>
+<p>The <code>destroy</code> action will find the article we are looking at, locate the comment
+within the <code>@article.comments</code> collection, and then remove it from the
+database and send us back to the show action for the article.</p>
+
+<h4 id="deleting-associated-objects">8.1 Deleting Associated Objects</h4>
+
+<p>If you delete an article, its associated comments will also need to be
+deleted, otherwise they would simply occupy space in the database. Rails allows
+you to use the <code>dependent</code> option of an association to achieve this. Modify the
+Article model, <code>app/models/article.rb</code>, as follows:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class Article &lt; ActiveRecord::Base
+  has_many :comments, dependent: :destroy
+  validates :title, presence: true,
+                    length: { minimum: 5 }
+end
+
+</pre>
+</div>
+</body>
+</html>

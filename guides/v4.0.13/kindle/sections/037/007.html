@@ -1,0 +1,87 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>8 Active Model</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v4.0.13/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="active-model">8 Active Model</h3>
+<p>Active Model is new in Rails 3.0. It provides an abstraction layer for any ORM libraries to use to interact with Rails by implementing an Active Model interface.</p>
+<h4 id="orm-abstraction-and-action-pack-interface">8.1 ORM Abstraction and Action Pack Interface</h4>
+<p>Part of decoupling the core components was extracting all ties to Active Record from Action Pack. This has now been completed. All new ORM plugins now just need to implement Active Model interfaces to work seamlessly with Action Pack.</p>
+<p>More Information: - <a href="http://yehudakatz.com/2010/01/10/activemodel-make-any-ruby-object-feel-like-activerecord/">Make Any Ruby Object Feel Like ActiveRecord</a></p>
+<h4 id="validations">8.2 Validations</h4>
+<p>Validations have been moved from Active Record into Active Model, providing an interface to validations that works across ORM libraries in Rails 3.</p>
+<ul>
+<li>There is now a <code>validates :attribute, options_hash</code> shortcut method that allows you to pass options for all the validates class methods, you can pass more than one option to a validate method.</li>
+<li>The <code>validates</code> method has the following options:
+
+<ul>
+<li>
+<code>:acceptance =&gt; Boolean</code>.</li>
+<li>
+<code>:confirmation =&gt; Boolean</code>.</li>
+<li>
+<code>:exclusion =&gt; { :in =&gt; Enumerable }</code>.</li>
+<li>
+<code>:inclusion =&gt; { :in =&gt; Enumerable }</code>.</li>
+<li>
+<code>:format =&gt; { :with =&gt; Regexp, :on =&gt; :create }</code>.</li>
+<li>
+<code>:length =&gt; { :maximum =&gt; Fixnum }</code>.</li>
+<li>
+<code>:numericality =&gt; Boolean</code>.</li>
+<li>
+<code>:presence =&gt; Boolean</code>.</li>
+<li>
+<code>:uniqueness =&gt; Boolean</code>.</li>
+</ul>
+</li>
+</ul>
+<div class="note"><p>All the Rails version 2.3 style validation methods are still supported in Rails 3.0, the new validates method is designed as an additional aid in your model validations, not a replacement for the existing API.</p></div>
+<p>You can also pass in a validator object, which you can then reuse between objects that use Active Model:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class TitleValidator &lt; ActiveModel::EachValidator
+  Titles = ['Mr.', 'Mrs.', 'Dr.']
+  def validate_each(record, attribute, value)
+    unless Titles.include?(value)
+      record.errors[attribute] &lt;&lt; 'must be a valid title'
+    end
+  end
+end
+
+</pre>
+</div>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class Person
+  include ActiveModel::Validations
+  attr_accessor :title
+  validates :title, :presence =&gt; true, :title =&gt; true
+end
+
+# Or for Active Record
+
+class Person &lt; ActiveRecord::Base
+  validates :title, :presence =&gt; true, :title =&gt; true
+end
+
+</pre>
+</div>
+<p>There's also support for introspection:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+User.validators
+User.validators_on(:login)
+
+</pre>
+</div>
+<p>More Information:</p>
+<ul>
+<li><a href="http://thelucid.com/2010/01/08/sexy-validation-in-edge-rails-rails-3/">Sexy Validation in Rails 3</a></li>
+<li><a href="http://lindsaar.net/2010/1/31/validates_rails_3_awesome_is_true">Rails 3 Validations Explained</a></li>
+</ul>
+</body>
+</html>

@@ -1,0 +1,40 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>12 Extensions to Regexp
+</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v4.0.13/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="extensions-to-regexp">12 Extensions to <code>Regexp</code>
+</h3>
+<h4 id="multiline-questionmark">12.1 <code>multiline?</code>
+</h4>
+<p>The method <code>multiline?</code> says whether a regexp has the <code>/m</code> flag set, that is, whether the dot matches newlines.</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+%r{.}.multiline?  # =&gt; false
+%r{.}m.multiline? # =&gt; true
+
+Regexp.new('.').multiline?                    # =&gt; false
+Regexp.new('.', Regexp::MULTILINE).multiline? # =&gt; true
+
+</pre>
+</div>
+<p>Rails uses this method in a single place, also in the routing code. Multiline regexps are disallowed for route requirements and this flag eases enforcing that constraint.</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+def assign_route_options(segments, defaults, requirements)
+  ...
+  if requirement.multiline?
+    raise ArgumentError, "Regexp multiline option not allowed in routing requirements: #{requirement.inspect}"
+  end
+  ...
+end
+
+</pre>
+</div>
+<div class="note"><p>Defined in <code>active_support/core_ext/regexp.rb</code>.</p></div>
+</body>
+</html>

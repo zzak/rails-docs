@@ -1,0 +1,57 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>3 Creating Active Record Models</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v6.1.7.3/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="creating-active-record-models"><a class="anchorlink" href="#creating-active-record-models">3 Creating Active Record Models</a></h3>
+<p>To create Active Record models, subclass the <code>ApplicationRecord</code> class and you're good to go:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">Product</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+<span class="k">end</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-88de55c1d15fa53539eec9d975c15bb8">class Product &lt; ApplicationRecord
+end
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-88de55c1d15fa53539eec9d975c15bb8">Copy</button>
+</div>
+<p>This will create a <code>Product</code> model, mapped to a <code>products</code> table at the
+database. By doing this you'll also have the ability to map the columns of each
+row in that table with the attributes of the instances of your model. Suppose
+that the <code>products</code> table was created using an SQL (or one of its extensions) statement like:</p>
+
+<div class="code_container">
+<pre><code class="highlight sql"><span class="k">CREATE</span> <span class="k">TABLE</span> <span class="n">products</span> <span class="p">(</span>
+  <span class="n">id</span> <span class="nb">int</span><span class="p">(</span><span class="mi">11</span><span class="p">)</span> <span class="k">NOT</span> <span class="k">NULL</span> <span class="n">auto_increment</span><span class="p">,</span>
+  <span class="n">name</span> <span class="nb">varchar</span><span class="p">(</span><span class="mi">255</span><span class="p">),</span>
+  <span class="k">PRIMARY</span> <span class="k">KEY</span>  <span class="p">(</span><span class="n">id</span><span class="p">)</span>
+<span class="p">);</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-2acaff34406a070193740c293f269072">CREATE TABLE products (
+  id int(11) NOT NULL auto_increment,
+  name varchar(255),
+  PRIMARY KEY  (id)
+);
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-2acaff34406a070193740c293f269072">Copy</button>
+</div>
+<p>The schema above declares a table with two columns: <code>id</code> and <code>name</code>. Each row of
+this table represents a certain product with these two parameters. Thus, you
+would be able to write code like the following:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="nb">p</span> <span class="o">=</span> <span class="no">Product</span><span class="p">.</span><span class="nf">new</span>
+<span class="nb">p</span><span class="p">.</span><span class="nf">name</span> <span class="o">=</span> <span class="s2">"Some Book"</span>
+<span class="nb">puts</span> <span class="nb">p</span><span class="p">.</span><span class="nf">name</span> <span class="c1"># "Some Book"</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-5465ec120efd0b1a9b9bd4031b50adba">p = Product.new
+p.name = "Some Book"
+puts p.name # "Some Book"
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-5465ec120efd0b1a9b9bd4031b50adba">Copy</button>
+</div>
+</body>
+</html>

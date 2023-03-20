@@ -1,0 +1,68 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>14 Rescue</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v4.1.16/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="rescue">14 Rescue</h3>
+<p>Most likely your application is going to contain bugs or otherwise throw an exception that needs to be handled. For example, if the user follows a link to a resource that no longer exists in the database, Active Record will throw the <code>ActiveRecord::RecordNotFound</code> exception.</p>
+<p>Rails' default exception handling displays a "500 Server Error" message for all exceptions. If the request was made locally, a nice traceback and some added information gets displayed so you can figure out what went wrong and deal with it. If the request was remote Rails will just display a simple "500 Server Error" message to the user, or a "404 Not Found" if there was a routing error or a record could not be found. Sometimes you might want to customize how these errors are caught and how they're displayed to the user. There are several levels of exception handling available in a Rails application:</p>
+<h4 id="the-default-500-and-404-templates">14.1 The Default 500 and 404 Templates</h4>
+<p>By default a production application will render either a 404 or a 500 error message. These messages are contained in static HTML files in the <code>public</code> folder, in <code>404.html</code> and <code>500.html</code> respectively. You can customize these files to add some extra information and layout, but remember that they are static; i.e. you can't use RHTML or layouts in them, just plain HTML.</p>
+<h4 id="rescue-from">14.2 <code>rescue_from</code>
+</h4>
+<p>If you want to do something a bit more elaborate when catching errors, you can use <code>rescue_from</code>, which handles exceptions of a certain type (or multiple types) in an entire controller and its subclasses.</p>
+<p>When an exception occurs which is caught by a <code>rescue_from</code> directive, the exception object is passed to the handler. The handler can be a method or a <code>Proc</code> object passed to the <code>:with</code> option. You can also use a block directly instead of an explicit <code>Proc</code> object.</p>
+<p>Here's how you can use <code>rescue_from</code> to intercept all <code>ActiveRecord::RecordNotFound</code> errors and do something with them.</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class ApplicationController &lt; ActionController::Base
+  rescue_from ActiveRecord::RecordNotFound, with: :record_not_found
+
+  private
+
+    def record_not_found
+      render plain: "404 Not Found", status: 404
+    end
+end
+
+</pre>
+</div>
+<p>Of course, this example is anything but elaborate and doesn't improve on the default exception handling at all, but once you can catch all those exceptions you're free to do whatever you want with them. For example, you could create custom exception classes that will be thrown when a user doesn't have access to a certain section of your application:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class ApplicationController &lt; ActionController::Base
+  rescue_from User::NotAuthorized, with: :user_not_authorized
+
+  private
+
+    def user_not_authorized
+      flash[:error] = "You don't have access to this section."
+      redirect_to :back
+    end
+end
+
+class ClientsController &lt; ApplicationController
+  # Check that the user has the right authorization to access clients.
+  before_action :check_authorization
+
+  # Note how the actions don't have to worry about all the auth stuff.
+  def edit
+    @client = Client.find(params[:id])
+  end
+
+  private
+
+    # If the user is not authorized, just throw the exception.
+    def check_authorization
+      raise User::NotAuthorized unless current_user.admin?
+    end
+end
+
+</pre>
+</div>
+<div class="note"><p>Certain exceptions are only rescuable from the <code>ApplicationController</code> class, as they are raised before the controller gets initialized and the action gets executed. See Pratik Naik's <a href="http://m.onkey.org/2008/7/20/rescue-from-dispatching">article</a> on the subject for more information.</p></div>
+</body>
+</html>

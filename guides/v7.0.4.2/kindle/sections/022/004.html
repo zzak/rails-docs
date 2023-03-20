@@ -1,0 +1,26 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>5 Running Webpacker in Development</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v7.0.4.2/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="running-webpacker-in-development"><a class="anchorlink" href="#running-webpacker-in-development">5 Running Webpacker in Development</a></h3>
+<p>Webpacker ships with two binstub files to run in development: <code>./bin/webpack</code> and <code>./bin/webpack-dev-server</code>. Both are thin wrappers around the standard <code>webpack.js</code> and <code>webpack-dev-server.js</code> executables and ensure that the right configuration files and environmental variables are loaded based on your environment.</p>
+
+<p>By default, Webpacker compiles automatically on demand in development when a Rails page loads. This means that you don't have to run any separate processes, and compilation errors will be logged to the standard Rails log. You can change this by changing to <code>compile: false</code> in the <code>config/webpacker.yml</code> file. Running <code>bin/webpack</code> will force the compilation of your packs.</p>
+
+<p>If you want to use live code reloading or have enough JavaScript that on-demand compilation is too slow, you'll need to run <code>./bin/webpack-dev-server</code> or <code>ruby ./bin/webpack-dev-server</code>. This process will watch for changes in the <code>app/javascript/packs/*.js</code> files and automatically recompile and reload the browser to match.</p>
+
+<p>Windows users will need to run these commands in a terminal separate from <code>bundle exec rails server</code>.</p>
+
+<p>Once you start this development server, Webpacker will automatically start proxying all webpack asset requests to this server. When you stop the server, it'll revert to on-demand compilation.</p>
+
+<p>The <a href="https://github.com/rails/webpacker">Webpacker Documentation</a> gives information on environment variables you can use to control <code>webpack-dev-server</code>. See additional notes in the <a href="https://github.com/rails/webpacker#development">rails/webpacker docs on the webpack-dev-server usage</a>.</p>
+
+<h4 id="deploying-webpacker"><a class="anchorlink" href="#deploying-webpacker">5.1 Deploying Webpacker</a></h4>
+
+<p>Webpacker adds a <code>webpacker:compile</code> task to the <code>assets:precompile</code> rake task, so any existing deploy pipeline that was using <code>assets:precompile</code> should work. The compile task will compile the packs and place them in <code>public/packs</code>.</p>
+</body>
+</html>

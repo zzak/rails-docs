@@ -1,0 +1,90 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>3 The Basic Configuration</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v5.1.7/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="the-basic-configuration">3 The Basic Configuration</h3>
+<p>If you're building a Rails application that will be an API server first and
+foremost, you can start with a more limited subset of Rails and add in features
+as needed.</p>
+
+<h4 id="creating-a-new-application">3.1 Creating a new application</h4>
+
+<p>You can generate a new api Rails app:</p>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+$ rails new my_api --api
+
+</pre>
+</div>
+<p>This will do three main things for you:</p>
+<ul>
+<li>Configure your application to start with a more limited set of middleware
+than normal. Specifically, it will not include any middleware primarily useful
+for browser applications (like cookies support) by default.</li>
+<li>Make <code>ApplicationController</code> inherit from <code>ActionController::API</code> instead of
+<code>ActionController::Base</code>. As with middleware, this will leave out any Action
+Controller modules that provide functionalities primarily used by browser
+applications.</li>
+<li>Configure the generators to skip generating views, helpers and assets when
+you generate a new resource.</li>
+</ul>
+<h4 id="changing-an-existing-application">3.2 Changing an existing application</h4>
+
+<p>If you want to take an existing application and make it an API one, read the
+following steps.</p>
+
+<p>In <code>config/application.rb</code> add the following line at the top of the <code>Application</code>
+class definition:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+config.api_only = true
+
+</pre>
+</div>
+<p>In <code>config/environments/development.rb</code>, set <code>config.debug_exception_response_format</code>
+to configure the format used in responses when errors occur in development mode.</p>
+
+<p>To render an HTML page with debugging information, use the value <code>:default</code>.</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+config.debug_exception_response_format = :default
+
+</pre>
+</div>
+<p>To render debugging information preserving the response format, use the value <code>:api</code>.</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+config.debug_exception_response_format = :api
+
+</pre>
+</div>
+<p>By default, <code>config.debug_exception_response_format</code> is set to <code>:api</code>, when <code>config.api_only</code> is set to true.</p>
+
+<p>Finally, inside <code>app/controllers/application_controller.rb</code>, instead of:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class ApplicationController &lt; ActionController::Base
+end
+
+</pre>
+</div>
+<p>do:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class ApplicationController &lt; ActionController::API
+end
+
+</pre>
+</div>
+</body>
+</html>

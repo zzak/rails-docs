@@ -1,0 +1,141 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>4 Server-Side Concerns</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v6.1.7.3/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="server-side-concerns"><a class="anchorlink" href="#server-side-concerns">4 Server-Side Concerns</a></h3>
+<p>Ajax isn't just client-side, you also need to do some work on the server
+side to support it. Often, people like their Ajax requests to return JSON
+rather than HTML. Let's discuss what it takes to make that happen.</p>
+
+<h4 id="a-simple-example"><a class="anchorlink" href="#a-simple-example">4.1 A Simple Example</a></h4>
+
+<p>Imagine you have a series of users that you would like to display and provide a
+form on that same page to create a new user. The index action of your
+controller looks like this:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">UsersController</span> <span class="o">&lt;</span> <span class="no">ApplicationController</span>
+  <span class="k">def</span> <span class="nf">index</span>
+    <span class="vi">@users</span> <span class="o">=</span> <span class="no">User</span><span class="p">.</span><span class="nf">all</span>
+    <span class="vi">@user</span> <span class="o">=</span> <span class="no">User</span><span class="p">.</span><span class="nf">new</span>
+  <span class="k">end</span>
+  <span class="c1"># ...</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-cfc5cab667e33c980d60c4f146d7d1e4">class UsersController &lt; ApplicationController
+  def index
+    @users = User.all
+    @user = User.new
+  end
+  # ...
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-cfc5cab667e33c980d60c4f146d7d1e4">Copy</button>
+</div>
+<p>The index view (<code>app/views/users/index.html.erb</code>) contains:</p>
+
+<div class="code_container">
+<pre><code class="highlight erb"><span class="nt">&lt;b&gt;</span>Users<span class="nt">&lt;/b&gt;</span>
+
+<span class="nt">&lt;ul</span> <span class="na">id=</span><span class="s">"users"</span><span class="nt">&gt;</span>
+<span class="cp">&lt;%=</span> <span class="n">render</span> <span class="vi">@users</span> <span class="cp">%&gt;</span>
+<span class="nt">&lt;/ul&gt;</span>
+
+<span class="nt">&lt;br&gt;</span>
+
+<span class="cp">&lt;%=</span> <span class="n">form_with</span> <span class="ss">model: </span><span class="vi">@user</span> <span class="k">do</span> <span class="o">|</span><span class="n">form</span><span class="o">|</span> <span class="cp">%&gt;</span>
+  <span class="cp">&lt;%=</span> <span class="n">form</span><span class="p">.</span><span class="nf">label</span> <span class="ss">:name</span> <span class="cp">%&gt;</span><span class="nt">&lt;br&gt;</span>
+  <span class="cp">&lt;%=</span> <span class="n">form</span><span class="p">.</span><span class="nf">text_field</span> <span class="ss">:name</span> <span class="cp">%&gt;</span>
+  <span class="cp">&lt;%=</span> <span class="n">form</span><span class="p">.</span><span class="nf">submit</span> <span class="cp">%&gt;</span>
+<span class="cp">&lt;%</span> <span class="k">end</span> <span class="cp">%&gt;</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-70b7144810becb3ed6fe9fa1324a32f4">&lt;b&gt;Users&lt;/b&gt;
+
+&lt;ul id="users"&gt;
+&lt;%= render @users %&gt;
+&lt;/ul&gt;
+
+&lt;br&gt;
+
+&lt;%= form_with model: @user do |form| %&gt;
+  &lt;%= form.label :name %&gt;&lt;br&gt;
+  &lt;%= form.text_field :name %&gt;
+  &lt;%= form.submit %&gt;
+&lt;% end %&gt;
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-70b7144810becb3ed6fe9fa1324a32f4">Copy</button>
+</div>
+<p>The <code>app/views/users/_user.html.erb</code> partial contains the following:</p>
+
+<div class="code_container">
+<pre><code class="highlight erb"><span class="nt">&lt;li&gt;</span><span class="cp">&lt;%=</span> <span class="n">user</span><span class="p">.</span><span class="nf">name</span> <span class="cp">%&gt;</span><span class="nt">&lt;/li&gt;</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-146c2f606ce7145ffc278c3d169601f5">&lt;li&gt;&lt;%= user.name %&gt;&lt;/li&gt;
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-146c2f606ce7145ffc278c3d169601f5">Copy</button>
+</div>
+<p>The top portion of the index page displays the users. The bottom portion
+provides a form to create a new user.</p>
+
+<p>The bottom form will call the <code>create</code> action on the <code>UsersController</code>. Because
+the form's remote option is set to true, the request will be posted to the
+<code>UsersController</code> as an Ajax request, looking for JavaScript. In order to
+serve that request, the <code>create</code> action of your controller would look like
+this:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby">  <span class="c1"># app/controllers/users_controller.rb</span>
+  <span class="c1"># ......</span>
+  <span class="k">def</span> <span class="nf">create</span>
+    <span class="vi">@user</span> <span class="o">=</span> <span class="no">User</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="n">params</span><span class="p">[</span><span class="ss">:user</span><span class="p">])</span>
+
+    <span class="n">respond_to</span> <span class="k">do</span> <span class="o">|</span><span class="nb">format</span><span class="o">|</span>
+      <span class="k">if</span> <span class="vi">@user</span><span class="p">.</span><span class="nf">save</span>
+        <span class="nb">format</span><span class="p">.</span><span class="nf">html</span> <span class="p">{</span> <span class="n">redirect_to</span> <span class="vi">@user</span><span class="p">,</span> <span class="ss">notice: </span><span class="s1">'User was successfully created.'</span> <span class="p">}</span>
+        <span class="nb">format</span><span class="p">.</span><span class="nf">js</span>
+        <span class="nb">format</span><span class="p">.</span><span class="nf">json</span> <span class="p">{</span> <span class="n">render</span> <span class="ss">json: </span><span class="vi">@user</span><span class="p">,</span> <span class="ss">status: :created</span><span class="p">,</span> <span class="ss">location: </span><span class="vi">@user</span> <span class="p">}</span>
+      <span class="k">else</span>
+        <span class="nb">format</span><span class="p">.</span><span class="nf">html</span> <span class="p">{</span> <span class="n">render</span> <span class="ss">action: </span><span class="s2">"new"</span> <span class="p">}</span>
+        <span class="nb">format</span><span class="p">.</span><span class="nf">json</span> <span class="p">{</span> <span class="n">render</span> <span class="ss">json: </span><span class="vi">@user</span><span class="p">.</span><span class="nf">errors</span><span class="p">,</span> <span class="ss">status: :unprocessable_entity</span> <span class="p">}</span>
+      <span class="k">end</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-5744444f6badba00e48851b53e08d1a2">  # app/controllers/users_controller.rb
+  # ......
+  def create
+    @user = User.new(params[:user])
+
+    respond_to do |format|
+      if @user.save
+        format.html { redirect_to @user, notice: 'User was successfully created.' }
+        format.js
+        format.json { render json: @user, status: :created, location: @user }
+      else
+        format.html { render action: "new" }
+        format.json { render json: @user.errors, status: :unprocessable_entity }
+      end
+    end
+  end
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-5744444f6badba00e48851b53e08d1a2">Copy</button>
+</div>
+<p>Notice the <code>format.js</code> in the <code>respond_to</code> block: that allows the controller to
+respond to your Ajax request. You then have a corresponding
+<code>app/views/users/create.js.erb</code> view file that generates the actual JavaScript
+code that will be sent and executed on the client side.</p>
+
+<div class="code_container">
+<pre><code class="highlight js"><span class="kd">var</span> <span class="nx">users</span> <span class="o">=</span> <span class="nb">document</span><span class="p">.</span><span class="nx">querySelector</span><span class="p">(</span><span class="dl">"</span><span class="s2">#users</span><span class="dl">"</span><span class="p">);</span>
+<span class="nx">users</span><span class="p">.</span><span class="nx">insertAdjacentHTML</span><span class="p">(</span><span class="dl">"</span><span class="s2">beforeend</span><span class="dl">"</span><span class="p">,</span> <span class="dl">"</span><span class="s2">&lt;%= j render(@user) %&gt;</span><span class="dl">"</span><span class="p">);</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-5b3f3388eaa0faaa9bf6753529438f12">var users = document.querySelector("#users");
+users.insertAdjacentHTML("beforeend", "&lt;%= j render(@user) %&gt;");
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-5b3f3388eaa0faaa9bf6753529438f12">Copy</button>
+</div>
+<div class="note"><p>JavaScript view rendering doesn't do any preprocessing, so you shouldn't use ES6 syntax here.</p></div>
+</body>
+</html>

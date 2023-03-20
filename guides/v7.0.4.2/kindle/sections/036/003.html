@@ -1,0 +1,246 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>4 Choosing Middleware</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v7.0.4.2/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="choosing-middleware"><a class="anchorlink" href="#choosing-middleware">4 Choosing Middleware</a></h3>
+<p>An API application comes with the following middleware by default:</p>
+<ul>
+<li><code>ActionDispatch::HostAuthorization</code></li>
+<li><code>Rack::Sendfile</code></li>
+<li><code>ActionDispatch::Static</code></li>
+<li><code>ActionDispatch::Executor</code></li>
+<li><code>ActiveSupport::Cache::Strategy::LocalCache::Middleware</code></li>
+<li><code>Rack::Runtime</code></li>
+<li><code>ActionDispatch::RequestId</code></li>
+<li><code>ActionDispatch::RemoteIp</code></li>
+<li><code>Rails::Rack::Logger</code></li>
+<li><code>ActionDispatch::ShowExceptions</code></li>
+<li><code>ActionDispatch::DebugExceptions</code></li>
+<li><code>ActionDispatch::ActionableExceptions</code></li>
+<li><code>ActionDispatch::Reloader</code></li>
+<li><code>ActionDispatch::Callbacks</code></li>
+<li><code>ActiveRecord::Migration::CheckPending</code></li>
+<li><code>Rack::Head</code></li>
+<li><code>Rack::ConditionalGet</code></li>
+<li><code>Rack::ETag</code></li>
+</ul>
+<p>See the <a href="rails_on_rack.html#internal-middleware-stack">internal middleware</a>
+section of the Rack guide for further information on them.</p>
+
+<p>Other plugins, including Active Record, may add additional middleware. In
+general, these middleware are agnostic to the type of application you are
+building, and make sense in an API-only Rails application.</p>
+
+<p>You can get a list of all middleware in your application via:</p>
+
+<div class="code_container">
+<pre><code class="highlight console"><span class="gp">$</span><span class="w"> </span><span class="nb">bin/rails </span>middleware
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="bin/rails middleware
+">Copy</button>
+</div>
+<h4 id="using-the-cache-middleware"><a class="anchorlink" href="#using-the-cache-middleware">4.1 Using the Cache Middleware</a></h4>
+
+<p>By default, Rails will add a middleware that provides a cache store based on
+the configuration of your application (memcache by default). This means that
+the built-in HTTP cache will rely on it.</p>
+
+<p>For instance, using the <code>stale?</code> method:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">def</span> <span class="nf">show</span>
+  <span class="vi">@post</span> <span class="o">=</span> <span class="no">Post</span><span class="p">.</span><span class="nf">find</span><span class="p">(</span><span class="n">params</span><span class="p">[</span><span class="ss">:id</span><span class="p">])</span>
+
+  <span class="k">if</span> <span class="n">stale?</span><span class="p">(</span><span class="ss">last_modified: </span><span class="vi">@post</span><span class="p">.</span><span class="nf">updated_at</span><span class="p">)</span>
+    <span class="n">render</span> <span class="ss">json: </span><span class="vi">@post</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="def show
+  @post = Post.find(params[:id])
+
+  if stale?(last_modified: @post.updated_at)
+    render json: @post
+  end
+end
+">Copy</button>
+</div>
+<p>The call to <code>stale?</code> will compare the <code>If-Modified-Since</code> header in the request
+with <code>@post.updated_at</code>. If the header is newer than the last modified, this
+action will return a "304 Not Modified" response. Otherwise, it will render the
+response and include a <code>Last-Modified</code> header in it.</p>
+
+<p>Normally, this mechanism is used on a per-client basis. The cache middleware
+allows us to share this caching mechanism across clients. We can enable
+cross-client caching in the call to <code>stale?</code>:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">def</span> <span class="nf">show</span>
+  <span class="vi">@post</span> <span class="o">=</span> <span class="no">Post</span><span class="p">.</span><span class="nf">find</span><span class="p">(</span><span class="n">params</span><span class="p">[</span><span class="ss">:id</span><span class="p">])</span>
+
+  <span class="k">if</span> <span class="n">stale?</span><span class="p">(</span><span class="ss">last_modified: </span><span class="vi">@post</span><span class="p">.</span><span class="nf">updated_at</span><span class="p">,</span> <span class="ss">public: </span><span class="kp">true</span><span class="p">)</span>
+    <span class="n">render</span> <span class="ss">json: </span><span class="vi">@post</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="def show
+  @post = Post.find(params[:id])
+
+  if stale?(last_modified: @post.updated_at, public: true)
+    render json: @post
+  end
+end
+">Copy</button>
+</div>
+<p>This means that the cache middleware will store off the <code>Last-Modified</code> value
+for a URL in the Rails cache, and add an <code>If-Modified-Since</code> header to any
+subsequent inbound requests for the same URL.</p>
+
+<p>Think of it as page caching using HTTP semantics.</p>
+
+<h4 id="using-rack-sendfile"><a class="anchorlink" href="#using-rack-sendfile">4.2 Using Rack::Sendfile</a></h4>
+
+<p>When you use the <code>send_file</code> method inside a Rails controller, it sets the
+<code>X-Sendfile</code> header. <code>Rack::Sendfile</code> is responsible for actually sending the
+file.</p>
+
+<p>If your front-end server supports accelerated file sending, <code>Rack::Sendfile</code>
+will offload the actual file sending work to the front-end server.</p>
+
+<p>You can configure the name of the header that your front-end server uses for
+this purpose using <a href="configuring.html#config-action-dispatch-x-sendfile-header"><code>config.action_dispatch.x_sendfile_header</code></a> in the appropriate
+environment's configuration file.</p>
+
+<p>You can learn more about how to use <code>Rack::Sendfile</code> with popular
+front-ends in <a href="https://www.rubydoc.info/gems/rack/Rack/Sendfile">the Rack::Sendfile
+documentation</a>.</p>
+
+<p>Here are some values for this header for some popular servers, once these servers are configured to support
+accelerated file sending:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="c1"># Apache and lighttpd</span>
+<span class="n">config</span><span class="p">.</span><span class="nf">action_dispatch</span><span class="p">.</span><span class="nf">x_sendfile_header</span> <span class="o">=</span> <span class="s2">"X-Sendfile"</span>
+
+<span class="c1"># Nginx</span>
+<span class="n">config</span><span class="p">.</span><span class="nf">action_dispatch</span><span class="p">.</span><span class="nf">x_sendfile_header</span> <span class="o">=</span> <span class="s2">"X-Accel-Redirect"</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='# Apache and lighttpd
+config.action_dispatch.x_sendfile_header = "X-Sendfile"
+
+# Nginx
+config.action_dispatch.x_sendfile_header = "X-Accel-Redirect"
+'>Copy</button>
+</div>
+<p>Make sure to configure your server to support these options following the
+instructions in the <code>Rack::Sendfile</code> documentation.</p>
+
+<h4 id="using-actiondispatch-request"><a class="anchorlink" href="#using-actiondispatch-request">4.3 Using ActionDispatch::Request</a></h4>
+
+<p><code>ActionDispatch::Request#params</code> will take parameters from the client in the JSON
+format and make them available in your controller inside <code>params</code>.</p>
+
+<p>To use this, your client will need to make a request with JSON-encoded parameters
+and specify the <code>Content-Type</code> as <code>application/json</code>.</p>
+
+<p>Here's an example in jQuery:</p>
+
+<div class="code_container">
+<pre><code class="highlight js"><span class="nx">jQuery</span><span class="p">.</span><span class="nx">ajax</span><span class="p">({</span>
+  <span class="na">type</span><span class="p">:</span> <span class="dl">'</span><span class="s1">POST</span><span class="dl">'</span><span class="p">,</span>
+  <span class="na">url</span><span class="p">:</span> <span class="dl">'</span><span class="s1">/people</span><span class="dl">'</span><span class="p">,</span>
+  <span class="na">dataType</span><span class="p">:</span> <span class="dl">'</span><span class="s1">json</span><span class="dl">'</span><span class="p">,</span>
+  <span class="na">contentType</span><span class="p">:</span> <span class="dl">'</span><span class="s1">application/json</span><span class="dl">'</span><span class="p">,</span>
+  <span class="na">data</span><span class="p">:</span> <span class="nx">JSON</span><span class="p">.</span><span class="nx">stringify</span><span class="p">({</span> <span class="na">person</span><span class="p">:</span> <span class="p">{</span> <span class="na">firstName</span><span class="p">:</span> <span class="dl">"</span><span class="s2">Yehuda</span><span class="dl">"</span><span class="p">,</span> <span class="na">lastName</span><span class="p">:</span> <span class="dl">"</span><span class="s2">Katz</span><span class="dl">"</span> <span class="p">}</span> <span class="p">}),</span>
+  <span class="na">success</span><span class="p">:</span> <span class="kd">function</span><span class="p">(</span><span class="nx">json</span><span class="p">)</span> <span class="p">{</span> <span class="p">}</span>
+<span class="p">});</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="jQuery.ajax({
+  type: 'POST',
+  url: '/people',
+  dataType: 'json',
+  contentType: 'application/json',
+  data: JSON.stringify({ person: { firstName: &quot;Yehuda&quot;, lastName: &quot;Katz&quot; } }),
+  success: function(json) { }
+});
+">Copy</button>
+</div>
+<p><code>ActionDispatch::Request</code> will see the <code>Content-Type</code> and your parameters
+will be:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="p">{</span> <span class="ss">:person</span> <span class="o">=&gt;</span> <span class="p">{</span> <span class="ss">:firstName</span> <span class="o">=&gt;</span> <span class="s2">"Yehuda"</span><span class="p">,</span> <span class="ss">:lastName</span> <span class="o">=&gt;</span> <span class="s2">"Katz"</span> <span class="p">}</span> <span class="p">}</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='{ :person =&gt; { :firstName =&gt; "Yehuda", :lastName =&gt; "Katz" } }
+'>Copy</button>
+</div>
+<h4 id="using-session-middlewares"><a class="anchorlink" href="#using-session-middlewares">4.4 Using Session Middlewares</a></h4>
+
+<p>The following middlewares, used for session management, are excluded from API apps since they normally don't need sessions.  If one of your API clients is a browser, you might want to add one of these back in:</p>
+<ul>
+<li><code>ActionDispatch::Session::CacheStore</code></li>
+<li><code>ActionDispatch::Session::CookieStore</code></li>
+<li><code>ActionDispatch::Session::MemCacheStore</code></li>
+</ul>
+<p>The trick to adding these back in is that, by default, they are passed <code>session_options</code>
+when added (including the session key), so you can't just add a <code>session_store.rb</code> initializer, add
+<code>use ActionDispatch::Session::CookieStore</code> and have sessions functioning as usual.  (To be clear: sessions
+may work, but your session options will be ignored - i.e. the session key will default to <code>_session_id</code>)</p>
+
+<p>Instead of the initializer, you'll have to set the relevant options somewhere before your middleware is
+built (like <code>config/application.rb</code>) and pass them to your preferred middleware, like this:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="c1"># This also configures session_options for use below</span>
+<span class="n">config</span><span class="p">.</span><span class="nf">session_store</span> <span class="ss">:cookie_store</span><span class="p">,</span> <span class="ss">key: </span><span class="s1">'_interslice_session'</span>
+
+<span class="c1"># Required for all session management (regardless of session_store)</span>
+<span class="n">config</span><span class="p">.</span><span class="nf">middleware</span><span class="p">.</span><span class="nf">use</span> <span class="no">ActionDispatch</span><span class="o">::</span><span class="no">Cookies</span>
+
+<span class="n">config</span><span class="p">.</span><span class="nf">middleware</span><span class="p">.</span><span class="nf">use</span> <span class="n">config</span><span class="p">.</span><span class="nf">session_store</span><span class="p">,</span> <span class="n">config</span><span class="p">.</span><span class="nf">session_options</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="# This also configures session_options for use below
+config.session_store :cookie_store, key: '_interslice_session'
+
+# Required for all session management (regardless of session_store)
+config.middleware.use ActionDispatch::Cookies
+
+config.middleware.use config.session_store, config.session_options
+">Copy</button>
+</div>
+<h4 id="other-middleware"><a class="anchorlink" href="#other-middleware">4.5 Other Middleware</a></h4>
+
+<p>Rails ships with a number of other middleware that you might want to use in an
+API application, especially if one of your API clients is the browser:</p>
+<ul>
+<li><code>Rack::MethodOverride</code></li>
+<li><code>ActionDispatch::Cookies</code></li>
+<li><code>ActionDispatch::Flash</code></li>
+</ul>
+<p>Any of these middleware can be added via:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">config</span><span class="p">.</span><span class="nf">middleware</span><span class="p">.</span><span class="nf">use</span> <span class="no">Rack</span><span class="o">::</span><span class="no">MethodOverride</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="config.middleware.use Rack::MethodOverride
+">Copy</button>
+</div>
+<h4 id="removing-middleware"><a class="anchorlink" href="#removing-middleware">4.6 Removing Middleware</a></h4>
+
+<p>If you don't want to use a middleware that is included by default in the API-only
+middleware set, you can remove it with:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">config</span><span class="p">.</span><span class="nf">middleware</span><span class="p">.</span><span class="nf">delete</span> <span class="o">::</span><span class="no">Rack</span><span class="o">::</span><span class="no">Sendfile</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="config.middleware.delete ::Rack::Sendfile
+">Copy</button>
+</div>
+<p>Keep in mind that removing these middlewares will remove support for certain
+features in Action Controller.</p>
+</body>
+</html>

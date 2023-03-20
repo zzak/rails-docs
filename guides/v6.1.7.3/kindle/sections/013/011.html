@@ -1,0 +1,266 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>12 Streaming and File Downloads</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v6.1.7.3/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="streaming-and-file-downloads"><a class="anchorlink" href="#streaming-and-file-downloads">12 Streaming and File Downloads</a></h3>
+<p>Sometimes you may want to send a file to the user instead of rendering an HTML page. All controllers in Rails have the <a href="https://api.rubyonrails.org/v6.1.7.3/classes/ActionController/DataStreaming.html#method-i-send_data"><code>send_data</code></a> and the <a href="https://api.rubyonrails.org/v6.1.7.3/classes/ActionController/DataStreaming.html#method-i-send_file"><code>send_file</code></a> methods, which will both stream data to the client. <code>send_file</code> is a convenience method that lets you provide the name of a file on the disk and it will stream the contents of that file for you.</p>
+
+<p>To stream data to the client, use <code>send_data</code>:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="nb">require</span> <span class="s2">"prawn"</span>
+<span class="k">class</span> <span class="nc">ClientsController</span> <span class="o">&lt;</span> <span class="no">ApplicationController</span>
+  <span class="c1"># Generates a PDF document with information on the client and</span>
+  <span class="c1"># returns it. The user will get the PDF as a file download.</span>
+  <span class="k">def</span> <span class="nf">download_pdf</span>
+    <span class="n">client</span> <span class="o">=</span> <span class="no">Client</span><span class="p">.</span><span class="nf">find</span><span class="p">(</span><span class="n">params</span><span class="p">[</span><span class="ss">:id</span><span class="p">])</span>
+    <span class="n">send_data</span> <span class="n">generate_pdf</span><span class="p">(</span><span class="n">client</span><span class="p">),</span>
+              <span class="ss">filename: </span><span class="s2">"</span><span class="si">#{</span><span class="n">client</span><span class="p">.</span><span class="nf">name</span><span class="si">}</span><span class="s2">.pdf"</span><span class="p">,</span>
+              <span class="ss">type: </span><span class="s2">"application/pdf"</span>
+  <span class="k">end</span>
+
+  <span class="kp">private</span>
+    <span class="k">def</span> <span class="nf">generate_pdf</span><span class="p">(</span><span class="n">client</span><span class="p">)</span>
+      <span class="no">Prawn</span><span class="o">::</span><span class="no">Document</span><span class="p">.</span><span class="nf">new</span> <span class="k">do</span>
+        <span class="n">text</span> <span class="n">client</span><span class="p">.</span><span class="nf">name</span><span class="p">,</span> <span class="ss">align: :center</span>
+        <span class="n">text</span> <span class="s2">"Address: </span><span class="si">#{</span><span class="n">client</span><span class="p">.</span><span class="nf">address</span><span class="si">}</span><span class="s2">"</span>
+        <span class="n">text</span> <span class="s2">"Email: </span><span class="si">#{</span><span class="n">client</span><span class="p">.</span><span class="nf">email</span><span class="si">}</span><span class="s2">"</span>
+      <span class="k">end</span><span class="p">.</span><span class="nf">render</span>
+    <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-3b65e7284a6798e6cfbcc9b37cc11c8f">require "prawn"
+class ClientsController &lt; ApplicationController
+  # Generates a PDF document with information on the client and
+  # returns it. The user will get the PDF as a file download.
+  def download_pdf
+    client = Client.find(params[:id])
+    send_data generate_pdf(client),
+              filename: "#{client.name}.pdf",
+              type: "application/pdf"
+  end
+
+  private
+    def generate_pdf(client)
+      Prawn::Document.new do
+        text client.name, align: :center
+        text "Address: #{client.address}"
+        text "Email: #{client.email}"
+      end.render
+    end
+end
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-3b65e7284a6798e6cfbcc9b37cc11c8f">Copy</button>
+</div>
+<p>The <code>download_pdf</code> action in the example above will call a private method which actually generates the PDF document and returns it as a string. This string will then be streamed to the client as a file download and a filename will be suggested to the user. Sometimes when streaming files to the user, you may not want them to download the file. Take images, for example, which can be embedded into HTML pages. To tell the browser a file is not meant to be downloaded, you can set the <code>:disposition</code> option to "inline". The opposite and default value for this option is "attachment".</p>
+
+<h4 id="sending-files"><a class="anchorlink" href="#sending-files">12.1 Sending Files</a></h4>
+
+<p>If you want to send a file that already exists on disk, use the <code>send_file</code> method.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">ClientsController</span> <span class="o">&lt;</span> <span class="no">ApplicationController</span>
+  <span class="c1"># Stream a file that has already been generated and stored on disk.</span>
+  <span class="k">def</span> <span class="nf">download_pdf</span>
+    <span class="n">client</span> <span class="o">=</span> <span class="no">Client</span><span class="p">.</span><span class="nf">find</span><span class="p">(</span><span class="n">params</span><span class="p">[</span><span class="ss">:id</span><span class="p">])</span>
+    <span class="n">send_file</span><span class="p">(</span><span class="s2">"</span><span class="si">#{</span><span class="no">Rails</span><span class="p">.</span><span class="nf">root</span><span class="si">}</span><span class="s2">/files/clients/</span><span class="si">#{</span><span class="n">client</span><span class="p">.</span><span class="nf">id</span><span class="si">}</span><span class="s2">.pdf"</span><span class="p">,</span>
+              <span class="ss">filename: </span><span class="s2">"</span><span class="si">#{</span><span class="n">client</span><span class="p">.</span><span class="nf">name</span><span class="si">}</span><span class="s2">.pdf"</span><span class="p">,</span>
+              <span class="ss">type: </span><span class="s2">"application/pdf"</span><span class="p">)</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-e5d4938d1111d4a237d01667ccc6c707">class ClientsController &lt; ApplicationController
+  # Stream a file that has already been generated and stored on disk.
+  def download_pdf
+    client = Client.find(params[:id])
+    send_file("#{Rails.root}/files/clients/#{client.id}.pdf",
+              filename: "#{client.name}.pdf",
+              type: "application/pdf")
+  end
+end
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-e5d4938d1111d4a237d01667ccc6c707">Copy</button>
+</div>
+<p>This will read and stream the file 4kB at the time, avoiding loading the entire file into memory at once. You can turn off streaming with the <code>:stream</code> option or adjust the block size with the <code>:buffer_size</code> option.</p>
+
+<p>If <code>:type</code> is not specified, it will be guessed from the file extension specified in <code>:filename</code>. If the content type is not registered for the extension, <code>application/octet-stream</code> will be used.</p>
+
+<div class="warning"><p>Be careful when using data coming from the client (params, cookies, etc.) to locate the file on disk, as this is a security risk that might allow someone to gain access to files they are not meant to.</p></div>
+
+<div class="info"><p>It is not recommended that you stream static files through Rails if you can instead keep them in a public folder on your web server. It is much more efficient to let the user download the file directly using Apache or another web server, keeping the request from unnecessarily going through the whole Rails stack.</p></div>
+
+<h4 id="restful-downloads"><a class="anchorlink" href="#restful-downloads">12.2 RESTful Downloads</a></h4>
+
+<p>While <code>send_data</code> works just fine, if you are creating a RESTful application having separate actions for file downloads is usually not necessary. In REST terminology, the PDF file from the example above can be considered just another representation of the client resource. Rails provides an easy and quite sleek way of doing "RESTful downloads". Here's how you can rewrite the example so that the PDF download is a part of the <code>show</code> action, without any streaming:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">ClientsController</span> <span class="o">&lt;</span> <span class="no">ApplicationController</span>
+  <span class="c1"># The user can request to receive this resource as HTML or PDF.</span>
+  <span class="k">def</span> <span class="nf">show</span>
+    <span class="vi">@client</span> <span class="o">=</span> <span class="no">Client</span><span class="p">.</span><span class="nf">find</span><span class="p">(</span><span class="n">params</span><span class="p">[</span><span class="ss">:id</span><span class="p">])</span>
+
+    <span class="n">respond_to</span> <span class="k">do</span> <span class="o">|</span><span class="nb">format</span><span class="o">|</span>
+      <span class="nb">format</span><span class="p">.</span><span class="nf">html</span>
+      <span class="nb">format</span><span class="p">.</span><span class="nf">pdf</span> <span class="p">{</span> <span class="n">render</span> <span class="ss">pdf: </span><span class="n">generate_pdf</span><span class="p">(</span><span class="vi">@client</span><span class="p">)</span> <span class="p">}</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-26bc0137c5cb381b94ea1939988fc2d0">class ClientsController &lt; ApplicationController
+  # The user can request to receive this resource as HTML or PDF.
+  def show
+    @client = Client.find(params[:id])
+
+    respond_to do |format|
+      format.html
+      format.pdf { render pdf: generate_pdf(@client) }
+    end
+  end
+end
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-26bc0137c5cb381b94ea1939988fc2d0">Copy</button>
+</div>
+<p>In order for this example to work, you have to add the PDF MIME type to Rails. This can be done by adding the following line to the file <code>config/initializers/mime_types.rb</code>:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="no">Mime</span><span class="o">::</span><span class="no">Type</span><span class="p">.</span><span class="nf">register</span> <span class="s2">"application/pdf"</span><span class="p">,</span> <span class="ss">:pdf</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-c120beddb43defe44e486c01fb612328">Mime::Type.register "application/pdf", :pdf
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-c120beddb43defe44e486c01fb612328">Copy</button>
+</div>
+<div class="note"><p>Configuration files are not reloaded on each request, so you have to restart the server in order for their changes to take effect.</p></div>
+
+<p>Now the user can request to get a PDF version of a client just by adding ".pdf" to the URL:</p>
+
+<div class="code_container">
+<pre><code class="highlight plaintext">GET /clients/1.pdf
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-fae45de3bf919787448275c3b978f547">GET /clients/1.pdf
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-fae45de3bf919787448275c3b978f547">Copy</button>
+</div>
+<h4 id="live-streaming-of-arbitrary-data"><a class="anchorlink" href="#live-streaming-of-arbitrary-data">12.3 Live Streaming of Arbitrary Data</a></h4>
+
+<p>Rails allows you to stream more than just files. In fact, you can stream anything
+you would like in a response object. The <a href="https://api.rubyonrails.org/v6.1.7.3/classes/ActionController/Live.html"><code>ActionController::Live</code></a> module allows
+you to create a persistent connection with a browser. Using this module, you will
+be able to send arbitrary data to the browser at specific points in time.</p>
+
+<h5 id="incorporating-live-streaming"><a class="anchorlink" href="#incorporating-live-streaming">12.3.1 Incorporating Live Streaming</a></h5>
+
+<p>Including <code>ActionController::Live</code> inside of your controller class will provide
+all actions inside of the controller the ability to stream data. You can mix in
+the module like so:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">MyController</span> <span class="o">&lt;</span> <span class="no">ActionController</span><span class="o">::</span><span class="no">Base</span>
+  <span class="kp">include</span> <span class="no">ActionController</span><span class="o">::</span><span class="no">Live</span>
+
+  <span class="k">def</span> <span class="nf">stream</span>
+    <span class="n">response</span><span class="p">.</span><span class="nf">headers</span><span class="p">[</span><span class="s1">'Content-Type'</span><span class="p">]</span> <span class="o">=</span> <span class="s1">'text/event-stream'</span>
+    <span class="mi">100</span><span class="p">.</span><span class="nf">times</span> <span class="p">{</span>
+      <span class="n">response</span><span class="p">.</span><span class="nf">stream</span><span class="p">.</span><span class="nf">write</span> <span class="s2">"hello world</span><span class="se">\n</span><span class="s2">"</span>
+      <span class="nb">sleep</span> <span class="mi">1</span>
+    <span class="p">}</span>
+  <span class="k">ensure</span>
+    <span class="n">response</span><span class="p">.</span><span class="nf">stream</span><span class="p">.</span><span class="nf">close</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-2fbc5e01c6306279ec4c6989d8f1e6c8">class MyController &lt; ActionController::Base
+  include ActionController::Live
+
+  def stream
+    response.headers['Content-Type'] = 'text/event-stream'
+    100.times {
+      response.stream.write "hello world\n"
+      sleep 1
+    }
+  ensure
+    response.stream.close
+  end
+end
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-2fbc5e01c6306279ec4c6989d8f1e6c8">Copy</button>
+</div>
+<p>The above code will keep a persistent connection with the browser and send 100
+messages of <code>"hello world\n"</code>, each one second apart.</p>
+
+<p>There are a couple of things to notice in the above example. We need to make
+sure to close the response stream. Forgetting to close the stream will leave
+the socket open forever. We also have to set the content type to <code>text/event-stream</code>
+before we write to the response stream. This is because headers cannot be written
+after the response has been committed (when <code>response.committed?</code> returns a truthy
+value), which occurs when you <code>write</code> or <code>commit</code> the response stream.</p>
+
+<h5 id="example-usage"><a class="anchorlink" href="#example-usage">12.3.2 Example Usage</a></h5>
+
+<p>Let's suppose that you were making a Karaoke machine and a user wants to get the
+lyrics for a particular song. Each <code>Song</code> has a particular number of lines and
+each line takes time <code>num_beats</code> to finish singing.</p>
+
+<p>If we wanted to return the lyrics in Karaoke fashion (only sending the line when
+the singer has finished the previous line), then we could use <code>ActionController::Live</code>
+as follows:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">LyricsController</span> <span class="o">&lt;</span> <span class="no">ActionController</span><span class="o">::</span><span class="no">Base</span>
+  <span class="kp">include</span> <span class="no">ActionController</span><span class="o">::</span><span class="no">Live</span>
+
+  <span class="k">def</span> <span class="nf">show</span>
+    <span class="n">response</span><span class="p">.</span><span class="nf">headers</span><span class="p">[</span><span class="s1">'Content-Type'</span><span class="p">]</span> <span class="o">=</span> <span class="s1">'text/event-stream'</span>
+    <span class="n">song</span> <span class="o">=</span> <span class="no">Song</span><span class="p">.</span><span class="nf">find</span><span class="p">(</span><span class="n">params</span><span class="p">[</span><span class="ss">:id</span><span class="p">])</span>
+
+    <span class="n">song</span><span class="p">.</span><span class="nf">each</span> <span class="k">do</span> <span class="o">|</span><span class="n">line</span><span class="o">|</span>
+      <span class="n">response</span><span class="p">.</span><span class="nf">stream</span><span class="p">.</span><span class="nf">write</span> <span class="n">line</span><span class="p">.</span><span class="nf">lyrics</span>
+      <span class="nb">sleep</span> <span class="n">line</span><span class="p">.</span><span class="nf">num_beats</span>
+    <span class="k">end</span>
+  <span class="k">ensure</span>
+    <span class="n">response</span><span class="p">.</span><span class="nf">stream</span><span class="p">.</span><span class="nf">close</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-1aa2fc6cc8d0b2e86f9c26d81ef6e9be">class LyricsController &lt; ActionController::Base
+  include ActionController::Live
+
+  def show
+    response.headers['Content-Type'] = 'text/event-stream'
+    song = Song.find(params[:id])
+
+    song.each do |line|
+      response.stream.write line.lyrics
+      sleep line.num_beats
+    end
+  ensure
+    response.stream.close
+  end
+end
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-1aa2fc6cc8d0b2e86f9c26d81ef6e9be">Copy</button>
+</div>
+<p>The above code sends the next line only after the singer has completed the previous
+line.</p>
+
+<h5 id="streaming-considerations"><a class="anchorlink" href="#streaming-considerations">12.3.3 Streaming Considerations</a></h5>
+
+<p>Streaming arbitrary data is an extremely powerful tool. As shown in the previous
+examples, you can choose when and what to send across a response stream. However,
+you should also note the following things:</p>
+<ul>
+<li>Each response stream creates a new thread and copies over the thread local
+variables from the original thread. Having too many thread local variables can
+negatively impact performance. Similarly, a large number of threads can also
+hinder performance.</li>
+<li>Failing to close the response stream will leave the corresponding socket open
+forever. Make sure to call <code>close</code> whenever you are using a response stream.</li>
+<li>WEBrick servers buffer all responses, and so including <code>ActionController::Live</code>
+will not work. You must use a web server which does not automatically buffer
+responses.</li>
+</ul>
+</body>
+</html>

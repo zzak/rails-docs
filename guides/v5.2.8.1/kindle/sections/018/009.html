@@ -1,0 +1,51 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>10 Discarding Files Stored During System Tests</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v5.2.8.1/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="discarding-files-stored-during-system-tests"><a class="anchorlink" href="#discarding-files-stored-during-system-tests">10 Discarding Files Stored During System Tests</a></h3>
+<p>System tests clean up test data by rolling back a transaction. Because destroy
+is never called on an object, the attached files are never cleaned up. If you
+want to clear the files, you can do it in an <code>after_teardown</code> callback. Doing it
+here ensures that all connections created during the test are complete and
+you won't receive an error from Active Storage saying it can't find a file.</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class ApplicationSystemTestCase &lt; ActionDispatch::SystemTestCase
+  driven_by :selenium, using: :chrome, screen_size: [1400, 1400]
+
+  def remove_uploaded_files
+    FileUtils.rm_rf("#{Rails.root}/storage_test")
+  end
+
+  def after_teardown
+    super
+    remove_uploaded_files
+  end
+end
+
+</pre>
+</div>
+<p>If your system tests verify the deletion of a model with attachments and you're
+using Active Job, set your test environment to use the inline queue adapter so
+the purge job is executed immediately rather at an unknown time in the future.</p>
+
+<p>You may also want to use a separate service definition for the test environment
+so your tests don't delete the files you create during development.</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+# Use inline job processing to make things happen immediately
+config.active_job.queue_adapter = :inline
+
+# Separate file storage in the test environment
+config.active_storage.service = :local_test
+
+</pre>
+</div>
+</body>
+</html>

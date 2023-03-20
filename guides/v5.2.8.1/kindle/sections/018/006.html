@@ -1,0 +1,33 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>7 Transforming Images</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v5.2.8.1/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="transforming-images"><a class="anchorlink" href="#transforming-images">7 Transforming Images</a></h3>
+<p>To create a variation of the image, call <code>variant</code> on the <code>Blob</code>.
+You can pass any <a href="https://github.com/minimagick/minimagick">MiniMagick</a>
+supported transformation to the method.</p>
+
+<p>To enable variants, add <code>mini_magick</code> to your <code>Gemfile</code>:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+gem 'mini_magick'
+
+</pre>
+</div>
+<p>When the browser hits the variant URL, Active Storage will lazily transform the
+original blob into the specified format and redirect to its new service
+location.</p>
+
+<div class="code_container">
+<pre class="brush: ruby; html-script: true; gutter: false; toolbar: false">
+&lt;%= image_tag user.avatar.variant(resize: "100x100") %&gt;
+
+</pre>
+</div>
+</body>
+</html>

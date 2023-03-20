@@ -1,0 +1,98 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>4 Railties</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v5.1.7/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="railties">4 Railties</h3>
+<p>Please refer to the <a href="https://github.com/rails/rails/blob/4-2-stable/railties/CHANGELOG.md">Changelog</a> for detailed changes.</p>
+
+<h4 id="railties-removals">4.1 Removals</h4>
+<ul>
+<li>  The <code>--skip-action-view</code> option has been removed from the
+app generator. (<a href="https://github.com/rails/rails/pull/17042">Pull Request</a>)</li>
+<li>  The <code>rails application</code> command has been removed without replacement.
+(<a href="https://github.com/rails/rails/pull/11616">Pull Request</a>)</li>
+</ul>
+<h4 id="railties-deprecations">4.2 Deprecations</h4>
+<ul>
+<li>  Deprecated missing <code>config.log_level</code> for production environments.
+(<a href="https://github.com/rails/rails/pull/16622">Pull Request</a>)</li>
+<li>  Deprecated <code>rake test:all</code> in favor of <code>rake test</code> as it now run all tests
+in the <code>test</code> folder.
+(<a href="https://github.com/rails/rails/pull/17348">Pull Request</a>)</li>
+<li>  Deprecated <code>rake test:all:db</code> in favor of <code>rake test:db</code>.
+(<a href="https://github.com/rails/rails/pull/17348">Pull Request</a>)</li>
+<li>  Deprecated <code>Rails::Rack::LogTailer</code> without replacement.
+(<a href="https://github.com/rails/rails/commit/84a13e019e93efaa8994b3f8303d635a7702dbce">Commit</a>)</li>
+</ul>
+<h4 id="railties-notable-changes">4.3 Notable changes</h4>
+<ul>
+<li>  Introduced <code>web-console</code> in the default application Gemfile.
+(<a href="https://github.com/rails/rails/pull/11667">Pull Request</a>)</li>
+<li>  Added a <code>required</code> option to the model generator for associations.
+(<a href="https://github.com/rails/rails/pull/16062">Pull Request</a>)</li>
+<li>
+  Introduced the <code>x</code> namespace for defining custom configuration options:
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+# config/environments/production.rb
+config.x.payment_processing.schedule = :daily
+config.x.payment_processing.retries  = 3
+config.x.super_debugger              = true
+
+</pre>
+</div>
+These options are then available through the configuration object:
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+Rails.configuration.x.payment_processing.schedule # =&gt; :daily
+Rails.configuration.x.payment_processing.retries  # =&gt; 3
+Rails.configuration.x.super_debugger              # =&gt; true
+
+</pre>
+</div>
+(<a href="https://github.com/rails/rails/commit/611849772dd66c2e4d005dcfe153f7ce79a8a7db">Commit</a>)
+</li>
+<li>
+  Introduced <code>Rails::Application.config_for</code> to load a configuration for the
+current environment.
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+# config/exception_notification.yml:
+production:
+  url: http://127.0.0.1:8080
+  namespace: my_app_production
+development:
+  url: http://localhost:3001
+  namespace: my_app_development
+
+# config/environments/production.rb
+Rails.application.configure do
+  config.middleware.use ExceptionNotifier, config_for(:exception_notification)
+end
+
+</pre>
+</div>
+(<a href="https://github.com/rails/rails/pull/16129">Pull Request</a>)
+</li>
+<li>  Introduced a <code>--skip-turbolinks</code> option in the app generator to not generate
+turbolinks integration.
+(<a href="https://github.com/rails/rails/commit/bf17c8a531bc8059d50ad731398002a3e7162a7d">Commit</a>)</li>
+<li>  Introduced a <code>bin/setup</code> script as a convention for automated setup code when
+bootstrapping an application.
+(<a href="https://github.com/rails/rails/pull/15189">Pull Request</a>)</li>
+<li>  Changed the default value for <code>config.assets.digest</code> to <code>true</code> in development.
+(<a href="https://github.com/rails/rails/pull/15155">Pull Request</a>)</li>
+<li>  Introduced an API to register new extensions for <code>rake notes</code>.
+(<a href="https://github.com/rails/rails/pull/14379">Pull Request</a>)</li>
+<li>  Introduced an <code>after_bundle</code> callback for use in Rails templates.
+(<a href="https://github.com/rails/rails/pull/16359">Pull Request</a>)</li>
+<li>  Introduced <code>Rails.gem_version</code> as a convenience method to return
+<code>Gem::Version.new(Rails.version)</code>.
+(<a href="https://github.com/rails/rails/pull/14101">Pull Request</a>)</li>
+</ul>
+</body>
+</html>

@@ -1,0 +1,67 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>3 Wording</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v7.0.4.2/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="wording"><a class="anchorlink" href="#wording">3 Wording</a></h3>
+<p>Write simple, declarative sentences. Brevity is a plus: get to the point.</p>
+
+<p>Write in present tense: "Returns a hash that...", rather than "Returned a hash that..." or "Will return a hash that...".</p>
+
+<p>Start comments in upper case. Follow regular punctuation rules:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="c1"># Declares an attribute reader backed by an internally-named</span>
+<span class="c1"># instance variable.</span>
+<span class="k">def</span> <span class="nf">attr_internal_reader</span><span class="p">(</span><span class="o">*</span><span class="n">attrs</span><span class="p">)</span>
+  <span class="c1"># ...</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="# Declares an attribute reader backed by an internally-named
+# instance variable.
+def attr_internal_reader(*attrs)
+  # ...
+end
+">Copy</button>
+</div>
+<p>Communicate to the reader the current way of doing things, both explicitly and implicitly. Use the idioms recommended in edge. Reorder sections to emphasize favored approaches if needed, etc. The documentation should be a model for best practices and canonical, modern Rails usage.</p>
+
+<p>Documentation has to be brief but comprehensive. Explore and document edge cases. What happens if a module is anonymous? What if a collection is empty? What if an argument is nil?</p>
+
+<p>The proper names of Rails components have a space in between the words, like "Active Support". <code>ActiveRecord</code> is a Ruby module, whereas Active Record is an ORM. All Rails documentation should consistently refer to Rails components by their proper names.</p>
+
+<p>Spell names correctly: Arel, minitest, RSpec, HTML, MySQL, JavaScript, ERB, Hotwire. When in doubt, please have a look at some authoritative source like their official documentation.</p>
+
+<p>Use the article "an" for "SQL", as in "an SQL statement". Also "an SQLite database".</p>
+
+<p>Prefer wordings that avoid "you"s and "your"s. For example, instead of</p>
+
+<div class="code_container">
+<pre><code class="highlight markdown">If you need to use <span class="sb">`return`</span> statements in your callbacks, it is recommended that you explicitly define them as methods.
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="If you need to use `return` statements in your callbacks, it is recommended that you explicitly define them as methods.
+">Copy</button>
+</div>
+<p>use this style:</p>
+
+<div class="code_container">
+<pre><code class="highlight markdown">If <span class="sb">`return`</span> is needed, it is recommended to explicitly define a method.
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="If `return` is needed, it is recommended to explicitly define a method.
+">Copy</button>
+</div>
+<p>That said, when using pronouns in reference to a hypothetical person, such as "a
+user with a session cookie", gender neutral pronouns (they/their/them) should be
+used. Instead of:</p>
+<ul>
+<li>he or she... use they.</li>
+<li>him or her... use them.</li>
+<li>his or her... use their.</li>
+<li>his or hers... use theirs.</li>
+<li>himself or herself... use themselves.</li>
+</ul>
+</body>
+</html>

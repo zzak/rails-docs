@@ -1,0 +1,45 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>10 Troubleshooting</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v6.0.6.1/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="troubleshooting"><a class="anchorlink" href="#troubleshooting">10 Troubleshooting</a></h3>
+<h4 id="tracing-autoloads"><a class="anchorlink" href="#tracing-autoloads">10.1 Tracing Autoloads</a></h4>
+
+<p>Active Support is able to report constants as they are autoloaded. To enable these traces in a Rails application, put the following two lines in some initializer:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+ActiveSupport::Dependencies.logger = Rails.logger
+ActiveSupport::Dependencies.verbose = true
+
+</pre>
+</div>
+<h4 id="where-is-a-given-autoload-triggered-questionmark"><a class="anchorlink" href="#where-is-a-given-autoload-triggered-questionmark">10.2 Where is a Given Autoload Triggered?</a></h4>
+
+<p>If constant <code>Foo</code> is being autoloaded, and you'd like to know where is that autoload coming from, just throw</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+puts caller
+
+</pre>
+</div>
+<p>at the top of <code>foo.rb</code> and inspect the printed stack trace.</p>
+
+<h4 id="which-constants-have-been-autoloaded-questionmark"><a class="anchorlink" href="#which-constants-have-been-autoloaded-questionmark">10.3 Which Constants Have Been Autoloaded?</a></h4>
+
+<p>At any given time,</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+ActiveSupport::Dependencies.autoloaded_constants
+
+</pre>
+</div>
+<p>has the collection of constants that have been autoloaded so far.</p>
+</body>
+</html>

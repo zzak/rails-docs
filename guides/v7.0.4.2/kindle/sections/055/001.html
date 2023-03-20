@@ -1,0 +1,182 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>2 Major Features</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v7.0.4.2/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="major-features"><a class="anchorlink" href="#major-features">2 Major Features</a></h3>
+<h4 id="action-cable"><a class="anchorlink" href="#action-cable">2.1 Action Cable</a></h4>
+
+<p>Action Cable is a new framework in Rails 5. It seamlessly integrates
+<a href="https://en.wikipedia.org/wiki/WebSocket">WebSockets</a> with the rest of your
+Rails application.</p>
+
+<p>Action Cable allows for real-time features to be written in Ruby in the
+same style and form as the rest of your Rails application, while still being
+performant and scalable. It's a full-stack offering that provides both a
+client-side JavaScript framework and a server-side Ruby framework. You have
+access to your full domain model written with Active Record or your ORM of
+choice.</p>
+
+<p>See the <a href="action_cable_overview.html">Action Cable Overview</a> guide for more
+information.</p>
+
+<h4 id="api-applications"><a class="anchorlink" href="#api-applications">2.2 API Applications</a></h4>
+
+<p>Rails can now be used to create slimmed down API only applications.
+This is useful for creating and serving APIs similar to <a href="https://dev.twitter.com">Twitter</a> or <a href="https://developer.github.com">GitHub</a> API,
+that can be used to serve public-facing, as well as, for custom applications.</p>
+
+<p>You can generate a new api Rails app using:</p>
+
+<div class="code_container">
+<pre><code class="highlight console"><span class="gp">$</span><span class="w"> </span><span class="nb">rails </span>new my_api <span class="nt">--api</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="rails new my_api --api
+">Copy</button>
+</div>
+<p>This will do three main things:</p>
+<ul>
+<li>Configure your application to start with a more limited set of middleware
+than normal. Specifically, it will not include any middleware primarily useful
+for browser applications (like cookies support) by default.</li>
+<li>Make <code>ApplicationController</code> inherit from <code>ActionController::API</code> instead of
+<code>ActionController::Base</code>. As with middleware, this will leave out any Action
+Controller modules that provide functionalities primarily used by browser
+applications.</li>
+<li>Configure the generators to skip generating views, helpers, and assets when
+you generate a new resource.</li>
+</ul>
+<p>The application provides a base for APIs,
+that can then be <a href="api_app.html">configured to pull in functionality</a> as suitable for the application's needs.</p>
+
+<p>See the <a href="api_app.html">Using Rails for API-only Applications</a> guide for more
+information.</p>
+
+<h4 id="active-record-attributes-api"><a class="anchorlink" href="#active-record-attributes-api">2.3 Active Record attributes API</a></h4>
+
+<p>Defines an attribute with a type on a model. It will override the type of existing attributes if needed.
+This allows control over how values are converted to and from SQL when assigned to a model.
+It also changes the behavior of values passed to <code>ActiveRecord::Base.where</code>, which let's use our domain objects across much of Active Record,
+without having to rely on implementation details or monkey patching.</p>
+
+<p>Some things that you can achieve with this:</p>
+<ul>
+<li>The type detected by Active Record can be overridden.</li>
+<li>A default can also be provided.</li>
+<li>Attributes do not need to be backed by a database column.</li>
+</ul>
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="c1"># db/schema.rb</span>
+<span class="n">create_table</span> <span class="ss">:store_listings</span><span class="p">,</span> <span class="ss">force: </span><span class="kp">true</span> <span class="k">do</span> <span class="o">|</span><span class="n">t</span><span class="o">|</span>
+  <span class="n">t</span><span class="p">.</span><span class="nf">decimal</span> <span class="ss">:price_in_cents</span>
+  <span class="n">t</span><span class="p">.</span><span class="nf">string</span> <span class="ss">:my_string</span><span class="p">,</span> <span class="ss">default: </span><span class="s2">"original default"</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='# db/schema.rb
+create_table :store_listings, force: true do |t|
+  t.decimal :price_in_cents
+  t.string :my_string, default: "original default"
+end
+'>Copy</button>
+</div>
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="c1"># app/models/store_listing.rb</span>
+<span class="k">class</span> <span class="nc">StoreListing</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Base</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="# app/models/store_listing.rb
+class StoreListing &lt; ActiveRecord::Base
+end
+">Copy</button>
+</div>
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">store_listing</span> <span class="o">=</span> <span class="no">StoreListing</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="ss">price_in_cents: </span><span class="s1">'10.1'</span><span class="p">)</span>
+
+<span class="c1"># before</span>
+<span class="n">store_listing</span><span class="p">.</span><span class="nf">price_in_cents</span> <span class="c1"># =&gt; BigDecimal.new(10.1)</span>
+<span class="no">StoreListing</span><span class="p">.</span><span class="nf">new</span><span class="p">.</span><span class="nf">my_string</span> <span class="c1"># =&gt; "original default"</span>
+
+<span class="k">class</span> <span class="nc">StoreListing</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Base</span>
+  <span class="n">attribute</span> <span class="ss">:price_in_cents</span><span class="p">,</span> <span class="ss">:integer</span> <span class="c1"># custom type</span>
+  <span class="n">attribute</span> <span class="ss">:my_string</span><span class="p">,</span> <span class="ss">:string</span><span class="p">,</span> <span class="ss">default: </span><span class="s2">"new default"</span> <span class="c1"># default value</span>
+  <span class="n">attribute</span> <span class="ss">:my_default_proc</span><span class="p">,</span> <span class="ss">:datetime</span><span class="p">,</span> <span class="ss">default: </span><span class="o">-&gt;</span> <span class="p">{</span> <span class="no">Time</span><span class="p">.</span><span class="nf">now</span> <span class="p">}</span> <span class="c1"># default value</span>
+  <span class="n">attribute</span> <span class="ss">:field_without_db_column</span><span class="p">,</span> <span class="ss">:integer</span><span class="p">,</span> <span class="ss">array: </span><span class="kp">true</span>
+<span class="k">end</span>
+
+<span class="c1"># after</span>
+<span class="n">store_listing</span><span class="p">.</span><span class="nf">price_in_cents</span> <span class="c1"># =&gt; 10</span>
+<span class="no">StoreListing</span><span class="p">.</span><span class="nf">new</span><span class="p">.</span><span class="nf">my_string</span> <span class="c1"># =&gt; "new default"</span>
+<span class="no">StoreListing</span><span class="p">.</span><span class="nf">new</span><span class="p">.</span><span class="nf">my_default_proc</span> <span class="c1"># =&gt; 2015-05-30 11:04:48 -0600</span>
+<span class="n">model</span> <span class="o">=</span> <span class="no">StoreListing</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="ss">field_without_db_column: </span><span class="p">[</span><span class="s2">"1"</span><span class="p">,</span> <span class="s2">"2"</span><span class="p">,</span> <span class="s2">"3"</span><span class="p">])</span>
+<span class="n">model</span><span class="p">.</span><span class="nf">attributes</span> <span class="c1"># =&gt; {field_without_db_column: [1, 2, 3]}</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="store_listing = StoreListing.new(price_in_cents: '10.1')
+
+# before
+store_listing.price_in_cents # =&gt; BigDecimal.new(10.1)
+StoreListing.new.my_string # =&gt; &quot;original default&quot;
+
+class StoreListing &lt; ActiveRecord::Base
+  attribute :price_in_cents, :integer # custom type
+  attribute :my_string, :string, default: &quot;new default&quot; # default value
+  attribute :my_default_proc, :datetime, default: -&gt; { Time.now } # default value
+  attribute :field_without_db_column, :integer, array: true
+end
+
+# after
+store_listing.price_in_cents # =&gt; 10
+StoreListing.new.my_string # =&gt; &quot;new default&quot;
+StoreListing.new.my_default_proc # =&gt; 2015-05-30 11:04:48 -0600
+model = StoreListing.new(field_without_db_column: [&quot;1&quot;, &quot;2&quot;, &quot;3&quot;])
+model.attributes # =&gt; {field_without_db_column: [1, 2, 3]}
+">Copy</button>
+</div>
+<p><strong>Creating Custom Types:</strong></p>
+
+<p>You can define your own custom types, as long as they respond
+to the methods defined on the value type. The method <code>deserialize</code> or
+<code>cast</code> will be called on your type object, with raw input from the
+database or from your controllers. This is useful, for example, when doing custom conversion,
+like Money data.</p>
+
+<p><strong>Querying:</strong></p>
+
+<p>When <code>ActiveRecord::Base.where</code> is called, it will
+use the type defined by the model class to convert the value to SQL,
+calling <code>serialize</code> on your type object.</p>
+
+<p>This gives the objects ability to specify, how to convert values when performing SQL queries.</p>
+
+<p><strong>Dirty Tracking:</strong></p>
+
+<p>The type of an attribute is allowed to change how dirty
+tracking is performed.</p>
+
+<p>See its
+<a href="https://api.rubyonrails.org/v5.0.1/classes/ActiveRecord/Attributes/ClassMethods.html">documentation</a>
+for a detailed write up.</p>
+
+<h4 id="test-runner"><a class="anchorlink" href="#test-runner">2.4 Test Runner</a></h4>
+
+<p>A new test runner has been introduced to enhance the capabilities of running tests from Rails.
+To use this test runner simply type <code>bin/rails test</code>.</p>
+
+<p>Test Runner is inspired by <code>RSpec</code>, <code>minitest-reporters</code>, <code>maxitest</code> and others.
+It includes some of these notable advancements:</p>
+<ul>
+<li>Run a single test using line number of test.</li>
+<li>Run multiple tests pinpointing to line number of tests.</li>
+<li>Improved failure messages, which also add ease of re-running failed tests.</li>
+<li>Fail fast using <code>-f</code> option, to stop tests immediately on occurrence of failure,
+instead of waiting for the suite to complete.</li>
+<li>Defer test output until the end of a full test run using the <code>-d</code> option.</li>
+<li>Complete exception backtrace output using <code>-b</code> option.</li>
+<li>Integration with minitest to allow options like <code>-s</code> for test seed data,
+<code>-n</code> for running specific test by name, <code>-v</code> for better verbose output and so forth.</li>
+<li>Colored test output.</li>
+</ul>
+</body>
+</html>

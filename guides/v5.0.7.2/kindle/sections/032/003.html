@@ -1,0 +1,346 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>4 Add an "acts_as" Method to Active Record</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v5.0.7.2/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="add-an-acts-as-method-to-active-record">4 Add an "acts_as" Method to Active Record</h3>
+<p>A common pattern in plugins is to add a method called <code>acts_as_something</code> to models. In this case, you
+want to write a method called <code>acts_as_yaffle</code> that adds a <code>squawk</code> method to your Active Record models.</p>
+
+<p>To begin, set up your files so that you have:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+# yaffle/test/acts_as_yaffle_test.rb
+
+require 'test_helper'
+
+class ActsAsYaffleTest &lt; ActiveSupport::TestCase
+end
+
+</pre>
+</div>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+# yaffle/lib/yaffle.rb
+
+require 'yaffle/core_ext'
+require 'yaffle/acts_as_yaffle'
+
+module Yaffle
+end
+
+</pre>
+</div>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+# yaffle/lib/yaffle/acts_as_yaffle.rb
+
+module Yaffle
+  module ActsAsYaffle
+    # your code will go here
+  end
+end
+
+</pre>
+</div>
+<h4 id="add-a-class-method">4.1 Add a Class Method</h4>
+
+<p>This plugin will expect that you've added a method to your model named <code>last_squawk</code>. However, the
+plugin users might have already defined a method on their model named <code>last_squawk</code> that they use
+for something else. This plugin will allow the name to be changed by adding a class method called <code>yaffle_text_field</code>.</p>
+
+<p>To start out, write a failing test that shows the behavior you'd like:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+# yaffle/test/acts_as_yaffle_test.rb
+
+require 'test_helper'
+
+class ActsAsYaffleTest &lt; ActiveSupport::TestCase
+  def test_a_hickwalls_yaffle_text_field_should_be_last_squawk
+    assert_equal "last_squawk", Hickwall.yaffle_text_field
+  end
+
+  def test_a_wickwalls_yaffle_text_field_should_be_last_tweet
+    assert_equal "last_tweet", Wickwall.yaffle_text_field
+  end
+end
+
+</pre>
+</div>
+<p>When you run <code>bin/test</code>, you should see the following:</p>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+# Running:
+
+..E
+
+Error:
+ActsAsYaffleTest#test_a_wickwalls_yaffle_text_field_should_be_last_tweet:
+NameError: uninitialized constant ActsAsYaffleTest::Wickwall
+
+
+bin/test /path/to/yaffle/test/acts_as_yaffle_test.rb:8
+
+E
+
+Error:
+ActsAsYaffleTest#test_a_hickwalls_yaffle_text_field_should_be_last_squawk:
+NameError: uninitialized constant ActsAsYaffleTest::Hickwall
+
+
+bin/test /path/to/yaffle/test/acts_as_yaffle_test.rb:4
+
+
+
+Finished in 0.004812s, 831.2949 runs/s, 415.6475 assertions/s.
+
+4 runs, 2 assertions, 0 failures, 2 errors, 0 skips
+
+</pre>
+</div>
+<p>This tells us that we don't have the necessary models (Hickwall and Wickwall) that we are trying to test.
+We can easily generate these models in our "dummy" Rails application by running the following commands from the
+test/dummy directory:</p>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+$ cd test/dummy
+$ bin/rails generate model Hickwall last_squawk:string
+$ bin/rails generate model Wickwall last_squawk:string last_tweet:string
+
+</pre>
+</div>
+<p>Now you can create the necessary database tables in your testing database by navigating to your dummy app
+and migrating the database. First, run:</p>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+$ cd test/dummy
+$ bin/rails db:migrate
+
+</pre>
+</div>
+<p>While you are here, change the Hickwall and Wickwall models so that they know that they are supposed to act
+like yaffles.</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+# test/dummy/app/models/hickwall.rb
+
+class Hickwall &lt; ApplicationRecord
+  acts_as_yaffle
+end
+
+# test/dummy/app/models/wickwall.rb
+
+class Wickwall &lt; ApplicationRecord
+  acts_as_yaffle yaffle_text_field: :last_tweet
+end
+
+</pre>
+</div>
+<p>We will also add code to define the <code>acts_as_yaffle</code> method.</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+# yaffle/lib/yaffle/acts_as_yaffle.rb
+
+module Yaffle
+  module ActsAsYaffle
+    extend ActiveSupport::Concern
+
+    included do
+    end
+
+    module ClassMethods
+      def acts_as_yaffle(options = {})
+        # your code will go here
+      end
+    end
+  end
+end
+
+# test/dummy/app/models/application_record.rb
+
+class ApplicationRecord &lt; ActiveRecord::Base
+  include Yaffle::ActsAsYaffle
+
+  self.abstract_class = true
+end
+
+</pre>
+</div>
+<p>You can then return to the root directory (<code>cd ../..</code>) of your plugin and rerun the tests using <code>bin/test</code>.</p>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+# Running:
+
+.E
+
+Error:
+ActsAsYaffleTest#test_a_hickwalls_yaffle_text_field_should_be_last_squawk:
+NoMethodError: undefined method `yaffle_text_field' for #&lt;Class:0x0055974ebbe9d8&gt;
+
+
+bin/test /path/to/yaffle/test/acts_as_yaffle_test.rb:4
+
+E
+
+Error:
+ActsAsYaffleTest#test_a_wickwalls_yaffle_text_field_should_be_last_tweet:
+NoMethodError: undefined method `yaffle_text_field' for #&lt;Class:0x0055974eb8cfc8&gt;
+
+
+bin/test /path/to/yaffle/test/acts_as_yaffle_test.rb:8
+
+.
+
+Finished in 0.008263s, 484.0999 runs/s, 242.0500 assertions/s.
+
+4 runs, 2 assertions, 0 failures, 2 errors, 0 skips
+
+</pre>
+</div>
+<p>Getting closer... Now we will implement the code of the <code>acts_as_yaffle</code> method to make the tests pass.</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+# yaffle/lib/yaffle/acts_as_yaffle.rb
+
+module Yaffle
+  module ActsAsYaffle
+    extend ActiveSupport::Concern
+
+    included do
+    end
+
+    module ClassMethods
+      def acts_as_yaffle(options = {})
+        cattr_accessor :yaffle_text_field
+        self.yaffle_text_field = (options[:yaffle_text_field] || :last_squawk).to_s
+      end
+    end
+  end
+end
+
+# test/dummy/app/models/application_record.rb
+
+class ApplicationRecord &lt; ActiveRecord::Base
+  include Yaffle::ActsAsYaffle
+
+  self.abstract_class = true
+end
+
+</pre>
+</div>
+<p>When you run <code>bin/test</code>, you should see the tests all pass:</p>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+  4 runs, 4 assertions, 0 failures, 0 errors, 0 skips
+
+</pre>
+</div>
+<h4 id="add-an-instance-method">4.2 Add an Instance Method</h4>
+
+<p>This plugin will add a method named 'squawk' to any Active Record object that calls 'acts_as_yaffle'. The 'squawk'
+method will simply set the value of one of the fields in the database.</p>
+
+<p>To start out, write a failing test that shows the behavior you'd like:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+# yaffle/test/acts_as_yaffle_test.rb
+require 'test_helper'
+
+class ActsAsYaffleTest &lt; ActiveSupport::TestCase
+  def test_a_hickwalls_yaffle_text_field_should_be_last_squawk
+    assert_equal "last_squawk", Hickwall.yaffle_text_field
+  end
+
+  def test_a_wickwalls_yaffle_text_field_should_be_last_tweet
+    assert_equal "last_tweet", Wickwall.yaffle_text_field
+  end
+
+  def test_hickwalls_squawk_should_populate_last_squawk
+    hickwall = Hickwall.new
+    hickwall.squawk("Hello World")
+    assert_equal "squawk! Hello World", hickwall.last_squawk
+  end
+
+  def test_wickwalls_squawk_should_populate_last_tweet
+    wickwall = Wickwall.new
+    wickwall.squawk("Hello World")
+    assert_equal "squawk! Hello World", wickwall.last_tweet
+  end
+end
+
+</pre>
+</div>
+<p>Run the test to make sure the last two tests fail with an error that contains "NoMethodError: undefined method `squawk'",
+then update 'acts_as_yaffle.rb' to look like this:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+# yaffle/lib/yaffle/acts_as_yaffle.rb
+
+module Yaffle
+  module ActsAsYaffle
+    extend ActiveSupport::Concern
+
+    included do
+    end
+
+    module ClassMethods
+      def acts_as_yaffle(options = {})
+        cattr_accessor :yaffle_text_field
+        self.yaffle_text_field = (options[:yaffle_text_field] || :last_squawk).to_s
+
+        include Yaffle::ActsAsYaffle::LocalInstanceMethods
+      end
+    end
+
+    module LocalInstanceMethods
+      def squawk(string)
+        write_attribute(self.class.yaffle_text_field, string.to_squawk)
+      end
+    end
+  end
+end
+
+# test/dummy/app/models/application_record.rb
+
+class ApplicationRecord &lt; ActiveRecord::Base
+  include Yaffle::ActsAsYaffle
+
+  self.abstract_class = true
+end
+
+</pre>
+</div>
+<p>Run <code>bin/test</code> one final time and you should see:</p>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+  6 runs, 6 assertions, 0 failures, 0 errors, 0 skips
+
+</pre>
+</div>
+<div class="note"><p>The use of <code>write_attribute</code> to write to the field in model is just one example of how a plugin can interact with the model, and will not always be the right method to use. For example, you could also use:</p></div>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+send("#{self.class.yaffle_text_field}=", string.to_squawk)
+
+</pre>
+</div>
+</body>
+</html>

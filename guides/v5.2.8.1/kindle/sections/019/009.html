@@ -1,0 +1,46 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>10 Testing Helpers</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v5.2.8.1/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="testing-helpers"><a class="anchorlink" href="#testing-helpers">10 Testing Helpers</a></h3>
+<p>A helper is just a simple module where you can define methods which are
+available into your views.</p>
+
+<p>In order to test helpers, all you need to do is check that the output of the
+helper method matches what you'd expect. Tests related to the helpers are
+located under the <code>test/helpers</code> directory.</p>
+
+<p>Given we have the following helper:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+module UsersHelper
+  def link_to_user(user)
+    link_to "#{user.first_name} #{user.last_name}", user
+  end
+end
+
+</pre>
+</div>
+<p>We can test the output of this method like this:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class UsersHelperTest &lt; ActionView::TestCase
+  test "should return the user's full name" do
+    user = users(:david)
+
+    assert_dom_equal %{&lt;a href="/user/#{user.id}"&gt;David Heinemeier Hansson&lt;/a&gt;}, link_to_user(user)
+  end
+end
+
+</pre>
+</div>
+<p>Moreover, since the test class extends from <code>ActionView::TestCase</code>, you have
+access to Rails' helper methods such as <code>link_to</code> or <code>pluralize</code>.</p>
+</body>
+</html>

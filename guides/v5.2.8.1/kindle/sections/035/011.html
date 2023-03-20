@@ -1,0 +1,41 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>12 Configuration hooks</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v5.2.8.1/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="configuration-hooks"><a class="anchorlink" href="#configuration-hooks">12 Configuration hooks</a></h3>
+<p>These are the available configuration hooks. They do not hook into any particular framework, but instead they run in context of the entire application.</p>
+<table>
+<thead>
+<tr>
+<th>Hook</th>
+<th>Use Case</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>before_configuration</code></td>
+<td>First configurable block to run. Called before any initializers are run.</td>
+</tr>
+<tr>
+<td><code>before_initialize</code></td>
+<td>Second configurable block to run. Called before frameworks initialize.</td>
+</tr>
+<tr>
+<td><code>before_eager_load</code></td>
+<td>Third configurable block to run. Does not run if <code>config.eager_load</code> set to false.</td>
+</tr>
+<tr>
+<td><code>after_initialize</code></td>
+<td>Last configurable block to run. Called after frameworks initialize.</td>
+</tr>
+</tbody>
+</table>
+<h4 id="example"><a class="anchorlink" href="#example">12.1 Example</a></h4>
+
+<p><code>config.before_configuration { puts 'I am called before any initializers' }</code></p>
+</body>
+</html>

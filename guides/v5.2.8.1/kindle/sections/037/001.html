@@ -1,0 +1,56 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>2 Helping to Resolve Existing Issues</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v5.2.8.1/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="helping-to-resolve-existing-issues"><a class="anchorlink" href="#helping-to-resolve-existing-issues">2 Helping to Resolve Existing Issues</a></h3>
+<p>As a next step beyond reporting issues, you can help the core team resolve existing ones by providing feedback about them. If you are new to Rails core development, that might be a great way to walk your first steps, you'll get familiar with the code base and the processes.</p>
+
+<p>If you check the <a href="https://github.com/rails/rails/issues">issues list</a> in GitHub Issues, you'll find lots of issues already requiring attention. What can you do for these? Quite a bit, actually:</p>
+
+<h4 id="verifying-bug-reports"><a class="anchorlink" href="#verifying-bug-reports">2.1 Verifying Bug Reports</a></h4>
+
+<p>For starters, it helps just to verify bug reports. Can you reproduce the reported issue on your own computer? If so, you can add a comment to the issue saying that you're seeing the same thing.</p>
+
+<p>If an issue is very vague, can you help narrow it down to something more specific? Maybe you can provide additional information to help reproduce a bug, or help by eliminating needless steps that aren't required to demonstrate the problem.</p>
+
+<p>If you find a bug report without a test, it's very useful to contribute a failing test. This is also a great way to get started exploring the source code: looking at the existing test files will teach you how to write more tests. New tests are best contributed in the form of a patch, as explained later on in the "<a href="#contributing-to-the-rails-code">Contributing to the Rails Code</a>" section.</p>
+
+<p>Anything you can do to make bug reports more succinct or easier to reproduce helps folks trying to write code to fix those bugs - whether you end up writing the code yourself or not.</p>
+
+<h4 id="testing-patches"><a class="anchorlink" href="#testing-patches">2.2 Testing Patches</a></h4>
+
+<p>You can also help out by examining pull requests that have been submitted to Ruby on Rails via GitHub. In order to apply someone's changes, you need to first create a dedicated branch:</p>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+$ git checkout -b testing_branch
+
+</pre>
+</div>
+<p>Then, you can use their remote branch to update your codebase. For example, let's say the GitHub user JohnSmith has forked and pushed to a topic branch "orange" located at <a href="https://github.com/JohnSmith/rails">https://github.com/JohnSmith/rails</a>.</p>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+$ git remote add JohnSmith https://github.com/JohnSmith/rails.git
+$ git pull JohnSmith orange
+
+</pre>
+</div>
+<p>After applying their branch, test it out! Here are some things to think about:</p>
+<ul>
+<li>Does the change actually work?</li>
+<li>Are you happy with the tests? Can you follow what they're testing? Are there any tests missing?</li>
+<li>Does it have the proper documentation coverage? Should documentation elsewhere be updated?</li>
+<li>Do you like the implementation? Can you think of a nicer or faster way to implement a part of their change?</li>
+</ul>
+<p>Once you're happy that the pull request contains a good change, comment on the GitHub issue indicating your approval. Your comment should indicate that you like the change and what you like about it. Something like:</p>
+<blockquote>
+<p>I like the way you've restructured that code in generate_finder_sql - much nicer. The tests look good too.</p>
+</blockquote>
+<p>If your comment simply reads "+1", then odds are that other reviewers aren't going to take it too seriously. Show that you took the time to review the pull request.</p>
+</body>
+</html>

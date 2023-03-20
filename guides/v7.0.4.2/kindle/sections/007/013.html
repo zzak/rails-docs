@@ -1,0 +1,208 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>14 Eager Loading Associations</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v7.0.4.2/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="eager-loading-associations"><a class="anchorlink" href="#eager-loading-associations">14 Eager Loading Associations</a></h3>
+<p>Eager loading is the mechanism for loading the associated records of the objects returned by <code>Model.find</code> using as few queries as possible.</p>
+
+<p><strong>N + 1 queries problem</strong></p>
+
+<p>Consider the following code, which finds 10 books and prints their authors' last_name:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">books</span> <span class="o">=</span> <span class="no">Book</span><span class="p">.</span><span class="nf">limit</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+
+<span class="n">books</span><span class="p">.</span><span class="nf">each</span> <span class="k">do</span> <span class="o">|</span><span class="n">book</span><span class="o">|</span>
+  <span class="nb">puts</span> <span class="n">book</span><span class="p">.</span><span class="nf">author</span><span class="p">.</span><span class="nf">last_name</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="books = Book.limit(10)
+
+books.each do |book|
+  puts book.author.last_name
+end
+">Copy</button>
+</div>
+<p>This code looks fine at the first sight. But the problem lies within the total number of queries executed. The above code executes 1 (to find 10 books) + 10 (one per each book to load the author) = <strong>11</strong> queries in total.</p>
+
+<p><strong>Solution to N + 1 queries problem</strong></p>
+
+<p>Active Record lets you specify in advance all the associations that are going to be loaded.</p>
+
+<p>The methods are:</p>
+<ul>
+<li><a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveRecord/QueryMethods.html#method-i-includes"><code>includes</code></a></li>
+<li><a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveRecord/QueryMethods.html#method-i-preload"><code>preload</code></a></li>
+<li><a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveRecord/QueryMethods.html#method-i-eager_load"><code>eager_load</code></a></li>
+</ul>
+<h4 id="includes"><a class="anchorlink" href="#includes">14.1 includes</a></h4>
+
+<p>With <code>includes</code>, Active Record ensures that all of the specified associations are loaded using the minimum possible number of queries.</p>
+
+<p>Revisiting the above case using the <code>includes</code> method, we could rewrite <code>Book.limit(10)</code> to eager load authors:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">books</span> <span class="o">=</span> <span class="no">Book</span><span class="p">.</span><span class="nf">includes</span><span class="p">(</span><span class="ss">:author</span><span class="p">).</span><span class="nf">limit</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+
+<span class="n">books</span><span class="p">.</span><span class="nf">each</span> <span class="k">do</span> <span class="o">|</span><span class="n">book</span><span class="o">|</span>
+  <span class="nb">puts</span> <span class="n">book</span><span class="p">.</span><span class="nf">author</span><span class="p">.</span><span class="nf">last_name</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="books = Book.includes(:author).limit(10)
+
+books.each do |book|
+  puts book.author.last_name
+end
+">Copy</button>
+</div>
+<p>The above code will execute just <strong>2</strong> queries, as opposed to the <strong>11</strong> queries from the original case:</p>
+
+<div class="code_container">
+<pre><code class="highlight sql"><span class="k">SELECT</span> <span class="n">books</span><span class="p">.</span><span class="o">*</span> <span class="k">FROM</span> <span class="n">books</span> <span class="k">LIMIT</span> <span class="mi">10</span>
+<span class="k">SELECT</span> <span class="n">authors</span><span class="p">.</span><span class="o">*</span> <span class="k">FROM</span> <span class="n">authors</span>
+  <span class="k">WHERE</span> <span class="n">authors</span><span class="p">.</span><span class="n">book_id</span> <span class="k">IN</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span><span class="mi">6</span><span class="p">,</span><span class="mi">7</span><span class="p">,</span><span class="mi">8</span><span class="p">,</span><span class="mi">9</span><span class="p">,</span><span class="mi">10</span><span class="p">)</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="SELECT books.* FROM books LIMIT 10
+SELECT authors.* FROM authors
+  WHERE authors.book_id IN (1,2,3,4,5,6,7,8,9,10)
+">Copy</button>
+</div>
+<h5 id="eager-loading-multiple-associations"><a class="anchorlink" href="#eager-loading-multiple-associations">14.1.1 Eager Loading Multiple Associations</a></h5>
+
+<p>Active Record lets you eager load any number of associations with a single <code>Model.find</code> call by using an array, hash, or a nested hash of array/hash with the <code>includes</code> method.</p>
+
+<h5 id="array-of-multiple-associations"><a class="anchorlink" href="#array-of-multiple-associations">14.1.2 Array of Multiple Associations</a></h5>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="no">Customer</span><span class="p">.</span><span class="nf">includes</span><span class="p">(</span><span class="ss">:orders</span><span class="p">,</span> <span class="ss">:reviews</span><span class="p">)</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="Customer.includes(:orders, :reviews)
+">Copy</button>
+</div>
+<p>This loads all the customers and the associated orders and reviews for each.</p>
+
+<h6 id="nested-associations-hash"><a class="anchorlink" href="#nested-associations-hash">14.1.2.1 Nested Associations Hash</a></h6>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="no">Customer</span><span class="p">.</span><span class="nf">includes</span><span class="p">(</span><span class="ss">orders: </span><span class="p">{</span><span class="ss">books: </span><span class="p">[</span><span class="ss">:supplier</span><span class="p">,</span> <span class="ss">:author</span><span class="p">]}).</span><span class="nf">find</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="Customer.includes(orders: {books: [:supplier, :author]}).find(1)
+">Copy</button>
+</div>
+<p>This will find the customer with id 1 and eager load all of the associated orders for it, the books for all of the orders, and the author and supplier for each of the books.</p>
+
+<h5 id="specifying-conditions-on-eager-loaded-associations"><a class="anchorlink" href="#specifying-conditions-on-eager-loaded-associations">14.1.3 Specifying Conditions on Eager Loaded Associations</a></h5>
+
+<p>Even though Active Record lets you specify conditions on the eager loaded associations just like <code>joins</code>, the recommended way is to use <a href="#joining-tables">joins</a> instead.</p>
+
+<p>However if you must do this, you may use <code>where</code> as you would normally.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="no">Author</span><span class="p">.</span><span class="nf">includes</span><span class="p">(</span><span class="ss">:books</span><span class="p">).</span><span class="nf">where</span><span class="p">(</span><span class="ss">books: </span><span class="p">{</span> <span class="ss">out_of_print: </span><span class="kp">true</span> <span class="p">})</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="Author.includes(:books).where(books: { out_of_print: true })
+">Copy</button>
+</div>
+<p>This would generate a query which contains a <code>LEFT OUTER JOIN</code> whereas the
+<code>joins</code> method would generate one using the <code>INNER JOIN</code> function instead.</p>
+
+<div class="code_container">
+<pre><code class="highlight sql">  <span class="k">SELECT</span> <span class="n">authors</span><span class="p">.</span><span class="n">id</span> <span class="k">AS</span> <span class="n">t0_r0</span><span class="p">,</span> <span class="p">...</span> <span class="n">books</span><span class="p">.</span><span class="n">updated_at</span> <span class="k">AS</span> <span class="n">t1_r5</span> <span class="k">FROM</span> <span class="n">authors</span> <span class="k">LEFT</span> <span class="k">OUTER</span> <span class="k">JOIN</span> <span class="n">books</span> <span class="k">ON</span> <span class="n">books</span><span class="p">.</span><span class="n">author_id</span> <span class="o">=</span> <span class="n">authors</span><span class="p">.</span><span class="n">id</span> <span class="k">WHERE</span> <span class="p">(</span><span class="n">books</span><span class="p">.</span><span class="n">out_of_print</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="  SELECT authors.id AS t0_r0, ... books.updated_at AS t1_r5 FROM authors LEFT OUTER JOIN books ON books.author_id = authors.id WHERE (books.out_of_print = 1)
+">Copy</button>
+</div>
+<p>If there was no <code>where</code> condition, this would generate the normal set of two queries.</p>
+
+<div class="note"><p>Using <code>where</code> like this will only work when you pass it a Hash. For
+SQL-fragments you need to use <code>references</code> to force joined tables:</p></div>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="no">Author</span><span class="p">.</span><span class="nf">includes</span><span class="p">(</span><span class="ss">:books</span><span class="p">).</span><span class="nf">where</span><span class="p">(</span><span class="s2">"books.out_of_print = true"</span><span class="p">).</span><span class="nf">references</span><span class="p">(</span><span class="ss">:books</span><span class="p">)</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='Author.includes(:books).where("books.out_of_print = true").references(:books)
+'>Copy</button>
+</div>
+<p>If, in the case of this <code>includes</code> query, there were no books for any
+authors, all the authors would still be loaded. By using <code>joins</code> (an INNER
+JOIN), the join conditions <strong>must</strong> match, otherwise no records will be
+returned.</p>
+
+<div class="note"><p>If an association is eager loaded as part of a join, any fields from a custom select clause will not be present on the loaded models.
+This is because it is ambiguous whether they should appear on the parent record, or the child.</p></div>
+
+<h4 id="preload"><a class="anchorlink" href="#preload">14.2 preload</a></h4>
+
+<p>With <code>preload</code>, Active Record loads each specified association using one query per association.</p>
+
+<p>Revisiting the N + 1 queries problem, we could rewrite <code>Book.limit(10)</code> to preload authors:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">books</span> <span class="o">=</span> <span class="no">Book</span><span class="p">.</span><span class="nf">preload</span><span class="p">(</span><span class="ss">:author</span><span class="p">).</span><span class="nf">limit</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+
+<span class="n">books</span><span class="p">.</span><span class="nf">each</span> <span class="k">do</span> <span class="o">|</span><span class="n">book</span><span class="o">|</span>
+  <span class="nb">puts</span> <span class="n">book</span><span class="p">.</span><span class="nf">author</span><span class="p">.</span><span class="nf">last_name</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="books = Book.preload(:author).limit(10)
+
+books.each do |book|
+  puts book.author.last_name
+end
+">Copy</button>
+</div>
+<p>The above code will execute just <strong>2</strong> queries, as opposed to the <strong>11</strong> queries from the original case:</p>
+
+<div class="code_container">
+<pre><code class="highlight sql"><span class="k">SELECT</span> <span class="n">books</span><span class="p">.</span><span class="o">*</span> <span class="k">FROM</span> <span class="n">books</span> <span class="k">LIMIT</span> <span class="mi">10</span>
+<span class="k">SELECT</span> <span class="n">authors</span><span class="p">.</span><span class="o">*</span> <span class="k">FROM</span> <span class="n">authors</span>
+  <span class="k">WHERE</span> <span class="n">authors</span><span class="p">.</span><span class="n">book_id</span> <span class="k">IN</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span><span class="mi">6</span><span class="p">,</span><span class="mi">7</span><span class="p">,</span><span class="mi">8</span><span class="p">,</span><span class="mi">9</span><span class="p">,</span><span class="mi">10</span><span class="p">)</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="SELECT books.* FROM books LIMIT 10
+SELECT authors.* FROM authors
+  WHERE authors.book_id IN (1,2,3,4,5,6,7,8,9,10)
+">Copy</button>
+</div>
+<div class="note"><p>The <code>preload</code> method uses an array, hash, or a nested hash of array/hash in the same way as the <code>includes</code> method to load any number of associations with a single <code>Model.find</code> call. However, unlike the <code>includes</code> method, it is not possible to specify conditions for preloaded associations.</p></div>
+
+<h4 id="eager-load"><a class="anchorlink" href="#eager-load">14.3 eager_load</a></h4>
+
+<p>With <code>eager_load</code>, Active Record loads all specified associations using a <code>LEFT OUTER JOIN</code>.</p>
+
+<p>Revisiting the case where N + 1 was occurred using the <code>eager_load</code> method, we could rewrite <code>Book.limit(10)</code> to authors:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">books</span> <span class="o">=</span> <span class="no">Book</span><span class="p">.</span><span class="nf">eager_load</span><span class="p">(</span><span class="ss">:author</span><span class="p">).</span><span class="nf">limit</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+
+<span class="n">books</span><span class="p">.</span><span class="nf">each</span> <span class="k">do</span> <span class="o">|</span><span class="n">book</span><span class="o">|</span>
+  <span class="nb">puts</span> <span class="n">book</span><span class="p">.</span><span class="nf">author</span><span class="p">.</span><span class="nf">last_name</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="books = Book.eager_load(:author).limit(10)
+
+books.each do |book|
+  puts book.author.last_name
+end
+">Copy</button>
+</div>
+<p>The above code will execute just <strong>2</strong> queries, as opposed to the <strong>11</strong> queries from the original case:</p>
+
+<div class="code_container">
+<pre><code class="highlight sql"><span class="k">SELECT</span> <span class="k">DISTINCT</span> <span class="n">books</span><span class="p">.</span><span class="n">id</span> <span class="k">FROM</span> <span class="n">books</span> <span class="k">LEFT</span> <span class="k">OUTER</span> <span class="k">JOIN</span> <span class="n">authors</span> <span class="k">ON</span> <span class="n">authors</span><span class="p">.</span><span class="n">book_id</span> <span class="o">=</span> <span class="n">books</span><span class="p">.</span><span class="n">id</span> <span class="k">LIMIT</span> <span class="mi">10</span>
+<span class="k">SELECT</span> <span class="n">books</span><span class="p">.</span><span class="n">id</span> <span class="k">AS</span> <span class="n">t0_r0</span><span class="p">,</span> <span class="n">books</span><span class="p">.</span><span class="n">last_name</span> <span class="k">AS</span> <span class="n">t0_r1</span><span class="p">,</span> <span class="p">...</span>
+  <span class="k">FROM</span> <span class="n">books</span> <span class="k">LEFT</span> <span class="k">OUTER</span> <span class="k">JOIN</span> <span class="n">authors</span> <span class="k">ON</span> <span class="n">authors</span><span class="p">.</span><span class="n">book_id</span> <span class="o">=</span> <span class="n">books</span><span class="p">.</span><span class="n">id</span>
+  <span class="k">WHERE</span> <span class="n">books</span><span class="p">.</span><span class="n">id</span> <span class="k">IN</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span><span class="mi">6</span><span class="p">,</span><span class="mi">7</span><span class="p">,</span><span class="mi">8</span><span class="p">,</span><span class="mi">9</span><span class="p">,</span><span class="mi">10</span><span class="p">)</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="SELECT DISTINCT books.id FROM books LEFT OUTER JOIN authors ON authors.book_id = books.id LIMIT 10
+SELECT books.id AS t0_r0, books.last_name AS t0_r1, ...
+  FROM books LEFT OUTER JOIN authors ON authors.book_id = books.id
+  WHERE books.id IN (1,2,3,4,5,6,7,8,9,10)
+">Copy</button>
+</div>
+<div class="note"><p>The <code>eager_load</code> method uses an array, hash, or a nested hash of array/hash in the same way as the <code>includes</code> method to load any number of associations with a single <code>Model.find</code> call. Also, like the <code>includes</code> method, you can specify conditions for eager loaded associations.</p></div>
+</body>
+</html>

@@ -1,0 +1,67 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>10 Dynamically Generated Methods</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v6.1.7.3/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="dynamically-generated-methods"><a class="anchorlink" href="#dynamically-generated-methods">10 Dynamically Generated Methods</a></h3>
+<p>Methods created with <code>(module|class)_eval(STRING)</code> have a comment by their side with an instance of the generated code. That comment is 2 spaces away from the template:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">for</span> <span class="n">severity</span> <span class="k">in</span> <span class="no">Severity</span><span class="p">.</span><span class="nf">constants</span>
+  <span class="nb">class_eval</span> <span class="o">&lt;&lt;-</span><span class="no">EOT</span><span class="p">,</span> <span class="kp">__FILE__</span><span class="p">,</span> <span class="kp">__LINE__</span> <span class="o">+</span> <span class="mi">1</span><span class="sh">
+    def </span><span class="si">#{</span><span class="n">severity</span><span class="p">.</span><span class="nf">downcase</span><span class="si">}</span><span class="sh">(message = nil, progname = nil, &amp;block)  # def debug(message = nil, progname = nil, &amp;block)
+      add(</span><span class="si">#{</span><span class="n">severity</span><span class="si">}</span><span class="sh">, message, progname, &amp;block)                    #   add(DEBUG, message, progname, &amp;block)
+    end                                                              # end
+                                                                     #
+    def </span><span class="si">#{</span><span class="n">severity</span><span class="p">.</span><span class="nf">downcase</span><span class="si">}</span><span class="sh">?                                        # def debug?
+      </span><span class="si">#{</span><span class="n">severity</span><span class="si">}</span><span class="sh"> &gt;= @level                                          #   DEBUG &gt;= @level
+    end                                                              # end
+</span><span class="no">  EOT</span>
+<span class="k">end</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-00c2f72027ae703b104b777986e3e353">for severity in Severity.constants
+  class_eval &lt;&lt;-EOT, __FILE__, __LINE__ + 1
+    def #{severity.downcase}(message = nil, progname = nil, &amp;block)  # def debug(message = nil, progname = nil, &amp;block)
+      add(#{severity}, message, progname, &amp;block)                    #   add(DEBUG, message, progname, &amp;block)
+    end                                                              # end
+                                                                     #
+    def #{severity.downcase}?                                        # def debug?
+      #{severity} &gt;= @level                                          #   DEBUG &gt;= @level
+    end                                                              # end
+  EOT
+end
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-00c2f72027ae703b104b777986e3e353">Copy</button>
+</div>
+<p>If the resulting lines are too wide, say 200 columns or more, put the comment above the call:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="c1"># def self.find_by_login_and_activated(*args)</span>
+<span class="c1">#   options = args.extract_options!</span>
+<span class="c1">#   ...</span>
+<span class="c1"># end</span>
+<span class="nb">self</span><span class="p">.</span><span class="nf">class_eval</span> <span class="sx">%{
+  def self.#{method_id}(*args)
+    options = args.extract_options!
+    ...
+  end
+}</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-fcf10c25c73d160e4bc09bb5198a3447"># def self.find_by_login_and_activated(*args)
+#   options = args.extract_options!
+#   ...
+# end
+self.class_eval %{
+  def self.#{method_id}(*args)
+    options = args.extract_options!
+    ...
+  end
+}
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-fcf10c25c73d160e4bc09bb5198a3447">Copy</button>
+</div>
+</body>
+</html>

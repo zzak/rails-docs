@@ -1,0 +1,46 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>10 Environmental Security</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v6.0.6.1/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="environmental-security"><a class="anchorlink" href="#environmental-security">10 Environmental Security</a></h3>
+<p>It is beyond the scope of this guide to inform you on how to secure your application code and environments. However, please secure your database configuration, e.g. <code>config/database.yml</code>, master key for <code>credentials.yml</code>, and other unencrypted secrets. You may want to further restrict access, using environment-specific versions of these files and any others that may contain sensitive information.</p>
+
+<h4 id="custom-credentials"><a class="anchorlink" href="#custom-credentials">10.1 Custom credentials</a></h4>
+
+<p>Rails stores secrets in <code>config/credentials.yml.enc</code>, which is encrypted and hence cannot be edited directly. Rails uses <code>config/master.key</code> or alternatively looks for environment variable <code>ENV["RAILS_MASTER_KEY"]</code> to encrypt the credentials file. The credentials file can be stored in version control, as long as master key is kept safe.</p>
+
+<p>To add new secret to credentials, first run <code>rails secret</code> to get a new secret. Then run <code>rails credentials:edit</code> to edit credentials, and add the secret. Running <code>credentials:edit</code> creates new credentials file and master key, if they did not already exist.</p>
+
+<p>By default, this file contains the application's
+<code>secret_key_base</code>, but it could also be used to store other credentials such as access keys for external APIs.</p>
+
+<p>The secrets kept in credentials file are accessible via <code>Rails.application.credentials</code>.
+For example, with the following decrypted <code>config/credentials.yml.enc</code>:</p>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+secret_key_base: 3b7cd727ee24e8444053437c36cc66c3
+some_api_key: SOMEKEY
+
+</pre>
+</div>
+<p><code>Rails.application.credentials.some_api_key</code> returns <code>SOMEKEY</code> in any environment.</p>
+
+<p>If you want an exception to be raised when some key is blank, use the bang
+version:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+Rails.application.credentials.some_api_key! # =&gt; raises KeyError: :some_api_key is blank
+
+</pre>
+</div>
+<div class="info"><p>Learn more about credentials with <code>rails credentials:help</code>.</p></div>
+
+<div class="warning"><p>Keep your master key safe. Do not commit your master key.</p></div>
+</body>
+</html>

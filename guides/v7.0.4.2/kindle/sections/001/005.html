@@ -1,0 +1,289 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>6 MVC and You</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v7.0.4.2/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="mvc-and-you"><a class="anchorlink" href="#mvc-and-you">6 MVC and You</a></h3>
+<p>So far, we've discussed routes, controllers, actions, and views. All of these
+are typical pieces of a web application that follows the <a href="https://en.wikipedia.org/wiki/Model%E2%80%93view%E2%80%93controller">MVC (Model-View-Controller)</a> pattern.
+MVC is a design pattern that divides the responsibilities of an application to
+make it easier to reason about. Rails follows this design pattern by convention.</p>
+
+<p>Since we have a controller and a view to work with, let's generate the next
+piece: a model.</p>
+
+<h4 id="mvc-and-you-generating-a-model"><a class="anchorlink" href="#mvc-and-you-generating-a-model">6.1 Generating a Model</a></h4>
+
+<p>A <em>model</em> is a Ruby class that is used to represent data. Additionally, models
+can interact with the application's database through a feature of Rails called
+<em>Active Record</em>.</p>
+
+<p>To define a model, we will use the model generator:</p>
+
+<div class="code_container">
+<pre><code class="highlight console"><span class="gp">$</span><span class="w"> </span><span class="nb">bin/rails </span>generate model Article title:string body:text
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="bin/rails generate model Article title:string body:text
+">Copy</button>
+</div>
+<div class="note"><p>Model names are <strong>singular</strong>, because an instantiated model represents a
+single data record. To help remember this convention, think of how you would
+call the model's constructor: we want to write <code>Article.new(...)</code>, <strong>not</strong>
+<code>Articles.new(...)</code>.</p></div>
+
+<p>This will create several files:</p>
+
+<div class="code_container">
+<pre><code class="highlight plaintext">invoke  active_record
+create    db/migrate/&lt;timestamp&gt;_create_articles.rb
+create    app/models/article.rb
+invoke    test_unit
+create      test/models/article_test.rb
+create      test/fixtures/articles.yml
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="invoke  active_record
+create    db/migrate/&lt;timestamp&gt;_create_articles.rb
+create    app/models/article.rb
+invoke    test_unit
+create      test/models/article_test.rb
+create      test/fixtures/articles.yml
+">Copy</button>
+</div>
+<p>The two files we'll focus on are the migration file
+(<code>db/migrate/&lt;timestamp&gt;_create_articles.rb</code>) and the model file
+(<code>app/models/article.rb</code>).</p>
+
+<h4 id="database-migrations"><a class="anchorlink" href="#database-migrations">6.2 Database Migrations</a></h4>
+
+<p><em>Migrations</em> are used to alter the structure of an application's database. In
+Rails applications, migrations are written in Ruby so that they can be
+database-agnostic.</p>
+
+<p>Let's take a look at the contents of our new migration file:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">CreateArticles</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Migration</span><span class="p">[</span><span class="mf">7.0</span><span class="p">]</span>
+  <span class="k">def</span> <span class="nf">change</span>
+    <span class="n">create_table</span> <span class="ss">:articles</span> <span class="k">do</span> <span class="o">|</span><span class="n">t</span><span class="o">|</span>
+      <span class="n">t</span><span class="p">.</span><span class="nf">string</span> <span class="ss">:title</span>
+      <span class="n">t</span><span class="p">.</span><span class="nf">text</span> <span class="ss">:body</span>
+
+      <span class="n">t</span><span class="p">.</span><span class="nf">timestamps</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="class CreateArticles &lt; ActiveRecord::Migration[7.0]
+  def change
+    create_table :articles do |t|
+      t.string :title
+      t.text :body
+
+      t.timestamps
+    end
+  end
+end
+">Copy</button>
+</div>
+<p>The call to <code>create_table</code> specifies how the <code>articles</code> table should be
+constructed. By default, the <code>create_table</code> method adds an <code>id</code> column as an
+auto-incrementing primary key. So the first record in the table will have an
+<code>id</code> of 1, the next record will have an <code>id</code> of 2, and so on.</p>
+
+<p>Inside the block for <code>create_table</code>, two columns are defined: <code>title</code> and
+<code>body</code>. These were added by the generator because we included them in our
+generate command (<code>bin/rails generate model Article title:string body:text</code>).</p>
+
+<p>On the last line of the block is a call to <code>t.timestamps</code>. This method defines
+two additional columns named <code>created_at</code> and <code>updated_at</code>. As we will see,
+Rails will manage these for us, setting the values when we create or update a
+model object.</p>
+
+<p>Let's run our migration with the following command:</p>
+
+<div class="code_container">
+<pre><code class="highlight console"><span class="gp">$</span><span class="w"> </span><span class="nb">bin/rails </span>db:migrate
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="bin/rails db:migrate
+">Copy</button>
+</div>
+<p>The command will display output indicating that the table was created:</p>
+
+<div class="code_container">
+<pre><code class="highlight plaintext">==  CreateArticles: migrating ===================================
+-- create_table(:articles)
+   -&gt; 0.0018s
+==  CreateArticles: migrated (0.0018s) ==========================
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="==  CreateArticles: migrating ===================================
+-- create_table(:articles)
+   -&gt; 0.0018s
+==  CreateArticles: migrated (0.0018s) ==========================
+">Copy</button>
+</div>
+<div class="info"><p>To learn more about migrations, see <a href="active_record_migrations.html">Active Record Migrations</a>.</p></div>
+
+<p>Now we can interact with the table using our model.</p>
+
+<h4 id="using-a-model-to-interact-with-the-database"><a class="anchorlink" href="#using-a-model-to-interact-with-the-database">6.3 Using a Model to Interact with the Database</a></h4>
+
+<p>To play with our model a bit, we're going to use a feature of Rails called the
+<em>console</em>. The console is an interactive coding environment just like <code>irb</code>, but
+it also automatically loads Rails and our application code.</p>
+
+<p>Let's launch the console with this command:</p>
+
+<div class="code_container">
+<pre><code class="highlight console"><span class="gp">$</span><span class="w"> </span><span class="nb">bin/rails </span>console
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="bin/rails console
+">Copy</button>
+</div>
+<p>You should see an <code>irb</code> prompt like:</p>
+
+<div class="code_container">
+<pre><code class="highlight irb"><span class="go">Loading development environment (Rails 7.0.0)
+</span><span class="gp">irb(main):001:0&gt;</span><span class="w">
+</span></code></pre>
+<button class="clipboard-button" data-clipboard-text="">Copy</button>
+</div>
+<p>At this prompt, we can initialize a new <code>Article</code> object:</p>
+
+<div class="code_container">
+<pre><code class="highlight irb"><span class="gp">irb&gt;</span><span class="w"> </span><span class="n">article</span> <span class="o">=</span> <span class="no">Article</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="ss">title: </span><span class="s2">"Hello Rails"</span><span class="p">,</span> <span class="ss">body: </span><span class="s2">"I am on Rails!"</span><span class="p">)</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='article = Article.new(title: "Hello Rails", body: "I am on Rails!")
+'>Copy</button>
+</div>
+<p>It's important to note that we have only <em>initialized</em> this object. This object
+is not saved to the database at all. It's only available in the console at the
+moment. To save the object to the database, we must call <a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveRecord/Persistence.html#method-i-save"><code>save</code></a>:</p>
+
+<div class="code_container">
+<pre><code class="highlight irb"><span class="gp">irb&gt;</span><span class="w"> </span><span class="n">article</span><span class="p">.</span><span class="nf">save</span>
+<span class="go">(0.1ms)  begin transaction
+Article Create (0.4ms)  INSERT INTO "articles" ("title", "body", "created_at", "updated_at") VALUES (?, ?, ?, ?)  [["title", "Hello Rails"], ["body", "I am on Rails!"], ["created_at", "2020-01-18 23:47:30.734416"], ["updated_at", "2020-01-18 23:47:30.734416"]]
+(0.9ms)  commit transaction
+</span><span class="p">=&gt;</span> <span class="kp">true</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="article.save
+">Copy</button>
+</div>
+<p>The above output shows an <code>INSERT INTO "articles" ...</code> database query. This
+indicates that the article has been inserted into our table. And if we take a
+look at the <code>article</code> object again, we see something interesting has happened:</p>
+
+<div class="code_container">
+<pre><code class="highlight irb"><span class="gp">irb&gt;</span><span class="w"> </span><span class="n">article</span>
+<span class="p">=&gt;</span> <span class="kt">#&lt;</span><span class="no">Article</span> <span class="ss">id: </span><span class="mi">1</span><span class="p">,</span> <span class="ss">title: </span><span class="s2">"Hello Rails"</span><span class="p">,</span> <span class="ss">body: </span><span class="s2">"I am on Rails!"</span><span class="p">,</span> <span class="ss">created_at: </span><span class="s2">"2020-01-18 23:47:30"</span><span class="p">,</span> <span class="ss">updated_at: </span><span class="s2">"2020-01-18 23:47:30"</span><span class="kt">&gt;</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="article
+">Copy</button>
+</div>
+<p>The <code>id</code>, <code>created_at</code>, and <code>updated_at</code> attributes of the object are now set.
+Rails did this for us when we saved the object.</p>
+
+<p>When we want to fetch this article from the database, we can call <a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveRecord/FinderMethods.html#method-i-find"><code>find</code></a>
+on the model and pass the <code>id</code> as an argument:</p>
+
+<div class="code_container">
+<pre><code class="highlight irb"><span class="gp">irb&gt;</span><span class="w"> </span><span class="no">Article</span><span class="p">.</span><span class="nf">find</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<span class="p">=&gt;</span> <span class="kt">#&lt;</span><span class="no">Article</span> <span class="ss">id: </span><span class="mi">1</span><span class="p">,</span> <span class="ss">title: </span><span class="s2">"Hello Rails"</span><span class="p">,</span> <span class="ss">body: </span><span class="s2">"I am on Rails!"</span><span class="p">,</span> <span class="ss">created_at: </span><span class="s2">"2020-01-18 23:47:30"</span><span class="p">,</span> <span class="ss">updated_at: </span><span class="s2">"2020-01-18 23:47:30"</span><span class="kt">&gt;</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="Article.find(1)
+">Copy</button>
+</div>
+<p>And when we want to fetch all articles from the database, we can call <a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveRecord/Scoping/Named/ClassMethods.html#method-i-all"><code>all</code></a>
+on the model:</p>
+
+<div class="code_container">
+<pre><code class="highlight irb"><span class="gp">irb&gt;</span><span class="w"> </span><span class="no">Article</span><span class="p">.</span><span class="nf">all</span>
+<span class="p">=&gt;</span> <span class="kt">#&lt;</span><span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Relation</span> <span class="p">[</span><span class="kt">#&lt;</span><span class="no">Article</span> <span class="ss">id: </span><span class="mi">1</span><span class="p">,</span> <span class="ss">title: </span><span class="s2">"Hello Rails"</span><span class="p">,</span> <span class="ss">body: </span><span class="s2">"I am on Rails!"</span><span class="p">,</span> <span class="ss">created_at: </span><span class="s2">"2020-01-18 23:47:30"</span><span class="p">,</span> <span class="ss">updated_at: </span><span class="s2">"2020-01-18 23:47:30"</span><span class="kt">&gt;</span><span class="p">]</span><span class="kt">&gt;</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="Article.all
+">Copy</button>
+</div>
+<p>This method returns an <a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveRecord/Relation.html"><code>ActiveRecord::Relation</code></a> object, which
+you can think of as a super-powered array.</p>
+
+<div class="info"><p>To learn more about models, see <a href="active_record_basics.html">Active Record Basics</a> and <a href="active_record_querying.html">Active Record Query Interface</a>.</p></div>
+
+<p>Models are the final piece of the MVC puzzle. Next, we will connect all of the
+pieces together.</p>
+
+<h4 id="showing-a-list-of-articles"><a class="anchorlink" href="#showing-a-list-of-articles">6.4 Showing a List of Articles</a></h4>
+
+<p>Let's go back to our controller in <code>app/controllers/articles_controller.rb</code>, and
+change the <code>index</code> action to fetch all articles from the database:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">ArticlesController</span> <span class="o">&lt;</span> <span class="no">ApplicationController</span>
+  <span class="k">def</span> <span class="nf">index</span>
+    <span class="vi">@articles</span> <span class="o">=</span> <span class="no">Article</span><span class="p">.</span><span class="nf">all</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="class ArticlesController &lt; ApplicationController
+  def index
+    @articles = Article.all
+  end
+end
+">Copy</button>
+</div>
+<p>Controller instance variables can be accessed by the view. That means we can
+reference <code>@articles</code> in <code>app/views/articles/index.html.erb</code>. Let's open that
+file, and replace its contents with:</p>
+
+<div class="code_container">
+<pre><code class="highlight erb"><span class="nt">&lt;h1&gt;</span>Articles<span class="nt">&lt;/h1&gt;</span>
+
+<span class="nt">&lt;ul&gt;</span>
+  <span class="cp">&lt;%</span> <span class="vi">@articles</span><span class="p">.</span><span class="nf">each</span> <span class="k">do</span> <span class="o">|</span><span class="n">article</span><span class="o">|</span> <span class="cp">%&gt;</span>
+    <span class="nt">&lt;li&gt;</span>
+      <span class="cp">&lt;%=</span> <span class="n">article</span><span class="p">.</span><span class="nf">title</span> <span class="cp">%&gt;</span>
+    <span class="nt">&lt;/li&gt;</span>
+  <span class="cp">&lt;%</span> <span class="k">end</span> <span class="cp">%&gt;</span>
+<span class="nt">&lt;/ul&gt;</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="&lt;h1&gt;Articles&lt;/h1&gt;
+
+&lt;ul&gt;
+  &lt;% @articles.each do |article| %&gt;
+    &lt;li&gt;
+      &lt;%= article.title %&gt;
+    &lt;/li&gt;
+  &lt;% end %&gt;
+&lt;/ul&gt;
+">Copy</button>
+</div>
+<p>The above code is a mixture of HTML and <em>ERB</em>. ERB is a templating system that
+evaluates Ruby code embedded in a document. Here, we can see two types of ERB
+tags: <code>&lt;% %&gt;</code> and <code>&lt;%= %&gt;</code>. The <code>&lt;% %&gt;</code> tag means "evaluate the enclosed Ruby
+code." The <code>&lt;%= %&gt;</code> tag means "evaluate the enclosed Ruby code, and output the
+value it returns." Anything you could write in a regular Ruby program can go
+inside these ERB tags, though it's usually best to keep the contents of ERB tags
+short, for readability.</p>
+
+<p>Since we don't want to output the value returned by <code>@articles.each</code>, we've
+enclosed that code in <code>&lt;% %&gt;</code>. But, since we <em>do</em> want to output the value
+returned by <code>article.title</code> (for each article), we've enclosed that code in
+<code>&lt;%= %&gt;</code>.</p>
+
+<p>We can see the final result by visiting <a href="http://localhost:3000">http://localhost:3000</a>. (Remember that
+<code>bin/rails server</code> must be running!) Here's what happens when we do that:</p>
+<ol>
+<li>The browser makes a request: <code>GET http://localhost:3000</code>.</li>
+<li>Our Rails application receives this request.</li>
+<li>The Rails router maps the root route to the <code>index</code> action of <code>ArticlesController</code>.</li>
+<li>The <code>index</code> action uses the <code>Article</code> model to fetch all articles in the database.</li>
+<li>Rails automatically renders the <code>app/views/articles/index.html.erb</code> view.</li>
+<li>The ERB code in the view is evaluated to output HTML.</li>
+<li>The server sends a response containing the HTML back to the browser.</li>
+</ol>
+<p>We've connected all the MVC pieces together, and we have our first controller
+action! Next, we'll move on to the second action.</p>
+</body>
+</html>

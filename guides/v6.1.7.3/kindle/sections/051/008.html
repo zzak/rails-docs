@@ -1,0 +1,91 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>9 Active Record</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v6.1.7.3/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="active-record"><a class="anchorlink" href="#active-record">9 Active Record</a></h3>
+<p>Please refer to the <a href="https://github.com/rails/rails/blob/5-1-stable/activerecord/CHANGELOG.md">Changelog</a> for detailed changes.</p>
+
+<h4 id="active-record-removals"><a class="anchorlink" href="#active-record-removals">9.1 Removals</a></h4>
+<ul>
+<li>  Removed support for passing arguments and block at the same time to
+<code>ActiveRecord::QueryMethods#select</code>.
+(<a href="https://github.com/rails/rails/commit/4fc3366d9d99a0eb19e45ad2bf38534efbf8c8ce">Commit</a>)</li>
+<li>  Removed deprecated <code>activerecord.errors.messages.restrict_dependent_destroy.one</code> and
+<code>activerecord.errors.messages.restrict_dependent_destroy.many</code> i18n scopes.
+(<a href="https://github.com/rails/rails/commit/00e3973a311">Commit</a>)</li>
+<li>  Removed deprecated force reload argument in singular and collection association readers.
+(<a href="https://github.com/rails/rails/commit/09cac8c67af">Commit</a>)</li>
+<li>  Removed deprecated support for passing a column to <code>#quote</code>.
+(<a href="https://github.com/rails/rails/commit/e646bad5b7c">Commit</a>)</li>
+<li>  Removed deprecated <code>name</code> arguments from <code>#tables</code>.
+(<a href="https://github.com/rails/rails/commit/d5be101dd02214468a27b6839ffe338cfe8ef5f3">Commit</a>)</li>
+<li>  Removed deprecated behavior of <code>#tables</code> and <code>#table_exists?</code> to return tables and views
+to return only tables and not views.
+(<a href="https://github.com/rails/rails/commit/5973a984c369a63720c2ac18b71012b8347479a8">Commit</a>)</li>
+<li>  Removed deprecated <code>original_exception</code> argument in <code>ActiveRecord::StatementInvalid#initialize</code>
+and <code>ActiveRecord::StatementInvalid#original_exception</code>.
+(<a href="https://github.com/rails/rails/commit/bc6c5df4699d3f6b4a61dd12328f9e0f1bd6cf46">Commit</a>)</li>
+<li>  Removed deprecated support of passing a class as a value in a query.
+(<a href="https://github.com/rails/rails/commit/b4664864c972463c7437ad983832d2582186e886">Commit</a>)</li>
+<li>  Removed deprecated support to query using commas on LIMIT.
+(<a href="https://github.com/rails/rails/commit/fc3e67964753fb5166ccbd2030d7382e1976f393">Commit</a>)</li>
+<li>  Removed deprecated <code>conditions</code> parameter from <code>#destroy_all</code>.
+(<a href="https://github.com/rails/rails/commit/d31a6d1384cd740c8518d0bf695b550d2a3a4e9b">Commit</a>)</li>
+<li>  Removed deprecated <code>conditions</code> parameter from <code>#delete_all</code>.
+(<a href="https://github.com/rails/rails/pull/27503/commits/e7381d289e4f8751dcec9553dcb4d32153bd922b">Commit</a>)</li>
+<li>  Removed deprecated method <code>#load_schema_for</code> in favor of <code>#load_schema</code>.
+(<a href="https://github.com/rails/rails/commit/419e06b56c3b0229f0c72d3e4cdf59d34d8e5545">Commit</a>)</li>
+<li>  Removed deprecated <code>#raise_in_transactional_callbacks</code> configuration.
+(<a href="https://github.com/rails/rails/commit/8029f779b8a1dd9848fee0b7967c2e0849bf6e07">Commit</a>)</li>
+<li>  Removed deprecated <code>#use_transactional_fixtures</code> configuration.
+(<a href="https://github.com/rails/rails/commit/3955218dc163f61c932ee80af525e7cd440514b3">Commit</a>)</li>
+</ul>
+<h4 id="active-record-deprecations"><a class="anchorlink" href="#active-record-deprecations">9.2 Deprecations</a></h4>
+<ul>
+<li>  Deprecated <code>error_on_ignored_order_or_limit</code> flag in favor of
+<code>error_on_ignored_order</code>.
+(<a href="https://github.com/rails/rails/commit/451437c6f57e66cc7586ec966e530493927098c7">Commit</a>)</li>
+<li>  Deprecated <code>sanitize_conditions</code> in favor of <code>sanitize_sql</code>.
+(<a href="https://github.com/rails/rails/pull/25999">Pull Request</a>)</li>
+<li>  Deprecated <code>supports_migrations?</code> on connection adapters.
+(<a href="https://github.com/rails/rails/pull/28172">Pull Request</a>)</li>
+<li>  Deprecated <code>Migrator.schema_migrations_table_name</code>, use <code>SchemaMigration.table_name</code> instead.
+(<a href="https://github.com/rails/rails/pull/28351">Pull Request</a>)</li>
+<li>  Deprecated using <code>#quoted_id</code> in quoting and type casting.
+(<a href="https://github.com/rails/rails/pull/27962">Pull Request</a>)</li>
+<li>  Deprecated passing <code>default</code> argument to <code>#index_name_exists?</code>.
+(<a href="https://github.com/rails/rails/pull/26930">Pull Request</a>)</li>
+</ul>
+<h4 id="active-record-notable-changes"><a class="anchorlink" href="#active-record-notable-changes">9.3 Notable changes</a></h4>
+<ul>
+<li>  Change Default Primary Keys to BIGINT.
+(<a href="https://github.com/rails/rails/pull/26266">Pull Request</a>)</li>
+<li>  Virtual/generated column support for MySQL 5.7.5+ and MariaDB 5.2.0+.
+(<a href="https://github.com/rails/rails/commit/65bf1c60053e727835e06392d27a2fb49665484c">Commit</a>)</li>
+<li>  Added support for limits in batch processing.
+(<a href="https://github.com/rails/rails/commit/451437c6f57e66cc7586ec966e530493927098c7">Commit</a>)</li>
+<li>  Transactional tests now wrap all Active Record connections in database
+transactions.
+(<a href="https://github.com/rails/rails/pull/28726">Pull Request</a>)</li>
+<li>  Skipped comments in the output of <code>mysqldump</code> command by default.
+(<a href="https://github.com/rails/rails/pull/23301">Pull Request</a>)</li>
+<li>  Fixed <code>ActiveRecord::Relation#count</code> to use Ruby's <code>Enumerable#count</code> for counting
+records when a block is passed as argument instead of silently ignoring the
+passed block.
+(<a href="https://github.com/rails/rails/pull/24203">Pull Request</a>)</li>
+<li>  Pass <code>"-v ON_ERROR_STOP=1"</code> flag with <code>psql</code> command to not suppress SQL errors.
+(<a href="https://github.com/rails/rails/pull/24773">Pull Request</a>)</li>
+<li>  Add <code>ActiveRecord::Base.connection_pool.stat</code>.
+(<a href="https://github.com/rails/rails/pull/26988">Pull Request</a>)</li>
+<li>  Inheriting directly from <code>ActiveRecord::Migration</code> raises an error.
+Specify the Rails version for which the migration was written for.
+(<a href="https://github.com/rails/rails/commit/249f71a22ab21c03915da5606a063d321f04d4d3">Commit</a>)</li>
+<li>  An error is raised when <code>through</code> association has ambiguous reflection name.
+(<a href="https://github.com/rails/rails/commit/0944182ad7ed70d99b078b22426cbf844edd3f61">Commit</a>)</li>
+</ul>
+</body>
+</html>

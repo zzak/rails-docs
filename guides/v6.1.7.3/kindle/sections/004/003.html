@@ -1,0 +1,54 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>4 Strict Validations</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v6.1.7.3/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="strict-validations"><a class="anchorlink" href="#strict-validations">4 Strict Validations</a></h3>
+<p>You can also specify validations to be strict and raise
+<code>ActiveModel::StrictValidationFailed</code> when the object is invalid.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">Person</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="n">validates</span> <span class="ss">:name</span><span class="p">,</span> <span class="ss">presence: </span><span class="p">{</span> <span class="ss">strict: </span><span class="kp">true</span> <span class="p">}</span>
+<span class="k">end</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-3967eb6e3ffa3708b9478851308e1651">class Person &lt; ApplicationRecord
+  validates :name, presence: { strict: true }
+end
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-3967eb6e3ffa3708b9478851308e1651">Copy</button>
+</div>
+<div class="code_container">
+<pre><code class="highlight irb"><span class="gp">irb&gt;</span><span class="w"> </span><span class="no">Person</span><span class="p">.</span><span class="nf">new</span><span class="p">.</span><span class="nf">valid?</span>
+<span class="go">ActiveModel::StrictValidationFailed: Name can't be blank
+</span></code></pre>
+<textarea class="clipboard-content" id="clipboard-aba500a55ca1e31be6fdaeaee3128605">Person.new.valid?
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-aba500a55ca1e31be6fdaeaee3128605">Copy</button>
+</div>
+<p>There is also the ability to pass a custom exception to the <code>:strict</code> option.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">Person</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="n">validates</span> <span class="ss">:token</span><span class="p">,</span> <span class="ss">presence: </span><span class="kp">true</span><span class="p">,</span> <span class="ss">uniqueness: </span><span class="kp">true</span><span class="p">,</span> <span class="ss">strict: </span><span class="no">TokenGenerationException</span>
+<span class="k">end</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-8dac1ffa159d496a680b489c4b5414a8">class Person &lt; ApplicationRecord
+  validates :token, presence: true, uniqueness: true, strict: TokenGenerationException
+end
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-8dac1ffa159d496a680b489c4b5414a8">Copy</button>
+</div>
+<div class="code_container">
+<pre><code class="highlight irb"><span class="gp">irb&gt;</span><span class="w"> </span><span class="no">Person</span><span class="p">.</span><span class="nf">new</span><span class="p">.</span><span class="nf">valid?</span>
+<span class="gr">TokenGenerationException: Token can't be blank
+</span></code></pre>
+<textarea class="clipboard-content" id="clipboard-8f760d9352ffa89f18d629b39c85a659">Person.new.valid?
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-8f760d9352ffa89f18d629b39c85a659">Copy</button>
+</div>
+</body>
+</html>

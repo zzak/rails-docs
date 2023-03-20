@@ -1,0 +1,26 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>2 Trix compared to other rich text editors</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v6.1.7.3/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="trix-compared-to-other-rich-text-editors"><a class="anchorlink" href="#trix-compared-to-other-rich-text-editors">2 Trix compared to other rich text editors</a></h3>
+<p>Most WYSIWYG editors are wrappers around HTML’s <code>contenteditable</code> and <code>execCommand</code> APIs,
+designed by Microsoft to support live editing of web pages in Internet Explorer 5.5,
+and <a href="https://blog.whatwg.org/the-road-to-html-5-contenteditable#history">eventually reverse-engineered</a>
+and copied by other browsers.</p>
+
+<p>Because these APIs were never fully specified or documented,
+and because WYSIWYG HTML editors are enormous in scope, each
+browser's implementation has its own set of bugs and quirks,
+and JavaScript developers are left to resolve the inconsistencies.</p>
+
+<p>Trix sidesteps these inconsistencies by treating contenteditable
+as an I/O device: when input makes its way to the editor, Trix converts that input
+into an editing operation on its internal document model, then re-renders
+that document back into the editor. This gives Trix complete control over what
+happens after every keystroke, and avoids the need to use execCommand at all.</p>
+</body>
+</html>

@@ -1,0 +1,141 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>1 Setting up your application</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v6.0.6.1/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="setting-up-your-application"><a class="anchorlink" href="#setting-up-your-application">1 Setting up your application</a></h3>
+<p>While Rails tries to do most of the work for you there are still some steps you'll
+need to do to get your application ready for multiple databases.</p>
+
+<p>Let's say we have an application with a single primary database and we need to add a
+new database for some new tables we're adding. The name of the new database will be
+"animals".</p>
+
+<p>The <code>database.yml</code> looks like this:</p>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+production:
+  database: my_primary_database
+  user: root
+  adapter: mysql
+
+</pre>
+</div>
+<p>Let's add a replica for the primary, a new writer called animals and a replica for that
+as well. To do this we need to change our <code>database.yml</code> from a 2-tier to a 3-tier config.</p>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+production:
+  primary:
+    database: my_primary_database
+    user: root
+    adapter: mysql
+  primary_replica:
+    database: my_primary_database
+    user: root_readonly
+    adapter: mysql
+    replica: true
+  animals:
+    database: my_animals_database
+    user: animals_root
+    adapter: mysql
+    migrations_paths: db/animals_migrate
+  animals_replica:
+    database: my_animals_database
+    user: animals_readonly
+    adapter: mysql
+    replica: true
+
+</pre>
+</div>
+<p>When using multiple databases there are a few important settings.</p>
+
+<p>First, the database name for the primary and replica should be the same because they contain
+the same data. Second, the username for the primary and replica should be different, and the
+replica user's permissions should be to read and not write.</p>
+
+<p>When using a replica database you need to add a <code>replica: true</code> entry to the replica in the
+<code>database.yml</code>. This is because Rails otherwise has no way of knowing which one is a replica
+and which one is the primary.</p>
+
+<p>Lastly, for new primary databases you need to set the <code>migrations_paths</code> to the directory
+where you will store migrations for that database. We'll look more at <code>migrations_paths</code>
+later on in this guide.</p>
+
+<p>Now that we have a new database, let's set up the model. In order to use the new database we
+need to create a new abstract class and connect to the animals databases.</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class AnimalsBase &lt; ApplicationRecord
+  self.abstract_class = true
+
+  connects_to database: { writing: :animals, reading: :animals_replica }
+end
+
+</pre>
+</div>
+<p> Then we need to
+update <code>ApplicationRecord</code> to be aware of our new replica.</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class ApplicationRecord &lt; ActiveRecord::Base
+  self.abstract_class = true
+
+  connects_to database: { writing: :primary, reading: :primary_replica }
+end
+
+</pre>
+</div>
+<p>By default Rails expects the database roles to be <code>writing</code> and <code>reading</code> for the primary
+and replica respectively. If you have a legacy system you may already have roles set up that
+you don't want to change. In that case you can set a new role name in your application config.</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+config.active_record.writing_role = :default
+config.active_record.reading_role = :readonly
+
+</pre>
+</div>
+<p>It's important to connect to your database in a single model and then inherit from that model
+for the tables rather than connect multiple individual models to the same database. Database
+clients have a limit to the number of open connections there can be and if you do this it will
+multiply the number of connections you have since Rails uses the model class name for the
+connection specification name.</p>
+
+<p>Now that we have the <code>database.yml</code> and the new model set up it's time to create the databases.
+Rails 6.0 ships with all the rails tasks you need to use multiple databases in Rails.</p>
+
+<p>You can run <code>rails -T</code> to see all the commands you're able to run. You should see the following:</p>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+$ rails -T
+rails db:create                          # Creates the database from DATABASE_URL or config/database.yml for the ...
+rails db:create:animals                  # Create animals database for current environment
+rails db:create:primary                  # Create primary database for current environment
+rails db:drop                            # Drops the database from DATABASE_URL or config/database.yml for the cu...
+rails db:drop:animals                    # Drop animals database for current environment
+rails db:drop:primary                    # Drop primary database for current environment
+rails db:migrate                         # Migrate the database (options: VERSION=x, VERBOSE=false, SCOPE=blog)
+rails db:migrate:animals                 # Migrate animals database for current environment
+rails db:migrate:primary                 # Migrate primary database for current environment
+rails db:migrate:status                  # Display status of migrations
+rails db:migrate:status:animals          # Display status of migrations for animals database
+rails db:migrate:status:primary          # Display status of migrations for primary database
+
+</pre>
+</div>
+<p>Running a command like <code>rails db:create</code> will create both the primary and animals databases.
+Note that there is no command for creating the users and you'll need to do that manually
+to support the readonly users for your replicas. If you want to create just the animals
+database you can run <code>rails db:create:animals</code>.</p>
+</body>
+</html>

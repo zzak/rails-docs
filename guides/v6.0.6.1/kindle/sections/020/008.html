@@ -1,0 +1,66 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>9 Running Standalone Cable Servers</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v6.0.6.1/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="running-standalone-cable-servers"><a class="anchorlink" href="#running-standalone-cable-servers">9 Running Standalone Cable Servers</a></h3>
+<h4 id="in-app"><a class="anchorlink" href="#in-app">9.1 In App</a></h4>
+
+<p>Action Cable can run alongside your Rails application. For example, to
+listen for WebSocket requests on <code>/websocket</code>, specify that path to
+<code>config.action_cable.mount_path</code>:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+# config/application.rb
+class Application &lt; Rails::Application
+  config.action_cable.mount_path = '/websocket'
+end
+
+</pre>
+</div>
+<p>You can use <code>ActionCable.createConsumer()</code> to connect to the cable
+server if <code>action_cable_meta_tag</code> is invoked in the layout. Otherwise, A path is
+specified as first argument to <code>createConsumer</code> (e.g. <code>ActionCable.createConsumer("/websocket")</code>).</p>
+
+<p>For every instance of your server you create and for every worker your server
+spawns, you will also have a new instance of Action Cable, but the use of Redis
+keeps messages synced across connections.</p>
+
+<h4 id="standalone"><a class="anchorlink" href="#standalone">9.2 Standalone</a></h4>
+
+<p>The cable servers can be separated from your normal application server. It's
+still a Rack application, but it is its own Rack application. The recommended
+basic setup is as follows:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+# cable/config.ru
+require_relative '../config/environment'
+Rails.application.eager_load!
+
+run ActionCable.server
+
+</pre>
+</div>
+<p>Then you start the server using a binstub in <code>bin/cable</code> ala:</p>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+#!/bin/bash
+bundle exec puma -p 28080 cable/config.ru
+
+</pre>
+</div>
+<p>The above will start a cable server on port 28080.</p>
+
+<h4 id="notes"><a class="anchorlink" href="#notes">9.3 Notes</a></h4>
+
+<p>The WebSocket server doesn't have access to the session, but it has
+access to the cookies. This can be used when you need to handle
+authentication. You can see one way of doing that with Devise in this <a href="https://greg.molnar.io/blog/actioncable-devise-authentication/">article</a>.</p>
+</body>
+</html>

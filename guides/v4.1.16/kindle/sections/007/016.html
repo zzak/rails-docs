@@ -1,0 +1,123 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>17 Finding by SQL</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v4.1.16/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="finding-by-sql">17 Finding by SQL</h3>
+<p>If you'd like to use your own SQL to find records in a table you can use <code>find_by_sql</code>. The <code>find_by_sql</code> method will return an array of objects even if the underlying query returns just a single record. For example you could run this query:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+Client.find_by_sql("SELECT * FROM clients
+  INNER JOIN orders ON clients.id = orders.client_id
+  ORDER BY clients.created_at desc")
+
+</pre>
+</div>
+<p><code>find_by_sql</code> provides you with a simple way of making custom calls to the database and retrieving instantiated objects.</p>
+<h4 id="select-all">17.1 <code>select_all</code>
+</h4>
+<p><code>find_by_sql</code> has a close relative called <code>connection#select_all</code>. <code>select_all</code> will retrieve objects from the database using custom SQL just like <code>find_by_sql</code> but will not instantiate them. Instead, you will get an array of hashes where each hash indicates a record.</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+Client.connection.select_all("SELECT * FROM clients WHERE id = '1'")
+
+</pre>
+</div>
+<h4 id="pluck">17.2 <code>pluck</code>
+</h4>
+<p><code>pluck</code> can be used to query a single or multiple columns from the underlying table of a model. It accepts a list of column names as argument and returns an array of values of the specified columns with the corresponding data type.</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+Client.where(active: true).pluck(:id)
+# SELECT id FROM clients WHERE active = 1
+# =&gt; [1, 2, 3]
+
+Client.distinct.pluck(:role)
+# SELECT DISTINCT role FROM clients
+# =&gt; ['admin', 'member', 'guest']
+
+Client.pluck(:id, :name)
+# SELECT clients.id, clients.name FROM clients
+# =&gt; [[1, 'David'], [2, 'Jeremy'], [3, 'Jose']]
+
+</pre>
+</div>
+<p><code>pluck</code> makes it possible to replace code like:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+Client.select(:id).map { |c| c.id }
+# or
+Client.select(:id).map(&amp;:id)
+# or
+Client.select(:id, :name).map { |c| [c.id, c.name] }
+
+</pre>
+</div>
+<p>with:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+Client.pluck(:id)
+# or
+Client.pluck(:id, :name)
+
+</pre>
+</div>
+<p>Unlike <code>select</code>, <code>pluck</code> directly converts a database result into a Ruby <code>Array</code>,
+without constructing <code>ActiveRecord</code> objects. This can mean better performance for
+a large or often-running query. However, any model method overrides will
+not be available. For example:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class Client &lt; ActiveRecord::Base
+  def name
+    "I am #{super}"
+  end
+end
+
+Client.select(:name).map &amp;:name
+# =&gt; ["I am David", "I am Jeremy", "I am Jose"]
+
+Client.pluck(:name)
+# =&gt; ["David", "Jeremy", "Jose"]
+
+</pre>
+</div>
+<p>Furthermore, unlike <code>select</code> and other <code>Relation</code> scopes, <code>pluck</code> triggers an immediate
+query, and thus cannot be chained with any further scopes, although it can work with
+scopes already constructed earlier:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+Client.pluck(:name).limit(1)
+# =&gt; NoMethodError: undefined method `limit' for #&lt;Array:0x007ff34d3ad6d8&gt;
+
+Client.limit(1).pluck(:name)
+# =&gt; ["David"]
+
+</pre>
+</div>
+<h4 id="ids">17.3 <code>ids</code>
+</h4>
+<p><code>ids</code> can be used to pluck all the IDs for the relation using the table's primary key.</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+Person.ids
+# SELECT id FROM people
+
+</pre>
+</div>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class Person &lt; ActiveRecord::Base
+  self.primary_key = "person_id"
+end
+
+Person.ids
+# SELECT person_id FROM people
+
+</pre>
+</div>
+</body>
+</html>

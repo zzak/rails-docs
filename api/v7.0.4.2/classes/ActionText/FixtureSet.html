@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>ActionText::FixtureSet</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <link rel="stylesheet" href="../../css/reset.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="../../css/panel.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="../../css/main.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="../../css/github.css" type="text/css" media="screen" />
+<script src="../../js/jquery-3.5.1.min.js" type="text/javascript" charset="utf-8"></script>
+<script src="../../js/main.js" type="text/javascript" charset="utf-8"></script>
+<script src="../../js/highlight.pack.js" type="text/javascript" charset="utf-8"></script>
+<script src="../../js/turbolinks.js" type="text/javascript" charset="utf-8"></script>
+<script src="../../js/search_index.js" type="text/javascript" charset="utf-8"></script>
+<script src="../../js/searcher.js" type="text/javascript" charset="utf-8"></script>
+<script src="../../panel/tree.js" type="text/javascript" charset="utf-8"></script>
+<script src="../../js/searchdoc.js" type="text/javascript" charset="utf-8"></script>
+<meta name="data-rel-prefix" content="../../">
+<meta name="data-tree-keys" content='["ActionText", "FixtureSet"]'>
+
+
+    <meta property="og:title" value="ActionText::FixtureSet">
+
+  
+    
+    <meta name="description" content="Fixtures are a way of organizing data that you want to test against; in short, sample data.  To learn more about fixtures, read the ActiveRecord::FixtureSet documentation.">
+    <meta property="og:description" content="Fixtures are a way of organizing data that you want to test against; in short, sample data.  To learn more about fixtures, read the ActiveRecord::FixtureSet documentation.">
+  
+
+    <meta name="keywords" content="ActionText::FixtureSet class, attachment">
+</head>
+
+<body>
+    <a class="sr-only sr-only-focusable" href="#content" data-turbolinks="false">Skip to Content</a>
+    <a class="sr-only sr-only-focusable" href="#search" data-turbolinks="false">Skip to Search</a>
+
+    <input type="checkbox" id="hamburger" class="panel_checkbox">
+<label class="panel_mobile_button" for="hamburger"><span></span> Menu</label>
+<nav class="panel panel_tree" id="panel" data-turbolinks-permanent>
+  <div class="header">
+    <input type="text" placeholder="Search (/) for a class, method, ..." autosave="searchdoc" results="10" id="search" autocomplete="off" tabindex="-1" />
+    <label class="panel_mobile_button_close" for="hamburger"><span></span> Close</label>
+  </div>
+  <div class="tree">
+    <ul>
+    </ul>
+  </div>
+  <div class="result">
+    <ul>
+    </ul>
+  </div>
+  <a href="links.html" id="links">index</a>
+</nav>
+
+
+    <div class="banner">
+        
+            <span>Ruby on Rails 7.0.4.2</span><br />
+        
+        <h2>
+            <span class="type">Class</span>
+            ActionText::FixtureSet
+            
+                <span class="parent">&lt;
+                    
+                    <a href="../Object.html">Object</a>
+                    
+                </span>
+            
+        </h2>
+        <ul class="files">
+            
+            <li><a href="../../files/actiontext/lib/action_text/fixture_set_rb.html">actiontext/lib/action_text/fixture_set.rb</a></li>
+            
+        </ul>
+    </div>
+
+    <main id="bodyContent">
+        <div id="content">
+  
+    <div class="description">
+      
+<p>Fixtures are a way of organizing data that you want to test against; in short, sample data.</p>
+
+<p>To learn more about fixtures, read the <a href="../ActiveRecord/FixtureSet.html"><code>ActiveRecord::FixtureSet</code></a> documentation.</p>
+
+<h3 id="class-ActionText::FixtureSet-label-YAML">YAML</h3>
+
+<p>Like other Active Record-backed models, <a href="RichText.html"><code>ActionText::RichText</code></a> records inherit from <a href="../ActiveRecord/Base.html"><code>ActiveRecord::Base</code></a> instances and can therefore be populated by fixtures.</p>
+
+<p>Consider an <code>Article</code> class:</p>
+
+<pre><code>class Article &lt; ApplicationRecord
+  has_rich_text :content
+end
+</code></pre>
+
+<p>To declare fixture data for the related <code>content</code>, first declare fixture data for <code>Article</code> instances in <code>test/fixtures/articles.yml</code>:</p>
+
+<pre><code>first:
+  title: An Article
+</code></pre>
+
+<p>Then declare the <a href="RichText.html"><code>ActionText::RichText</code></a> fixture data in <code>test/fixtures/action_text/rich_texts.yml</code>, making sure to declare each entry&#39;s <code>record:</code> key as a polymorphic relationship:</p>
+
+<pre><code>first:
+  record: first (Article)
+  name: content
+  body: &lt;div&gt;Hello, world.&lt;/div&gt;
+</code></pre>
+
+<p>When processed, Active Record will insert database records for each fixture entry and will ensure the Action Text relationship is intact.</p>
+
+    </div>
+  
+
+
+  
+
+
+  
+  
+
+
+  
+
+
+  
+    <!-- Method ref -->
+    <div class="sectiontitle">Methods</div>
+    <dl class="methods">
+      
+        <dt>A</dt>
+        <dd>
+          <ul>
+            
+              
+              <li>
+                <a href="#method-c-attachment">attachment</a>
+              </li>
+            
+          </ul>
+        </dd>
+      
+    </dl>
+  
+
+  
+
+
+
+  
+
+    
+
+    
+
+    
+
+
+    
+
+
+    <!-- Methods -->
+    
+      <h2 class="sectiontitle">Class Public methods</h2>
+      
+        <div class="method">
+          <h3 class="title method-title" id="method-c-attachment">
+            
+              <b>attachment</b>(fixture_set_name, label, column_type: :integer)
+            
+            <a href="../../classes/ActionText/FixtureSet.html#method-c-attachment" name="method-c-attachment" class="permalink">Link</a>
+          </h3>
+
+          
+            <div class="description">
+              <p>Fixtures support Action Text attachments as part of their <code>body</code> HTML.</p>
+
+<h3 id="method-c-attachment-label-Examples">Examples</h3>
+
+<p>For example, consider a second <code>Article</code> fixture declared in <code>test/fixtures/articles.yml</code>:</p>
+
+<pre><code>second:
+  title: Another Article
+</code></pre>
+
+<p>You can attach a mention of <code>articles(:first)</code> to <code>second</code>&#39;s <code>content</code> by embedding a call to <code>ActionText::FixtureSet.attachment</code> in the <code>body:</code> value in <code>test/fixtures/action_text/rich_texts.yml</code>:</p>
+
+<pre><code>second:
+  record: second (Article)
+  name: content
+  body: &lt;div&gt;Hello, &lt;%= ActionText::FixtureSet.attachment(&quot;articles&quot;, :first) %&gt;&lt;/div&gt;
+</code></pre>
+            </div>
+          
+
+          
+
+          
+
+          
+            
+            <div class="sourcecode">
+              
+              <p class="source-link">
+                 Source: 
+
+                
+                  <a href="javascript:toggleSource('method-c-attachment_source')" id="l_method-c-attachment_source">show</a>
+                
+
+                 | 
+
+                
+                  <a href="https://github.com/rails/rails/blob/7c70791470fc517deb7c640bead9f1b47efb5539/actiontext/lib/action_text/fixture_set.rb#L60" target="_blank" class="github_url">on GitHub</a>
+                
+              </p>
+              <div id="method-c-attachment_source" class="dyn-source">
+                <pre><span class="ruby-comment"># File actiontext/lib/action_text/fixture_set.rb, line 60</span>
+<span class="ruby-keyword">def</span> <span class="ruby-keyword">self</span>.<span class="ruby-identifier ruby-title">attachment</span>(<span class="ruby-identifier">fixture_set_name</span>, <span class="ruby-identifier">label</span>, <span class="ruby-value">column_type:</span> <span class="ruby-value">:integer</span>)
+  <span class="ruby-identifier">signed_global_id</span> = <span class="ruby-constant">ActiveRecord</span><span class="ruby-operator">::</span><span class="ruby-constant">FixtureSet</span>.<span class="ruby-identifier">signed_global_id</span> <span class="ruby-identifier">fixture_set_name</span>, <span class="ruby-identifier">label</span>,
+    <span class="ruby-value">column_type:</span> <span class="ruby-identifier">column_type</span>, <span class="ruby-value">for:</span> <span class="ruby-constant">ActionText</span><span class="ruby-operator">::</span><span class="ruby-constant">Attachable</span><span class="ruby-operator">::</span><span class="ruby-constant">LOCATOR_NAME</span>
+
+  <span class="ruby-node">%(&lt;action-text-attachment sgid=&quot;#{signed_global_id}&quot;&gt;&lt;/action-text-attachment&gt;)</span>
+<span class="ruby-keyword">end</span></pre>
+              </div>
+            </div>
+            
+          </div>
+        
+      
+    
+    
+  
+</div>
+
+    </main>
+  </body>
+</html>

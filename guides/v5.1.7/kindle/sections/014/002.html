@@ -1,0 +1,373 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>3 Extensions to Module
+</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v5.1.7/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="extensions-to-module">3 Extensions to <code>Module</code>
+</h3>
+<h4 id="attributes">3.1 Attributes</h4>
+
+<h5 id="alias-attribute">3.1.1 <code>alias_attribute</code>
+</h5>
+
+<p>Model attributes have a reader, a writer, and a predicate. You can alias a model attribute having the corresponding three methods defined for you in one shot. As in other aliasing methods, the new name is the first argument, and the old name is the second (one mnemonic is that they go in the same order as if you did an assignment):</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class User &lt; ApplicationRecord
+  # You can refer to the email column as "login".
+  # This can be meaningful for authentication code.
+  alias_attribute :login, :email
+end
+
+</pre>
+</div>
+<div class="note"><p>Defined in <code><a href="https://github.com/rails/rails/tree/v5.1.7/activesupport/lib/active_support/core_ext/module/aliasing.rb">active_support/core_ext/module/aliasing.rb</a></code>.</p></div>
+
+<h5 id="internal-attributes">3.1.2 Internal Attributes</h5>
+
+<p>When you are defining an attribute in a class that is meant to be subclassed, name collisions are a risk. That's remarkably important for libraries.</p>
+
+<p>Active Support defines the macros <code>attr_internal_reader</code>, <code>attr_internal_writer</code>, and <code>attr_internal_accessor</code>. They behave like their Ruby built-in <code>attr_*</code> counterparts, except they name the underlying instance variable in a way that makes collisions less likely.</p>
+
+<p>The macro <code>attr_internal</code> is a synonym for <code>attr_internal_accessor</code>:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+# library
+class ThirdPartyLibrary::Crawler
+  attr_internal :log_level
+end
+
+# client code
+class MyCrawler &lt; ThirdPartyLibrary::Crawler
+  attr_accessor :log_level
+end
+
+</pre>
+</div>
+<p>In the previous example it could be the case that <code>:log_level</code> does not belong to the public interface of the library and it is only used for development. The client code, unaware of the potential conflict, subclasses and defines its own <code>:log_level</code>. Thanks to <code>attr_internal</code> there's no collision.</p>
+
+<p>By default the internal instance variable is named with a leading underscore, <code>@_log_level</code> in the example above. That's configurable via <code>Module.attr_internal_naming_format</code> though, you can pass any <code>sprintf</code>-like format string with a leading <code>@</code> and a <code>%s</code> somewhere, which is where the name will be placed. The default is <code>"@_%s"</code>.</p>
+
+<p>Rails uses internal attributes in a few spots, for examples for views:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+module ActionView
+  class Base
+    attr_internal :captures
+    attr_internal :request, :layout
+    attr_internal :controller, :template
+  end
+end
+
+</pre>
+</div>
+<div class="note"><p>Defined in <code><a href="https://github.com/rails/rails/tree/v5.1.7/activesupport/lib/active_support/core_ext/module/attr_internal.rb">active_support/core_ext/module/attr_internal.rb</a></code>.</p></div>
+
+<h5 id="module-attributes">3.1.3 Module Attributes</h5>
+
+<p>The macros <code>mattr_reader</code>, <code>mattr_writer</code>, and <code>mattr_accessor</code> are the same as the <code>cattr_*</code> macros defined for class. In fact, the <code>cattr_*</code> macros are just aliases for the <code>mattr_*</code> macros. Check <a href="#class-attributes">Class Attributes</a>.</p>
+
+<p>For example, the dependencies mechanism uses them:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+module ActiveSupport
+  module Dependencies
+    mattr_accessor :warnings_on_first_load
+    mattr_accessor :history
+    mattr_accessor :loaded
+    mattr_accessor :mechanism
+    mattr_accessor :load_paths
+    mattr_accessor :load_once_paths
+    mattr_accessor :autoloaded_constants
+    mattr_accessor :explicitly_unloadable_constants
+    mattr_accessor :constant_watch_stack
+    mattr_accessor :constant_watch_stack_mutex
+  end
+end
+
+</pre>
+</div>
+<div class="note"><p>Defined in <code><a href="https://github.com/rails/rails/tree/v5.1.7/activesupport/lib/active_support/core_ext/module/attribute_accessors.rb">active_support/core_ext/module/attribute_accessors.rb</a></code>.</p></div>
+
+<h4 id="extensions-to-module-parents">3.2 Parents</h4>
+
+<h5 id="parent">3.2.1 <code>parent</code>
+</h5>
+
+<p>The <code>parent</code> method on a nested named module returns the module that contains its corresponding constant:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+module X
+  module Y
+    module Z
+    end
+  end
+end
+M = X::Y::Z
+
+X::Y::Z.parent # =&gt; X::Y
+M.parent       # =&gt; X::Y
+
+</pre>
+</div>
+<p>If the module is anonymous or belongs to the top-level, <code>parent</code> returns <code>Object</code>.</p>
+
+<div class="warning"><p>Note that in that case <code>parent_name</code> returns <code>nil</code>.</p></div>
+
+<div class="note"><p>Defined in <code><a href="https://github.com/rails/rails/tree/v5.1.7/activesupport/lib/active_support/core_ext/module/introspection.rb">active_support/core_ext/module/introspection.rb</a></code>.</p></div>
+
+<h5 id="parent-name">3.2.2 <code>parent_name</code>
+</h5>
+
+<p>The <code>parent_name</code> method on a nested named module returns the fully-qualified name of the module that contains its corresponding constant:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+module X
+  module Y
+    module Z
+    end
+  end
+end
+M = X::Y::Z
+
+X::Y::Z.parent_name # =&gt; "X::Y"
+M.parent_name       # =&gt; "X::Y"
+
+</pre>
+</div>
+<p>For top-level or anonymous modules <code>parent_name</code> returns <code>nil</code>.</p>
+
+<div class="warning"><p>Note that in that case <code>parent</code> returns <code>Object</code>.</p></div>
+
+<div class="note"><p>Defined in <code><a href="https://github.com/rails/rails/tree/v5.1.7/activesupport/lib/active_support/core_ext/module/introspection.rb">active_support/core_ext/module/introspection.rb</a></code>.</p></div>
+
+<h5 id="extensions-to-module-parents-parents">3.2.3 <code>parents</code>
+</h5>
+
+<p>The method <code>parents</code> calls <code>parent</code> on the receiver and upwards until <code>Object</code> is reached. The chain is returned in an array, from bottom to top:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+module X
+  module Y
+    module Z
+    end
+  end
+end
+M = X::Y::Z
+
+X::Y::Z.parents # =&gt; [X::Y, X, Object]
+M.parents       # =&gt; [X::Y, X, Object]
+
+</pre>
+</div>
+<div class="note"><p>Defined in <code><a href="https://github.com/rails/rails/tree/v5.1.7/activesupport/lib/active_support/core_ext/module/introspection.rb">active_support/core_ext/module/introspection.rb</a></code>.</p></div>
+
+<h4 id="reachable">3.3 Reachable</h4>
+
+<p>A named module is reachable if it is stored in its corresponding constant. It means you can reach the module object via the constant.</p>
+
+<p>That is what ordinarily happens, if a module is called "M", the <code>M</code> constant exists and holds it:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+module M
+end
+
+M.reachable? # =&gt; true
+
+</pre>
+</div>
+<p>But since constants and modules are indeed kind of decoupled, module objects can become unreachable:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+module M
+end
+
+orphan = Object.send(:remove_const, :M)
+
+# The module object is orphan now but it still has a name.
+orphan.name # =&gt; "M"
+
+# You cannot reach it via the constant M because it does not even exist.
+orphan.reachable? # =&gt; false
+
+# Let's define a module called "M" again.
+module M
+end
+
+# The constant M exists now again, and it stores a module
+# object called "M", but it is a new instance.
+orphan.reachable? # =&gt; false
+
+</pre>
+</div>
+<div class="note"><p>Defined in <code><a href="https://github.com/rails/rails/tree/v5.1.7/activesupport/lib/active_support/core_ext/module/reachable.rb">active_support/core_ext/module/reachable.rb</a></code>.</p></div>
+
+<h4 id="anonymous">3.4 Anonymous</h4>
+
+<p>A module may or may not have a name:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+module M
+end
+M.name # =&gt; "M"
+
+N = Module.new
+N.name # =&gt; "N"
+
+Module.new.name # =&gt; nil
+
+</pre>
+</div>
+<p>You can check whether a module has a name with the predicate <code>anonymous?</code>:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+module M
+end
+M.anonymous? # =&gt; false
+
+Module.new.anonymous? # =&gt; true
+
+</pre>
+</div>
+<p>Note that being unreachable does not imply being anonymous:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+module M
+end
+
+m = Object.send(:remove_const, :M)
+
+m.reachable? # =&gt; false
+m.anonymous? # =&gt; false
+
+</pre>
+</div>
+<p>though an anonymous module is unreachable by definition.</p>
+
+<div class="note"><p>Defined in <code><a href="https://github.com/rails/rails/tree/v5.1.7/activesupport/lib/active_support/core_ext/module/anonymous.rb">active_support/core_ext/module/anonymous.rb</a></code>.</p></div>
+
+<h4 id="method-delegation">3.5 Method Delegation</h4>
+
+<p>The macro <code>delegate</code> offers an easy way to forward methods.</p>
+
+<p>Let's imagine that users in some application have login information in the <code>User</code> model but name and other data in a separate <code>Profile</code> model:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class User &lt; ApplicationRecord
+  has_one :profile
+end
+
+</pre>
+</div>
+<p>With that configuration you get a user's name via their profile, <code>user.profile.name</code>, but it could be handy to still be able to access such attribute directly:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class User &lt; ApplicationRecord
+  has_one :profile
+
+  def name
+    profile.name
+  end
+end
+
+</pre>
+</div>
+<p>That is what <code>delegate</code> does for you:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class User &lt; ApplicationRecord
+  has_one :profile
+
+  delegate :name, to: :profile
+end
+
+</pre>
+</div>
+<p>It is shorter, and the intention more obvious.</p>
+
+<p>The method must be public in the target.</p>
+
+<p>The <code>delegate</code> macro accepts several methods:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+delegate :name, :age, :address, :twitter, to: :profile
+
+</pre>
+</div>
+<p>When interpolated into a string, the <code>:to</code> option should become an expression that evaluates to the object the method is delegated to. Typically a string or symbol. Such an expression is evaluated in the context of the receiver:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+# delegates to the Rails constant
+delegate :logger, to: :Rails
+
+# delegates to the receiver's class
+delegate :table_name, to: :class
+
+</pre>
+</div>
+<div class="warning"><p>If the <code>:prefix</code> option is <code>true</code> this is less generic, see below.</p></div>
+
+<p>By default, if the delegation raises <code>NoMethodError</code> and the target is <code>nil</code> the exception is propagated. You can ask that <code>nil</code> is returned instead with the <code>:allow_nil</code> option:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+delegate :name, to: :profile, allow_nil: true
+
+</pre>
+</div>
+<p>With <code>:allow_nil</code> the call <code>user.name</code> returns <code>nil</code> if the user has no profile.</p>
+
+<p>The option <code>:prefix</code> adds a prefix to the name of the generated method. This may be handy for example to get a better name:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+delegate :street, to: :address, prefix: true
+
+</pre>
+</div>
+<p>The previous example generates <code>address_street</code> rather than <code>street</code>.</p>
+
+<div class="warning"><p>Since in this case the name of the generated method is composed of the target object and target method names, the <code>:to</code> option must be a method name.</p></div>
+
+<p>A custom prefix may also be configured:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+delegate :size, to: :attachment, prefix: :avatar
+
+</pre>
+</div>
+<p>In the previous example the macro generates <code>avatar_size</code> rather than <code>size</code>.</p>
+
+<div class="note"><p>Defined in <code><a href="https://github.com/rails/rails/tree/v5.1.7/activesupport/lib/active_support/core_ext/module/delegation.rb">active_support/core_ext/module/delegation.rb</a></code>.</p></div>
+
+<h4 id="redefining-methods">3.6 Redefining Methods</h4>
+
+<p>There are cases where you need to define a method with <code>define_method</code>, but don't know whether a method with that name already exists. If it does, a warning is issued if they are enabled. No big deal, but not clean either.</p>
+
+<p>The method <code>redefine_method</code> prevents such a potential warning, removing the existing method before if needed.</p>
+
+<div class="note"><p>Defined in <code><a href="https://github.com/rails/rails/tree/v5.1.7/activesupport/lib/active_support/core_ext/module/remove_method.rb">active_support/core_ext/module/remove_method.rb</a></code>.</p></div>
+</body>
+</html>

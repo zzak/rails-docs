@@ -1,0 +1,48 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>8 Migrations and Seed Data</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v5.2.8.1/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="migrations-and-seed-data"><a class="anchorlink" href="#migrations-and-seed-data">8 Migrations and Seed Data</a></h3>
+<p>The main purpose of Rails' migration feature is to issue commands that modify the
+schema using a consistent process. Migrations can also be used
+to add or modify data. This is useful in an existing database that can't be destroyed
+and recreated, such as a production database.</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class AddInitialProducts &lt; ActiveRecord::Migration[5.0]
+  def up
+    5.times do |i|
+      Product.create(name: "Product ##{i}", description: "A product.")
+    end
+  end
+
+  def down
+    Product.delete_all
+  end
+end
+
+</pre>
+</div>
+<p>To add initial data after a database is created, Rails has a built-in
+'seeds' feature that makes the process quick and easy. This is especially
+useful when reloading the database frequently in development and test environments.
+It's easy to get started with this feature: just fill up <code>db/seeds.rb</code> with some
+Ruby code, and run <code>rails db:seed</code>:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+5.times do |i|
+  Product.create(name: "Product ##{i}", description: "A product.")
+end
+
+</pre>
+</div>
+<p>This is generally a much cleaner way to set up the database of a blank
+application.</p>
+</body>
+</html>

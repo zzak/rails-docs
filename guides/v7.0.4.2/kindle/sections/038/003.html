@@ -1,0 +1,83 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>4 Activating automatic role switching</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v7.0.4.2/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="activating-automatic-role-switching"><a class="anchorlink" href="#activating-automatic-role-switching">4 Activating automatic role switching</a></h3>
+<p>Finally, in order to use the read-only replica in your application, you'll need to activate
+the middleware for automatic switching.</p>
+
+<p>Automatic switching allows the application to switch from the writer to replica or replica
+to writer based on the HTTP verb and whether there was a recent write by the requesting user.</p>
+
+<p>If the application is receiving a POST, PUT, DELETE, or PATCH request the application will
+automatically write to the writer database. For the specified time after the write, the
+application will read from the primary. For a GET or HEAD request the application will read
+from the replica unless there was a recent write.</p>
+
+<p>To activate the automatic connection switching middleware you can run the automatic swapping
+generator:</p>
+
+<div class="code_container">
+<pre><code class="highlight plaintext">$ bin/rails g active_record:multi_db
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="$ bin/rails g active_record:multi_db
+">Copy</button>
+</div>
+<p>And then uncomment the following lines:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="no">Rails</span><span class="p">.</span><span class="nf">application</span><span class="p">.</span><span class="nf">configure</span> <span class="k">do</span>
+  <span class="n">config</span><span class="p">.</span><span class="nf">active_record</span><span class="p">.</span><span class="nf">database_selector</span> <span class="o">=</span> <span class="p">{</span> <span class="ss">delay: </span><span class="mi">2</span><span class="p">.</span><span class="nf">seconds</span> <span class="p">}</span>
+  <span class="n">config</span><span class="p">.</span><span class="nf">active_record</span><span class="p">.</span><span class="nf">database_resolver</span> <span class="o">=</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Middleware</span><span class="o">::</span><span class="no">DatabaseSelector</span><span class="o">::</span><span class="no">Resolver</span>
+  <span class="n">config</span><span class="p">.</span><span class="nf">active_record</span><span class="p">.</span><span class="nf">database_resolver_context</span> <span class="o">=</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Middleware</span><span class="o">::</span><span class="no">DatabaseSelector</span><span class="o">::</span><span class="no">Resolver</span><span class="o">::</span><span class="no">Session</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="Rails.application.configure do
+  config.active_record.database_selector = { delay: 2.seconds }
+  config.active_record.database_resolver = ActiveRecord::Middleware::DatabaseSelector::Resolver
+  config.active_record.database_resolver_context = ActiveRecord::Middleware::DatabaseSelector::Resolver::Session
+end
+">Copy</button>
+</div>
+<p>Rails guarantees "read your own write" and will send your GET or HEAD request to the
+writer if it's within the <code>delay</code> window. By default the delay is set to 2 seconds. You
+should change this based on your database infrastructure. Rails doesn't guarantee "read
+a recent write" for other users within the delay window and will send GET and HEAD requests
+to the replicas unless they wrote recently.</p>
+
+<p>The automatic connection switching in Rails is relatively primitive and deliberately doesn't
+do a whole lot. The goal is a system that demonstrates how to do automatic connection
+switching that was flexible enough to be customizable by app developers.</p>
+
+<p>The setup in Rails allows you to easily change how the switching is done and what
+parameters it's based on. Let's say you want to use a cookie instead of a session to
+decide when to swap connections. You can write your own class:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">MyCookieResolver</span>
+  <span class="c1"># code for your cookie class</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="class MyCookieResolver
+  # code for your cookie class
+end
+">Copy</button>
+</div>
+<p>And then pass it to the middleware:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">config</span><span class="p">.</span><span class="nf">active_record</span><span class="p">.</span><span class="nf">database_selector</span> <span class="o">=</span> <span class="p">{</span> <span class="ss">delay: </span><span class="mi">2</span><span class="p">.</span><span class="nf">seconds</span> <span class="p">}</span>
+<span class="n">config</span><span class="p">.</span><span class="nf">active_record</span><span class="p">.</span><span class="nf">database_resolver</span> <span class="o">=</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Middleware</span><span class="o">::</span><span class="no">DatabaseSelector</span><span class="o">::</span><span class="no">Resolver</span>
+<span class="n">config</span><span class="p">.</span><span class="nf">active_record</span><span class="p">.</span><span class="nf">database_resolver_context</span> <span class="o">=</span> <span class="no">MyCookieResolver</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="config.active_record.database_selector = { delay: 2.seconds }
+config.active_record.database_resolver = ActiveRecord::Middleware::DatabaseSelector::Resolver
+config.active_record.database_resolver_context = MyCookieResolver
+">Copy</button>
+</div>
+</body>
+</html>

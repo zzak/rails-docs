@@ -1,0 +1,41 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>13 Troubleshooting</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v7.0.4.2/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="troubleshooting"><a class="anchorlink" href="#troubleshooting">13 Troubleshooting</a></h3>
+<p>The best way to follow what the loaders are doing is to inspect their activity.</p>
+
+<p>The easiest way to do that is to include:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="no">Rails</span><span class="p">.</span><span class="nf">autoloaders</span><span class="p">.</span><span class="nf">log!</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="Rails.autoloaders.log!
+">Copy</button>
+</div>
+<p>in <code>config/application.rb</code> after loading the framework defaults. That will print traces to standard output.</p>
+
+<p>If you prefer logging to a file, configure this instead:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="no">Rails</span><span class="p">.</span><span class="nf">autoloaders</span><span class="p">.</span><span class="nf">logger</span> <span class="o">=</span> <span class="no">Logger</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="s2">"</span><span class="si">#{</span><span class="no">Rails</span><span class="p">.</span><span class="nf">root</span><span class="si">}</span><span class="s2">/log/autoloading.log"</span><span class="p">)</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='Rails.autoloaders.logger = Logger.new("#{Rails.root}/log/autoloading.log")
+'>Copy</button>
+</div>
+<p>The Rails logger is not yet available when <code>config/application.rb</code> executes. If you prefer to use the Rails logger, configure this setting in an initializer instead:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="c1"># config/initializers/log_autoloaders.rb</span>
+<span class="no">Rails</span><span class="p">.</span><span class="nf">autoloaders</span><span class="p">.</span><span class="nf">logger</span> <span class="o">=</span> <span class="no">Rails</span><span class="p">.</span><span class="nf">logger</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="# config/initializers/log_autoloaders.rb
+Rails.autoloaders.logger = Rails.logger
+">Copy</button>
+</div>
+</body>
+</html>

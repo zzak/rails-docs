@@ -1,0 +1,757 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html 
+     PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+  <head>
+    <title>Class: Object</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <link rel="stylesheet" href=".././rdoc-style.css" type="text/css" media="screen" />
+
+    <script language="JavaScript" type="text/javascript">
+    // <![CDATA[
+
+        function toggleSource( id )
+        {
+          var elem
+          var link
+
+          if( document.getElementById )
+          {
+            elem = document.getElementById( id )
+            link = document.getElementById( "l_" + id )
+          }
+          else if ( document.all )
+          {
+            elem = eval( "document.all." + id )
+            link = eval( "document.all.l_" + id )
+          }
+          else
+            return false;
+
+          if( elem.style.display == "block" )
+          {
+            elem.style.display = "none"
+            link.innerHTML = "show source"
+          }
+          else
+          {
+            elem.style.display = "block"
+            link.innerHTML = "hide source"
+          }
+        }
+
+        function openCode( url )
+        {
+          window.open( url, "SOURCE_CODE", "resizable=yes,scrollbars=yes,toolbar=no,status=no,height=480,width=750" ).focus();
+        }
+      // ]]>
+    </script>
+  </head>
+
+  <body>
+  <table width="100%" border='0' cellpadding='0' cellspacing='0' class='banner'><tr>
+  <td class="file-title"><span class="file-title-prefix">Class</span><br />Object</td>
+  <td align="right">
+    <table cellspacing="0" cellpadding="2">
+      <tr valign="top">
+        <td>In:</td>
+        <td>
+<a href="../files/railties/lib/rails_generator/lookup_rb.html">railties/lib/rails_generator/lookup.rb</a>
+<a href="../files/actionpack/lib/action_controller/routing/routing_ext_rb.html">actionpack/lib/action_controller/routing/routing_ext.rb</a>
+<a href="../files/activesupport/lib/active_support/core_ext/object/singleton_class_rb.html">activesupport/lib/active_support/core_ext/object/singleton_class.rb</a>
+<a href="../files/activesupport/lib/active_support/core_ext/object/instance_variables_rb.html">activesupport/lib/active_support/core_ext/object/instance_variables.rb</a>
+<a href="../files/activesupport/lib/active_support/core_ext/object/metaclass_rb.html">activesupport/lib/active_support/core_ext/object/metaclass.rb</a>
+<a href="../files/activesupport/lib/active_support/core_ext/object/blank_rb.html">activesupport/lib/active_support/core_ext/object/blank.rb</a>
+<a href="../files/activesupport/lib/active_support/core_ext/object/extending_rb.html">activesupport/lib/active_support/core_ext/object/extending.rb</a>
+<a href="../files/activesupport/lib/active_support/core_ext/object/conversions_rb.html">activesupport/lib/active_support/core_ext/object/conversions.rb</a>
+<a href="../files/activesupport/lib/active_support/core_ext/object/misc_rb.html">activesupport/lib/active_support/core_ext/object/misc.rb</a>
+<a href="../files/activesupport/lib/active_support/core_ext/string/output_safety_rb.html">activesupport/lib/active_support/core_ext/string/output_safety.rb</a>
+<a href="../files/activesupport/lib/active_support/core_ext/kernel/agnostics_rb.html">activesupport/lib/active_support/core_ext/kernel/agnostics.rb</a>
+<a href="../files/activesupport/lib/active_support/core_ext/try_rb.html">activesupport/lib/active_support/core_ext/try.rb</a>
+<a href="../files/activesupport/lib/active_support/core_ext/duplicable_rb.html">activesupport/lib/active_support/core_ext/duplicable.rb</a>
+<a href="../files/activesupport/lib/active_support/json/encoders/object_rb.html">activesupport/lib/active_support/json/encoders/object.rb</a>
+        </td>
+      </tr>
+    <tr>
+      <td>Parent:</td>
+      <td>
+        <a href="Object.html">
+Object
+         </a>
+     </td>
+   </tr>
+         </table>
+        </td>
+        </tr>
+      </table>
+ <!-- banner header -->
+
+  <div id="bodyContent">
+      <div id="content">
+
+
+
+
+  <div class="sectiontitle">Methods</div>
+  <ul>
+  <li><a href="#M000162">acts_like?</a></li>
+  <li><a href="#M000167">as_json</a></li>
+  <li><a href="#M000153">blank?</a></li>
+  <li><a href="#M000149">class_eval</a></li>
+  <li><a href="#M000165">duplicable?</a></li>
+  <li><a href="#M000163">html_safe?</a></li>
+  <li><a href="#M000156">instance_exec</a></li>
+  <li><a href="#M000150">instance_variable_defined?</a></li>
+  <li><a href="#M000151">instance_variable_names</a></li>
+  <li><a href="#M000146">lookup_missing_generator</a></li>
+  <li><a href="#M000152">metaclass</a></li>
+  <li><a href="#M000155">presence</a></li>
+  <li><a href="#M000154">present?</a></li>
+  <li><a href="#M000159">returning</a></li>
+  <li><a href="#M000148">singleton_class</a></li>
+  <li><a href="#M000160">tap</a></li>
+  <li><a href="#M000166">to_json</a></li>
+  <li><a href="#M000147">to_param</a></li>
+  <li><a href="#M000157">to_param</a></li>
+  <li><a href="#M000158">to_query</a></li>
+  <li><a href="#M000164">try</a></li>
+  <li><a href="#M000161">with_options</a></li>
+  </ul>
+
+<div class="sectiontitle">Included Modules</div>
+<ul>
+  <li>InstanceExecMethods</li>
+</ul>
+
+
+
+
+
+<div class="sectiontitle">Public Class methods</div>
+<div class="method">
+  <div class="title">
+    <a name="M000146"></a><b>lookup_missing_generator</b>(class_id)
+  </div>
+  <div class="description">
+  <p>
+Lookup missing generators using const_missing. This allows any generator to
+reference another without having to know its location: RubyGems,
+~/.rails/generators, and RAILS_ROOT/generators.
+</p>
+  </div>
+<div class="sourcecode">
+  <p class="source-link">[ <a href="javascript:toggleSource('M000146_source')" id="l_M000146_source">show source</a> ]</p>
+  <div id="M000146_source" class="dyn-source">
+<pre>
+    <span class="ruby-comment cmt"># File railties/lib/rails_generator/lookup.rb, line 10</span>
+10:     <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">lookup_missing_generator</span>(<span class="ruby-identifier">class_id</span>)
+11:       <span class="ruby-keyword kw">if</span> <span class="ruby-identifier">md</span> = <span class="ruby-regexp re">/(.+)Generator$/</span>.<span class="ruby-identifier">match</span>(<span class="ruby-identifier">class_id</span>.<span class="ruby-identifier">to_s</span>)
+12:         <span class="ruby-identifier">name</span> = <span class="ruby-identifier">md</span>.<span class="ruby-identifier">captures</span>.<span class="ruby-identifier">first</span>.<span class="ruby-identifier">demodulize</span>.<span class="ruby-identifier">underscore</span>
+13:         <span class="ruby-constant">Rails</span><span class="ruby-operator">::</span><span class="ruby-constant">Generator</span><span class="ruby-operator">::</span><span class="ruby-constant">Base</span>.<span class="ruby-identifier">lookup</span>(<span class="ruby-identifier">name</span>).<span class="ruby-identifier">klass</span>
+14:       <span class="ruby-keyword kw">else</span>
+15:         <span class="ruby-identifier">const_missing_before_generators</span>(<span class="ruby-identifier">class_id</span>)
+16:       <span class="ruby-keyword kw">end</span>
+17:     <span class="ruby-keyword kw">end</span>
+</pre>
+  </div>
+</div>
+</div>
+<div class="sectiontitle">Public Instance methods</div>
+<div class="method">
+  <div class="title">
+    <a name="M000162"></a><b>acts_like?</b>(duck)
+  </div>
+  <div class="description">
+  <p>
+A duck-type assistant method. For example, Active Support extends Date to
+define an acts_like_date? method, and extends Time to define
+acts_like_time?. As a result, we can do &quot;x.acts_like?(:time)&quot; and
+&quot;x.acts_like?(:date)&quot; to do duck-type-safe comparisons, since
+classes that we want to act like Time simply need to define an
+acts_like_time? method.
+</p>
+  </div>
+<div class="sourcecode">
+  <p class="source-link">[ <a href="javascript:toggleSource('M000162_source')" id="l_M000162_source">show source</a> ]</p>
+  <div id="M000162_source" class="dyn-source">
+<pre>
+    <span class="ruby-comment cmt"># File activesupport/lib/active_support/core_ext/object/misc.rb, line 89</span>
+89:   <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">acts_like?</span>(<span class="ruby-identifier">duck</span>)
+90:     <span class="ruby-identifier">respond_to?</span> <span class="ruby-node">&quot;acts_like_#{duck}?&quot;</span>
+91:   <span class="ruby-keyword kw">end</span>
+</pre>
+  </div>
+</div>
+</div>
+<div class="method">
+  <div class="title">
+    <a name="M000167"></a><b>as_json</b>(options = nil)
+  </div>
+<div class="sourcecode">
+  <p class="source-link">[ <a href="javascript:toggleSource('M000167_source')" id="l_M000167_source">show source</a> ]</p>
+  <div id="M000167_source" class="dyn-source">
+<pre>
+   <span class="ruby-comment cmt"># File activesupport/lib/active_support/json/encoders/object.rb, line 7</span>
+7:   <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">as_json</span>(<span class="ruby-identifier">options</span> = <span class="ruby-keyword kw">nil</span>)
+8:     <span class="ruby-identifier">instance_values</span>
+9:   <span class="ruby-keyword kw">end</span>
+</pre>
+  </div>
+</div>
+</div>
+<div class="method">
+  <div class="title">
+    <a name="M000153"></a><b>blank?</b>()
+  </div>
+  <div class="description">
+  <p>
+An object is blank if it&#8216;s false, empty, or a whitespace string. For
+example, &quot;&quot;, &quot; &quot;, <tt>nil</tt>, [], and {} are blank.
+</p>
+<p>
+This simplifies:
+</p>
+<pre>
+  if !address.nil? &amp;&amp; !address.empty?
+</pre>
+<p>
+&#8230;to:
+</p>
+<pre>
+  if !address.blank?
+</pre>
+  </div>
+<div class="sourcecode">
+  <p class="source-link">[ <a href="javascript:toggleSource('M000153_source')" id="l_M000153_source">show source</a> ]</p>
+  <div id="M000153_source" class="dyn-source">
+<pre>
+    <span class="ruby-comment cmt"># File activesupport/lib/active_support/core_ext/object/blank.rb, line 12</span>
+12:   <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">blank?</span>
+13:     <span class="ruby-identifier">respond_to?</span>(<span class="ruby-identifier">:empty?</span>) <span class="ruby-operator">?</span> <span class="ruby-identifier">empty?</span> <span class="ruby-operator">:</span> <span class="ruby-operator">!</span><span class="ruby-keyword kw">self</span>
+14:   <span class="ruby-keyword kw">end</span>
+</pre>
+  </div>
+</div>
+</div>
+<div class="method">
+  <div class="title">
+    <a name="M000149"></a><b>class_eval</b>(*args, &amp;block)
+  </div>
+  <div class="description">
+  <p>
+<a href="Object.html#M000149">class_eval</a> on an object acts like
+singleton_class_eval.
+</p>
+  </div>
+<div class="sourcecode">
+  <p class="source-link">[ <a href="javascript:toggleSource('M000149_source')" id="l_M000149_source">show source</a> ]</p>
+  <div id="M000149_source" class="dyn-source">
+<pre>
+    <span class="ruby-comment cmt"># File activesupport/lib/active_support/core_ext/object/singleton_class.rb, line 10</span>
+10:   <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">class_eval</span>(<span class="ruby-operator">*</span><span class="ruby-identifier">args</span>, <span class="ruby-operator">&amp;</span><span class="ruby-identifier">block</span>)
+11:     <span class="ruby-identifier">singleton_class</span>.<span class="ruby-identifier">class_eval</span>(<span class="ruby-operator">*</span><span class="ruby-identifier">args</span>, <span class="ruby-operator">&amp;</span><span class="ruby-identifier">block</span>)
+12:   <span class="ruby-keyword kw">end</span>
+</pre>
+  </div>
+</div>
+</div>
+<div class="method">
+  <div class="title">
+    <a name="M000165"></a><b>duplicable?</b>()
+  </div>
+  <div class="description">
+  <p>
+Can you safely .dup this object? False for nil, false, true, symbols, and
+numbers; true otherwise.
+</p>
+  </div>
+<div class="sourcecode">
+  <p class="source-link">[ <a href="javascript:toggleSource('M000165_source')" id="l_M000165_source">show source</a> ]</p>
+  <div id="M000165_source" class="dyn-source">
+<pre>
+   <span class="ruby-comment cmt"># File activesupport/lib/active_support/core_ext/duplicable.rb, line 4</span>
+4:   <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">duplicable?</span>
+5:     <span class="ruby-keyword kw">true</span>
+6:   <span class="ruby-keyword kw">end</span>
+</pre>
+  </div>
+</div>
+</div>
+<div class="method">
+  <div class="title">
+    <a name="M000163"></a><b>html_safe?</b>()
+  </div>
+<div class="sourcecode">
+  <p class="source-link">[ <a href="javascript:toggleSource('M000163_source')" id="l_M000163_source">show source</a> ]</p>
+  <div id="M000163_source" class="dyn-source">
+<pre>
+    <span class="ruby-comment cmt"># File activesupport/lib/active_support/core_ext/string/output_safety.rb, line 52</span>
+52:   <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">html_safe?</span>
+53:     <span class="ruby-keyword kw">false</span>
+54:   <span class="ruby-keyword kw">end</span>
+</pre>
+  </div>
+</div>
+</div>
+<div class="method">
+  <div class="title">
+    <a name="M000156"></a><b>instance_exec</b>(*args, &amp;block)
+  </div>
+  <div class="description">
+  <p>
+Evaluate the block with the given arguments within the context of this
+object, so self is set to the method receiver.
+</p>
+<p>
+From Mauricio&#8216;s <a
+href="http://eigenclass.org/hiki/bounded+space+instance_exec">eigenclass.org/hiki/bounded+space+instance_exec</a>
+</p>
+  </div>
+<div class="sourcecode">
+  <p class="source-link">[ <a href="javascript:toggleSource('M000156_source')" id="l_M000156_source">show source</a> ]</p>
+  <div id="M000156_source" class="dyn-source">
+<pre>
+    <span class="ruby-comment cmt"># File activesupport/lib/active_support/core_ext/object/extending.rb, line 63</span>
+63:     <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">instance_exec</span>(<span class="ruby-operator">*</span><span class="ruby-identifier">args</span>, <span class="ruby-operator">&amp;</span><span class="ruby-identifier">block</span>)
+64:       <span class="ruby-keyword kw">begin</span>
+65:         <span class="ruby-identifier">old_critical</span>, <span class="ruby-constant">Thread</span>.<span class="ruby-identifier">critical</span> = <span class="ruby-constant">Thread</span>.<span class="ruby-identifier">critical</span>, <span class="ruby-keyword kw">true</span>
+66:         <span class="ruby-identifier">n</span> = <span class="ruby-value">0</span>
+67:         <span class="ruby-identifier">n</span> <span class="ruby-operator">+=</span> <span class="ruby-value">1</span> <span class="ruby-keyword kw">while</span> <span class="ruby-identifier">respond_to?</span>(<span class="ruby-identifier">method_name</span> = <span class="ruby-node">&quot;__instance_exec#{n}&quot;</span>)
+68:         <span class="ruby-constant">InstanceExecMethods</span>.<span class="ruby-identifier">module_eval</span> { <span class="ruby-identifier">define_method</span>(<span class="ruby-identifier">method_name</span>, <span class="ruby-operator">&amp;</span><span class="ruby-identifier">block</span>) }
+69:       <span class="ruby-keyword kw">ensure</span>
+70:         <span class="ruby-constant">Thread</span>.<span class="ruby-identifier">critical</span> = <span class="ruby-identifier">old_critical</span>
+71:       <span class="ruby-keyword kw">end</span>
+72: 
+73:       <span class="ruby-keyword kw">begin</span>
+74:         <span class="ruby-identifier">send</span>(<span class="ruby-identifier">method_name</span>, <span class="ruby-operator">*</span><span class="ruby-identifier">args</span>)
+75:       <span class="ruby-keyword kw">ensure</span>
+76:         <span class="ruby-constant">InstanceExecMethods</span>.<span class="ruby-identifier">module_eval</span> { <span class="ruby-identifier">remove_method</span>(<span class="ruby-identifier">method_name</span>) } <span class="ruby-keyword kw">rescue</span> <span class="ruby-keyword kw">nil</span>
+77:       <span class="ruby-keyword kw">end</span>
+78:     <span class="ruby-keyword kw">end</span>
+</pre>
+  </div>
+</div>
+</div>
+<div class="method">
+  <div class="title">
+    <a name="M000150"></a><b>instance_variable_defined?</b>(variable)
+  </div>
+<div class="sourcecode">
+  <p class="source-link">[ <a href="javascript:toggleSource('M000150_source')" id="l_M000150_source">show source</a> ]</p>
+  <div id="M000150_source" class="dyn-source">
+<pre>
+   <span class="ruby-comment cmt"># File activesupport/lib/active_support/core_ext/object/instance_variables.rb, line 4</span>
+4:     <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">instance_variable_defined?</span>(<span class="ruby-identifier">variable</span>)
+5:       <span class="ruby-identifier">instance_variables</span>.<span class="ruby-identifier">include?</span>(<span class="ruby-identifier">variable</span>.<span class="ruby-identifier">to_s</span>)
+6:     <span class="ruby-keyword kw">end</span>
+</pre>
+  </div>
+</div>
+</div>
+<div class="method">
+  <div class="title">
+    <a name="M000151"></a><b>instance_variable_names</b>()
+  </div>
+<div class="sourcecode">
+  <p class="source-link">[ <a href="javascript:toggleSource('M000151_source')" id="l_M000151_source">show source</a> ]</p>
+  <div id="M000151_source" class="dyn-source">
+<pre>
+    <span class="ruby-comment cmt"># File activesupport/lib/active_support/core_ext/object/instance_variables.rb, line 37</span>
+37:     <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">instance_variable_names</span>
+38:       <span class="ruby-identifier">instance_variables</span>.<span class="ruby-identifier">map</span> { <span class="ruby-operator">|</span><span class="ruby-identifier">var</span><span class="ruby-operator">|</span> <span class="ruby-identifier">var</span>.<span class="ruby-identifier">to_s</span> }
+39:     <span class="ruby-keyword kw">end</span>
+</pre>
+  </div>
+</div>
+</div>
+<div class="method">
+  <div class="title">
+    <a name="M000152"></a><b>metaclass</b>()
+  </div>
+  <div class="description">
+  <p>
+Get object&#8216;s meta (ghost, eigenclass, singleton) class.
+</p>
+<p>
+Deprecated in favor of <a
+href="Object.html#M000148">Object#singleton_class</a>.
+</p>
+  </div>
+<div class="sourcecode">
+  <p class="source-link">[ <a href="javascript:toggleSource('M000152_source')" id="l_M000152_source">show source</a> ]</p>
+  <div id="M000152_source" class="dyn-source">
+<pre>
+    <span class="ruby-comment cmt"># File activesupport/lib/active_support/core_ext/object/metaclass.rb, line 7</span>
+ 7:   <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">metaclass</span>
+ 8:     <span class="ruby-keyword kw">class</span> <span class="ruby-operator">&lt;&lt;</span> <span class="ruby-keyword kw">self</span>
+ 9:       <span class="ruby-keyword kw">self</span>
+10:     <span class="ruby-keyword kw">end</span>
+11:   <span class="ruby-keyword kw">end</span>
+</pre>
+  </div>
+</div>
+</div>
+<div class="method">
+  <div class="title">
+    <a name="M000155"></a><b>presence</b>()
+  </div>
+  <div class="description">
+  <p>
+Returns object if it&#8216;s present? otherwise returns nil.
+object.presence is equivalent to object.present? ? object : nil.
+</p>
+<p>
+This is handy for any representation of objects where blank is the same as
+not present at all. For example, this simplifies a common check for HTTP
+POST/query parameters:
+</p>
+<pre>
+  state   = params[:state]   if params[:state].present?
+  country = params[:country] if params[:country].present?
+  region  = state || country || 'US'
+</pre>
+<p>
+&#8230;becomes:
+</p>
+<pre>
+  region = params[:state].presence || params[:country].presence || 'US'
+</pre>
+  </div>
+<div class="sourcecode">
+  <p class="source-link">[ <a href="javascript:toggleSource('M000155_source')" id="l_M000155_source">show source</a> ]</p>
+  <div id="M000155_source" class="dyn-source">
+<pre>
+    <span class="ruby-comment cmt"># File activesupport/lib/active_support/core_ext/object/blank.rb, line 35</span>
+35:   <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">presence</span>
+36:     <span class="ruby-keyword kw">self</span> <span class="ruby-keyword kw">if</span> <span class="ruby-identifier">present?</span>
+37:   <span class="ruby-keyword kw">end</span>
+</pre>
+  </div>
+</div>
+</div>
+<div class="method">
+  <div class="title">
+    <a name="M000154"></a><b>present?</b>()
+  </div>
+  <div class="description">
+  <p>
+An object is present if it&#8216;s not blank.
+</p>
+  </div>
+<div class="sourcecode">
+  <p class="source-link">[ <a href="javascript:toggleSource('M000154_source')" id="l_M000154_source">show source</a> ]</p>
+  <div id="M000154_source" class="dyn-source">
+<pre>
+    <span class="ruby-comment cmt"># File activesupport/lib/active_support/core_ext/object/blank.rb, line 17</span>
+17:   <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">present?</span>
+18:     <span class="ruby-operator">!</span><span class="ruby-identifier">blank?</span>
+19:   <span class="ruby-keyword kw">end</span>
+</pre>
+  </div>
+</div>
+</div>
+<div class="method">
+  <div class="title">
+    <a name="M000159"></a><b>returning</b>(value) {|value| ...}
+  </div>
+  <div class="description">
+  <p>
+Returns <tt>value</tt> after yielding <tt>value</tt> to the block. This
+simplifies the process of constructing an object, performing work on the
+object, and then <a href="Object.html#M000159">returning</a> the object
+from a method. It is a Ruby-ized realization of the K combinator, courtesy
+of Mikael Brockman.
+</p>
+<h4>Examples</h4>
+<pre>
+ # Without returning
+ def foo
+   values = []
+   values &lt;&lt; &quot;bar&quot;
+   values &lt;&lt; &quot;baz&quot;
+   return values
+ end
+
+ foo # =&gt; ['bar', 'baz']
+
+ # returning with a local variable
+ def foo
+   returning values = [] do
+     values &lt;&lt; 'bar'
+     values &lt;&lt; 'baz'
+   end
+ end
+
+ foo # =&gt; ['bar', 'baz']
+
+ # returning with a block argument
+ def foo
+   returning [] do |values|
+     values &lt;&lt; 'bar'
+     values &lt;&lt; 'baz'
+   end
+ end
+
+ foo # =&gt; ['bar', 'baz']
+</pre>
+  </div>
+<div class="sourcecode">
+  <p class="source-link">[ <a href="javascript:toggleSource('M000159_source')" id="l_M000159_source">show source</a> ]</p>
+  <div id="M000159_source" class="dyn-source">
+<pre>
+    <span class="ruby-comment cmt"># File activesupport/lib/active_support/core_ext/object/misc.rb, line 40</span>
+40:   <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">returning</span>(<span class="ruby-identifier">value</span>)
+41:     <span class="ruby-constant">ActiveSupport</span><span class="ruby-operator">::</span><span class="ruby-constant">Deprecation</span>.<span class="ruby-identifier">warn</span>(<span class="ruby-value str">'Kernel#returning has been deprecated in favor of Object#tap.'</span>, <span class="ruby-identifier">caller</span>)
+42:     <span class="ruby-keyword kw">yield</span>(<span class="ruby-identifier">value</span>)
+43:     <span class="ruby-identifier">value</span>
+44:   <span class="ruby-keyword kw">end</span>
+</pre>
+  </div>
+</div>
+</div>
+<div class="method">
+  <div class="title">
+    <a name="M000148"></a><b>singleton_class</b>()
+  </div>
+  <div class="description">
+  <p>
+Returns the object&#8216;s singleton class.
+</p>
+  </div>
+<div class="sourcecode">
+  <p class="source-link">[ <a href="javascript:toggleSource('M000148_source')" id="l_M000148_source">show source</a> ]</p>
+  <div id="M000148_source" class="dyn-source">
+<pre>
+   <span class="ruby-comment cmt"># File activesupport/lib/active_support/core_ext/object/singleton_class.rb, line 3</span>
+3:   <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">singleton_class</span>
+4:     <span class="ruby-keyword kw">class</span> <span class="ruby-operator">&lt;&lt;</span> <span class="ruby-keyword kw">self</span>
+5:       <span class="ruby-keyword kw">self</span>
+6:     <span class="ruby-keyword kw">end</span>
+7:   <span class="ruby-keyword kw">end</span>
+</pre>
+  </div>
+</div>
+</div>
+<div class="method">
+  <div class="title">
+    <a name="M000160"></a><b>tap</b>() {|self| ...}
+  </div>
+  <div class="description">
+  <p>
+Yields <tt>x</tt> to the block, and then returns <tt>x</tt>. The primary
+purpose of this method is to &quot;<a href="Object.html#M000160">tap</a>
+into&quot; a method chain, in order to perform operations on intermediate
+results within the chain.
+</p>
+<pre>
+  (1..10).tap { |x| puts &quot;original: #{x.inspect}&quot; }.to_a.
+    tap    { |x| puts &quot;array: #{x.inspect}&quot; }.
+    select { |x| x%2 == 0 }.
+    tap    { |x| puts &quot;evens: #{x.inspect}&quot; }.
+    map    { |x| x*x }.
+    tap    { |x| puts &quot;squares: #{x.inspect}&quot; }
+</pre>
+  </div>
+<div class="sourcecode">
+  <p class="source-link">[ <a href="javascript:toggleSource('M000160_source')" id="l_M000160_source">show source</a> ]</p>
+  <div id="M000160_source" class="dyn-source">
+<pre>
+    <span class="ruby-comment cmt"># File activesupport/lib/active_support/core_ext/object/misc.rb, line 56</span>
+56:   <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">tap</span>
+57:     <span class="ruby-keyword kw">yield</span> <span class="ruby-keyword kw">self</span>
+58:     <span class="ruby-keyword kw">self</span>
+59:   <span class="ruby-keyword kw">end</span>
+</pre>
+  </div>
+</div>
+</div>
+<div class="method">
+  <div class="title">
+    <a name="M000166"></a><b>to_json</b>(options = nil)
+  </div>
+  <div class="description">
+  <p>
+Dumps object in JSON (JavaScript <a href="Object.html">Object</a>
+Notation). See <a href="http://www.json.org">www.json.org</a> for more
+info.
+</p>
+  </div>
+<div class="sourcecode">
+  <p class="source-link">[ <a href="javascript:toggleSource('M000166_source')" id="l_M000166_source">show source</a> ]</p>
+  <div id="M000166_source" class="dyn-source">
+<pre>
+   <span class="ruby-comment cmt"># File activesupport/lib/active_support/json/encoders/object.rb, line 3</span>
+3:   <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">to_json</span>(<span class="ruby-identifier">options</span> = <span class="ruby-keyword kw">nil</span>)
+4:     <span class="ruby-constant">ActiveSupport</span><span class="ruby-operator">::</span><span class="ruby-constant">JSON</span>.<span class="ruby-identifier">encode</span>(<span class="ruby-identifier">as_json</span>(<span class="ruby-identifier">options</span>))
+5:   <span class="ruby-keyword kw">end</span>
+</pre>
+  </div>
+</div>
+</div>
+<div class="method">
+  <div class="title">
+    <a name="M000147"></a><b>to_param</b>()
+  </div>
+<div class="sourcecode">
+  <p class="source-link">[ <a href="javascript:toggleSource('M000147_source')" id="l_M000147_source">show source</a> ]</p>
+  <div id="M000147_source" class="dyn-source">
+<pre>
+   <span class="ruby-comment cmt"># File actionpack/lib/action_controller/routing/routing_ext.rb, line 2</span>
+2:   <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">to_param</span>
+3:     <span class="ruby-identifier">to_s</span>
+4:   <span class="ruby-keyword kw">end</span>
+</pre>
+  </div>
+</div>
+</div>
+<div class="method">
+  <div class="title">
+    <a name="M000157"></a><b>to_param</b>()
+  </div>
+  <div class="description">
+  <p>
+Alias of <tt>to_s</tt>.
+</p>
+  </div>
+<div class="sourcecode">
+  <p class="source-link">[ <a href="javascript:toggleSource('M000157_source')" id="l_M000157_source">show source</a> ]</p>
+  <div id="M000157_source" class="dyn-source">
+<pre>
+   <span class="ruby-comment cmt"># File activesupport/lib/active_support/core_ext/object/conversions.rb, line 3</span>
+3:   <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">to_param</span>
+4:     <span class="ruby-identifier">to_s</span>
+5:   <span class="ruby-keyword kw">end</span>
+</pre>
+  </div>
+</div>
+</div>
+<div class="method">
+  <div class="title">
+    <a name="M000158"></a><b>to_query</b>(key)
+  </div>
+  <div class="description">
+  <p>
+Converts an object into a string suitable for use as a URL query string,
+using the given <tt>key</tt> as the param name.
+</p>
+<p>
+Note: This method is defined as a default implementation for all Objects
+for Hash#to_query to work.
+</p>
+  </div>
+<div class="sourcecode">
+  <p class="source-link">[ <a href="javascript:toggleSource('M000158_source')" id="l_M000158_source">show source</a> ]</p>
+  <div id="M000158_source" class="dyn-source">
+<pre>
+    <span class="ruby-comment cmt"># File activesupport/lib/active_support/core_ext/object/conversions.rb, line 11</span>
+11:   <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">to_query</span>(<span class="ruby-identifier">key</span>)
+12:     <span class="ruby-identifier">require</span> <span class="ruby-value str">'cgi'</span> <span class="ruby-keyword kw">unless</span> <span class="ruby-keyword kw">defined?</span>(<span class="ruby-constant">CGI</span>) <span class="ruby-operator">&amp;&amp;</span> <span class="ruby-keyword kw">defined?</span>(<span class="ruby-constant">CGI</span><span class="ruby-operator">::</span><span class="ruby-identifier">escape</span>)
+13:     <span class="ruby-node">&quot;#{CGI.escape(key.to_s)}=#{CGI.escape(to_param.to_s)}&quot;</span>
+14:   <span class="ruby-keyword kw">end</span>
+</pre>
+  </div>
+</div>
+</div>
+<div class="method">
+  <div class="title">
+    <a name="M000164"></a><b>try</b>(method, *args, &amp;block)
+  </div>
+  <div class="description">
+  <p>
+Invokes the method identified by the symbol <tt>method</tt>, passing it any
+arguments and/or the block specified, just like the regular Ruby
+<tt>Object#send</tt> does.
+</p>
+<p>
+<b>Unlike</b> that method however, a <tt>NoMethodError</tt> exception will
+<b>not</b> be raised and <tt>nil</tt> will be returned instead, if the
+receiving object is a <tt>nil</tt> object or NilClass.
+</p>
+<h4>Examples</h4>
+<p>
+Without <a href="Object.html#M000164">try</a>
+</p>
+<pre>
+  @person &amp;&amp; @person.name
+</pre>
+<p>
+or
+</p>
+<pre>
+  @person ? @person.name : nil
+</pre>
+<p>
+With <a href="Object.html#M000164">try</a>
+</p>
+<pre>
+  @person.try(:name)
+</pre>
+<p>
+<tt><a href="Object.html#M000164">try</a></tt> also accepts arguments
+and/or a block, for the method it is trying
+</p>
+<pre>
+  Person.try(:find, 1)
+  @people.try(:collect) {|p| p.name}
+</pre>
+  </div>
+<div class="sourcecode">
+  <p class="source-link">[ <a href="javascript:toggleSource('M000164_source')" id="l_M000164_source">show source</a> ]</p>
+  <div id="M000164_source" class="dyn-source">
+<pre>
+    <span class="ruby-comment cmt"># File activesupport/lib/active_support/core_ext/try.rb, line 25</span>
+25:   <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">try</span>(<span class="ruby-identifier">method</span>, <span class="ruby-operator">*</span><span class="ruby-identifier">args</span>, <span class="ruby-operator">&amp;</span><span class="ruby-identifier">block</span>)
+26:     <span class="ruby-identifier">send</span>(<span class="ruby-identifier">method</span>, <span class="ruby-operator">*</span><span class="ruby-identifier">args</span>, <span class="ruby-operator">&amp;</span><span class="ruby-identifier">block</span>)
+27:   <span class="ruby-keyword kw">end</span>
+</pre>
+  </div>
+</div>
+</div>
+<div class="method">
+  <div class="title">
+    <a name="M000161"></a><b>with_options</b>(options) {|ActiveSupport::OptionMerger.new(self, options)| ...}
+  </div>
+  <div class="description">
+  <p>
+An elegant way to factor duplication out of options passed to a series of
+method calls. Each method called in the block, with the block variable as
+the receiver, will have its options merged with the default
+<tt>options</tt> hash provided. Each method called on the block variable
+must take an options hash as its final argument.
+</p>
+<pre>
+  with_options :order =&gt; 'created_at', :class_name =&gt; 'Comment' do |post|
+    post.has_many :comments, :conditions =&gt; ['approved = ?', true], :dependent =&gt; :delete_all
+    post.has_many :unapproved_comments, :conditions =&gt; ['approved = ?', false]
+    post.has_many :all_comments
+  end
+</pre>
+<p>
+Can also be used with an explicit receiver:
+</p>
+<pre>
+  map.with_options :controller =&gt; &quot;people&quot; do |people|
+    people.connect &quot;/people&quot;,     :action =&gt; &quot;index&quot;
+    people.connect &quot;/people/:id&quot;, :action =&gt; &quot;show&quot;
+  end
+</pre>
+  </div>
+<div class="sourcecode">
+  <p class="source-link">[ <a href="javascript:toggleSource('M000161_source')" id="l_M000161_source">show source</a> ]</p>
+  <div id="M000161_source" class="dyn-source">
+<pre>
+    <span class="ruby-comment cmt"># File activesupport/lib/active_support/core_ext/object/misc.rb, line 80</span>
+80:   <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">with_options</span>(<span class="ruby-identifier">options</span>)
+81:     <span class="ruby-keyword kw">yield</span> <span class="ruby-constant">ActiveSupport</span><span class="ruby-operator">::</span><span class="ruby-constant">OptionMerger</span>.<span class="ruby-identifier">new</span>(<span class="ruby-keyword kw">self</span>, <span class="ruby-identifier">options</span>)
+82:   <span class="ruby-keyword kw">end</span>
+</pre>
+  </div>
+</div>
+</div>
+</div>
+
+  </div>
+
+    </body>
+</html>

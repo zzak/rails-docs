@@ -1,0 +1,73 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>20 Existence of Objects</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v6.0.6.1/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="existence-of-objects"><a class="anchorlink" href="#existence-of-objects">20 Existence of Objects</a></h3>
+<p>If you simply want to check for the existence of the object there's a method called <code>exists?</code>.
+This method will query the database using the same query as <code>find</code>, but instead of returning an
+object or collection of objects it will return either <code>true</code> or <code>false</code>.</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+Client.exists?(1)
+
+</pre>
+</div>
+<p>The <code>exists?</code> method also takes multiple values, but the catch is that it will return <code>true</code> if any
+one of those records exists.</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+Client.exists?(id: [1,2,3])
+# or
+Client.exists?(name: ['John', 'Sergei'])
+
+</pre>
+</div>
+<p>It's even possible to use <code>exists?</code> without any arguments on a model or a relation.</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+Client.where(first_name: 'Ryan').exists?
+
+</pre>
+</div>
+<p>The above returns <code>true</code> if there is at least one client with the <code>first_name</code> 'Ryan' and <code>false</code>
+otherwise.</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+Client.exists?
+
+</pre>
+</div>
+<p>The above returns <code>false</code> if the <code>clients</code> table is empty and <code>true</code> otherwise.</p>
+
+<p>You can also use <code>any?</code> and <code>many?</code> to check for existence on a model or relation.</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+# via a model
+Article.any?
+Article.many?
+
+# via a named scope
+Article.recent.any?
+Article.recent.many?
+
+# via a relation
+Article.where(published: true).any?
+Article.where(published: true).many?
+
+# via an association
+Article.first.categories.any?
+Article.first.categories.many?
+
+</pre>
+</div>
+</body>
+</html>

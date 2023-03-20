@@ -1,0 +1,47 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>6 Callbacks</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v4.2.11.3/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="callbacks">6 Callbacks</h3>
+<p>Active Job provides hooks during the lifecycle of a job. Callbacks allow you to
+trigger logic during the lifecycle of a job.</p>
+
+<h4 id="available-callbacks">6.1 Available callbacks</h4>
+<ul>
+<li><code>before_enqueue</code></li>
+<li><code>around_enqueue</code></li>
+<li><code>after_enqueue</code></li>
+<li><code>before_perform</code></li>
+<li><code>around_perform</code></li>
+<li><code>after_perform</code></li>
+</ul>
+<h4 id="usage">6.2 Usage</h4>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class GuestsCleanupJob &lt; ActiveJob::Base
+  queue_as :default
+
+  before_enqueue do |job|
+    # do something with the job instance
+  end
+
+  around_perform do |job, block|
+    # do something before perform
+    block.call
+    # do something after perform
+  end
+
+  def perform
+    # Do something later
+  end
+end
+
+</pre>
+</div>
+</body>
+</html>

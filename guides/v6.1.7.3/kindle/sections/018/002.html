@@ -1,0 +1,50 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>3 Installation</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v6.1.7.3/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="installation"><a class="anchorlink" href="#installation">3 Installation</a></h3>
+<p>Run <code>bin/rails action_text:install</code> to add the Yarn package and copy over the necessary migration. Also, you need to set up Active Storage for embedded images and other attachments. Please refer to the <a href="active_storage_overview.html">Active Storage Overview</a> guide.</p>
+
+<p>After the installation is complete, a Rails app using Webpacker should have the following changes:</p>
+<ol>
+<li>
+Both <code>trix</code> and <code>@rails/actiontext</code> should be required in your JavaScript pack.
+<div class="code_container">
+<pre><code class="highlight js"><span class="c1">// application.js</span>
+<span class="nx">require</span><span class="p">(</span><span class="dl">"</span><span class="s2">trix</span><span class="dl">"</span><span class="p">)</span>
+<span class="nx">require</span><span class="p">(</span><span class="dl">"</span><span class="s2">@rails/actiontext</span><span class="dl">"</span><span class="p">)</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-f54656066d7d7c2bd6c56c8dfb04d7cb">// application.js
+require("trix")
+require("@rails/actiontext")
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-f54656066d7d7c2bd6c56c8dfb04d7cb">Copy</button>
+</div>
+</li>
+<li>
+The <code>trix</code> stylesheet should be imported into <code>actiontext.scss</code>.
+<div class="code_container">
+<pre><code class="highlight scss"><span class="k">@import</span> <span class="s2">"trix/dist/trix"</span><span class="p">;</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-19326f20ec7bdc2f79aa415b798f8bd5">@import "trix/dist/trix";
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-19326f20ec7bdc2f79aa415b798f8bd5">Copy</button>
+</div>
+Additionally, this <code>actiontext.scss</code> file should be imported into your stylesheet pack.
+<div class="code_container">
+<pre><code class="highlight scss"><span class="c1">// application.scss</span>
+<span class="k">@import</span> <span class="s2">"./actiontext.scss"</span><span class="p">;</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-7569baab8ab7b34e55de298b386ed312">// application.scss
+@import "./actiontext.scss";
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-7569baab8ab7b34e55de298b386ed312">Copy</button>
+</div>
+</li>
+</ol>
+</body>
+</html>

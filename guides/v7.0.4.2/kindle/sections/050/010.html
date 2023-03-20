@@ -1,0 +1,34 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>11 Active Support</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v7.0.4.2/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="active-support"><a class="anchorlink" href="#active-support">11 Active Support</a></h3>
+<p>Please refer to the <a href="https://github.com/rails/rails/blob/7-0-stable/activesupport/CHANGELOG.md">Changelog</a> for detailed changes.</p>
+
+<h4 id="active-support-removals"><a class="anchorlink" href="#active-support-removals">11.1 Removals</a></h4>
+<ul>
+<li>  Remove deprecated <code>config.active_support.use_sha1_digests</code>.</li>
+<li>  Remove deprecated <code>URI.parser</code>.</li>
+<li>  Remove deprecated support to use <code>Range#include?</code> to check the inclusion of a value in
+a date time range is deprecated.</li>
+<li>  Remove deprecated <code>ActiveSupport::Multibyte::Unicode.default_normalization_form</code>.</li>
+</ul>
+<h4 id="active-support-deprecations"><a class="anchorlink" href="#active-support-deprecations">11.2 Deprecations</a></h4>
+<ul>
+<li>
+  Deprecate passing a format to <code>#to_s</code> in favor of <code>#to_fs</code> in <code>Array</code>, <code>Range</code>, <code>Date</code>, <code>DateTime</code>, <code>Time</code>,
+<code>BigDecimal</code>, <code>Float</code> and, <code>Integer</code>.
+This deprecation is to allow Rails application to take advantage of a Ruby 3.1
+<a href="https://github.com/ruby/ruby/commit/b08dacfea39ad8da3f1fd7fdd0e4538cc892ec44">optimization</a> that makes
+interpolation of some types of objects faster.
+New applications will not have the <code>#to_s</code> method overridden on those classes, existing applications can use
+<code>config.active_support.disable_to_s_conversion</code>.
+</li>
+</ul>
+<h4 id="active-support-notable-changes"><a class="anchorlink" href="#active-support-notable-changes">11.3 Notable changes</a></h4>
+</body>
+</html>

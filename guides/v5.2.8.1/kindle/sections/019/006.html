@@ -1,0 +1,443 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>7 Functional Tests for Your Controllers</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v5.2.8.1/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="functional-tests-for-your-controllers"><a class="anchorlink" href="#functional-tests-for-your-controllers">7 Functional Tests for Your Controllers</a></h3>
+<p>In Rails, testing the various actions of a controller is a form of writing functional tests. Remember your controllers handle the incoming web requests to your application and eventually respond with a rendered view. When writing functional tests, you are testing how your actions handle the requests and the expected result or response, in some cases an HTML view.</p>
+
+<h4 id="what-to-include-in-your-functional-tests"><a class="anchorlink" href="#what-to-include-in-your-functional-tests">7.1 What to include in your Functional Tests</a></h4>
+
+<p>You should test for things such as:</p>
+<ul>
+<li>was the web request successful?</li>
+<li>was the user redirected to the right page?</li>
+<li>was the user successfully authenticated?</li>
+<li>was the correct object stored in the response template?</li>
+<li>was the appropriate message displayed to the user in the view?</li>
+</ul>
+<p>The easiest way to see functional tests in action is to generate a controller using the scaffold generator:</p>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+$ bin/rails generate scaffold_controller article title:string body:text
+...
+create  app/controllers/articles_controller.rb
+...
+invoke  test_unit
+create    test/controllers/articles_controller_test.rb
+...
+
+</pre>
+</div>
+<p>This will generate the controller code and tests for an <code>Article</code> resource.
+You can take a look at the file <code>articles_controller_test.rb</code> in the <code>test/controllers</code> directory.</p>
+
+<p>If you already have a controller and just want to generate the test scaffold code for
+each of the seven default actions, you can use the following command:</p>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+$ bin/rails generate test_unit:scaffold article
+...
+invoke  test_unit
+create    test/controllers/articles_controller_test.rb
+...
+
+</pre>
+</div>
+<p>Let's take a look at one such test, <code>test_should_get_index</code> from the file <code>articles_controller_test.rb</code>.</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+# articles_controller_test.rb
+class ArticlesControllerTest &lt; ActionDispatch::IntegrationTest
+  test "should get index" do
+    get articles_url
+    assert_response :success
+  end
+end
+
+</pre>
+</div>
+<p>In the <code>test_should_get_index</code> test, Rails simulates a request on the action called <code>index</code>, making sure the request was successful
+and also ensuring that the right response body has been generated.</p>
+
+<p>The <code>get</code> method kicks off the web request and populates the results into the <code>@response</code>. It can accept up to 6 arguments:</p>
+<ul>
+<li>The URI of the controller action you are requesting.
+This can be in the form of a string or a route helper (e.g. <code>articles_url</code>).</li>
+<li>
+<code>params</code>: option with a hash of request parameters to pass into the action
+(e.g. query string parameters or article variables).</li>
+<li>
+<code>headers</code>: for setting the headers that will be passed with the request.</li>
+<li>
+<code>env</code>: for customizing the request environment as needed.</li>
+<li>
+<code>xhr</code>: whether the request is Ajax request or not. Can be set to true for marking the request as Ajax.</li>
+<li>
+<code>as</code>: for encoding the request with different content type. Supports <code>:json</code> by default.</li>
+</ul>
+<p>All of these keyword arguments are optional.</p>
+
+<p>Example: Calling the <code>:show</code> action for the first <code>Article</code>, passing in an <code>HTTP_REFERER</code> header:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+get article_url(Article.first), headers: { "HTTP_REFERER" =&gt; "http://example.com/home" }
+
+</pre>
+</div>
+<p>Another example: Calling the <code>:update</code> action for the last <code>Article</code>, passing in new text for the <code>title</code> in <code>params</code>, as an Ajax request:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+patch article_url(Article.last), params: { article: { title: "updated" } }, xhr: true
+
+</pre>
+</div>
+<div class="note"><p>If you try running <code>test_should_create_article</code> test from <code>articles_controller_test.rb</code> it will fail on account of the newly added model level validation and rightly so.</p></div>
+
+<p>Let us modify <code>test_should_create_article</code> test in <code>articles_controller_test.rb</code> so that all our test pass:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+test "should create article" do
+  assert_difference('Article.count') do
+    post articles_url, params: { article: { body: 'Rails is awesome!', title: 'Hello Rails' } }
+  end
+
+  assert_redirected_to article_path(Article.last)
+end
+
+</pre>
+</div>
+<p>Now you can try running all the tests and they should pass.</p>
+
+<div class="note"><p>If you followed the steps in the Basic Authentication section, you'll need to add the following to the <code>setup</code> block to get all the tests passing:</p></div>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+request.headers['Authorization'] = ActionController::HttpAuthentication::Basic.
+  encode_credentials('dhh', 'secret')
+
+</pre>
+</div>
+<h4 id="available-request-types-for-functional-tests"><a class="anchorlink" href="#available-request-types-for-functional-tests">7.2 Available Request Types for Functional Tests</a></h4>
+
+<p>If you're familiar with the HTTP protocol, you'll know that <code>get</code> is a type of request. There are 6 request types supported in Rails functional tests:</p>
+<ul>
+<li><code>get</code></li>
+<li><code>post</code></li>
+<li><code>patch</code></li>
+<li><code>put</code></li>
+<li><code>head</code></li>
+<li><code>delete</code></li>
+</ul>
+<p>All of request types have equivalent methods that you can use. In a typical C.R.U.D. application you'll be using <code>get</code>, <code>post</code>, <code>put</code> and <code>delete</code> more often.</p>
+
+<div class="note"><p>Functional tests do not verify whether the specified request type is accepted by the action, we're more concerned with the result. Request tests exist for this use case to make your tests more purposeful.</p></div>
+
+<h4 id="testing-xhr-ajax-requests"><a class="anchorlink" href="#testing-xhr-ajax-requests">7.3 Testing XHR (AJAX) requests</a></h4>
+
+<p>To test AJAX requests, you can specify the <code>xhr: true</code> option to <code>get</code>, <code>post</code>,
+<code>patch</code>, <code>put</code>, and <code>delete</code> methods. For example:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+test "ajax request" do
+  article = articles(:one)
+  get article_url(article), xhr: true
+
+  assert_equal 'hello world', @response.body
+  assert_equal "text/javascript", @response.content_type
+end
+
+</pre>
+</div>
+<h4 id="the-three-hashes-of-the-apocalypse"><a class="anchorlink" href="#the-three-hashes-of-the-apocalypse">7.4 The Three Hashes of the Apocalypse</a></h4>
+
+<p>After a request has been made and processed, you will have 3 Hash objects ready for use:</p>
+<ul>
+<li>
+<code>cookies</code> - Any cookies that are set</li>
+<li>
+<code>flash</code> - Any objects living in the flash</li>
+<li>
+<code>session</code> - Any object living in session variables</li>
+</ul>
+<p>As is the case with normal Hash objects, you can access the values by referencing the keys by string. You can also reference them by symbol name. For example:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+flash["gordon"]               flash[:gordon]
+session["shmession"]          session[:shmession]
+cookies["are_good_for_u"]     cookies[:are_good_for_u]
+
+</pre>
+</div>
+<h4 id="instance-variables-available"><a class="anchorlink" href="#instance-variables-available">7.5 Instance Variables Available</a></h4>
+
+<p>You also have access to three instance variables in your functional tests, after a request is made:</p>
+<ul>
+<li>
+<code>@controller</code> - The controller processing the request</li>
+<li>
+<code>@request</code> - The request object</li>
+<li>
+<code>@response</code> - The response object</li>
+</ul>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class ArticlesControllerTest &lt; ActionDispatch::IntegrationTest
+  test "should get index" do
+    get articles_url
+
+    assert_equal "index", @controller.action_name
+    assert_equal "application/x-www-form-urlencoded", @request.media_type
+    assert_match "Articles", @response.body
+  end
+end
+
+</pre>
+</div>
+<h4 id="setting-headers-and-cgi-variables"><a class="anchorlink" href="#setting-headers-and-cgi-variables">7.6 Setting Headers and CGI variables</a></h4>
+
+<p><a href="https://tools.ietf.org/search/rfc2616#section-5.3">HTTP headers</a>
+and
+<a href="https://tools.ietf.org/search/rfc3875#section-4.1">CGI variables</a>
+can be passed as headers:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+# setting an HTTP Header
+get articles_url, headers: { "Content-Type": "text/plain" } # simulate the request with custom header
+
+# setting a CGI variable
+get articles_url, headers: { "HTTP_REFERER": "http://example.com/home" } # simulate the request with custom env variable
+
+</pre>
+</div>
+<h4 id="testing-flash-notices"><a class="anchorlink" href="#testing-flash-notices">7.7 Testing <code>flash</code> notices</a></h4>
+
+<p>If you remember from earlier, one of the Three Hashes of the Apocalypse was <code>flash</code>.</p>
+
+<p>We want to add a <code>flash</code> message to our blog application whenever someone
+successfully creates a new Article.</p>
+
+<p>Let's start by adding this assertion to our <code>test_should_create_article</code> test:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+test "should create article" do
+  assert_difference('Article.count') do
+    post article_url, params: { article: { title: 'Some title' } }
+  end
+
+  assert_redirected_to article_path(Article.last)
+  assert_equal 'Article was successfully created.', flash[:notice]
+end
+
+</pre>
+</div>
+<p>If we run our test now, we should see a failure:</p>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+$ bin/rails test test/controllers/articles_controller_test.rb -n test_should_create_article
+Run options: -n test_should_create_article --seed 32266
+
+# Running:
+
+F
+
+Finished in 0.114870s, 8.7055 runs/s, 34.8220 assertions/s.
+
+  1) Failure:
+ArticlesControllerTest#test_should_create_article [/test/controllers/articles_controller_test.rb:16]:
+--- expected
++++ actual
+@@ -1 +1 @@
+-"Article was successfully created."
++nil
+
+1 runs, 4 assertions, 1 failures, 0 errors, 0 skips
+
+</pre>
+</div>
+<p>Let's implement the flash message now in our controller. Our <code>:create</code> action should now look like this:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+def create
+  @article = Article.new(article_params)
+
+  if @article.save
+    flash[:notice] = 'Article was successfully created.'
+    redirect_to @article
+  else
+    render 'new'
+  end
+end
+
+</pre>
+</div>
+<p>Now if we run our tests, we should see it pass:</p>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+$ bin/rails test test/controllers/articles_controller_test.rb -n test_should_create_article
+Run options: -n test_should_create_article --seed 18981
+
+# Running:
+
+.
+
+Finished in 0.081972s, 12.1993 runs/s, 48.7972 assertions/s.
+
+1 runs, 4 assertions, 0 failures, 0 errors, 0 skips
+
+</pre>
+</div>
+<h4 id="putting-it-together"><a class="anchorlink" href="#putting-it-together">7.8 Putting it together</a></h4>
+
+<p>At this point our Articles controller tests the <code>:index</code> as well as <code>:new</code> and <code>:create</code> actions. What about dealing with existing data?</p>
+
+<p>Let's write a test for the <code>:show</code> action:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+test "should show article" do
+  article = articles(:one)
+  get article_url(article)
+  assert_response :success
+end
+
+</pre>
+</div>
+<p>Remember from our discussion earlier on fixtures, the <code>articles()</code> method will give us access to our Articles fixtures.</p>
+
+<p>How about deleting an existing Article?</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+test "should destroy article" do
+  article = articles(:one)
+  assert_difference('Article.count', -1) do
+    delete article_url(article)
+  end
+
+  assert_redirected_to articles_path
+end
+
+</pre>
+</div>
+<p>We can also add a test for updating an existing Article.</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+test "should update article" do
+  article = articles(:one)
+
+  patch article_url(article), params: { article: { title: "updated" } }
+
+  assert_redirected_to article_path(article)
+  # Reload association to fetch updated data and assert that title is updated.
+  article.reload
+  assert_equal "updated", article.title
+end
+
+</pre>
+</div>
+<p>Notice we're starting to see some duplication in these three tests, they both access the same Article fixture data. We can D.R.Y. this up by using the <code>setup</code> and <code>teardown</code> methods provided by <code>ActiveSupport::Callbacks</code>.</p>
+
+<p>Our test should now look something as what follows. Disregard the other tests for now, we're leaving them out for brevity.</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+require 'test_helper'
+
+class ArticlesControllerTest &lt; ActionDispatch::IntegrationTest
+  # called before every single test
+  setup do
+    @article = articles(:one)
+  end
+
+  # called after every single test
+  teardown do
+    # when controller is using cache it may be a good idea to reset it afterwards
+    Rails.cache.clear
+  end
+
+  test "should show article" do
+    # Reuse the @article instance variable from setup
+    get article_url(@article)
+    assert_response :success
+  end
+
+  test "should destroy article" do
+    assert_difference('Article.count', -1) do
+      delete article_url(@article)
+    end
+
+    assert_redirected_to articles_path
+  end
+
+  test "should update article" do
+    patch article_url(@article), params: { article: { title: "updated" } }
+
+    assert_redirected_to article_path(@article)
+    # Reload association to fetch updated data and assert that title is updated.
+    @article.reload
+    assert_equal "updated", @article.title
+  end
+end
+
+</pre>
+</div>
+<p>Similar to other callbacks in Rails, the <code>setup</code> and <code>teardown</code> methods can also be used by passing a block, lambda, or method name as a symbol to call.</p>
+
+<h4 id="test-helpers"><a class="anchorlink" href="#test-helpers">7.9 Test helpers</a></h4>
+
+<p>To avoid code duplication, you can add your own test helpers.
+Sign in helper can be a good example:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+# test/test_helper.rb
+
+module SignInHelper
+  def sign_in_as(user)
+    post sign_in_url(email: user.email, password: user.password)
+  end
+end
+
+class ActionDispatch::IntegrationTest
+  include SignInHelper
+end
+
+</pre>
+</div>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+require 'test_helper'
+
+class ProfileControllerTest &lt; ActionDispatch::IntegrationTest
+
+  test "should show profile" do
+    # helper is now reusable from any controller test case
+    sign_in_as users(:david)
+
+    get profile_url
+    assert_response :success
+  end
+end
+
+</pre>
+</div>
+</body>
+</html>

@@ -1,0 +1,36 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>8 Making Your Library or Gem a Pre-Processor</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v5.2.8.1/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="making-your-library-or-gem-a-pre-processor"><a class="anchorlink" href="#making-your-library-or-gem-a-pre-processor">8 Making Your Library or Gem a Pre-Processor</a></h3>
+<p>Sprockets uses Processors, Transformers, Compressors, and Exporters to extend
+Sprockets functionality. Have a look at
+<a href="https://github.com/rails/sprockets/blob/master/guides/extending_sprockets.md">Extending Sprockets</a>
+to learn more. Here we registered a preprocessor to add a comment to the end
+of text/css (<code>.css</code>) files.</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+module AddComment
+  def self.call(input)
+    { data: input[:data] + "/* Hello From my sprockets extension */" }
+  end
+end
+
+</pre>
+</div>
+<p>Now that you have a module that modifies the input data, it's time to register
+it as a preprocessor for your mime type.</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+Sprockets.register_preprocessor 'text/css', AddComment
+
+</pre>
+</div>
+</body>
+</html>

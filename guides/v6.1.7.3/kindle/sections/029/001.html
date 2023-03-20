@@ -1,0 +1,148 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>2 Unobtrusive JavaScript</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v6.1.7.3/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="unobtrusive-javascript"><a class="anchorlink" href="#unobtrusive-javascript">2 Unobtrusive JavaScript</a></h3>
+<p>Rails uses a technique called "Unobtrusive JavaScript" to handle attaching
+JavaScript to the DOM. This is generally considered to be a best-practice
+within the frontend community, but you may occasionally read tutorials that
+demonstrate other ways.</p>
+
+<p>Here's the simplest way to write JavaScript. You may see it referred to as
+'inline JavaScript':</p>
+
+<div class="code_container">
+<pre><code class="highlight html"><span class="nt">&lt;a</span> <span class="na">href=</span><span class="s">"#"</span> <span class="na">onclick=</span><span class="s">"this.style.backgroundColor='#990000';event.preventDefault();"</span><span class="nt">&gt;</span>Paint it red<span class="nt">&lt;/a&gt;</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-5038f2a6c1697baad76a6d5feea1fd9f">&lt;a href="#" onclick="this.style.backgroundColor='#990000';event.preventDefault();"&gt;Paint it red&lt;/a&gt;
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-5038f2a6c1697baad76a6d5feea1fd9f">Copy</button>
+</div>
+<p>When clicked, the link background will become red. Here's the problem: what
+happens when we have lots of JavaScript we want to execute on a click?</p>
+
+<div class="code_container">
+<pre><code class="highlight html"><span class="nt">&lt;a</span> <span class="na">href=</span><span class="s">"#"</span> <span class="na">onclick=</span><span class="s">"this.style.backgroundColor='#009900';this.style.color='#FFFFFF';event.preventDefault();"</span><span class="nt">&gt;</span>Paint it green<span class="nt">&lt;/a&gt;</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-2c9d8f5db5cd28f9546efd6c5a66053b">&lt;a href="#" onclick="this.style.backgroundColor='#009900';this.style.color='#FFFFFF';event.preventDefault();"&gt;Paint it green&lt;/a&gt;
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-2c9d8f5db5cd28f9546efd6c5a66053b">Copy</button>
+</div>
+<p>Awkward, right? We could pull the function definition out of the click handler,
+and turn it a function:</p>
+
+<div class="code_container">
+<pre><code class="highlight js"><span class="nb">window</span><span class="p">.</span><span class="nx">paintIt</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(</span><span class="nx">event</span><span class="p">,</span> <span class="nx">backgroundColor</span><span class="p">,</span> <span class="nx">textColor</span><span class="p">)</span> <span class="p">{</span>
+  <span class="nx">event</span><span class="p">.</span><span class="nx">preventDefault</span><span class="p">();</span>
+  <span class="nx">event</span><span class="p">.</span><span class="nx">target</span><span class="p">.</span><span class="nx">style</span><span class="p">.</span><span class="nx">backgroundColor</span> <span class="o">=</span> <span class="nx">backgroundColor</span><span class="p">;</span>
+  <span class="k">if</span> <span class="p">(</span><span class="nx">textColor</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">event</span><span class="p">.</span><span class="nx">target</span><span class="p">.</span><span class="nx">style</span><span class="p">.</span><span class="nx">color</span> <span class="o">=</span> <span class="nx">textColor</span><span class="p">;</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-dcd0ee9bb8354ef5e3aac1260054046a">window.paintIt = function(event, backgroundColor, textColor) {
+  event.preventDefault();
+  event.target.style.backgroundColor = backgroundColor;
+  if (textColor) {
+    event.target.style.color = textColor;
+  }
+}
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-dcd0ee9bb8354ef5e3aac1260054046a">Copy</button>
+</div>
+<p>And then on our page:</p>
+
+<div class="code_container">
+<pre><code class="highlight html"><span class="nt">&lt;a</span> <span class="na">href=</span><span class="s">"#"</span> <span class="na">onclick=</span><span class="s">"paintIt(event, '#990000')"</span><span class="nt">&gt;</span>Paint it red<span class="nt">&lt;/a&gt;</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-872185f323c91b5532178433d83575a2">&lt;a href="#" onclick="paintIt(event, '#990000')"&gt;Paint it red&lt;/a&gt;
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-872185f323c91b5532178433d83575a2">Copy</button>
+</div>
+<p>That's a little bit better, but what about multiple links that have the same
+effect?</p>
+
+<div class="code_container">
+<pre><code class="highlight html"><span class="nt">&lt;a</span> <span class="na">href=</span><span class="s">"#"</span> <span class="na">onclick=</span><span class="s">"paintIt(event, '#990000')"</span><span class="nt">&gt;</span>Paint it red<span class="nt">&lt;/a&gt;</span>
+<span class="nt">&lt;a</span> <span class="na">href=</span><span class="s">"#"</span> <span class="na">onclick=</span><span class="s">"paintIt(event, '#009900', '#FFFFFF')"</span><span class="nt">&gt;</span>Paint it green<span class="nt">&lt;/a&gt;</span>
+<span class="nt">&lt;a</span> <span class="na">href=</span><span class="s">"#"</span> <span class="na">onclick=</span><span class="s">"paintIt(event, '#000099', '#FFFFFF')"</span><span class="nt">&gt;</span>Paint it blue<span class="nt">&lt;/a&gt;</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-5ce8e9b314ff9cf35c7d40e66ba10cf1">&lt;a href="#" onclick="paintIt(event, '#990000')"&gt;Paint it red&lt;/a&gt;
+&lt;a href="#" onclick="paintIt(event, '#009900', '#FFFFFF')"&gt;Paint it green&lt;/a&gt;
+&lt;a href="#" onclick="paintIt(event, '#000099', '#FFFFFF')"&gt;Paint it blue&lt;/a&gt;
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-5ce8e9b314ff9cf35c7d40e66ba10cf1">Copy</button>
+</div>
+<p>Not very DRY, eh? We can fix this by using events instead. We'll add a <code>data-*</code>
+attribute to our link, and then bind a handler to the click event of every link
+that has that attribute:</p>
+
+<div class="code_container">
+<pre><code class="highlight js"><span class="kd">function</span> <span class="nx">paintIt</span><span class="p">(</span><span class="nx">element</span><span class="p">,</span> <span class="nx">backgroundColor</span><span class="p">,</span> <span class="nx">textColor</span><span class="p">)</span> <span class="p">{</span>
+  <span class="nx">element</span><span class="p">.</span><span class="nx">style</span><span class="p">.</span><span class="nx">backgroundColor</span> <span class="o">=</span> <span class="nx">backgroundColor</span><span class="p">;</span>
+  <span class="k">if</span> <span class="p">(</span><span class="nx">textColor</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">element</span><span class="p">.</span><span class="nx">style</span><span class="p">.</span><span class="nx">color</span> <span class="o">=</span> <span class="nx">textColor</span><span class="p">;</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="nb">window</span><span class="p">.</span><span class="nx">addEventListener</span><span class="p">(</span><span class="dl">"</span><span class="s2">load</span><span class="dl">"</span><span class="p">,</span> <span class="p">()</span> <span class="o">=&gt;</span> <span class="p">{</span>
+  <span class="kd">const</span> <span class="nx">links</span> <span class="o">=</span> <span class="nb">document</span><span class="p">.</span><span class="nx">querySelectorAll</span><span class="p">(</span>
+    <span class="dl">"</span><span class="s2">a[data-background-color]</span><span class="dl">"</span>
+  <span class="p">);</span>
+  <span class="nx">links</span><span class="p">.</span><span class="nx">forEach</span><span class="p">((</span><span class="nx">element</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span>
+    <span class="nx">element</span><span class="p">.</span><span class="nx">addEventListener</span><span class="p">(</span><span class="dl">"</span><span class="s2">click</span><span class="dl">"</span><span class="p">,</span> <span class="p">(</span><span class="nx">event</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span>
+      <span class="nx">event</span><span class="p">.</span><span class="nx">preventDefault</span><span class="p">();</span>
+
+      <span class="kd">const</span> <span class="p">{</span><span class="nx">backgroundColor</span><span class="p">,</span> <span class="nx">textColor</span><span class="p">}</span> <span class="o">=</span> <span class="nx">element</span><span class="p">.</span><span class="nx">dataset</span><span class="p">;</span>
+      <span class="nx">paintIt</span><span class="p">(</span><span class="nx">element</span><span class="p">,</span> <span class="nx">backgroundColor</span><span class="p">,</span> <span class="nx">textColor</span><span class="p">);</span>
+    <span class="p">});</span>
+  <span class="p">});</span>
+<span class="p">});</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-6f13f33f0b7cc19107b89157d7e110c2">function paintIt(element, backgroundColor, textColor) {
+  element.style.backgroundColor = backgroundColor;
+  if (textColor) {
+    element.style.color = textColor;
+  }
+}
+
+window.addEventListener("load", () =&gt; {
+  const links = document.querySelectorAll(
+    "a[data-background-color]"
+  );
+  links.forEach((element) =&gt; {
+    element.addEventListener("click", (event) =&gt; {
+      event.preventDefault();
+
+      const {backgroundColor, textColor} = element.dataset;
+      paintIt(element, backgroundColor, textColor);
+    });
+  });
+});
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-6f13f33f0b7cc19107b89157d7e110c2">Copy</button>
+</div>
+<div class="code_container">
+<pre><code class="highlight html"><span class="nt">&lt;a</span> <span class="na">href=</span><span class="s">"#"</span> <span class="na">data-background-color=</span><span class="s">"#990000"</span><span class="nt">&gt;</span>Paint it red<span class="nt">&lt;/a&gt;</span>
+<span class="nt">&lt;a</span> <span class="na">href=</span><span class="s">"#"</span> <span class="na">data-background-color=</span><span class="s">"#009900"</span> <span class="na">data-text-color=</span><span class="s">"#FFFFFF"</span><span class="nt">&gt;</span>Paint it green<span class="nt">&lt;/a&gt;</span>
+<span class="nt">&lt;a</span> <span class="na">href=</span><span class="s">"#"</span> <span class="na">data-background-color=</span><span class="s">"#000099"</span> <span class="na">data-text-color=</span><span class="s">"#FFFFFF"</span><span class="nt">&gt;</span>Paint it blue<span class="nt">&lt;/a&gt;</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-76d9a46f469703a645b45f2ce0c8c224">&lt;a href="#" data-background-color="#990000"&gt;Paint it red&lt;/a&gt;
+&lt;a href="#" data-background-color="#009900" data-text-color="#FFFFFF"&gt;Paint it green&lt;/a&gt;
+&lt;a href="#" data-background-color="#000099" data-text-color="#FFFFFF"&gt;Paint it blue&lt;/a&gt;
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-76d9a46f469703a645b45f2ce0c8c224">Copy</button>
+</div>
+<p>We call this 'unobtrusive' JavaScript because we're no longer mixing our
+JavaScript into our HTML. We've properly separated our concerns, making future
+change easy. We can easily add behavior to any link by adding the data
+attribute. We can run all of our JavaScript through a minimizer and
+concatenator. We can serve our entire JavaScript bundle on every page, which
+means that it'll get downloaded on the first page load and then be cached on
+every page after that. Lots of little benefits really add up.</p>
+</body>
+</html>

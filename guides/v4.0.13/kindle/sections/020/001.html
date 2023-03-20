@@ -1,0 +1,198 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>2 Rake</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v4.0.13/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="rake">2 Rake</h3>
+<p>Rake is Ruby Make, a standalone Ruby utility that replaces the Unix utility 'make', and uses a 'Rakefile' and <code>.rake</code> files to build up a list of tasks. In Rails, Rake is used for common administration tasks, especially sophisticated ones that build off of each other.</p>
+<p>You can get a list of Rake tasks available to you, which will often depend on your current directory, by typing <code>rake --tasks</code>. Each task has a description, and should help you find the thing you need.</p>
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+$ rake --tasks
+rake about              # List versions of all Rails frameworks and the environment
+rake assets:clean       # Remove compiled assets
+rake assets:precompile  # Compile all the assets named in config.assets.precompile
+rake db:create          # Create the database from config/database.yml for the current Rails.env
+...
+rake log:clear          # Truncates all *.log files in log/ to zero bytes (specify which logs with LOGS=test,development)
+rake middleware         # Prints out your Rack middleware stack
+...
+rake tmp:clear          # Clear session, cache, and socket files from tmp/ (narrow w/ tmp:sessions:clear, tmp:cache:clear, tmp:sockets:clear)
+rake tmp:create         # Creates tmp directories for sessions, cache, sockets, and pids
+
+</pre>
+</div>
+<h4 id="about">2.1 <code>about</code>
+</h4>
+<p><code>rake about</code> gives information about version numbers for Ruby, RubyGems, Rails, the Rails subcomponents, your application's folder, the current Rails environment name, your app's database adapter, and schema version. It is useful when you need to ask for help, check if a security patch might affect you, or when you need some stats for an existing Rails installation.</p>
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+$ rake about
+About your application's environment
+Ruby version              1.9.3 (x86_64-linux)
+RubyGems version          1.3.6
+Rack version              1.3
+Rails version             4.0.0
+JavaScript Runtime        Node.js (V8)
+Active Record version     4.0.0
+Action Pack version       4.0.0
+Action Mailer version     4.0.0
+Active Support version    4.0.0
+Middleware                Rack::Sendfile, ActionDispatch::Static, Rack::Lock, #&lt;ActiveSupport::Cache::Strategy::LocalCache::Middleware:0x007ffd131a7c88&gt;, Rack::Runtime, Rack::MethodOverride, ActionDispatch::RequestId, Rails::Rack::Logger, ActionDispatch::ShowExceptions, ActionDispatch::DebugExceptions, ActionDispatch::RemoteIp, ActionDispatch::Reloader, ActionDispatch::Callbacks, ActiveRecord::Migration::CheckPending, ActiveRecord::ConnectionAdapters::ConnectionManagement, ActiveRecord::QueryCache, ActionDispatch::Cookies, ActionDispatch::Session::EncryptedCookieStore, ActionDispatch::Flash, ActionDispatch::ParamsParser, Rack::Head, Rack::ConditionalGet, Rack::ETag
+Application root          /home/foobar/commandsapp
+Environment               development
+Database adapter          sqlite3
+Database schema version   20110805173523
+
+</pre>
+</div>
+<h4 id="assets">2.2 <code>assets</code>
+</h4>
+<p>You can precompile the assets in <code>app/assets</code> using <code>rake assets:precompile</code> and remove those compiled assets using <code>rake assets:clean</code>.</p>
+<h4 id="db">2.3 <code>db</code>
+</h4>
+<p>The most common tasks of the <code>db:</code> Rake namespace are <code>migrate</code> and <code>create</code>, and it will pay off to try out all of the migration rake tasks (<code>up</code>, <code>down</code>, <code>redo</code>, <code>reset</code>). <code>rake db:version</code> is useful when troubleshooting, telling you the current version of the database.</p>
+<p>More information about migrations can be found in the <a href="migrations.html">Migrations</a> guide.</p>
+<h4 id="doc">2.4 <code>doc</code>
+</h4>
+<p>The <code>doc:</code> namespace has the tools to generate documentation for your app, API documentation, guides. Documentation can also be stripped which is mainly useful for slimming your codebase, like if you're writing a Rails application for an embedded platform.</p>
+<ul>
+<li>
+<code>rake doc:app</code> generates documentation for your application in <code>doc/app</code>.</li>
+<li>
+<code>rake doc:guides</code> generates Rails guides in <code>doc/guides</code>.</li>
+<li>
+<code>rake doc:rails</code> generates API documentation for Rails in <code>doc/api</code>.</li>
+</ul>
+<h4 id="notes">2.5 <code>notes</code>
+</h4>
+<p><code>rake notes</code> will search through your code for comments beginning with FIXME, OPTIMIZE or TODO. The search is done in files with extension <code>.builder</code>, <code>.rb</code>, <code>.erb</code>, <code>.haml</code> and <code>.slim</code> for both default and custom annotations.</p>
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+$ rake notes
+(in /home/foobar/commandsapp)
+app/controllers/admin/users_controller.rb:
+  * [ 20] [TODO] any other way to do this?
+  * [132] [FIXME] high priority for next deploy
+
+app/models/school.rb:
+  * [ 13] [OPTIMIZE] refactor this code to make it faster
+  * [ 17] [FIXME]
+
+</pre>
+</div>
+<p>If you are looking for a specific annotation, say FIXME, you can use <code>rake notes:fixme</code>. Note that you have to lower case the annotation's name.</p>
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+$ rake notes:fixme
+(in /home/foobar/commandsapp)
+app/controllers/admin/users_controller.rb:
+  * [132] high priority for next deploy
+
+app/models/school.rb:
+  * [ 17]
+
+</pre>
+</div>
+<p>You can also use custom annotations in your code and list them using <code>rake notes:custom</code> by specifying the annotation using an environment variable <code>ANNOTATION</code>.</p>
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+$ rake notes:custom ANNOTATION=BUG
+(in /home/foobar/commandsapp)
+app/models/post.rb:
+  * [ 23] Have to fix this one before pushing!
+
+</pre>
+</div>
+<div class="note"><p>When using specific annotations and custom annotations, the annotation name (FIXME, BUG etc) is not displayed in the output lines.</p></div>
+<p>By default, <code>rake notes</code> will look in the <code>app</code>, <code>config</code>, <code>lib</code>, <code>bin</code> and <code>test</code> directories. If you would like to search other directories, you can provide them as a comma separated list in an environment variable <code>SOURCE_ANNOTATION_DIRECTORIES</code>.</p>
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+$ export SOURCE_ANNOTATION_DIRECTORIES='spec,vendor'
+$ rake notes
+(in /home/foobar/commandsapp)
+app/models/user.rb:
+  * [ 35] [FIXME] User should have a subscription at this point
+spec/models/user_spec.rb:
+  * [122] [TODO] Verify the user that has a subscription works
+
+</pre>
+</div>
+<h4 id="routes">2.6 <code>routes</code>
+</h4>
+<p><code>rake routes</code> will list all of your defined routes, which is useful for tracking down routing problems in your app, or giving you a good overview of the URLs in an app you're trying to get familiar with.</p>
+<h4 id="test">2.7 <code>test</code>
+</h4>
+<div class="info"><p>A good description of unit testing in Rails is given in <a href="testing.html">A Guide to Testing Rails Applications</a></p></div>
+<p>Rails comes with a test suite called <code>Test::Unit</code>. Rails owes its stability to the use of tests. The tasks available in the <code>test:</code> namespace helps in running the different tests you will hopefully write.</p>
+<h4 id="tmp">2.8 <code>tmp</code>
+</h4>
+<p>The <code>Rails.root/tmp</code> directory is, like the *nix /tmp directory, the holding place for temporary files like sessions (if you're using a file store for files), process id files, and cached actions.</p>
+<p>The <code>tmp:</code> namespaced tasks will help you clear the <code>Rails.root/tmp</code> directory:</p>
+<ul>
+<li>
+<code>rake tmp:cache:clear</code> clears <code>tmp/cache</code>.</li>
+<li>
+<code>rake tmp:sessions:clear</code> clears <code>tmp/sessions</code>.</li>
+<li>
+<code>rake tmp:sockets:clear</code> clears <code>tmp/sockets</code>.</li>
+<li>
+<code>rake tmp:clear</code> clears all the three: cache, sessions and sockets.</li>
+</ul>
+<h4 id="miscellaneous">2.9 Miscellaneous</h4>
+<ul>
+<li>
+<code>rake stats</code> is great for looking at statistics on your code, displaying things like KLOCs (thousands of lines of code) and your code to test ratio.</li>
+<li>
+<code>rake secret</code> will give you a pseudo-random key to use for your session secret.</li>
+<li>
+<code>rake time:zones:all</code> lists all the timezones Rails knows about.</li>
+</ul>
+<h4 id="custom-rake-tasks">2.10 Custom Rake Tasks</h4>
+<p>Custom rake tasks have a <code>.rake</code> extension and are placed in <code>Rails.root/lib/tasks</code>.</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+desc "I am short, but comprehensive description for my cool task"
+task task_name: [:prerequisite_task, :another_task_we_depend_on] do
+  # All your magic here
+  # Any valid Ruby code is allowed
+end
+
+</pre>
+</div>
+<p>To pass arguments to your custom rake task:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+task :task_name, [:arg_1] =&gt; [:pre_1, :pre_2] do |t, args|
+  # You can use args from here
+end
+
+</pre>
+</div>
+<p>You can group tasks by placing them in namespaces:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+namespace :db do
+  desc "This task does nothing"
+  task :nothing do
+    # Seriously, nothing
+  end
+end
+
+</pre>
+</div>
+<p>Invocation of the tasks will look like:</p>
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+rake task_name
+rake "task_name[value 1]" # entire argument string should be quoted
+rake db:nothing
+
+</pre>
+</div>
+<div class="note"><p>If your need to interact with your application models, perform database queries and so on, your task should depend on the <code>environment</code> task, which will load your application code.</p></div>
+</body>
+</html>

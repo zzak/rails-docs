@@ -1,0 +1,36 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>2 Connecting to Databases without Managing Schema and Migrations</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v7.0.4.2/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="connecting-to-databases-without-managing-schema-and-migrations"><a class="anchorlink" href="#connecting-to-databases-without-managing-schema-and-migrations">2 Connecting to Databases without Managing Schema and Migrations</a></h3>
+<p>If you would like to connect to an external database without any database
+management tasks such as schema management, migrations, seeds, etc., you can set
+the per database config option <code>database_tasks: false</code>. By default it is
+set to true.</p>
+
+<div class="code_container">
+<pre><code class="highlight yaml"><span class="na">production</span><span class="pi">:</span>
+  <span class="na">primary</span><span class="pi">:</span>
+    <span class="na">database</span><span class="pi">:</span> <span class="s">my_database</span>
+    <span class="na">adapter</span><span class="pi">:</span> <span class="s">mysql2</span>
+  <span class="na">animals</span><span class="pi">:</span>
+    <span class="na">database</span><span class="pi">:</span> <span class="s">my_animals_database</span>
+    <span class="na">adapter</span><span class="pi">:</span> <span class="s">mysql2</span>
+    <span class="na">database_tasks</span><span class="pi">:</span> <span class="no">false</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="production:
+  primary:
+    database: my_database
+    adapter: mysql2
+  animals:
+    database: my_animals_database
+    adapter: mysql2
+    database_tasks: false
+">Copy</button>
+</div>
+</body>
+</html>

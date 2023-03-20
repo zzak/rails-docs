@@ -1,0 +1,139 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>10 Active Support</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v7.0.4.2/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="active-support"><a class="anchorlink" href="#active-support">10 Active Support</a></h3>
+<p>Please refer to the <a href="https://github.com/rails/rails/blob/5-0-stable/activesupport/CHANGELOG.md">Changelog</a> for detailed changes.</p>
+
+<h4 id="removals"><a class="anchorlink" href="#removals">10.1 Removals</a></h4>
+<ul>
+<li>  Removed deprecated <code>ActiveSupport::JSON::Encoding::CircularReferenceError</code>.
+(<a href="https://github.com/rails/rails/commit/d6e06ea8275cdc3f126f926ed9b5349fde374b10">commit</a>)</li>
+<li>  Removed deprecated methods <code>ActiveSupport::JSON::Encoding.encode_big_decimal_as_string=</code>
+and <code>ActiveSupport::JSON::Encoding.encode_big_decimal_as_string</code>.
+(<a href="https://github.com/rails/rails/commit/c8019c0611791b2716c6bed48ef8dcb177b7869c">commit</a>)</li>
+<li>  Removed deprecated <code>ActiveSupport::SafeBuffer#prepend</code>.
+(<a href="https://github.com/rails/rails/commit/e1c8b9f688c56aaedac9466a4343df955b4a67ec">commit</a>)</li>
+<li>  Removed deprecated methods from <code>Kernel</code>. <code>silence_stderr</code>, <code>silence_stream</code>,
+<code>capture</code> and <code>quietly</code>.
+(<a href="https://github.com/rails/rails/commit/481e49c64f790e46f4aff3ed539ed227d2eb46cb">commit</a>)</li>
+<li>  Removed deprecated <code>active_support/core_ext/big_decimal/yaml_conversions</code>
+file.
+(<a href="https://github.com/rails/rails/commit/98ea19925d6db642731741c3b91bd085fac92241">commit</a>)</li>
+<li>  Removed deprecated methods <code>ActiveSupport::Cache::Store.instrument</code> and
+<code>ActiveSupport::Cache::Store.instrument=</code>.
+(<a href="https://github.com/rails/rails/commit/a3ce6ca30ed0e77496c63781af596b149687b6d7">commit</a>)</li>
+<li>  Removed deprecated <code>Class#superclass_delegating_accessor</code>.
+Use <code>Class#class_attribute</code> instead.
+(<a href="https://github.com/rails/rails/pull/16938">Pull Request</a>)</li>
+<li>  Removed deprecated <code>ThreadSafe::Cache</code>. Use <code>Concurrent::Map</code> instead.
+(<a href="https://github.com/rails/rails/pull/21679">Pull Request</a>)</li>
+<li>  Removed <code>Object#itself</code> as it is implemented in Ruby 2.2.
+(<a href="https://github.com/rails/rails/pull/18244">Pull Request</a>)</li>
+</ul>
+<h4 id="deprecations"><a class="anchorlink" href="#deprecations">10.2 Deprecations</a></h4>
+<ul>
+<li>  Deprecated <code>MissingSourceFile</code> in favor of <code>LoadError</code>.
+(<a href="https://github.com/rails/rails/commit/734d97d2">commit</a>)</li>
+<li>  Deprecated <code>alias_method_chain</code> in favour of <code>Module#prepend</code> introduced in
+Ruby 2.0.
+(<a href="https://github.com/rails/rails/pull/19434">Pull Request</a>)</li>
+<li>  Deprecated <code>ActiveSupport::Concurrency::Latch</code> in favor of
+<code>Concurrent::CountDownLatch</code> from concurrent-ruby.
+(<a href="https://github.com/rails/rails/pull/20866">Pull Request</a>)</li>
+<li>  Deprecated <code>:prefix</code> option of <code>number_to_human_size</code> with no replacement.
+(<a href="https://github.com/rails/rails/pull/21191">Pull Request</a>)</li>
+<li>  Deprecated <code>Module#qualified_const_</code> in favour of the builtin
+<code>Module#const_</code> methods.
+(<a href="https://github.com/rails/rails/pull/17845">Pull Request</a>)</li>
+<li>  Deprecated passing string to define callback.
+(<a href="https://github.com/rails/rails/pull/22598">Pull Request</a>)</li>
+<li>  Deprecated <code>ActiveSupport::Cache::Store#namespaced_key</code>,
+<code>ActiveSupport::Cache::MemCachedStore#escape_key</code>, and
+<code>ActiveSupport::Cache::FileStore#key_file_path</code>.
+Use <code>normalize_key</code> instead.
+(<a href="https://github.com/rails/rails/pull/22215">Pull Request</a>,
+ <a href="https://github.com/rails/rails/commit/a8f773b0">commit</a>)</li>
+<li>  Deprecated <code>ActiveSupport::Cache::LocaleCache#set_cache_value</code> in favor of <code>write_cache_value</code>.
+(<a href="https://github.com/rails/rails/pull/22215">Pull Request</a>)</li>
+<li>  Deprecated passing arguments to <code>assert_nothing_raised</code>.
+(<a href="https://github.com/rails/rails/pull/23789">Pull Request</a>)</li>
+<li>  Deprecated <code>Module.local_constants</code> in favor of <code>Module.constants(false)</code>.
+(<a href="https://github.com/rails/rails/pull/23936">Pull Request</a>)</li>
+</ul>
+<h4 id="active-support-notable-changes"><a class="anchorlink" href="#active-support-notable-changes">10.3 Notable changes</a></h4>
+<ul>
+<li>  Added <code>#verified</code> and <code>#valid_message?</code> methods to
+<code>ActiveSupport::MessageVerifier</code>.
+(<a href="https://github.com/rails/rails/pull/17727">Pull Request</a>)</li>
+<li>  Changed the way in which callback chains can be halted. The preferred method
+to halt a callback chain from now on is to explicitly <code>throw(:abort)</code>.
+(<a href="https://github.com/rails/rails/pull/17227">Pull Request</a>)</li>
+<li>  New config option
+<code>config.active_support.halt_callback_chains_on_return_false</code> to specify
+whether ActiveRecord, ActiveModel, and ActiveModel::Validations callback
+chains can be halted by returning <code>false</code> in a 'before' callback.
+(<a href="https://github.com/rails/rails/pull/17227">Pull Request</a>)</li>
+<li>  Changed the default test order from <code>:sorted</code> to <code>:random</code>.
+(<a href="https://github.com/rails/rails/commit/5f777e4b5ee2e3e8e6fd0e2a208ec2a4d25a960d">commit</a>)</li>
+<li>  Added <code>#on_weekend?</code>, <code>#on_weekday?</code>, <code>#next_weekday</code>, <code>#prev_weekday</code> methods to <code>Date</code>,
+<code>Time</code>, and <code>DateTime</code>.
+(<a href="https://github.com/rails/rails/pull/18335">Pull Request</a>,
+ <a href="https://github.com/rails/rails/pull/23687">Pull Request</a>)</li>
+<li>  Added <code>same_time</code> option to <code>#next_week</code> and <code>#prev_week</code> for <code>Date</code>, <code>Time</code>,
+and <code>DateTime</code>.
+(<a href="https://github.com/rails/rails/pull/18335">Pull Request</a>)</li>
+<li>  Added <code>#prev_day</code> and <code>#next_day</code> counterparts to <code>#yesterday</code> and
+<code>#tomorrow</code> for <code>Date</code>, <code>Time</code>, and <code>DateTime</code>.
+(<a href="https://github.com/rails/rails/pull/18335">Pull Request</a>)</li>
+<li>  Added <code>SecureRandom.base58</code> for generation of random base58 strings.
+(<a href="https://github.com/rails/rails/commit/b1093977110f18ae0cafe56c3d99fc22a7d54d1b">commit</a>)</li>
+<li>  Added <code>file_fixture</code> to <code>ActiveSupport::TestCase</code>.
+It provides a simple mechanism to access sample files in your test cases.
+(<a href="https://github.com/rails/rails/pull/18658">Pull Request</a>)</li>
+<li>  Added <code>#without</code> on <code>Enumerable</code> and <code>Array</code> to return a copy of an
+enumerable without the specified elements.
+(<a href="https://github.com/rails/rails/pull/19157">Pull Request</a>)</li>
+<li>  Added <code>ActiveSupport::ArrayInquirer</code> and <code>Array#inquiry</code>.
+(<a href="https://github.com/rails/rails/pull/18939">Pull Request</a>)</li>
+<li>  Added <code>ActiveSupport::TimeZone#strptime</code> to allow parsing times as if
+from a given timezone.
+(<a href="https://github.com/rails/rails/commit/a5e507fa0b8180c3d97458a9b86c195e9857d8f6">commit</a>)</li>
+<li>  Added <code>Integer#positive?</code> and <code>Integer#negative?</code> query methods
+in the vein of <code>Integer#zero?</code>.
+(<a href="https://github.com/rails/rails/commit/e54277a45da3c86fecdfa930663d7692fd083daa">commit</a>)</li>
+<li>  Added a bang version to <code>ActiveSupport::OrderedOptions</code> get methods which will raise
+an <code>KeyError</code> if the value is <code>.blank?</code>.
+(<a href="https://github.com/rails/rails/pull/20208">Pull Request</a>)</li>
+<li>  Added <code>Time.days_in_year</code> to return the number of days in the given year, or the
+current year if no argument is provided.
+(<a href="https://github.com/rails/rails/commit/2f4f4d2cf1e4c5a442459fc250daf66186d110fa">commit</a>)</li>
+<li>  Added an evented file watcher to asynchronously detect changes in the
+application source code, routes, locales, etc.
+(<a href="https://github.com/rails/rails/pull/22254">Pull Request</a>)</li>
+<li>  Added thread_m/cattr_accessor/reader/writer suite of methods for declaring
+class and module variables that live per-thread.
+(<a href="https://github.com/rails/rails/pull/22630">Pull Request</a>)</li>
+<li>  Added <code>Array#second_to_last</code> and <code>Array#third_to_last</code> methods.
+(<a href="https://github.com/rails/rails/pull/23583">Pull Request</a>)</li>
+<li>  Publish <code>ActiveSupport::Executor</code> and <code>ActiveSupport::Reloader</code> APIs to allow
+components and libraries to manage, and participate in, the execution of
+application code, and the application reloading process.
+(<a href="https://github.com/rails/rails/pull/23807">Pull Request</a>)</li>
+<li>  <code>ActiveSupport::Duration</code> now supports ISO8601 formatting and parsing.
+(<a href="https://github.com/rails/rails/pull/16917">Pull Request</a>)</li>
+<li>  <code>ActiveSupport::JSON.decode</code> now supports parsing ISO8601 local times when
+<code>parse_json_times</code> is enabled.
+(<a href="https://github.com/rails/rails/pull/23011">Pull Request</a>)</li>
+<li>  <code>ActiveSupport::JSON.decode</code> now return <code>Date</code> objects for date strings.
+(<a href="https://github.com/rails/rails/pull/23011">Pull Request</a>)</li>
+<li>  Added ability to <code>TaggedLogging</code> to allow loggers to be instantiated multiple
+times so that they don't share tags with each other.
+(<a href="https://github.com/rails/rails/pull/9065">Pull Request</a>)</li>
+</ul>
+</body>
+</html>

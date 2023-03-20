@@ -1,0 +1,231 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>13 Joining Tables</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v6.1.7.3/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="joining-tables"><a class="anchorlink" href="#joining-tables">13 Joining Tables</a></h3>
+<p>Active Record provides two finder methods for specifying <code>JOIN</code> clauses on the
+resulting SQL: <code>joins</code> and <code>left_outer_joins</code>.
+While <code>joins</code> should be used for <code>INNER JOIN</code> or custom queries,
+<code>left_outer_joins</code> is used for queries using <code>LEFT OUTER JOIN</code>.</p>
+
+<h4 id="joins"><a class="anchorlink" href="#joins">13.1 <code>joins</code></a></h4>
+
+<p>There are multiple ways to use the <a href="https://api.rubyonrails.org/v6.1.7.3/classes/ActiveRecord/QueryMethods.html#method-i-joins"><code>joins</code></a> method.</p>
+
+<h5 id="using-a-string-sql-fragment"><a class="anchorlink" href="#using-a-string-sql-fragment">13.1.1 Using a String SQL Fragment</a></h5>
+
+<p>You can just supply the raw SQL specifying the <code>JOIN</code> clause to <code>joins</code>:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="no">Author</span><span class="p">.</span><span class="nf">joins</span><span class="p">(</span><span class="s2">"INNER JOIN books ON books.author_id = authors.id AND books.out_of_print = FALSE"</span><span class="p">)</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-c33304aa34cd0724e09e5fc94de7159a">Author.joins("INNER JOIN books ON books.author_id = authors.id AND books.out_of_print = FALSE")
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-c33304aa34cd0724e09e5fc94de7159a">Copy</button>
+</div>
+<p>This will result in the following SQL:</p>
+
+<div class="code_container">
+<pre><code class="highlight sql"><span class="k">SELECT</span> <span class="n">authors</span><span class="p">.</span><span class="o">*</span> <span class="k">FROM</span> <span class="n">authors</span> <span class="k">INNER</span> <span class="k">JOIN</span> <span class="n">books</span> <span class="k">ON</span> <span class="n">books</span><span class="p">.</span><span class="n">author_id</span> <span class="o">=</span> <span class="n">authors</span><span class="p">.</span><span class="n">id</span> <span class="k">AND</span> <span class="n">books</span><span class="p">.</span><span class="n">out_of_print</span> <span class="o">=</span> <span class="k">FALSE</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-061a0f677f8caa31a4f15d6bbade8443">SELECT authors.* FROM authors INNER JOIN books ON books.author_id = authors.id AND books.out_of_print = FALSE
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-061a0f677f8caa31a4f15d6bbade8443">Copy</button>
+</div>
+<h5 id="using-array-hash-of-named-associations"><a class="anchorlink" href="#using-array-hash-of-named-associations">13.1.2 Using Array/Hash of Named Associations</a></h5>
+
+<p>Active Record lets you use the names of the <a href="association_basics.html">associations</a> defined on the model as a shortcut for specifying <code>JOIN</code> clauses for those associations when using the <code>joins</code> method.</p>
+
+<p>All of the following will produce the expected join queries using <code>INNER JOIN</code>:</p>
+
+<h6 id="joining-a-single-association"><a class="anchorlink" href="#joining-a-single-association">13.1.2.1 Joining a Single Association</a></h6>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="no">Book</span><span class="p">.</span><span class="nf">joins</span><span class="p">(</span><span class="ss">:reviews</span><span class="p">)</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-e6376c27f4a2012ac55c35e7f18742f1">Book.joins(:reviews)
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-e6376c27f4a2012ac55c35e7f18742f1">Copy</button>
+</div>
+<p>This produces:</p>
+
+<div class="code_container">
+<pre><code class="highlight sql"><span class="k">SELECT</span> <span class="n">books</span><span class="p">.</span><span class="o">*</span> <span class="k">FROM</span> <span class="n">books</span>
+  <span class="k">INNER</span> <span class="k">JOIN</span> <span class="n">reviews</span> <span class="k">ON</span> <span class="n">reviews</span><span class="p">.</span><span class="n">book_id</span> <span class="o">=</span> <span class="n">books</span><span class="p">.</span><span class="n">id</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-359e89245ac111d4bfc18d0099dcb982">SELECT books.* FROM books
+  INNER JOIN reviews ON reviews.book_id = books.id
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-359e89245ac111d4bfc18d0099dcb982">Copy</button>
+</div>
+<p>Or, in English: "return a Book object for all books with reviews". Note that you will see duplicate books if a book has more than one review.  If you want unique books, you can use <code>Book.joins(:reviews).distinct</code>.</p>
+
+<h5 id="joining-multiple-associations"><a class="anchorlink" href="#joining-multiple-associations">13.1.3 Joining Multiple Associations</a></h5>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="no">Book</span><span class="p">.</span><span class="nf">joins</span><span class="p">(</span><span class="ss">:author</span><span class="p">,</span> <span class="ss">:reviews</span><span class="p">)</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-1d5eebaf53a734377a7a43cd2c8c0723">Book.joins(:author, :reviews)
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-1d5eebaf53a734377a7a43cd2c8c0723">Copy</button>
+</div>
+<p>This produces:</p>
+
+<div class="code_container">
+<pre><code class="highlight sql"><span class="k">SELECT</span> <span class="n">books</span><span class="p">.</span><span class="o">*</span> <span class="k">FROM</span> <span class="n">books</span>
+  <span class="k">INNER</span> <span class="k">JOIN</span> <span class="n">authors</span> <span class="k">ON</span> <span class="n">authors</span><span class="p">.</span><span class="n">id</span> <span class="o">=</span> <span class="n">books</span><span class="p">.</span><span class="n">author_id</span>
+  <span class="k">INNER</span> <span class="k">JOIN</span> <span class="n">reviews</span> <span class="k">ON</span> <span class="n">reviews</span><span class="p">.</span><span class="n">book_id</span> <span class="o">=</span> <span class="n">books</span><span class="p">.</span><span class="n">id</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-ed7329c926362b73be0783683309d2f0">SELECT books.* FROM books
+  INNER JOIN authors ON authors.id = books.author_id
+  INNER JOIN reviews ON reviews.book_id = books.id
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-ed7329c926362b73be0783683309d2f0">Copy</button>
+</div>
+<p>Or, in English: "return all books with their author that have at least one review". Note again that books with multiple reviews will show up multiple times.</p>
+
+<h6 id="joining-nested-associations-single-level"><a class="anchorlink" href="#joining-nested-associations-single-level">13.1.3.1 Joining Nested Associations (Single Level)</a></h6>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="no">Book</span><span class="p">.</span><span class="nf">joins</span><span class="p">(</span><span class="ss">reviews: :customer</span><span class="p">)</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-daf55e9b47d81ffc726b6dc058850de1">Book.joins(reviews: :customer)
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-daf55e9b47d81ffc726b6dc058850de1">Copy</button>
+</div>
+<p>This produces:</p>
+
+<div class="code_container">
+<pre><code class="highlight sql"><span class="k">SELECT</span> <span class="n">books</span><span class="p">.</span><span class="o">*</span> <span class="k">FROM</span> <span class="n">books</span>
+  <span class="k">INNER</span> <span class="k">JOIN</span> <span class="n">reviews</span> <span class="k">ON</span> <span class="n">reviews</span><span class="p">.</span><span class="n">book_id</span> <span class="o">=</span> <span class="n">books</span><span class="p">.</span><span class="n">id</span>
+  <span class="k">INNER</span> <span class="k">JOIN</span> <span class="n">customers</span> <span class="k">ON</span> <span class="n">customers</span><span class="p">.</span><span class="n">id</span> <span class="o">=</span> <span class="n">reviews</span><span class="p">.</span><span class="n">customer_id</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-19292a2e1b84b72885c02a38d78b0459">SELECT books.* FROM books
+  INNER JOIN reviews ON reviews.book_id = books.id
+  INNER JOIN customers ON customers.id = reviews.customer_id
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-19292a2e1b84b72885c02a38d78b0459">Copy</button>
+</div>
+<p>Or, in English: "return all books that have a review by a customer."</p>
+
+<h6 id="joining-nested-associations-multiple-level"><a class="anchorlink" href="#joining-nested-associations-multiple-level">13.1.3.2 Joining Nested Associations (Multiple Level)</a></h6>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="no">Author</span><span class="p">.</span><span class="nf">joins</span><span class="p">(</span><span class="ss">books: </span><span class="p">[{</span><span class="ss">reviews: </span><span class="p">{</span> <span class="ss">customer: :orders</span><span class="p">}</span> <span class="p">},</span> <span class="ss">:supplier</span><span class="p">]</span> <span class="p">)</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-ca5096290caadafd9b4f3b7a88ed2984">Author.joins(books: [{reviews: { customer: :orders} }, :supplier] )
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-ca5096290caadafd9b4f3b7a88ed2984">Copy</button>
+</div>
+<p>This produces:</p>
+
+<div class="code_container">
+<pre><code class="highlight sql"><span class="k">SELECT</span> <span class="o">*</span> <span class="k">FROM</span> <span class="n">authors</span>
+  <span class="k">INNER</span> <span class="k">JOIN</span> <span class="n">books</span> <span class="k">ON</span> <span class="n">books</span><span class="p">.</span><span class="n">author_id</span> <span class="o">=</span> <span class="n">authors</span><span class="p">.</span><span class="n">id</span>
+  <span class="k">INNER</span> <span class="k">JOIN</span> <span class="n">reviews</span> <span class="k">ON</span> <span class="n">reviews</span><span class="p">.</span><span class="n">book_id</span> <span class="o">=</span> <span class="n">books</span><span class="p">.</span><span class="n">id</span>
+  <span class="k">INNER</span> <span class="k">JOIN</span> <span class="n">customers</span> <span class="k">ON</span> <span class="n">customers</span><span class="p">.</span><span class="n">id</span> <span class="o">=</span> <span class="n">reviews</span><span class="p">.</span><span class="n">customer_id</span>
+  <span class="k">INNER</span> <span class="k">JOIN</span> <span class="n">orders</span> <span class="k">ON</span> <span class="n">orders</span><span class="p">.</span><span class="n">customer_id</span> <span class="o">=</span> <span class="n">customers</span><span class="p">.</span><span class="n">id</span>
+<span class="k">INNER</span> <span class="k">JOIN</span> <span class="n">suppliers</span> <span class="k">ON</span> <span class="n">suppliers</span><span class="p">.</span><span class="n">id</span> <span class="o">=</span> <span class="n">books</span><span class="p">.</span><span class="n">supplier_id</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-01cd15f3f1088dec5f752ed96a448f8e">SELECT * FROM authors
+  INNER JOIN books ON books.author_id = authors.id
+  INNER JOIN reviews ON reviews.book_id = books.id
+  INNER JOIN customers ON customers.id = reviews.customer_id
+  INNER JOIN orders ON orders.customer_id = customers.id
+INNER JOIN suppliers ON suppliers.id = books.supplier_id
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-01cd15f3f1088dec5f752ed96a448f8e">Copy</button>
+</div>
+<p>Or, in English: "return all authors that have books with reviews <em>and</em> have been ordered by a customer, and the suppliers for those books."</p>
+
+<h5 id="specifying-conditions-on-the-joined-tables"><a class="anchorlink" href="#specifying-conditions-on-the-joined-tables">13.1.4 Specifying Conditions on the Joined Tables</a></h5>
+
+<p>You can specify conditions on the joined tables using the regular <a href="#array-conditions">Array</a> and <a href="#pure-string-conditions">String</a> conditions. <a href="#hash-conditions">Hash conditions</a> provide a special syntax for specifying conditions for the joined tables:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">time_range</span> <span class="o">=</span> <span class="p">(</span><span class="no">Time</span><span class="p">.</span><span class="nf">now</span><span class="p">.</span><span class="nf">midnight</span> <span class="o">-</span> <span class="mi">1</span><span class="p">.</span><span class="nf">day</span><span class="p">)</span><span class="o">..</span><span class="no">Time</span><span class="p">.</span><span class="nf">now</span><span class="p">.</span><span class="nf">midnight</span>
+<span class="no">Customer</span><span class="p">.</span><span class="nf">joins</span><span class="p">(</span><span class="ss">:orders</span><span class="p">).</span><span class="nf">where</span><span class="p">(</span><span class="s1">'orders.created_at'</span> <span class="o">=&gt;</span> <span class="n">time_range</span><span class="p">).</span><span class="nf">distinct</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-6911412a497ddc28589761ca3d944c45">time_range = (Time.now.midnight - 1.day)..Time.now.midnight
+Customer.joins(:orders).where('orders.created_at' =&gt; time_range).distinct
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-6911412a497ddc28589761ca3d944c45">Copy</button>
+</div>
+<p>This will find all customers who have orders that were created yesterday, using a <code>BETWEEN</code> SQL expression to compare <code>created_at</code>.</p>
+
+<p>An alternative and cleaner syntax is to nest the hash conditions:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">time_range</span> <span class="o">=</span> <span class="p">(</span><span class="no">Time</span><span class="p">.</span><span class="nf">now</span><span class="p">.</span><span class="nf">midnight</span> <span class="o">-</span> <span class="mi">1</span><span class="p">.</span><span class="nf">day</span><span class="p">)</span><span class="o">..</span><span class="no">Time</span><span class="p">.</span><span class="nf">now</span><span class="p">.</span><span class="nf">midnight</span>
+<span class="no">Customer</span><span class="p">.</span><span class="nf">joins</span><span class="p">(</span><span class="ss">:orders</span><span class="p">).</span><span class="nf">where</span><span class="p">(</span><span class="ss">orders: </span><span class="p">{</span> <span class="ss">created_at: </span><span class="n">time_range</span> <span class="p">}).</span><span class="nf">distinct</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-11e034d9428521df6fff284c1da29560">time_range = (Time.now.midnight - 1.day)..Time.now.midnight
+Customer.joins(:orders).where(orders: { created_at: time_range }).distinct
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-11e034d9428521df6fff284c1da29560">Copy</button>
+</div>
+<p>For more advanced conditions or to reuse an existing named scope, <code>Relation#merge</code> may be used. First, let's add a new named scope to the Order model:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">Order</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="n">belongs_to</span> <span class="ss">:customer</span>
+
+  <span class="n">scope</span> <span class="ss">:created_in_time_range</span><span class="p">,</span> <span class="o">-&gt;</span><span class="p">(</span><span class="n">time_range</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">where</span><span class="p">(</span><span class="ss">created_at: </span><span class="n">time_range</span><span class="p">)</span>
+  <span class="p">}</span>
+<span class="k">end</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-a1d4f1c89cc2cb80783701d4c5204445">class Order &lt; ApplicationRecord
+  belongs_to :customer
+
+  scope :created_in_time_range, -&gt;(time_range) {
+    where(created_at: time_range)
+  }
+end
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-a1d4f1c89cc2cb80783701d4c5204445">Copy</button>
+</div>
+<p>Now we can use <code>Relation#merge</code> to merge in the <code>created_in_time_range</code> scope:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">time_range</span> <span class="o">=</span> <span class="p">(</span><span class="no">Time</span><span class="p">.</span><span class="nf">now</span><span class="p">.</span><span class="nf">midnight</span> <span class="o">-</span> <span class="mi">1</span><span class="p">.</span><span class="nf">day</span><span class="p">)</span><span class="o">..</span><span class="no">Time</span><span class="p">.</span><span class="nf">now</span><span class="p">.</span><span class="nf">midnight</span>
+<span class="no">Customer</span><span class="p">.</span><span class="nf">joins</span><span class="p">(</span><span class="ss">:orders</span><span class="p">).</span><span class="nf">merge</span><span class="p">(</span><span class="no">Order</span><span class="p">.</span><span class="nf">created_in_time_range</span><span class="p">(</span><span class="n">time_range</span><span class="p">)).</span><span class="nf">distinct</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-c327f0274f7403a7b85eec0b9eee46b2">time_range = (Time.now.midnight - 1.day)..Time.now.midnight
+Customer.joins(:orders).merge(Order.created_in_time_range(time_range)).distinct
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-c327f0274f7403a7b85eec0b9eee46b2">Copy</button>
+</div>
+<p>This will find all customers who have orders that were created yesterday, again using a <code>BETWEEN</code> SQL expression.</p>
+
+<h4 id="left-outer-joins"><a class="anchorlink" href="#left-outer-joins">13.2 <code>left_outer_joins</code></a></h4>
+
+<p>If you want to select a set of records whether or not they have associated
+records you can use the <a href="https://api.rubyonrails.org/v6.1.7.3/classes/ActiveRecord/QueryMethods.html#method-i-left_outer_joins"><code>left_outer_joins</code></a> method.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="no">Customer</span><span class="p">.</span><span class="nf">left_outer_joins</span><span class="p">(</span><span class="ss">:reviews</span><span class="p">).</span><span class="nf">distinct</span><span class="p">.</span><span class="nf">select</span><span class="p">(</span><span class="s1">'customers.*, COUNT(reviews.*) AS reviews_count'</span><span class="p">).</span><span class="nf">group</span><span class="p">(</span><span class="s1">'customers.id'</span><span class="p">)</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-002122bdd59d3dc2c27ef48e65f1b4a5">Customer.left_outer_joins(:reviews).distinct.select('customers.*, COUNT(reviews.*) AS reviews_count').group('customers.id')
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-002122bdd59d3dc2c27ef48e65f1b4a5">Copy</button>
+</div>
+<p>Which produces:</p>
+
+<div class="code_container">
+<pre><code class="highlight sql"><span class="k">SELECT</span> <span class="k">DISTINCT</span> <span class="n">customers</span><span class="p">.</span><span class="o">*</span><span class="p">,</span> <span class="k">COUNT</span><span class="p">(</span><span class="n">reviews</span><span class="p">.</span><span class="o">*</span><span class="p">)</span> <span class="k">AS</span> <span class="n">reviews_count</span> <span class="k">FROM</span> <span class="n">customers</span>
+<span class="k">LEFT</span> <span class="k">OUTER</span> <span class="k">JOIN</span> <span class="n">reviews</span> <span class="k">ON</span> <span class="n">reviews</span><span class="p">.</span><span class="n">customer_id</span> <span class="o">=</span> <span class="n">customers</span><span class="p">.</span><span class="n">id</span> <span class="k">GROUP</span> <span class="k">BY</span> <span class="n">customers</span><span class="p">.</span><span class="n">id</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-d8513c72b491a5af21747ecadfa30473">SELECT DISTINCT customers.*, COUNT(reviews.*) AS reviews_count FROM customers
+LEFT OUTER JOIN reviews ON reviews.customer_id = customers.id GROUP BY customers.id
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-d8513c72b491a5af21747ecadfa30473">Copy</button>
+</div>
+<p>Which means: "return all customers with their count of reviews, whether or not they
+have any reviews at all"</p>
+</body>
+</html>

@@ -1,0 +1,60 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>8 Migrations and Seed Data</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v7.0.4.2/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="migrations-and-seed-data"><a class="anchorlink" href="#migrations-and-seed-data">8 Migrations and Seed Data</a></h3>
+<p>The main purpose of Rails' migration feature is to issue commands that modify the
+schema using a consistent process. Migrations can also be used
+to add or modify data. This is useful in an existing database that can't be destroyed
+and recreated, such as a production database.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">AddInitialProducts</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Migration</span><span class="p">[</span><span class="mf">7.0</span><span class="p">]</span>
+  <span class="k">def</span> <span class="nf">up</span>
+    <span class="mi">5</span><span class="p">.</span><span class="nf">times</span> <span class="k">do</span> <span class="o">|</span><span class="n">i</span><span class="o">|</span>
+      <span class="no">Product</span><span class="p">.</span><span class="nf">create</span><span class="p">(</span><span class="ss">name: </span><span class="s2">"Product #</span><span class="si">#{</span><span class="n">i</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span> <span class="ss">description: </span><span class="s2">"A product."</span><span class="p">)</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+
+  <span class="k">def</span> <span class="nf">down</span>
+    <span class="no">Product</span><span class="p">.</span><span class="nf">delete_all</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='class AddInitialProducts &lt; ActiveRecord::Migration[7.0]
+  def up
+    5.times do |i|
+      Product.create(name: "Product ##{i}", description: "A product.")
+    end
+  end
+
+  def down
+    Product.delete_all
+  end
+end
+'>Copy</button>
+</div>
+<p>To add initial data after a database is created, Rails has a built-in
+'seeds' feature that speeds up the process. This is especially
+useful when reloading the database frequently in development and test environments.
+To get started with this feature, fill up <code>db/seeds.rb</code> with some
+Ruby code, and run <code>bin/rails db:seed</code>:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="mi">5</span><span class="p">.</span><span class="nf">times</span> <span class="k">do</span> <span class="o">|</span><span class="n">i</span><span class="o">|</span>
+  <span class="no">Product</span><span class="p">.</span><span class="nf">create</span><span class="p">(</span><span class="ss">name: </span><span class="s2">"Product #</span><span class="si">#{</span><span class="n">i</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span> <span class="ss">description: </span><span class="s2">"A product."</span><span class="p">)</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='5.times do |i|
+  Product.create(name: "Product ##{i}", description: "A product.")
+end
+'>Copy</button>
+</div>
+<p>This is generally a much cleaner way to set up the database of a blank
+application.</p>
+</body>
+</html>

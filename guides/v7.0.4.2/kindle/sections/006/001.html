@@ -1,0 +1,781 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>2 The Types of Associations</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v7.0.4.2/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="the-types-of-associations"><a class="anchorlink" href="#the-types-of-associations">2 The Types of Associations</a></h3>
+<p>Rails supports six types of associations:</p>
+<ul>
+<li><a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveRecord/Associations/ClassMethods.html#method-i-belongs_to"><code>belongs_to</code></a></li>
+<li><a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveRecord/Associations/ClassMethods.html#method-i-has_one"><code>has_one</code></a></li>
+<li><a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveRecord/Associations/ClassMethods.html#method-i-has_many"><code>has_many</code></a></li>
+<li><a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveRecord/Associations/ClassMethods.html#method-i-has_many"><code>has_many :through</code></a></li>
+<li><a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveRecord/Associations/ClassMethods.html#method-i-has_one"><code>has_one :through</code></a></li>
+<li><a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveRecord/Associations/ClassMethods.html#method-i-has_and_belongs_to_many"><code>has_and_belongs_to_many</code></a></li>
+</ul>
+<p>Associations are implemented using macro-style calls, so that you can declaratively add features to your models. For example, by declaring that one model <code>belongs_to</code> another, you instruct Rails to maintain <a href="https://en.wikipedia.org/wiki/Primary_key">Primary Key</a>-<a href="https://en.wikipedia.org/wiki/Foreign_key">Foreign Key</a> information between instances of the two models, and you also get a number of utility methods added to your model.</p>
+
+<p>In the remainder of this guide, you'll learn how to declare and use the various forms of associations. But first, a quick introduction to the situations where each association type is appropriate.</p>
+
+<h4 id="the-belongs-to-association"><a class="anchorlink" href="#the-belongs-to-association">2.1 The <code>belongs_to</code> Association</a></h4>
+
+<p>A <a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveRecord/Associations/ClassMethods.html#method-i-belongs_to"><code>belongs_to</code></a> association sets up a connection with another model, such that each instance of the declaring model "belongs to" one instance of the other model. For example, if your application includes authors and books, and each book can be assigned to exactly one author, you'd declare the book model this way:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">Book</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="n">belongs_to</span> <span class="ss">:author</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="class Book &lt; ApplicationRecord
+  belongs_to :author
+end
+">Copy</button>
+</div>
+<p><img src="/home/rails/v7.0.4.2/guides/output/kindle/images/association_basics/belongs_to.png" alt="belongs_to Association Diagram"></p>
+
+<div class="note"><p><code>belongs_to</code> associations <em>must</em> use the singular term. If you used the pluralized form in the above example for the <code>author</code> association in the <code>Book</code> model and tried to create the instance by <code>Book.create(authors: @author)</code>, you would be told that there was an "uninitialized constant Book::Authors". This is because Rails automatically infers the class name from the association name. If the association name is wrongly pluralized, then the inferred class will be wrongly pluralized too.</p></div>
+
+<p>The corresponding migration might look like this:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">CreateBooks</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Migration</span><span class="p">[</span><span class="mf">7.0</span><span class="p">]</span>
+  <span class="k">def</span> <span class="nf">change</span>
+    <span class="n">create_table</span> <span class="ss">:authors</span> <span class="k">do</span> <span class="o">|</span><span class="n">t</span><span class="o">|</span>
+      <span class="n">t</span><span class="p">.</span><span class="nf">string</span> <span class="ss">:name</span>
+      <span class="n">t</span><span class="p">.</span><span class="nf">timestamps</span>
+    <span class="k">end</span>
+
+    <span class="n">create_table</span> <span class="ss">:books</span> <span class="k">do</span> <span class="o">|</span><span class="n">t</span><span class="o">|</span>
+      <span class="n">t</span><span class="p">.</span><span class="nf">belongs_to</span> <span class="ss">:author</span>
+      <span class="n">t</span><span class="p">.</span><span class="nf">datetime</span> <span class="ss">:published_at</span>
+      <span class="n">t</span><span class="p">.</span><span class="nf">timestamps</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="class CreateBooks &lt; ActiveRecord::Migration[7.0]
+  def change
+    create_table :authors do |t|
+      t.string :name
+      t.timestamps
+    end
+
+    create_table :books do |t|
+      t.belongs_to :author
+      t.datetime :published_at
+      t.timestamps
+    end
+  end
+end
+">Copy</button>
+</div>
+<p>When used alone, <code>belongs_to</code> produces a one-directional one-to-one connection. Therefore each book in the above example "knows" its author, but the authors don't know about their books.
+To setup a <a href="#bi-directional-associations">bi-directional association</a> - use <code>belongs_to</code> in combination with a <code>has_one</code> or <code>has_many</code> on the other model.</p>
+
+<p><code>belongs_to</code> does not ensure reference consistency, so depending on the use case, you might also need to add a database-level foreign key constraint on the reference column, like this:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">create_table</span> <span class="ss">:books</span> <span class="k">do</span> <span class="o">|</span><span class="n">t</span><span class="o">|</span>
+  <span class="n">t</span><span class="p">.</span><span class="nf">belongs_to</span> <span class="ss">:author</span><span class="p">,</span> <span class="ss">foreign_key: </span><span class="kp">true</span>
+  <span class="c1"># ...</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="create_table :books do |t|
+  t.belongs_to :author, foreign_key: true
+  # ...
+end
+">Copy</button>
+</div>
+<h4 id="the-has-one-association"><a class="anchorlink" href="#the-has-one-association">2.2 The <code>has_one</code> Association</a></h4>
+
+<p>A <a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveRecord/Associations/ClassMethods.html#method-i-has_one"><code>has_one</code></a> association indicates that one other model has a reference to this model. That model can be fetched through this association.</p>
+
+<p>For example, if each supplier in your application has only one account, you'd declare the supplier model like this:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">Supplier</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="n">has_one</span> <span class="ss">:account</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="class Supplier &lt; ApplicationRecord
+  has_one :account
+end
+">Copy</button>
+</div>
+<p>The main difference from <code>belongs_to</code> is that the link column <code>supplier_id</code> is located in the other table:</p>
+
+<p><img src="/home/rails/v7.0.4.2/guides/output/kindle/images/association_basics/has_one.png" alt="has_one Association Diagram"></p>
+
+<p>The corresponding migration might look like this:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">CreateSuppliers</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Migration</span><span class="p">[</span><span class="mf">7.0</span><span class="p">]</span>
+  <span class="k">def</span> <span class="nf">change</span>
+    <span class="n">create_table</span> <span class="ss">:suppliers</span> <span class="k">do</span> <span class="o">|</span><span class="n">t</span><span class="o">|</span>
+      <span class="n">t</span><span class="p">.</span><span class="nf">string</span> <span class="ss">:name</span>
+      <span class="n">t</span><span class="p">.</span><span class="nf">timestamps</span>
+    <span class="k">end</span>
+
+    <span class="n">create_table</span> <span class="ss">:accounts</span> <span class="k">do</span> <span class="o">|</span><span class="n">t</span><span class="o">|</span>
+      <span class="n">t</span><span class="p">.</span><span class="nf">belongs_to</span> <span class="ss">:supplier</span>
+      <span class="n">t</span><span class="p">.</span><span class="nf">string</span> <span class="ss">:account_number</span>
+      <span class="n">t</span><span class="p">.</span><span class="nf">timestamps</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="class CreateSuppliers &lt; ActiveRecord::Migration[7.0]
+  def change
+    create_table :suppliers do |t|
+      t.string :name
+      t.timestamps
+    end
+
+    create_table :accounts do |t|
+      t.belongs_to :supplier
+      t.string :account_number
+      t.timestamps
+    end
+  end
+end
+">Copy</button>
+</div>
+<p>Depending on the use case, you might also need to create a unique index and/or
+a foreign key constraint on the supplier column for the accounts table. In this
+case, the column definition might look like this:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">create_table</span> <span class="ss">:accounts</span> <span class="k">do</span> <span class="o">|</span><span class="n">t</span><span class="o">|</span>
+  <span class="n">t</span><span class="p">.</span><span class="nf">belongs_to</span> <span class="ss">:supplier</span><span class="p">,</span> <span class="ss">index: </span><span class="p">{</span> <span class="ss">unique: </span><span class="kp">true</span> <span class="p">},</span> <span class="ss">foreign_key: </span><span class="kp">true</span>
+  <span class="c1"># ...</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="create_table :accounts do |t|
+  t.belongs_to :supplier, index: { unique: true }, foreign_key: true
+  # ...
+end
+">Copy</button>
+</div>
+<p>This relation can be <a href="#bi-directional-associations">bi-directional</a> when used in combination with <code>belongs_to</code> on the other model.</p>
+
+<h4 id="the-has-many-association"><a class="anchorlink" href="#the-has-many-association">2.3 The <code>has_many</code> Association</a></h4>
+
+<p>A <a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveRecord/Associations/ClassMethods.html#method-i-has_many"><code>has_many</code></a> association is similar to <code>has_one</code>, but indicates a one-to-many connection with another model. You'll often find this association on the "other side" of a <code>belongs_to</code> association. This association indicates that each instance of the model has zero or more instances of another model. For example, in an application containing authors and books, the author model could be declared like this:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">Author</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="n">has_many</span> <span class="ss">:books</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="class Author &lt; ApplicationRecord
+  has_many :books
+end
+">Copy</button>
+</div>
+<div class="note"><p>The name of the other model is pluralized when declaring a <code>has_many</code> association.</p></div>
+
+<p><img src="/home/rails/v7.0.4.2/guides/output/kindle/images/association_basics/has_many.png" alt="has_many Association Diagram"></p>
+
+<p>The corresponding migration might look like this:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">CreateAuthors</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Migration</span><span class="p">[</span><span class="mf">7.0</span><span class="p">]</span>
+  <span class="k">def</span> <span class="nf">change</span>
+    <span class="n">create_table</span> <span class="ss">:authors</span> <span class="k">do</span> <span class="o">|</span><span class="n">t</span><span class="o">|</span>
+      <span class="n">t</span><span class="p">.</span><span class="nf">string</span> <span class="ss">:name</span>
+      <span class="n">t</span><span class="p">.</span><span class="nf">timestamps</span>
+    <span class="k">end</span>
+
+    <span class="n">create_table</span> <span class="ss">:books</span> <span class="k">do</span> <span class="o">|</span><span class="n">t</span><span class="o">|</span>
+      <span class="n">t</span><span class="p">.</span><span class="nf">belongs_to</span> <span class="ss">:author</span>
+      <span class="n">t</span><span class="p">.</span><span class="nf">datetime</span> <span class="ss">:published_at</span>
+      <span class="n">t</span><span class="p">.</span><span class="nf">timestamps</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="class CreateAuthors &lt; ActiveRecord::Migration[7.0]
+  def change
+    create_table :authors do |t|
+      t.string :name
+      t.timestamps
+    end
+
+    create_table :books do |t|
+      t.belongs_to :author
+      t.datetime :published_at
+      t.timestamps
+    end
+  end
+end
+">Copy</button>
+</div>
+<p>Depending on the use case, it's usually a good idea to create a non-unique index and optionally
+a foreign key constraint on the author column for the books table:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">create_table</span> <span class="ss">:books</span> <span class="k">do</span> <span class="o">|</span><span class="n">t</span><span class="o">|</span>
+  <span class="n">t</span><span class="p">.</span><span class="nf">belongs_to</span> <span class="ss">:author</span><span class="p">,</span> <span class="ss">index: </span><span class="kp">true</span><span class="p">,</span> <span class="ss">foreign_key: </span><span class="kp">true</span>
+  <span class="c1"># ...</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="create_table :books do |t|
+  t.belongs_to :author, index: true, foreign_key: true
+  # ...
+end
+">Copy</button>
+</div>
+<h4 id="the-has-many-through-association"><a class="anchorlink" href="#the-has-many-through-association">2.4 The <code>has_many :through</code> Association</a></h4>
+
+<p>A <a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveRecord/Associations/ClassMethods.html#method-i-has_many"><code>has_many :through</code></a> association is often used to set up a many-to-many connection with another model. This association indicates that the declaring model can be matched with zero or more instances of another model by proceeding <em>through</em> a third model. For example, consider a medical practice where patients make appointments to see physicians. The relevant association declarations could look like this:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">Physician</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="n">has_many</span> <span class="ss">:appointments</span>
+  <span class="n">has_many</span> <span class="ss">:patients</span><span class="p">,</span> <span class="ss">through: :appointments</span>
+<span class="k">end</span>
+
+<span class="k">class</span> <span class="nc">Appointment</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="n">belongs_to</span> <span class="ss">:physician</span>
+  <span class="n">belongs_to</span> <span class="ss">:patient</span>
+<span class="k">end</span>
+
+<span class="k">class</span> <span class="nc">Patient</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="n">has_many</span> <span class="ss">:appointments</span>
+  <span class="n">has_many</span> <span class="ss">:physicians</span><span class="p">,</span> <span class="ss">through: :appointments</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="class Physician &lt; ApplicationRecord
+  has_many :appointments
+  has_many :patients, through: :appointments
+end
+
+class Appointment &lt; ApplicationRecord
+  belongs_to :physician
+  belongs_to :patient
+end
+
+class Patient &lt; ApplicationRecord
+  has_many :appointments
+  has_many :physicians, through: :appointments
+end
+">Copy</button>
+</div>
+<p><img src="/home/rails/v7.0.4.2/guides/output/kindle/images/association_basics/has_many_through.png" alt="has_many :through Association Diagram"></p>
+
+<p>The corresponding migration might look like this:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">CreateAppointments</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Migration</span><span class="p">[</span><span class="mf">7.0</span><span class="p">]</span>
+  <span class="k">def</span> <span class="nf">change</span>
+    <span class="n">create_table</span> <span class="ss">:physicians</span> <span class="k">do</span> <span class="o">|</span><span class="n">t</span><span class="o">|</span>
+      <span class="n">t</span><span class="p">.</span><span class="nf">string</span> <span class="ss">:name</span>
+      <span class="n">t</span><span class="p">.</span><span class="nf">timestamps</span>
+    <span class="k">end</span>
+
+    <span class="n">create_table</span> <span class="ss">:patients</span> <span class="k">do</span> <span class="o">|</span><span class="n">t</span><span class="o">|</span>
+      <span class="n">t</span><span class="p">.</span><span class="nf">string</span> <span class="ss">:name</span>
+      <span class="n">t</span><span class="p">.</span><span class="nf">timestamps</span>
+    <span class="k">end</span>
+
+    <span class="n">create_table</span> <span class="ss">:appointments</span> <span class="k">do</span> <span class="o">|</span><span class="n">t</span><span class="o">|</span>
+      <span class="n">t</span><span class="p">.</span><span class="nf">belongs_to</span> <span class="ss">:physician</span>
+      <span class="n">t</span><span class="p">.</span><span class="nf">belongs_to</span> <span class="ss">:patient</span>
+      <span class="n">t</span><span class="p">.</span><span class="nf">datetime</span> <span class="ss">:appointment_date</span>
+      <span class="n">t</span><span class="p">.</span><span class="nf">timestamps</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="class CreateAppointments &lt; ActiveRecord::Migration[7.0]
+  def change
+    create_table :physicians do |t|
+      t.string :name
+      t.timestamps
+    end
+
+    create_table :patients do |t|
+      t.string :name
+      t.timestamps
+    end
+
+    create_table :appointments do |t|
+      t.belongs_to :physician
+      t.belongs_to :patient
+      t.datetime :appointment_date
+      t.timestamps
+    end
+  end
+end
+">Copy</button>
+</div>
+<p>The collection of join models can be managed via the <a href="#has-many-association-reference"><code>has_many</code> association methods</a>.
+For example, if you assign:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">physician</span><span class="p">.</span><span class="nf">patients</span> <span class="o">=</span> <span class="n">patients</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="physician.patients = patients
+">Copy</button>
+</div>
+<p>Then new join models are automatically created for the newly associated objects.
+If some that existed previously are now missing, then their join rows are automatically deleted.</p>
+
+<div class="warning"><p>Automatic deletion of join models is direct, no destroy callbacks are triggered.</p></div>
+
+<p>The <code>has_many :through</code> association is also useful for setting up "shortcuts" through nested <code>has_many</code> associations. For example, if a document has many sections, and a section has many paragraphs, you may sometimes want to get a simple collection of all paragraphs in the document. You could set that up this way:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">Document</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="n">has_many</span> <span class="ss">:sections</span>
+  <span class="n">has_many</span> <span class="ss">:paragraphs</span><span class="p">,</span> <span class="ss">through: :sections</span>
+<span class="k">end</span>
+
+<span class="k">class</span> <span class="nc">Section</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="n">belongs_to</span> <span class="ss">:document</span>
+  <span class="n">has_many</span> <span class="ss">:paragraphs</span>
+<span class="k">end</span>
+
+<span class="k">class</span> <span class="nc">Paragraph</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="n">belongs_to</span> <span class="ss">:section</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="class Document &lt; ApplicationRecord
+  has_many :sections
+  has_many :paragraphs, through: :sections
+end
+
+class Section &lt; ApplicationRecord
+  belongs_to :document
+  has_many :paragraphs
+end
+
+class Paragraph &lt; ApplicationRecord
+  belongs_to :section
+end
+">Copy</button>
+</div>
+<p>With <code>through: :sections</code> specified, Rails will now understand:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="vi">@document</span><span class="p">.</span><span class="nf">paragraphs</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="@document.paragraphs
+">Copy</button>
+</div>
+<h4 id="the-has-one-through-association"><a class="anchorlink" href="#the-has-one-through-association">2.5 The <code>has_one :through</code> Association</a></h4>
+
+<p>A <a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveRecord/Associations/ClassMethods.html#method-i-has_one"><code>has_one :through</code></a> association sets up a one-to-one connection with another model. This association indicates
+that the declaring model can be matched with one instance of another model by proceeding <em>through</em> a third model.
+For example, if each supplier has one account, and each account is associated with one account history, then the
+supplier model could look like this:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">Supplier</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="n">has_one</span> <span class="ss">:account</span>
+  <span class="n">has_one</span> <span class="ss">:account_history</span><span class="p">,</span> <span class="ss">through: :account</span>
+<span class="k">end</span>
+
+<span class="k">class</span> <span class="nc">Account</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="n">belongs_to</span> <span class="ss">:supplier</span>
+  <span class="n">has_one</span> <span class="ss">:account_history</span>
+<span class="k">end</span>
+
+<span class="k">class</span> <span class="nc">AccountHistory</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="n">belongs_to</span> <span class="ss">:account</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="class Supplier &lt; ApplicationRecord
+  has_one :account
+  has_one :account_history, through: :account
+end
+
+class Account &lt; ApplicationRecord
+  belongs_to :supplier
+  has_one :account_history
+end
+
+class AccountHistory &lt; ApplicationRecord
+  belongs_to :account
+end
+">Copy</button>
+</div>
+<p><img src="/home/rails/v7.0.4.2/guides/output/kindle/images/association_basics/has_one_through.png" alt="has_one :through Association Diagram"></p>
+
+<p>The corresponding migration might look like this:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">CreateAccountHistories</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Migration</span><span class="p">[</span><span class="mf">7.0</span><span class="p">]</span>
+  <span class="k">def</span> <span class="nf">change</span>
+    <span class="n">create_table</span> <span class="ss">:suppliers</span> <span class="k">do</span> <span class="o">|</span><span class="n">t</span><span class="o">|</span>
+      <span class="n">t</span><span class="p">.</span><span class="nf">string</span> <span class="ss">:name</span>
+      <span class="n">t</span><span class="p">.</span><span class="nf">timestamps</span>
+    <span class="k">end</span>
+
+    <span class="n">create_table</span> <span class="ss">:accounts</span> <span class="k">do</span> <span class="o">|</span><span class="n">t</span><span class="o">|</span>
+      <span class="n">t</span><span class="p">.</span><span class="nf">belongs_to</span> <span class="ss">:supplier</span>
+      <span class="n">t</span><span class="p">.</span><span class="nf">string</span> <span class="ss">:account_number</span>
+      <span class="n">t</span><span class="p">.</span><span class="nf">timestamps</span>
+    <span class="k">end</span>
+
+    <span class="n">create_table</span> <span class="ss">:account_histories</span> <span class="k">do</span> <span class="o">|</span><span class="n">t</span><span class="o">|</span>
+      <span class="n">t</span><span class="p">.</span><span class="nf">belongs_to</span> <span class="ss">:account</span>
+      <span class="n">t</span><span class="p">.</span><span class="nf">integer</span> <span class="ss">:credit_rating</span>
+      <span class="n">t</span><span class="p">.</span><span class="nf">timestamps</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="class CreateAccountHistories &lt; ActiveRecord::Migration[7.0]
+  def change
+    create_table :suppliers do |t|
+      t.string :name
+      t.timestamps
+    end
+
+    create_table :accounts do |t|
+      t.belongs_to :supplier
+      t.string :account_number
+      t.timestamps
+    end
+
+    create_table :account_histories do |t|
+      t.belongs_to :account
+      t.integer :credit_rating
+      t.timestamps
+    end
+  end
+end
+">Copy</button>
+</div>
+<h4 id="the-has-and-belongs-to-many-association"><a class="anchorlink" href="#the-has-and-belongs-to-many-association">2.6 The <code>has_and_belongs_to_many</code> Association</a></h4>
+
+<p>A <a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveRecord/Associations/ClassMethods.html#method-i-has_and_belongs_to_many"><code>has_and_belongs_to_many</code></a> association creates a direct many-to-many connection with another model, with no intervening model.
+This association indicates that each instance of the declaring model refers to zero or more instances of another model.
+For example, if your application includes assemblies and parts, with each assembly having many parts and each part appearing in many assemblies, you could declare the models this way:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">Assembly</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="n">has_and_belongs_to_many</span> <span class="ss">:parts</span>
+<span class="k">end</span>
+
+<span class="k">class</span> <span class="nc">Part</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="n">has_and_belongs_to_many</span> <span class="ss">:assemblies</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="class Assembly &lt; ApplicationRecord
+  has_and_belongs_to_many :parts
+end
+
+class Part &lt; ApplicationRecord
+  has_and_belongs_to_many :assemblies
+end
+">Copy</button>
+</div>
+<p><img src="/home/rails/v7.0.4.2/guides/output/kindle/images/association_basics/habtm.png" alt="has_and_belongs_to_many Association Diagram"></p>
+
+<p>The corresponding migration might look like this:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">CreateAssembliesAndParts</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Migration</span><span class="p">[</span><span class="mf">7.0</span><span class="p">]</span>
+  <span class="k">def</span> <span class="nf">change</span>
+    <span class="n">create_table</span> <span class="ss">:assemblies</span> <span class="k">do</span> <span class="o">|</span><span class="n">t</span><span class="o">|</span>
+      <span class="n">t</span><span class="p">.</span><span class="nf">string</span> <span class="ss">:name</span>
+      <span class="n">t</span><span class="p">.</span><span class="nf">timestamps</span>
+    <span class="k">end</span>
+
+    <span class="n">create_table</span> <span class="ss">:parts</span> <span class="k">do</span> <span class="o">|</span><span class="n">t</span><span class="o">|</span>
+      <span class="n">t</span><span class="p">.</span><span class="nf">string</span> <span class="ss">:part_number</span>
+      <span class="n">t</span><span class="p">.</span><span class="nf">timestamps</span>
+    <span class="k">end</span>
+
+    <span class="n">create_table</span> <span class="ss">:assemblies_parts</span><span class="p">,</span> <span class="ss">id: </span><span class="kp">false</span> <span class="k">do</span> <span class="o">|</span><span class="n">t</span><span class="o">|</span>
+      <span class="n">t</span><span class="p">.</span><span class="nf">belongs_to</span> <span class="ss">:assembly</span>
+      <span class="n">t</span><span class="p">.</span><span class="nf">belongs_to</span> <span class="ss">:part</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="class CreateAssembliesAndParts &lt; ActiveRecord::Migration[7.0]
+  def change
+    create_table :assemblies do |t|
+      t.string :name
+      t.timestamps
+    end
+
+    create_table :parts do |t|
+      t.string :part_number
+      t.timestamps
+    end
+
+    create_table :assemblies_parts, id: false do |t|
+      t.belongs_to :assembly
+      t.belongs_to :part
+    end
+  end
+end
+">Copy</button>
+</div>
+<h4 id="choosing-between-belongs-to-and-has-one"><a class="anchorlink" href="#choosing-between-belongs-to-and-has-one">2.7 Choosing Between <code>belongs_to</code> and <code>has_one</code></a></h4>
+
+<p>If you want to set up a one-to-one relationship between two models, you'll need to add <code>belongs_to</code> to one, and <code>has_one</code> to the other. How do you know which is which?</p>
+
+<p>The distinction is in where you place the foreign key (it goes on the table for the class declaring the <code>belongs_to</code> association), but you should give some thought to the actual meaning of the data as well. The <code>has_one</code> relationship says that one of something is yours - that is, that something points back to you. For example, it makes more sense to say that a supplier owns an account than that an account owns a supplier. This suggests that the correct relationships are like this:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">Supplier</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="n">has_one</span> <span class="ss">:account</span>
+<span class="k">end</span>
+
+<span class="k">class</span> <span class="nc">Account</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="n">belongs_to</span> <span class="ss">:supplier</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="class Supplier &lt; ApplicationRecord
+  has_one :account
+end
+
+class Account &lt; ApplicationRecord
+  belongs_to :supplier
+end
+">Copy</button>
+</div>
+<p>The corresponding migration might look like this:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">CreateSuppliers</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Migration</span><span class="p">[</span><span class="mf">7.0</span><span class="p">]</span>
+  <span class="k">def</span> <span class="nf">change</span>
+    <span class="n">create_table</span> <span class="ss">:suppliers</span> <span class="k">do</span> <span class="o">|</span><span class="n">t</span><span class="o">|</span>
+      <span class="n">t</span><span class="p">.</span><span class="nf">string</span> <span class="ss">:name</span>
+      <span class="n">t</span><span class="p">.</span><span class="nf">timestamps</span>
+    <span class="k">end</span>
+
+    <span class="n">create_table</span> <span class="ss">:accounts</span> <span class="k">do</span> <span class="o">|</span><span class="n">t</span><span class="o">|</span>
+      <span class="n">t</span><span class="p">.</span><span class="nf">bigint</span>  <span class="ss">:supplier_id</span>
+      <span class="n">t</span><span class="p">.</span><span class="nf">string</span>  <span class="ss">:account_number</span>
+      <span class="n">t</span><span class="p">.</span><span class="nf">timestamps</span>
+    <span class="k">end</span>
+
+    <span class="n">add_index</span> <span class="ss">:accounts</span><span class="p">,</span> <span class="ss">:supplier_id</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="class CreateSuppliers &lt; ActiveRecord::Migration[7.0]
+  def change
+    create_table :suppliers do |t|
+      t.string :name
+      t.timestamps
+    end
+
+    create_table :accounts do |t|
+      t.bigint  :supplier_id
+      t.string  :account_number
+      t.timestamps
+    end
+
+    add_index :accounts, :supplier_id
+  end
+end
+">Copy</button>
+</div>
+<div class="note"><p>Using <code>t.bigint :supplier_id</code> makes the foreign key naming obvious and explicit. In current versions of Rails, you can abstract away this implementation detail by using <code>t.references :supplier</code> instead.</p></div>
+
+<h4 id="choosing-between-has-many-through-and-has-and-belongs-to-many"><a class="anchorlink" href="#choosing-between-has-many-through-and-has-and-belongs-to-many">2.8 Choosing Between <code>has_many :through</code> and <code>has_and_belongs_to_many</code></a></h4>
+
+<p>Rails offers two different ways to declare a many-to-many relationship between models. The first way is to use <code>has_and_belongs_to_many</code>, which allows you to make the association directly:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">Assembly</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="n">has_and_belongs_to_many</span> <span class="ss">:parts</span>
+<span class="k">end</span>
+
+<span class="k">class</span> <span class="nc">Part</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="n">has_and_belongs_to_many</span> <span class="ss">:assemblies</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="class Assembly &lt; ApplicationRecord
+  has_and_belongs_to_many :parts
+end
+
+class Part &lt; ApplicationRecord
+  has_and_belongs_to_many :assemblies
+end
+">Copy</button>
+</div>
+<p>The second way to declare a many-to-many relationship is to use <code>has_many :through</code>. This makes the association indirectly, through a join model:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">Assembly</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="n">has_many</span> <span class="ss">:manifests</span>
+  <span class="n">has_many</span> <span class="ss">:parts</span><span class="p">,</span> <span class="ss">through: :manifests</span>
+<span class="k">end</span>
+
+<span class="k">class</span> <span class="nc">Manifest</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="n">belongs_to</span> <span class="ss">:assembly</span>
+  <span class="n">belongs_to</span> <span class="ss">:part</span>
+<span class="k">end</span>
+
+<span class="k">class</span> <span class="nc">Part</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="n">has_many</span> <span class="ss">:manifests</span>
+  <span class="n">has_many</span> <span class="ss">:assemblies</span><span class="p">,</span> <span class="ss">through: :manifests</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="class Assembly &lt; ApplicationRecord
+  has_many :manifests
+  has_many :parts, through: :manifests
+end
+
+class Manifest &lt; ApplicationRecord
+  belongs_to :assembly
+  belongs_to :part
+end
+
+class Part &lt; ApplicationRecord
+  has_many :manifests
+  has_many :assemblies, through: :manifests
+end
+">Copy</button>
+</div>
+<p>The simplest rule of thumb is that you should set up a <code>has_many :through</code> relationship if you need to work with the relationship model as an independent entity. If you don't need to do anything with the relationship model, it may be simpler to set up a <code>has_and_belongs_to_many</code> relationship (though you'll need to remember to create the joining table in the database).</p>
+
+<p>You should use <code>has_many :through</code> if you need validations, callbacks, or extra attributes on the join model.</p>
+
+<h4 id="polymorphic-associations"><a class="anchorlink" href="#polymorphic-associations">2.9 Polymorphic Associations</a></h4>
+
+<p>A slightly more advanced twist on associations is the <em>polymorphic association</em>. With polymorphic associations, a model can belong to more than one other model, on a single association. For example, you might have a picture model that belongs to either an employee model or a product model. Here's how this could be declared:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">Picture</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="n">belongs_to</span> <span class="ss">:imageable</span><span class="p">,</span> <span class="ss">polymorphic: </span><span class="kp">true</span>
+<span class="k">end</span>
+
+<span class="k">class</span> <span class="nc">Employee</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="n">has_many</span> <span class="ss">:pictures</span><span class="p">,</span> <span class="ss">as: :imageable</span>
+<span class="k">end</span>
+
+<span class="k">class</span> <span class="nc">Product</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="n">has_many</span> <span class="ss">:pictures</span><span class="p">,</span> <span class="ss">as: :imageable</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="class Picture &lt; ApplicationRecord
+  belongs_to :imageable, polymorphic: true
+end
+
+class Employee &lt; ApplicationRecord
+  has_many :pictures, as: :imageable
+end
+
+class Product &lt; ApplicationRecord
+  has_many :pictures, as: :imageable
+end
+">Copy</button>
+</div>
+<p>You can think of a polymorphic <code>belongs_to</code> declaration as setting up an interface that any other model can use. From an instance of the <code>Employee</code> model, you can retrieve a collection of pictures: <code>@employee.pictures</code>.</p>
+
+<p>Similarly, you can retrieve <code>@product.pictures</code>.</p>
+
+<p>If you have an instance of the <code>Picture</code> model, you can get to its parent via <code>@picture.imageable</code>. To make this work, you need to declare both a foreign key column and a type column in the model that declares the polymorphic interface:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">CreatePictures</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Migration</span><span class="p">[</span><span class="mf">7.0</span><span class="p">]</span>
+  <span class="k">def</span> <span class="nf">change</span>
+    <span class="n">create_table</span> <span class="ss">:pictures</span> <span class="k">do</span> <span class="o">|</span><span class="n">t</span><span class="o">|</span>
+      <span class="n">t</span><span class="p">.</span><span class="nf">string</span>  <span class="ss">:name</span>
+      <span class="n">t</span><span class="p">.</span><span class="nf">bigint</span>  <span class="ss">:imageable_id</span>
+      <span class="n">t</span><span class="p">.</span><span class="nf">string</span>  <span class="ss">:imageable_type</span>
+      <span class="n">t</span><span class="p">.</span><span class="nf">timestamps</span>
+    <span class="k">end</span>
+
+    <span class="n">add_index</span> <span class="ss">:pictures</span><span class="p">,</span> <span class="p">[</span><span class="ss">:imageable_type</span><span class="p">,</span> <span class="ss">:imageable_id</span><span class="p">]</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="class CreatePictures &lt; ActiveRecord::Migration[7.0]
+  def change
+    create_table :pictures do |t|
+      t.string  :name
+      t.bigint  :imageable_id
+      t.string  :imageable_type
+      t.timestamps
+    end
+
+    add_index :pictures, [:imageable_type, :imageable_id]
+  end
+end
+">Copy</button>
+</div>
+<p>This migration can be simplified by using the <code>t.references</code> form:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">CreatePictures</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Migration</span><span class="p">[</span><span class="mf">7.0</span><span class="p">]</span>
+  <span class="k">def</span> <span class="nf">change</span>
+    <span class="n">create_table</span> <span class="ss">:pictures</span> <span class="k">do</span> <span class="o">|</span><span class="n">t</span><span class="o">|</span>
+      <span class="n">t</span><span class="p">.</span><span class="nf">string</span> <span class="ss">:name</span>
+      <span class="n">t</span><span class="p">.</span><span class="nf">references</span> <span class="ss">:imageable</span><span class="p">,</span> <span class="ss">polymorphic: </span><span class="kp">true</span>
+      <span class="n">t</span><span class="p">.</span><span class="nf">timestamps</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="class CreatePictures &lt; ActiveRecord::Migration[7.0]
+  def change
+    create_table :pictures do |t|
+      t.string :name
+      t.references :imageable, polymorphic: true
+      t.timestamps
+    end
+  end
+end
+">Copy</button>
+</div>
+<p><img src="/home/rails/v7.0.4.2/guides/output/kindle/images/association_basics/polymorphic.png" alt="Polymorphic Association Diagram"></p>
+
+<h4 id="self-joins"><a class="anchorlink" href="#self-joins">2.10 Self Joins</a></h4>
+
+<p>In designing a data model, you will sometimes find a model that should have a relation to itself. For example, you may want to store all employees in a single database model, but be able to trace relationships such as between manager and subordinates. This situation can be modeled with self-joining associations:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">Employee</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="n">has_many</span> <span class="ss">:subordinates</span><span class="p">,</span> <span class="ss">class_name: </span><span class="s2">"Employee"</span><span class="p">,</span>
+                          <span class="ss">foreign_key: </span><span class="s2">"manager_id"</span>
+
+  <span class="n">belongs_to</span> <span class="ss">:manager</span><span class="p">,</span> <span class="ss">class_name: </span><span class="s2">"Employee"</span><span class="p">,</span> <span class="ss">optional: </span><span class="kp">true</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='class Employee &lt; ApplicationRecord
+  has_many :subordinates, class_name: "Employee",
+                          foreign_key: "manager_id"
+
+  belongs_to :manager, class_name: "Employee", optional: true
+end
+'>Copy</button>
+</div>
+<p>With this setup, you can retrieve <code>@employee.subordinates</code> and <code>@employee.manager</code>.</p>
+
+<p>In your migrations/schema, you will add a references column to the model itself.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">CreateEmployees</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Migration</span><span class="p">[</span><span class="mf">7.0</span><span class="p">]</span>
+  <span class="k">def</span> <span class="nf">change</span>
+    <span class="n">create_table</span> <span class="ss">:employees</span> <span class="k">do</span> <span class="o">|</span><span class="n">t</span><span class="o">|</span>
+      <span class="n">t</span><span class="p">.</span><span class="nf">references</span> <span class="ss">:manager</span><span class="p">,</span> <span class="ss">foreign_key: </span><span class="p">{</span> <span class="ss">to_table: :employees</span> <span class="p">}</span>
+      <span class="n">t</span><span class="p">.</span><span class="nf">timestamps</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="class CreateEmployees &lt; ActiveRecord::Migration[7.0]
+  def change
+    create_table :employees do |t|
+      t.references :manager, foreign_key: { to_table: :employees }
+      t.timestamps
+    end
+  end
+end
+">Copy</button>
+</div>
+</body>
+</html>

@@ -1,0 +1,165 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>2 Dealing with Model Objects</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v4.0.13/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="dealing-with-model-objects">2 Dealing with Model Objects</h3>
+<h4 id="dealing-with-model-objects-model-object-helpers">2.1 Model Object Helpers</h4>
+<p>A particularly common task for a form is editing or creating a model object. While the <code>*_tag</code> helpers can certainly be used for this task they are somewhat verbose as for each tag you would have to ensure the correct parameter name is used and set the default value of the input appropriately. Rails provides helpers tailored to this task. These helpers lack the _tag suffix, for example <code>text_field</code>, <code>text_area</code>.</p>
+<p>For these helpers the first argument is the name of an instance variable and the second is the name of a method (usually an attribute) to call on that object. Rails will set the value of the input control to the return value of that method for the object and set an appropriate input name. If your controller has defined <code>@person</code> and that person's name is Henry then a form containing:</p>
+<div class="code_container">
+<pre class="brush: ruby; html-script: true; gutter: false; toolbar: false">
+&lt;%= text_field(:person, :name) %&gt;
+
+</pre>
+</div>
+<p>will produce output similar to</p>
+<div class="code_container">
+<pre class="brush: ruby; html-script: true; gutter: false; toolbar: false">
+&lt;input id="person_name" name="person[name]" type="text" value="Henry"/&gt;
+
+</pre>
+</div>
+<p>Upon form submission the value entered by the user will be stored in <code>params[:person][:name]</code>. The <code>params[:person]</code> hash is suitable for passing to <code>Person.new</code> or, if <code>@person</code> is an instance of Person, <code>@person.update</code>. While the name of an attribute is the most common second parameter to these helpers this is not compulsory. In the example above, as long as person objects have a <code>name</code> and a <code>name=</code> method Rails will be happy.</p>
+<div class="warning"><p>You must pass the name of an instance variable, i.e. <code>:person</code> or <code>"person"</code>, not an actual instance of your model object.</p></div>
+<p>Rails provides helpers for displaying the validation errors associated with a model object. These are covered in detail by the <a href="./active_record_validations.html#displaying-validation-errors-in-views">Active Record Validations</a> guide.</p>
+<h4 id="binding-a-form-to-an-object">2.2 Binding a Form to an Object</h4>
+<p>While this is an increase in comfort it is far from perfect. If Person has many attributes to edit then we would be repeating the name of the edited object many times. What we want to do is somehow bind a form to a model object, which is exactly what <code>form_for</code> does.</p>
+<p>Assume we have a controller for dealing with articles <code>app/controllers/articles_controller.rb</code>:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+def new
+  @article = Article.new
+end
+
+</pre>
+</div>
+<p>The corresponding view <code>app/views/articles/new.html.erb</code> using <code>form_for</code> looks like this:</p>
+<div class="code_container">
+<pre class="brush: ruby; html-script: true; gutter: false; toolbar: false">
+&lt;%= form_for @article, url: {action: "create"}, html: {class: "nifty_form"} do |f| %&gt;
+  &lt;%= f.text_field :title %&gt;
+  &lt;%= f.text_area :body, size: "60x12" %&gt;
+  &lt;%= f.submit "Create" %&gt;
+&lt;% end %&gt;
+
+</pre>
+</div>
+<p>There are a few things to note here:</p>
+<ul>
+<li>
+<code>@article</code> is the actual object being edited.</li>
+<li>There is a single hash of options. Routing options are passed in the <code>:url</code> hash, HTML options are passed in the <code>:html</code> hash. Also you can provide a <code>:namespace</code> option for your form to ensure uniqueness of id attributes on form elements. The namespace attribute will be prefixed with underscore on the generated HTML id.</li>
+<li>The <code>form_for</code> method yields a <strong>form builder</strong> object (the <code>f</code> variable).</li>
+<li>Methods to create form controls are called <strong>on</strong> the form builder object <code>f</code>
+</li>
+</ul>
+<p>The resulting HTML is:</p>
+<div class="code_container">
+<pre class="brush: xml; gutter: false; toolbar: false">
+&lt;form accept-charset="UTF-8" action="/articles/create" method="post" class="nifty_form"&gt;
+  &lt;input id="article_title" name="article[title]" type="text" /&gt;
+  &lt;textarea id="article_body" name="article[body]" cols="60" rows="12"&gt;&lt;/textarea&gt;
+  &lt;input name="commit" type="submit" value="Create" /&gt;
+&lt;/form&gt;
+
+</pre>
+</div>
+<p>The name passed to <code>form_for</code> controls the key used in <code>params</code> to access the form's values. Here the name is <code>article</code> and so all the inputs have names of the form <code>article[attribute_name]</code>. Accordingly, in the <code>create</code> action <code>params[:article]</code> will be a hash with keys <code>:title</code> and <code>:body</code>. You can read more about the significance of input names in the parameter_names section.</p>
+<p>The helper methods called on the form builder are identical to the model object helpers except that it is not necessary to specify which object is being edited since this is already managed by the form builder.</p>
+<p>You can create a similar binding without actually creating <code>&lt;form&gt;</code> tags with the <code>fields_for</code> helper. This is useful for editing additional model objects with the same form. For example if you had a Person model with an associated ContactDetail model you could create a form for creating both like so:</p>
+<div class="code_container">
+<pre class="brush: ruby; html-script: true; gutter: false; toolbar: false">
+&lt;%= form_for @person, url: {action: "create"} do |person_form| %&gt;
+  &lt;%= person_form.text_field :name %&gt;
+  &lt;%= fields_for @person.contact_detail do |contact_details_form| %&gt;
+    &lt;%= contact_details_form.text_field :phone_number %&gt;
+  &lt;% end %&gt;
+&lt;% end %&gt;
+
+</pre>
+</div>
+<p>which produces the following output:</p>
+<div class="code_container">
+<pre class="brush: xml; gutter: false; toolbar: false">
+&lt;form accept-charset="UTF-8" action="/people/create" class="new_person" id="new_person" method="post"&gt;
+  &lt;input id="person_name" name="person[name]" type="text" /&gt;
+  &lt;input id="contact_detail_phone_number" name="contact_detail[phone_number]" type="text" /&gt;
+&lt;/form&gt;
+
+</pre>
+</div>
+<p>The object yielded by <code>fields_for</code> is a form builder like the one yielded by <code>form_for</code> (in fact <code>form_for</code> calls <code>fields_for</code> internally).</p>
+<h4 id="relying-on-record-identification">2.3 Relying on Record Identification</h4>
+<p>The Article model is directly available to users of the application, so — following the best practices for developing with Rails — you should declare it <strong>a resource</strong>:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+resources :articles
+
+</pre>
+</div>
+<div class="info"><p>Declaring a resource has a number of side-affects. See <a href="routing.html#resource-routing-the-rails-default">Rails Routing From the Outside In</a> for more information on setting up and using resources.</p></div>
+<p>When dealing with RESTful resources, calls to <code>form_for</code> can get significantly easier if you rely on <strong>record identification</strong>. In short, you can just pass the model instance and have Rails figure out model name and the rest:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+## Creating a new article
+# long-style:
+form_for(@article, url: articles_path)
+# same thing, short-style (record identification gets used):
+form_for(@article)
+
+## Editing an existing article
+# long-style:
+form_for(@article, url: article_path(@article), html: {method: "patch"})
+# short-style:
+form_for(@article)
+
+</pre>
+</div>
+<p>Notice how the short-style <code>form_for</code> invocation is conveniently the same, regardless of the record being new or existing. Record identification is smart enough to figure out if the record is new by asking <code>record.new_record?</code>. It also selects the correct path to submit to and the name based on the class of the object.</p>
+<p>Rails will also automatically set the <code>class</code> and <code>id</code> of the form appropriately: a form creating an article would have <code>id</code> and <code>class</code> <code>new_article</code>. If you were editing the article with id 23, the <code>class</code> would be set to <code>edit_article</code> and the id to <code>edit_article_23</code>. These attributes will be omitted for brevity in the rest of this guide.</p>
+<div class="warning"><p>When you're using STI (single-table inheritance) with your models, you can't rely on record identification on a subclass if only their parent class is declared a resource. You will have to specify the model name, <code>:url</code>, and <code>:method</code> explicitly.</p></div>
+<h5 id="dealing-with-namespaces">2.3.1 Dealing with Namespaces</h5>
+<p>If you have created namespaced routes, <code>form_for</code> has a nifty shorthand for that too. If your application has an admin namespace then</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+form_for [:admin, @article]
+
+</pre>
+</div>
+<p>will create a form that submits to the articles controller inside the admin namespace (submitting to <code>admin_article_path(@article)</code> in the case of an update). If you have several levels of namespacing then the syntax is similar:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+form_for [:admin, :management, @article]
+
+</pre>
+</div>
+<p>For more information on Rails' routing system and the associated conventions, please see the <a href="routing.html">routing guide</a>.</p>
+<h4 id="how-do-forms-with-patch-put-or-delete-methods-work-questionmark">2.4 How do forms with PATCH, PUT, or DELETE methods work?</h4>
+<p>The Rails framework encourages RESTful design of your applications, which means you'll be making a lot of "PATCH" and "DELETE" requests (besides "GET" and "POST"). However, most browsers <em>don't support</em> methods other than "GET" and "POST" when it comes to submitting forms.</p>
+<p>Rails works around this issue by emulating other methods over POST with a hidden input named <code>"_method"</code>, which is set to reflect the desired method:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+form_tag(search_path, method: "patch")
+
+</pre>
+</div>
+<p>output:</p>
+<div class="code_container">
+<pre class="brush: xml; gutter: false; toolbar: false">
+&lt;form accept-charset="UTF-8" action="/search" method="post"&gt;
+  &lt;div style="margin:0;padding:0"&gt;
+    &lt;input name="_method" type="hidden" value="patch" /&gt;
+    &lt;input name="utf8" type="hidden" value="&amp;#x2713;" /&gt;
+    &lt;input name="authenticity_token" type="hidden" value="f755bb0ed134b76c432144748a6d4b7a7ddf2b71" /&gt;
+  &lt;/div&gt;
+  ...
+
+</pre>
+</div>
+<p>When parsing POSTed data, Rails will take into account the special <code>_method</code> parameter and acts as if the HTTP method was the one specified inside it ("PATCH" in this example).</p>
+</body>
+</html>

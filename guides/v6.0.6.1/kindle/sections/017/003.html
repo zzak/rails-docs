@@ -1,0 +1,57 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>4 Examples</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v6.0.6.1/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="examples"><a class="anchorlink" href="#examples">4 Examples</a></h3>
+<p>Adding a rich text field to an existing model:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+# app/models/message.rb
+class Message &lt; ApplicationRecord
+  has_rich_text :content
+end
+
+</pre>
+</div>
+<p>Then refer to this field in the form for the model:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; html-script: true; gutter: false; toolbar: false">
+&lt;%# app/views/messages/_form.html.erb %&gt;
+&lt;%= form_with(model: message) do |form| %&gt;
+  &lt;div class="field"&gt;
+    &lt;%= form.label :content %&gt;
+    &lt;%= form.rich_text_area :content %&gt;
+  &lt;/div&gt;
+&lt;% end %&gt;
+
+</pre>
+</div>
+<p>And finally display the sanitized rich text on a page:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; html-script: true; gutter: false; toolbar: false">
+&lt;%= @message.content %&gt;
+
+</pre>
+</div>
+<p>To accept the rich text content, all you have to do is permit the referenced attribute:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class MessagesController &lt; ApplicationController
+  def create
+    message = Message.create! params.require(:message).permit(:title, :content)
+    redirect_to message
+  end
+end
+
+</pre>
+</div>
+</body>
+</html>

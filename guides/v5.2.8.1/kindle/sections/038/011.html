@@ -1,0 +1,39 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>12 Regarding the Rails Stack</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v5.2.8.1/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="regarding-the-rails-stack"><a class="anchorlink" href="#regarding-the-rails-stack">12 Regarding the Rails Stack</a></h3>
+<p>When documenting parts of Rails API, it's important to remember all of the
+pieces that go into the Rails stack.</p>
+
+<p>This means that behavior may change depending on the scope or context of the
+method or class you're trying to document.</p>
+
+<p>In various places there is different behavior when you take the entire stack
+into account, one such example is
+<code>ActionView::Helpers::AssetTagHelper#image_tag</code>:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+# image_tag("icon.png")
+#   # =&gt; &lt;img src="/assets/icon.png" /&gt;
+
+</pre>
+</div>
+<p>Although the default behavior for <code>#image_tag</code> is to always return
+<code>/images/icon.png</code>, we take into account the full Rails stack (including the
+Asset Pipeline) we may see the result seen above.</p>
+
+<p>We're only concerned with the behavior experienced when using the full default
+Rails stack.</p>
+
+<p>In this case, we want to document the behavior of the <em>framework</em>, and not just
+this specific method.</p>
+
+<p>If you have a question on how the Rails team handles certain API, don't hesitate to open a ticket or send a patch to the <a href="https://github.com/rails/rails/issues">issue tracker</a>.</p>
+</body>
+</html>

@@ -1,0 +1,68 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>1 Upgrading to Rails 3.2</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v6.0.6.1/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="upgrading-to-rails-3-2"><a class="anchorlink" href="#upgrading-to-rails-3-2">1 Upgrading to Rails 3.2</a></h3>
+<p>If you're upgrading an existing application, it's a great idea to have good test coverage before going in. You should also first upgrade to Rails 3.1 in case you haven't and make sure your application still runs as expected before attempting an update to Rails 3.2. Then take heed of the following changes:</p>
+
+<h4 id="rails-3-2-requires-at-least-ruby-1-8-7"><a class="anchorlink" href="#rails-3-2-requires-at-least-ruby-1-8-7">1.1 Rails 3.2 requires at least Ruby 1.8.7</a></h4>
+
+<p>Rails 3.2 requires Ruby 1.8.7 or higher. Support for all of the previous Ruby versions has been dropped officially and you should upgrade as early as possible. Rails 3.2 is also compatible with Ruby 1.9.2.</p>
+
+<div class="info"><p>Note that Ruby 1.8.7 p248 and p249 have marshalling bugs that crash Rails. Ruby Enterprise Edition has these fixed since the release of 1.8.7-2010.02. On the 1.9 front, Ruby 1.9.1 is not usable because it outright segfaults, so if you want to use 1.9.x, jump on to 1.9.2 or 1.9.3 for smooth sailing.</p></div>
+
+<h4 id="what-to-update-in-your-apps"><a class="anchorlink" href="#what-to-update-in-your-apps">1.2 What to update in your apps</a></h4>
+<ul>
+<li>
+Update your <code>Gemfile</code> to depend on
+<ul>
+<li><code>rails = 3.2.0</code></li>
+<li><code>sass-rails ~&gt; 3.2.3</code></li>
+<li><code>coffee-rails ~&gt; 3.2.1</code></li>
+<li><code>uglifier &gt;= 1.0.3</code></li>
+</ul>
+</li>
+<li>Rails 3.2 deprecates <code>vendor/plugins</code> and Rails 4.0 will remove them completely. You can start replacing these plugins by extracting them as gems and adding them in your <code>Gemfile</code>. If you choose not to make them gems, you can move them into, say, <code>lib/my_plugin/*</code> and add an appropriate initializer in <code>config/initializers/my_plugin.rb</code>.</li>
+<li>
+There are a couple of new configuration changes you'd want to add in <code>config/environments/development.rb</code>:
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+# Raise exception on mass assignment protection for Active Record models
+config.active_record.mass_assignment_sanitizer = :strict
+
+# Log the query plan for queries taking more than this (works
+# with SQLite, MySQL, and PostgreSQL)
+config.active_record.auto_explain_threshold_in_seconds = 0.5
+
+</pre>
+</div>
+The <code>mass_assignment_sanitizer</code> config also needs to be added in <code>config/environments/test.rb</code>:
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+# Raise exception on mass assignment protection for Active Record models
+config.active_record.mass_assignment_sanitizer = :strict
+
+</pre>
+</div>
+</li>
+</ul>
+<h4 id="what-to-update-in-your-engines"><a class="anchorlink" href="#what-to-update-in-your-engines">1.3 What to update in your engines</a></h4>
+
+<p>Replace the code beneath the comment in <code>script/rails</code> with the following content:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+ENGINE_ROOT = File.expand_path('../..', __FILE__)
+ENGINE_PATH = File.expand_path('../../lib/your_engine_name/engine', __FILE__)
+
+require 'rails/all'
+require 'rails/engine/commands'
+
+</pre>
+</div>
+</body>
+</html>

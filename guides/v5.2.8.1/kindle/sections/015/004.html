@@ -1,0 +1,64 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>5 How to Store your Custom Translations</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v5.2.8.1/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="how-to-store-your-custom-translations"><a class="anchorlink" href="#how-to-store-your-custom-translations">5 How to Store your Custom Translations</a></h3>
+<p>The Simple backend shipped with Active Support allows you to store translations in both plain Ruby and YAML format.<sup class="footnote" id="footnote-2-ref"><a href="#footnote-2">2</a></sup></p>
+
+<p>For example a Ruby Hash providing translations can look like this:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+{
+  pt: {
+    foo: {
+      bar: "baz"
+    }
+  }
+}
+
+</pre>
+</div>
+<p>The equivalent YAML file would look like this:</p>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+pt:
+  foo:
+    bar: baz
+
+</pre>
+</div>
+<p>As you see, in both cases the top level key is the locale. <code>:foo</code> is a namespace key and <code>:bar</code> is the key for the translation "baz".</p>
+
+<p>Here is a "real" example from the Active Support <code>en.yml</code> translations YAML file:</p>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+en:
+  date:
+    formats:
+      default: "%Y-%m-%d"
+      short: "%b %d"
+      long: "%B %d, %Y"
+
+</pre>
+</div>
+<p>So, all of the following equivalent lookups will return the <code>:short</code> date format <code>"%b %d"</code>:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+I18n.t 'date.formats.short'
+I18n.t 'formats.short', scope: :date
+I18n.t :short, scope: 'date.formats'
+I18n.t :short, scope: [:date, :formats]
+
+</pre>
+</div>
+<p>Generally we recommend using YAML as a format for storing translations. There are cases, though, where you want to store Ruby lambdas as part of your locale data, e.g. for special date formats.</p>
+</body>
+</html>

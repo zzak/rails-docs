@@ -1,0 +1,332 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>3 Templates, Partials and Layouts</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v5.2.8.1/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="templates-partials-and-layouts"><a class="anchorlink" href="#templates-partials-and-layouts">3 Templates, Partials and Layouts</a></h3>
+<p>As mentioned, the final HTML output is a composition of three Rails elements: <code>Templates</code>, <code>Partials</code> and <code>Layouts</code>.
+Below is a brief overview of each of them.</p>
+
+<h4 id="templates"><a class="anchorlink" href="#templates">3.1 Templates</a></h4>
+
+<p>Action View templates can be written in several ways. If the template file has a <code>.erb</code> extension then it uses a mixture of ERB (Embedded Ruby) and HTML. If the template file has a <code>.builder</code> extension then the <code>Builder::XmlMarkup</code> library is used.</p>
+
+<p>Rails supports multiple template systems and uses a file extension to distinguish amongst them. For example, an HTML file using the ERB template system will have <code>.html.erb</code> as a file extension.</p>
+
+<h5 id="erb"><a class="anchorlink" href="#erb">3.1.1 ERB</a></h5>
+
+<p>Within an ERB template, Ruby code can be included using both <code>&lt;% %&gt;</code> and <code>&lt;%= %&gt;</code> tags. The <code>&lt;% %&gt;</code> tags are used to execute Ruby code that does not return anything, such as conditions, loops or blocks, and the <code>&lt;%= %&gt;</code> tags are used when you want output.</p>
+
+<p>Consider the following loop for names:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; html-script: true; gutter: false; toolbar: false">
+&lt;h1&gt;Names of all the people&lt;/h1&gt;
+&lt;% @people.each do |person| %&gt;
+  Name: &lt;%= person.name %&gt;&lt;br&gt;
+&lt;% end %&gt;
+
+</pre>
+</div>
+<p>The loop is set up using regular embedding tags (<code>&lt;% %&gt;</code>) and the name is inserted using the output embedding tags (<code>&lt;%= %&gt;</code>). Note that this is not just a usage suggestion: regular output functions such as <code>print</code> and <code>puts</code> won't be rendered to the view with ERB templates. So this would be wrong:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; html-script: true; gutter: false; toolbar: false">
+&lt;%# WRONG %&gt;
+Hi, Mr. &lt;% puts "Frodo" %&gt;
+
+</pre>
+</div>
+<p>To suppress leading and trailing whitespaces, you can use <code>&lt;%-</code> <code>-%&gt;</code> interchangeably with <code>&lt;%</code> and <code>%&gt;</code>.</p>
+
+<h5 id="builder"><a class="anchorlink" href="#builder">3.1.2 Builder</a></h5>
+
+<p>Builder templates are a more programmatic alternative to ERB. They are especially useful for generating XML content. An XmlMarkup object named <code>xml</code> is automatically made available to templates with a <code>.builder</code> extension.</p>
+
+<p>Here are some basic examples:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+xml.em("emphasized")
+xml.em { xml.b("emph &amp; bold") }
+xml.a("A Link", "href" =&gt; "http://rubyonrails.org")
+xml.target("name" =&gt; "compile", "option" =&gt; "fast")
+
+</pre>
+</div>
+<p>which would produce:</p>
+
+<div class="code_container">
+<pre class="brush: xml; gutter: false; toolbar: false">
+&lt;em&gt;emphasized&lt;/em&gt;
+&lt;em&gt;&lt;b&gt;emph &amp;amp; bold&lt;/b&gt;&lt;/em&gt;
+&lt;a href="http://rubyonrails.org"&gt;A link&lt;/a&gt;
+&lt;target option="fast" name="compile" /&gt;
+
+</pre>
+</div>
+<p>Any method with a block will be treated as an XML markup tag with nested markup in the block. For example, the following:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+xml.div {
+  xml.h1(@person.name)
+  xml.p(@person.bio)
+}
+
+</pre>
+</div>
+<p>would produce something like:</p>
+
+<div class="code_container">
+<pre class="brush: xml; gutter: false; toolbar: false">
+&lt;div&gt;
+  &lt;h1&gt;David Heinemeier Hansson&lt;/h1&gt;
+  &lt;p&gt;A product of Danish Design during the Winter of '79...&lt;/p&gt;
+&lt;/div&gt;
+
+</pre>
+</div>
+<p>Below is a full-length RSS example actually used on Basecamp:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+xml.rss("version" =&gt; "2.0", "xmlns:dc" =&gt; "http://purl.org/dc/elements/1.1/") do
+  xml.channel do
+    xml.title(@feed_title)
+    xml.link(@url)
+    xml.description "Basecamp: Recent items"
+    xml.language "en-us"
+    xml.ttl "40"
+
+    for item in @recent_items
+      xml.item do
+        xml.title(item_title(item))
+        xml.description(item_description(item)) if item_description(item)
+        xml.pubDate(item_pubDate(item))
+        xml.guid(@person.firm.account.url + @recent_items.url(item))
+        xml.link(@person.firm.account.url + @recent_items.url(item))
+        xml.tag!("dc:creator", item.author_name) if item_has_creator?(item)
+      end
+    end
+  end
+end
+
+</pre>
+</div>
+<h5 id="jbuilder"><a class="anchorlink" href="#jbuilder">3.1.3 Jbuilder</a></h5>
+
+<p><a href="https://github.com/rails/jbuilder">Jbuilder</a> is a gem that's
+maintained by the Rails team and included in the default Rails <code>Gemfile</code>.
+It's similar to Builder, but is used to generate JSON, instead of XML.</p>
+
+<p>If you don't have it, you can add the following to your <code>Gemfile</code>:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+gem 'jbuilder'
+
+</pre>
+</div>
+<p>A Jbuilder object named <code>json</code> is automatically made available to templates with
+a <code>.jbuilder</code> extension.</p>
+
+<p>Here is a basic example:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+json.name("Alex")
+json.email("alex@example.com")
+
+</pre>
+</div>
+<p>would produce:</p>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+{
+  "name": "Alex",
+  "email": "alex@example.com"
+}
+
+</pre>
+</div>
+<p>See the <a href="https://github.com/rails/jbuilder#jbuilder">Jbuilder documentation</a> for
+more examples and information.</p>
+
+<h5 id="template-caching"><a class="anchorlink" href="#template-caching">3.1.4 Template Caching</a></h5>
+
+<p>By default, Rails will compile each template to a method in order to render it. When you alter a template, Rails will check the file's modification time and recompile it in development mode.</p>
+
+<h4 id="partials"><a class="anchorlink" href="#partials">3.2 Partials</a></h4>
+
+<p>Partial templates - usually just called "partials" - are another device for breaking the rendering process into more manageable chunks. With partials, you can extract pieces of code from your templates to separate files and also reuse them throughout your templates.</p>
+
+<h5 id="naming-partials"><a class="anchorlink" href="#naming-partials">3.2.1 Naming Partials</a></h5>
+
+<p>To render a partial as part of a view, you use the <code>render</code> method within the view:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; html-script: true; gutter: false; toolbar: false">
+&lt;%= render "menu" %&gt;
+
+</pre>
+</div>
+<p>This will render a file named <code>_menu.html.erb</code> at that point within the view that is being rendered. Note the leading underscore character: partials are named with a leading underscore to distinguish them from regular views, even though they are referred to without the underscore. This holds true even when you're pulling in a partial from another folder:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; html-script: true; gutter: false; toolbar: false">
+&lt;%= render "shared/menu" %&gt;
+
+</pre>
+</div>
+<p>That code will pull in the partial from <code>app/views/shared/_menu.html.erb</code>.</p>
+
+<h5 id="using-partials-to-simplify-views"><a class="anchorlink" href="#using-partials-to-simplify-views">3.2.2 Using Partials to simplify Views</a></h5>
+
+<p>One way to use partials is to treat them as the equivalent of subroutines; a way to move details out of a view so that you can grasp what's going on more easily. For example, you might have a view that looks like this:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; html-script: true; gutter: false; toolbar: false">
+&lt;%= render "shared/ad_banner" %&gt;
+
+&lt;h1&gt;Products&lt;/h1&gt;
+
+&lt;p&gt;Here are a few of our fine products:&lt;/p&gt;
+&lt;% @products.each do |product| %&gt;
+  &lt;%= render partial: "product", locals: { product: product } %&gt;
+&lt;% end %&gt;
+
+&lt;%= render "shared/footer" %&gt;
+
+</pre>
+</div>
+<p>Here, the <code>_ad_banner.html.erb</code> and <code>_footer.html.erb</code> partials could contain content that is shared among many pages in your application. You don't need to see the details of these sections when you're concentrating on a particular page.</p>
+
+<h5 id="render-without-partial-and-locals-options"><a class="anchorlink" href="#render-without-partial-and-locals-options">3.2.3 <code>render</code> without <code>partial</code> and <code>locals</code> options</a></h5>
+
+<p>In the above example, <code>render</code> takes 2 options: <code>partial</code> and <code>locals</code>. But if
+these are the only options you want to pass, you can skip using these options.
+For example, instead of:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; html-script: true; gutter: false; toolbar: false">
+&lt;%= render partial: "product", locals: { product: @product } %&gt;
+
+</pre>
+</div>
+<p>You can also do:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; html-script: true; gutter: false; toolbar: false">
+&lt;%= render "product", product: @product %&gt;
+
+</pre>
+</div>
+<h5 id="the-as-and-object-options"><a class="anchorlink" href="#the-as-and-object-options">3.2.4 The <code>as</code> and <code>object</code> options</a></h5>
+
+<p>By default <code>ActionView::Partials::PartialRenderer</code> has its object in a local variable with the same name as the template. So, given:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; html-script: true; gutter: false; toolbar: false">
+&lt;%= render partial: "product" %&gt;
+
+</pre>
+</div>
+<p>within <code>_product</code> partial we'll get <code>@product</code> in the local variable <code>product</code>,
+as if we had written:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; html-script: true; gutter: false; toolbar: false">
+&lt;%= render partial: "product", locals: { product: @product } %&gt;
+
+</pre>
+</div>
+<p>The <code>object</code> option can be used to directly specify which object is rendered into the partial; useful when the template's object is elsewhere (e.g. in a different instance variable or in a local variable).</p>
+
+<p>For example, instead of:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; html-script: true; gutter: false; toolbar: false">
+&lt;%= render partial: "product", locals: { product: @item } %&gt;
+
+</pre>
+</div>
+<p>we would do:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; html-script: true; gutter: false; toolbar: false">
+&lt;%= render partial: "product", object: @item %&gt;
+
+</pre>
+</div>
+<p>With the <code>as</code> option we can specify a different name for the said local variable. For example, if we wanted it to be <code>item</code> instead of <code>product</code> we would do:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; html-script: true; gutter: false; toolbar: false">
+&lt;%= render partial: "product", object: @item, as: "item" %&gt;
+
+</pre>
+</div>
+<p>This is equivalent to</p>
+
+<div class="code_container">
+<pre class="brush: ruby; html-script: true; gutter: false; toolbar: false">
+&lt;%= render partial: "product", locals: { item: @item } %&gt;
+
+</pre>
+</div>
+<h5 id="rendering-collections"><a class="anchorlink" href="#rendering-collections">3.2.5 Rendering Collections</a></h5>
+
+<p>It is very common that a template will need to iterate over a collection and render a sub-template for each of the elements. This pattern has been implemented as a single method that accepts an array and renders a partial for each one of the elements in the array.</p>
+
+<p>So this example for rendering all the products:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; html-script: true; gutter: false; toolbar: false">
+&lt;% @products.each do |product| %&gt;
+  &lt;%= render partial: "product", locals: { product: product } %&gt;
+&lt;% end %&gt;
+
+</pre>
+</div>
+<p>can be rewritten in a single line:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; html-script: true; gutter: false; toolbar: false">
+&lt;%= render partial: "product", collection: @products %&gt;
+
+</pre>
+</div>
+<p>When a partial is called with a collection, the individual instances of the partial have access to the member of the collection being rendered via a variable named after the partial. In this case, the partial is <code>_product</code>, and within it you can refer to <code>product</code> to get the collection member that is being rendered.</p>
+
+<p>You can use a shorthand syntax for rendering collections. Assuming <code>@products</code> is a collection of <code>Product</code> instances, you can simply write the following to produce the same result:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; html-script: true; gutter: false; toolbar: false">
+&lt;%= render @products %&gt;
+
+</pre>
+</div>
+<p>Rails determines the name of the partial to use by looking at the model name in the collection, <code>Product</code> in this case. In fact, you can even render a collection made up of instances of different models using this shorthand, and Rails will choose the proper partial for each member of the collection.</p>
+
+<h5 id="spacer-templates"><a class="anchorlink" href="#spacer-templates">3.2.6 Spacer Templates</a></h5>
+
+<p>You can also specify a second partial to be rendered between instances of the main partial by using the <code>:spacer_template</code> option:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; html-script: true; gutter: false; toolbar: false">
+&lt;%= render partial: @products, spacer_template: "product_ruler" %&gt;
+
+</pre>
+</div>
+<p>Rails will render the <code>_product_ruler</code> partial (with no data passed to it) between each pair of <code>_product</code> partials.</p>
+
+<h4 id="layouts"><a class="anchorlink" href="#layouts">3.3 Layouts</a></h4>
+
+<p>Layouts can be used to render a common view template around the results of Rails controller actions. Typically, a Rails application will have a couple of layouts that pages will be rendered within. For example, a site might have one layout for a logged in user and another for the marketing or sales side of the site. The logged in user layout might include top-level navigation that should be present across many controller actions. The sales layout for a SaaS app might include top-level navigation for things like "Pricing" and "Contact Us" pages. You would expect each layout to have a different look and feel. You can read about layouts in more detail in the <a href="layouts_and_rendering.html">Layouts and Rendering in Rails</a> guide.</p>
+</body>
+</html>

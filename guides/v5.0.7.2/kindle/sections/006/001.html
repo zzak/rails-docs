@@ -1,0 +1,516 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>2 The Types of Associations</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v5.0.7.2/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="the-types-of-associations">2 The Types of Associations</h3>
+<p>Rails supports six types of associations:</p>
+<ul>
+<li><code>belongs_to</code></li>
+<li><code>has_one</code></li>
+<li><code>has_many</code></li>
+<li><code>has_many :through</code></li>
+<li><code>has_one :through</code></li>
+<li><code>has_and_belongs_to_many</code></li>
+</ul>
+<p>Associations are implemented using macro-style calls, so that you can declaratively add features to your models. For example, by declaring that one model <code>belongs_to</code> another, you instruct Rails to maintain <a href="https://en.wikipedia.org/wiki/Unique_key">Primary Key</a>-<a href="https://en.wikipedia.org/wiki/Foreign_key">Foreign Key</a> information between instances of the two models, and you also get a number of utility methods added to your model.</p>
+
+<p>In the remainder of this guide, you'll learn how to declare and use the various forms of associations. But first, a quick introduction to the situations where each association type is appropriate.</p>
+
+<h4 id="the-belongs-to-association">2.1 The <code>belongs_to</code> Association</h4>
+
+<p>A <code>belongs_to</code> association sets up a one-to-one connection with another model, such that each instance of the declaring model "belongs to" one instance of the other model. For example, if your application includes authors and books, and each book can be assigned to exactly one author, you'd declare the book model this way:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class Book &lt; ApplicationRecord
+  belongs_to :author
+end
+
+</pre>
+</div>
+<p><img src="/home/rails/v5.0.7.2/guides/output/kindle/images/belongs_to.png" alt="belongs_to Association Diagram"></p>
+
+<div class="note"><p><code>belongs_to</code> associations <em>must</em> use the singular term. If you used the pluralized form in the above example for the <code>author</code> association in the <code>Book</code> model, you would be told that there was an "uninitialized constant Book::Authors". This is because Rails automatically infers the class name from the association name. If the association name is wrongly pluralized, then the inferred class will be wrongly pluralized too.</p></div>
+
+<p>The corresponding migration might look like this:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class CreateBooks &lt; ActiveRecord::Migration[5.0]
+  def change
+    create_table :authors do |t|
+      t.string :name
+      t.timestamps
+    end
+
+    create_table :books do |t|
+      t.belongs_to :author, index: true
+      t.datetime :published_at
+      t.timestamps
+    end
+  end
+end
+
+</pre>
+</div>
+<h4 id="the-has-one-association">2.2 The <code>has_one</code> Association</h4>
+
+<p>A <code>has_one</code> association also sets up a one-to-one connection with another model, but with somewhat different semantics (and consequences). This association indicates that each instance of a model contains or possesses one instance of another model. For example, if each supplier in your application has only one account, you'd declare the supplier model like this:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class Supplier &lt; ApplicationRecord
+  has_one :account
+end
+
+</pre>
+</div>
+<p><img src="/home/rails/v5.0.7.2/guides/output/kindle/images/has_one.png" alt="has_one Association Diagram"></p>
+
+<p>The corresponding migration might look like this:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class CreateSuppliers &lt; ActiveRecord::Migration[5.0]
+  def change
+    create_table :suppliers do |t|
+      t.string :name
+      t.timestamps
+    end
+
+    create_table :accounts do |t|
+      t.belongs_to :supplier, index: true
+      t.string :account_number
+      t.timestamps
+    end
+  end
+end
+
+</pre>
+</div>
+<p>Depending on the use case, you might also need to create a unique index and/or
+a foreign key constraint on the supplier column for the accounts table. In this
+case, the column definition might look like this:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+create_table :accounts do |t|
+  t.belongs_to :supplier, index: true, unique: true, foreign_key: true
+  # ...
+end
+
+</pre>
+</div>
+<h4 id="the-has-many-association">2.3 The <code>has_many</code> Association</h4>
+
+<p>A <code>has_many</code> association indicates a one-to-many connection with another model. You'll often find this association on the "other side" of a <code>belongs_to</code> association. This association indicates that each instance of the model has zero or more instances of another model. For example, in an application containing authors and books, the author model could be declared like this:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class Author &lt; ApplicationRecord
+  has_many :books
+end
+
+</pre>
+</div>
+<div class="note"><p>The name of the other model is pluralized when declaring a <code>has_many</code> association.</p></div>
+
+<p><img src="/home/rails/v5.0.7.2/guides/output/kindle/images/has_many.png" alt="has_many Association Diagram"></p>
+
+<p>The corresponding migration might look like this:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class CreateAuthors &lt; ActiveRecord::Migration[5.0]
+  def change
+    create_table :authors do |t|
+      t.string :name
+      t.timestamps
+    end
+
+    create_table :books do |t|
+      t.belongs_to :author, index: true
+      t.datetime :published_at
+      t.timestamps
+    end
+  end
+end
+
+</pre>
+</div>
+<h4 id="the-has-many-through-association">2.4 The <code>has_many :through</code> Association</h4>
+
+<p>A <code>has_many :through</code> association is often used to set up a many-to-many connection with another model. This association indicates that the declaring model can be matched with zero or more instances of another model by proceeding <em>through</em> a third model. For example, consider a medical practice where patients make appointments to see physicians. The relevant association declarations could look like this:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class Physician &lt; ApplicationRecord
+  has_many :appointments
+  has_many :patients, through: :appointments
+end
+
+class Appointment &lt; ApplicationRecord
+  belongs_to :physician
+  belongs_to :patient
+end
+
+class Patient &lt; ApplicationRecord
+  has_many :appointments
+  has_many :physicians, through: :appointments
+end
+
+</pre>
+</div>
+<p><img src="/home/rails/v5.0.7.2/guides/output/kindle/images/has_many_through.png" alt="has_many :through Association Diagram"></p>
+
+<p>The corresponding migration might look like this:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class CreateAppointments &lt; ActiveRecord::Migration[5.0]
+  def change
+    create_table :physicians do |t|
+      t.string :name
+      t.timestamps
+    end
+
+    create_table :patients do |t|
+      t.string :name
+      t.timestamps
+    end
+
+    create_table :appointments do |t|
+      t.belongs_to :physician, index: true
+      t.belongs_to :patient, index: true
+      t.datetime :appointment_date
+      t.timestamps
+    end
+  end
+end
+
+</pre>
+</div>
+<p>The collection of join models can be managed via the <a href="#has-many-association-reference"><code>has_many</code> association methods</a>.
+For example, if you assign:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+physician.patients = patients
+
+</pre>
+</div>
+<p>Then new join models are automatically created for the newly associated objects.
+If some that existed previously are now missing, then their join rows are automatically deleted.</p>
+
+<div class="warning"><p>Automatic deletion of join models is direct, no destroy callbacks are triggered.</p></div>
+
+<p>The <code>has_many :through</code> association is also useful for setting up "shortcuts" through nested <code>has_many</code> associations. For example, if a document has many sections, and a section has many paragraphs, you may sometimes want to get a simple collection of all paragraphs in the document. You could set that up this way:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class Document &lt; ApplicationRecord
+  has_many :sections
+  has_many :paragraphs, through: :sections
+end
+
+class Section &lt; ApplicationRecord
+  belongs_to :document
+  has_many :paragraphs
+end
+
+class Paragraph &lt; ApplicationRecord
+  belongs_to :section
+end
+
+</pre>
+</div>
+<p>With <code>through: :sections</code> specified, Rails will now understand:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+@document.paragraphs
+
+</pre>
+</div>
+<h4 id="the-has-one-through-association">2.5 The <code>has_one :through</code> Association</h4>
+
+<p>A <code>has_one :through</code> association sets up a one-to-one connection with another model. This association indicates
+that the declaring model can be matched with one instance of another model by proceeding <em>through</em> a third model.
+For example, if each supplier has one account, and each account is associated with one account history, then the
+supplier model could look like this:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class Supplier &lt; ApplicationRecord
+  has_one :account
+  has_one :account_history, through: :account
+end
+
+class Account &lt; ApplicationRecord
+  belongs_to :supplier
+  has_one :account_history
+end
+
+class AccountHistory &lt; ApplicationRecord
+  belongs_to :account
+end
+
+</pre>
+</div>
+<p><img src="/home/rails/v5.0.7.2/guides/output/kindle/images/has_one_through.png" alt="has_one :through Association Diagram"></p>
+
+<p>The corresponding migration might look like this:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class CreateAccountHistories &lt; ActiveRecord::Migration[5.0]
+  def change
+    create_table :suppliers do |t|
+      t.string :name
+      t.timestamps
+    end
+
+    create_table :accounts do |t|
+      t.belongs_to :supplier, index: true
+      t.string :account_number
+      t.timestamps
+    end
+
+    create_table :account_histories do |t|
+      t.belongs_to :account, index: true
+      t.integer :credit_rating
+      t.timestamps
+    end
+  end
+end
+
+</pre>
+</div>
+<h4 id="the-has-and-belongs-to-many-association">2.6 The <code>has_and_belongs_to_many</code> Association</h4>
+
+<p>A <code>has_and_belongs_to_many</code> association creates a direct many-to-many connection with another model, with no intervening model. For example, if your application includes assemblies and parts, with each assembly having many parts and each part appearing in many assemblies, you could declare the models this way:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class Assembly &lt; ApplicationRecord
+  has_and_belongs_to_many :parts
+end
+
+class Part &lt; ApplicationRecord
+  has_and_belongs_to_many :assemblies
+end
+
+</pre>
+</div>
+<p><img src="/home/rails/v5.0.7.2/guides/output/kindle/images/habtm.png" alt="has_and_belongs_to_many Association Diagram"></p>
+
+<p>The corresponding migration might look like this:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class CreateAssembliesAndParts &lt; ActiveRecord::Migration[5.0]
+  def change
+    create_table :assemblies do |t|
+      t.string :name
+      t.timestamps
+    end
+
+    create_table :parts do |t|
+      t.string :part_number
+      t.timestamps
+    end
+
+    create_table :assemblies_parts, id: false do |t|
+      t.belongs_to :assembly, index: true
+      t.belongs_to :part, index: true
+    end
+  end
+end
+
+</pre>
+</div>
+<h4 id="choosing-between-belongs-to-and-has-one">2.7 Choosing Between <code>belongs_to</code> and <code>has_one</code>
+</h4>
+
+<p>If you want to set up a one-to-one relationship between two models, you'll need to add <code>belongs_to</code> to one, and <code>has_one</code> to the other. How do you know which is which?</p>
+
+<p>The distinction is in where you place the foreign key (it goes on the table for the class declaring the <code>belongs_to</code> association), but you should give some thought to the actual meaning of the data as well. The <code>has_one</code> relationship says that one of something is yours - that is, that something points back to you. For example, it makes more sense to say that a supplier owns an account than that an account owns a supplier. This suggests that the correct relationships are like this:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class Supplier &lt; ApplicationRecord
+  has_one :account
+end
+
+class Account &lt; ApplicationRecord
+  belongs_to :supplier
+end
+
+</pre>
+</div>
+<p>The corresponding migration might look like this:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class CreateSuppliers &lt; ActiveRecord::Migration[5.0]
+  def change
+    create_table :suppliers do |t|
+      t.string  :name
+      t.timestamps
+    end
+
+    create_table :accounts do |t|
+      t.integer :supplier_id
+      t.string  :account_number
+      t.timestamps
+    end
+
+    add_index :accounts, :supplier_id
+  end
+end
+
+</pre>
+</div>
+<div class="note"><p>Using <code>t.integer :supplier_id</code> makes the foreign key naming obvious and explicit. In current versions of Rails, you can abstract away this implementation detail by using <code>t.references :supplier</code> instead.</p></div>
+
+<h4 id="choosing-between-has-many-through-and-has-and-belongs-to-many">2.8 Choosing Between <code>has_many :through</code> and <code>has_and_belongs_to_many</code>
+</h4>
+
+<p>Rails offers two different ways to declare a many-to-many relationship between models. The simpler way is to use <code>has_and_belongs_to_many</code>, which allows you to make the association directly:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class Assembly &lt; ApplicationRecord
+  has_and_belongs_to_many :parts
+end
+
+class Part &lt; ApplicationRecord
+  has_and_belongs_to_many :assemblies
+end
+
+</pre>
+</div>
+<p>The second way to declare a many-to-many relationship is to use <code>has_many :through</code>. This makes the association indirectly, through a join model:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class Assembly &lt; ApplicationRecord
+  has_many :manifests
+  has_many :parts, through: :manifests
+end
+
+class Manifest &lt; ApplicationRecord
+  belongs_to :assembly
+  belongs_to :part
+end
+
+class Part &lt; ApplicationRecord
+  has_many :manifests
+  has_many :assemblies, through: :manifests
+end
+
+</pre>
+</div>
+<p>The simplest rule of thumb is that you should set up a <code>has_many :through</code> relationship if you need to work with the relationship model as an independent entity. If you don't need to do anything with the relationship model, it may be simpler to set up a <code>has_and_belongs_to_many</code> relationship (though you'll need to remember to create the joining table in the database).</p>
+
+<p>You should use <code>has_many :through</code> if you need validations, callbacks or extra attributes on the join model.</p>
+
+<h4 id="polymorphic-associations">2.9 Polymorphic Associations</h4>
+
+<p>A slightly more advanced twist on associations is the <em>polymorphic association</em>. With polymorphic associations, a model can belong to more than one other model, on a single association. For example, you might have a picture model that belongs to either an employee model or a product model. Here's how this could be declared:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class Picture &lt; ApplicationRecord
+  belongs_to :imageable, polymorphic: true
+end
+
+class Employee &lt; ApplicationRecord
+  has_many :pictures, as: :imageable
+end
+
+class Product &lt; ApplicationRecord
+  has_many :pictures, as: :imageable
+end
+
+</pre>
+</div>
+<p>You can think of a polymorphic <code>belongs_to</code> declaration as setting up an interface that any other model can use. From an instance of the <code>Employee</code> model, you can retrieve a collection of pictures: <code>@employee.pictures</code>.</p>
+
+<p>Similarly, you can retrieve <code>@product.pictures</code>.</p>
+
+<p>If you have an instance of the <code>Picture</code> model, you can get to its parent via <code>@picture.imageable</code>. To make this work, you need to declare both a foreign key column and a type column in the model that declares the polymorphic interface:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class CreatePictures &lt; ActiveRecord::Migration[5.0]
+  def change
+    create_table :pictures do |t|
+      t.string  :name
+      t.integer :imageable_id
+      t.string  :imageable_type
+      t.timestamps
+    end
+
+    add_index :pictures, [:imageable_type, :imageable_id]
+  end
+end
+
+</pre>
+</div>
+<p>This migration can be simplified by using the <code>t.references</code> form:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class CreatePictures &lt; ActiveRecord::Migration[5.0]
+  def change
+    create_table :pictures do |t|
+      t.string :name
+      t.references :imageable, polymorphic: true, index: true
+      t.timestamps
+    end
+  end
+end
+
+</pre>
+</div>
+<p><img src="/home/rails/v5.0.7.2/guides/output/kindle/images/polymorphic.png" alt="Polymorphic Association Diagram"></p>
+
+<h4 id="self-joins">2.10 Self Joins</h4>
+
+<p>In designing a data model, you will sometimes find a model that should have a relation to itself. For example, you may want to store all employees in a single database model, but be able to trace relationships such as between manager and subordinates. This situation can be modeled with self-joining associations:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class Employee &lt; ApplicationRecord
+  has_many :subordinates, class_name: "Employee",
+                          foreign_key: "manager_id"
+
+  belongs_to :manager, class_name: "Employee"
+end
+
+</pre>
+</div>
+<p>With this setup, you can retrieve <code>@employee.subordinates</code> and <code>@employee.manager</code>.</p>
+
+<p>In your migrations/schema, you will add a references column to the model itself.</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class CreateEmployees &lt; ActiveRecord::Migration[5.0]
+  def change
+    create_table :employees do |t|
+      t.references :manager, index: true
+      t.timestamps
+    end
+  end
+end
+
+</pre>
+</div>
+</body>
+</html>

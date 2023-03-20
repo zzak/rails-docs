@@ -1,0 +1,49 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>9 Active Support</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v6.0.6.1/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="active-support"><a class="anchorlink" href="#active-support">9 Active Support</a></h3>
+<p>Please refer to the <a href="https://github.com/rails/rails/blob/4-0-stable/activesupport/CHANGELOG.md">Changelog</a> for detailed changes.</p>
+
+<h4 id="active-support-notable-changes"><a class="anchorlink" href="#active-support-notable-changes">9.1 Notable changes</a></h4>
+<ul>
+<li>Replace deprecated <code>memcache-client</code> gem with <code>dalli</code> in <code>ActiveSupport::Cache::MemCacheStore</code>.</li>
+<li>Optimize <code>ActiveSupport::Cache::Entry</code> to reduce memory and processing overhead.</li>
+<li>Inflections can now be defined per locale. <code>singularize</code> and <code>pluralize</code> accept locale as an extra argument.</li>
+<li>
+<code>Object#try</code> will now return nil instead of raise a NoMethodError if the receiving object does not implement the method, but you can still get the old behavior by using the new <code>Object#try!</code>.</li>
+<li>
+<code>String#to_date</code> now raises <code>ArgumentError: invalid date</code> instead of <code>NoMethodError: undefined method 'div' for nil:NilClass</code>
+when given an invalid date. It is now the same as <code>Date.parse</code>, and it accepts more invalid dates than 3.x, such as:</li>
+</ul>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+  # ActiveSupport 3.x
+  "asdf".to_date # =&gt; NoMethodError: undefined method `div' for nil:NilClass
+  "333".to_date # =&gt; NoMethodError: undefined method `div' for nil:NilClass
+
+  # ActiveSupport 4
+  "asdf".to_date # =&gt; ArgumentError: invalid date
+  "333".to_date # =&gt; Fri, 29 Nov 2013
+
+</pre>
+</div>
+<h4 id="active-support-deprecations"><a class="anchorlink" href="#active-support-deprecations">9.2 Deprecations</a></h4>
+<ul>
+<li>Deprecate <code>ActiveSupport::TestCase#pending</code> method, use <code>skip</code> from minitest instead.</li>
+<li>
+<code>ActiveSupport::Benchmarkable#silence</code> has been deprecated due to its lack of thread safety. It will be removed without replacement in Rails 4.1.</li>
+<li>
+<code>ActiveSupport::JSON::Variable</code> is deprecated. Define your own <code>#as_json</code> and <code>#encode_json</code> methods for custom JSON string literals.</li>
+<li>Deprecates the compatibility method <code>Module#local_constant_names</code>, use <code>Module#local_constants</code> instead (which returns symbols).</li>
+<li>
+<code>BufferedLogger</code> is deprecated. Use <code>ActiveSupport::Logger</code>, or the logger from Ruby standard library.</li>
+<li>Deprecate <code>assert_present</code> and <code>assert_blank</code> in favor of <code>assert object.blank?</code> and <code>assert object.present?</code>
+</li>
+</ul>
+</body>
+</html>

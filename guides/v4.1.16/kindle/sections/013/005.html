@@ -1,0 +1,170 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>6 Extensions to Numeric
+</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v4.1.16/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="extensions-to-numeric">6 Extensions to <code>Numeric</code>
+</h3>
+<h4 id="bytes">6.1 Bytes</h4>
+<p>All numbers respond to these methods:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+bytes
+kilobytes
+megabytes
+gigabytes
+terabytes
+petabytes
+exabytes
+
+</pre>
+</div>
+<p>They return the corresponding amount of bytes, using a conversion factor of 1024:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+2.kilobytes   # =&gt; 2048
+3.megabytes   # =&gt; 3145728
+3.5.gigabytes # =&gt; 3758096384
+-4.exabytes   # =&gt; -4611686018427387904
+
+</pre>
+</div>
+<p>Singular forms are aliased so you are able to say:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+1.megabyte # =&gt; 1048576
+
+</pre>
+</div>
+<div class="note"><p>Defined in <code>active_support/core_ext/numeric/bytes.rb</code>.</p></div>
+<h4 id="time">6.2 Time</h4>
+<p>Enables the use of time calculations and declarations, like <code>45.minutes + 2.hours + 4.years</code>.</p>
+<p>These methods use Time#advance for precise date calculations when using from_now, ago, etc.
+as well as adding or subtracting their results from a Time object. For example:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+# equivalent to Time.current.advance(months: 1)
+1.month.from_now
+
+# equivalent to Time.current.advance(years: 2)
+2.years.from_now
+
+# equivalent to Time.current.advance(months: 4, years: 5)
+(4.months + 5.years).from_now
+
+</pre>
+</div>
+<p>While these methods provide precise calculation when used as in the examples above, care
+should be taken to note that this is not true if the result of <code>months',</code>years', etc is
+converted before use:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+# equivalent to 30.days.to_i.from_now
+1.month.to_i.from_now
+
+# equivalent to 365.25.days.to_f.from_now
+1.year.to_f.from_now
+
+</pre>
+</div>
+<p>In such cases, Ruby's core <a href="http://ruby-doc.org/stdlib/libdoc/date/rdoc/Date.html">Date</a> and
+<a href="http://ruby-doc.org/stdlib/libdoc/time/rdoc/Time.html">Time</a> should be used for precision
+date and time arithmetic.</p>
+<div class="note"><p>Defined in <code>active_support/core_ext/numeric/time.rb</code>.</p></div>
+<h4 id="formatting">6.3 Formatting</h4>
+<p>Enables the formatting of numbers in a variety of ways.</p>
+<p>Produce a string representation of a number as a telephone number:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+5551234.to_s(:phone)
+# =&gt; 555-1234
+1235551234.to_s(:phone)
+# =&gt; 123-555-1234
+1235551234.to_s(:phone, area_code: true)
+# =&gt; (123) 555-1234
+1235551234.to_s(:phone, delimiter: " ")
+# =&gt; 123 555 1234
+1235551234.to_s(:phone, area_code: true, extension: 555)
+# =&gt; (123) 555-1234 x 555
+1235551234.to_s(:phone, country_code: 1)
+# =&gt; +1-123-555-1234
+
+</pre>
+</div>
+<p>Produce a string representation of a number as currency:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+1234567890.50.to_s(:currency)                 # =&gt; $1,234,567,890.50
+1234567890.506.to_s(:currency)                # =&gt; $1,234,567,890.51
+1234567890.506.to_s(:currency, precision: 3)  # =&gt; $1,234,567,890.506
+
+</pre>
+</div>
+<p>Produce a string representation of a number as a percentage:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+100.to_s(:percentage)
+# =&gt; 100.000%
+100.to_s(:percentage, precision: 0)
+# =&gt; 100%
+1000.to_s(:percentage, delimiter: '.', separator: ',')
+# =&gt; 1.000,000%
+302.24398923423.to_s(:percentage, precision: 5)
+# =&gt; 302.24399%
+
+</pre>
+</div>
+<p>Produce a string representation of a number in delimited form:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+12345678.to_s(:delimited)                     # =&gt; 12,345,678
+12345678.05.to_s(:delimited)                  # =&gt; 12,345,678.05
+12345678.to_s(:delimited, delimiter: ".")     # =&gt; 12.345.678
+12345678.to_s(:delimited, delimiter: ",")     # =&gt; 12,345,678
+12345678.05.to_s(:delimited, separator: " ")  # =&gt; 12,345,678 05
+
+</pre>
+</div>
+<p>Produce a string representation of a number rounded to a precision:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+111.2345.to_s(:rounded)                     # =&gt; 111.235
+111.2345.to_s(:rounded, precision: 2)       # =&gt; 111.23
+13.to_s(:rounded, precision: 5)             # =&gt; 13.00000
+389.32314.to_s(:rounded, precision: 0)      # =&gt; 389
+111.2345.to_s(:rounded, significant: true)  # =&gt; 111
+
+</pre>
+</div>
+<p>Produce a string representation of a number as a human-readable number of bytes:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+123.to_s(:human_size)            # =&gt; 123 Bytes
+1234.to_s(:human_size)           # =&gt; 1.21 KB
+12345.to_s(:human_size)          # =&gt; 12.1 KB
+1234567.to_s(:human_size)        # =&gt; 1.18 MB
+1234567890.to_s(:human_size)     # =&gt; 1.15 GB
+1234567890123.to_s(:human_size)  # =&gt; 1.12 TB
+
+</pre>
+</div>
+<p>Produce a string representation of a number in human-readable words:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+123.to_s(:human)               # =&gt; "123"
+1234.to_s(:human)              # =&gt; "1.23 Thousand"
+12345.to_s(:human)             # =&gt; "12.3 Thousand"
+1234567.to_s(:human)           # =&gt; "1.23 Million"
+1234567890.to_s(:human)        # =&gt; "1.23 Billion"
+1234567890123.to_s(:human)     # =&gt; "1.23 Trillion"
+1234567890123456.to_s(:human)  # =&gt; "1.23 Quadrillion"
+
+</pre>
+</div>
+<div class="note"><p>Defined in <code>active_support/core_ext/numeric/conversions.rb</code>.</p></div>
+</body>
+</html>

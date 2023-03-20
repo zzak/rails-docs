@@ -1,0 +1,47 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>6 Publishing Your Gem</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v6.1.7.3/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="publishing-your-gem"><a class="anchorlink" href="#publishing-your-gem">6 Publishing Your Gem</a></h3>
+<p>Gem plugins currently in development can easily be shared from any Git repository. To share the Yaffle gem with others, simply
+commit the code to a Git repository (like GitHub) and add a line to the <code>Gemfile</code> of the application in question:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">gem</span> <span class="s2">"yaffle"</span><span class="p">,</span> <span class="ss">git: </span><span class="s2">"https://github.com/rails/yaffle.git"</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-6b68583acfb02e391650fc7175ab1372">gem "yaffle", git: "https://github.com/rails/yaffle.git"
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-6b68583acfb02e391650fc7175ab1372">Copy</button>
+</div>
+<p>After running <code>bundle install</code>, your gem functionality will be available to the application.</p>
+
+<p>When the gem is ready to be shared as a formal release, it can be published to <a href="https://rubygems.org">RubyGems</a>.</p>
+
+<p>Alternatively, you can benefit from Bundler's Rake tasks. You can see a full list with the following:</p>
+
+<div class="code_container">
+<pre><code class="highlight console"><span class="gp">$</span><span class="w"> </span><span class="nb">bundle exec rake</span> <span class="nt">-T</span>
+<span class="go">
+</span><span class="gp">$</span><span class="w"> </span><span class="nb">bundle exec rake </span>build
+<span class="gp">#</span><span class="w"> </span>Build yaffle-0.1.0.gem into the pkg directory
+<span class="go">
+</span><span class="gp">$</span><span class="w"> </span><span class="nb">bundle exec rake install</span>
+<span class="gp">#</span><span class="w"> </span>Build and <span class="nb">install </span>yaffle-0.1.0.gem into system gems
+<span class="go">
+</span><span class="gp">$</span><span class="w"> </span><span class="nb">bundle exec rake </span>release
+<span class="gp">#</span><span class="w"> </span>Create tag v0.1.0 and build and push yaffle-0.1.0.gem to Rubygems
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-1ce71da2bde755f511de1bfc37e8371b">bundle exec rake -T
+bundle exec rake build
+bundle exec rake install
+bundle exec rake release
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-1ce71da2bde755f511de1bfc37e8371b">Copy</button>
+</div>
+<p>For more information about publishing gems to RubyGems, see: <a href="https://guides.rubygems.org/publishing">Publishing your gem</a>.</p>
+</body>
+</html>

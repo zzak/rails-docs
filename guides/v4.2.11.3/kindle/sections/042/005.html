@@ -1,0 +1,209 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>6 Action View</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v4.2.11.3/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="action-view">6 Action View</h3>
+<p>Action View in Rails 2.3 picks up nested model forms, improvements to <code>render</code>, more flexible prompts for the date select helpers, and a speedup in asset caching, among other things.</p>
+
+<h4 id="nested-object-forms">6.1 Nested Object Forms</h4>
+
+<p>Provided the parent model accepts nested attributes for the child objects (as discussed in the Active Record section), you can create nested forms using <code>form_for</code> and <code>field_for</code>. These forms can be nested arbitrarily deep, allowing you to edit complex object hierarchies on a single view without excessive code. For example, given this model:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class Customer &lt; ActiveRecord::Base
+  has_many :orders
+
+  accepts_nested_attributes_for :orders, :allow_destroy =&gt; true
+end
+
+</pre>
+</div>
+<p>You can write this view in Rails 2.3:</p>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+&lt;% form_for @customer do |customer_form| %&gt;
+  &lt;div&gt;
+    &lt;%= customer_form.label :name, 'Customer Name:' %&gt;
+    &lt;%= customer_form.text_field :name %&gt;
+  &lt;/div&gt;
+
+  &lt;!-- Here we call fields_for on the customer_form builder instance.
+   The block is called for each member of the orders collection. --&gt;
+  &lt;% customer_form.fields_for :orders do |order_form| %&gt;
+    &lt;p&gt;
+      &lt;div&gt;
+        &lt;%= order_form.label :number, 'Order Number:' %&gt;
+        &lt;%= order_form.text_field :number %&gt;
+      &lt;/div&gt;
+
+  &lt;!-- The allow_destroy option in the model enables deletion of
+   child records. --&gt;
+      &lt;% unless order_form.object.new_record? %&gt;
+        &lt;div&gt;
+          &lt;%= order_form.label :_delete, 'Remove:' %&gt;
+          &lt;%= order_form.check_box :_delete %&gt;
+        &lt;/div&gt;
+      &lt;% end %&gt;
+    &lt;/p&gt;
+  &lt;% end %&gt;
+
+  &lt;%= customer_form.submit %&gt;
+&lt;% end %&gt;
+
+</pre>
+</div>
+<ul>
+<li>Lead Contributor: <a href="http://superalloy.nl/">Eloy Duran</a>
+</li>
+<li>More Information:
+
+<ul>
+<li><a href="http://weblog.rubyonrails.org/2009/1/26/nested-model-forms">Nested Model Forms</a></li>
+<li><a href="http://github.com/alloy/complex-form-examples">complex-form-examples</a></li>
+<li><a href="http://ryandaigle.com/articles/2009/2/1/what-s-new-in-edge-rails-nested-attributes">What's New in Edge Rails: Nested Object Forms</a></li>
+</ul>
+</li>
+</ul>
+<h4 id="smart-rendering-of-partials">6.2 Smart Rendering of Partials</h4>
+
+<p>The render method has been getting smarter over the years, and it's even smarter now. If you have an object or a collection and an appropriate partial, and the naming matches up, you can now just render the object and things will work. For example, in Rails 2.3, these render calls will work in your view (assuming sensible naming):</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+# Equivalent of render :partial =&gt; 'articles/_article',
+# :object =&gt; @article
+render @article
+
+# Equivalent of render :partial =&gt; 'articles/_article',
+# :collection =&gt; @articles
+render @articles
+
+</pre>
+</div>
+<ul>
+<li>More Information: <a href="http://ryandaigle.com/articles/2008/11/20/what-s-new-in-edge-rails-render-stops-being-high-maintenance">What's New in Edge Rails: render Stops Being High-Maintenance</a>
+</li>
+</ul>
+<h4 id="prompts-for-date-select-helpers">6.3 Prompts for Date Select Helpers</h4>
+
+<p>In Rails 2.3, you can supply custom prompts for the various date select helpers (<code>date_select</code>, <code>time_select</code>, and <code>datetime_select</code>), the same way you can with collection select helpers. You can supply a prompt string or a hash of individual prompt strings for the various components. You can also just set <code>:prompt</code> to <code>true</code> to use the custom generic prompt:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+select_datetime(DateTime.now, :prompt =&gt; true)
+
+select_datetime(DateTime.now, :prompt =&gt; "Choose date and time")
+
+select_datetime(DateTime.now, :prompt =&gt;
+  {:day =&gt; 'Choose day', :month =&gt; 'Choose month',
+   :year =&gt; 'Choose year', :hour =&gt; 'Choose hour',
+   :minute =&gt; 'Choose minute'})
+
+</pre>
+</div>
+<ul>
+<li>Lead Contributor: <a href="http://samoliver.com/">Sam Oliver</a>
+</li>
+</ul>
+<h4 id="assettag-timestamp-caching">6.4 AssetTag Timestamp Caching</h4>
+
+<p>You're likely familiar with Rails' practice of adding timestamps to static asset paths as a "cache buster." This helps ensure that stale copies of things like images and stylesheets don't get served out of the user's browser cache when you change them on the server. You can now modify this behavior with the <code>cache_asset_timestamps</code> configuration option for Action View. If you enable the cache, then Rails will calculate the timestamp once when it first serves an asset, and save that value. This means fewer (expensive) file system calls to serve static assets - but it also means that you can't modify any of the assets while the server is running and expect the changes to get picked up by clients.</p>
+
+<h4 id="asset-hosts-as-objects">6.5 Asset Hosts as Objects</h4>
+
+<p>Asset hosts get more flexible in edge Rails with the ability to declare an asset host as a specific object that responds to a call. This allows you to implement any complex logic you need in your asset hosting.</p>
+<ul>
+<li>More Information: <a href="http://github.com/dhh/asset-hosting-with-minimum-ssl/tree/master">asset-hosting-with-minimum-ssl</a>
+</li>
+</ul>
+<h4 id="grouped-options-for-select-helper-method">6.6 grouped_options_for_select Helper Method</h4>
+
+<p>Action View already had a bunch of helpers to aid in generating select controls, but now there's one more: <code>grouped_options_for_select</code>. This one accepts an array or hash of strings, and converts them into a string of <code>option</code> tags wrapped with <code>optgroup</code> tags. For example:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+grouped_options_for_select([["Hats", ["Baseball Cap","Cowboy Hat"]]],
+  "Cowboy Hat", "Choose a product...")
+
+</pre>
+</div>
+<p>returns</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+&lt;option value=""&gt;Choose a product...&lt;/option&gt;
+&lt;optgroup label="Hats"&gt;
+  &lt;option value="Baseball Cap"&gt;Baseball Cap&lt;/option&gt;
+  &lt;option selected="selected" value="Cowboy Hat"&gt;Cowboy Hat&lt;/option&gt;
+&lt;/optgroup&gt;
+
+</pre>
+</div>
+<h4 id="disabled-option-tags-for-form-select-helpers">6.7 Disabled Option Tags for Form Select Helpers</h4>
+
+<p>The form select helpers (such as <code>select</code> and <code>options_for_select</code>) now support a <code>:disabled</code> option, which can take a single value or an array of values to be disabled in the resulting tags:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+select(:post, :category, Post::CATEGORIES, :disabled =&gt; 'private')
+
+</pre>
+</div>
+<p>returns</p>
+
+<div class="code_container">
+<pre class="brush: xml; gutter: false; toolbar: false">
+&lt;select name="post[category]"&gt;
+&lt;option&gt;story&lt;/option&gt;
+&lt;option&gt;joke&lt;/option&gt;
+&lt;option&gt;poem&lt;/option&gt;
+&lt;option disabled="disabled"&gt;private&lt;/option&gt;
+&lt;/select&gt;
+
+</pre>
+</div>
+<p>You can also use an anonymous function to determine at runtime which options from collections will be selected and/or disabled:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+options_from_collection_for_select(@product.sizes, :name, :id, :disabled =&gt; lambda{|size| size.out_of_stock?})
+
+</pre>
+</div>
+<ul>
+<li>Lead Contributor: <a href="http://tekin.co.uk/">Tekin Suleyman</a>
+</li>
+<li>More Information: <a href="http://tekin.co.uk/2009/03/new-in-rails-23-disabled-option-tags-and-lambdas-for-selecting-and-disabling-options-from-collections/">New in rails 2.3 - disabled option tags and lambdas for selecting and disabling options from collections</a>
+</li>
+</ul>
+<h4 id="a-note-about-template-loading">6.8 A Note About Template Loading</h4>
+
+<p>Rails 2.3 includes the ability to enable or disable cached templates for any particular environment. Cached templates give you a speed boost because they don't check for a new template file when they're rendered - but they also mean that you can't replace a template "on the fly" without restarting the server.</p>
+
+<p>In most cases, you'll want template caching to be turned on in production, which you can do by making a setting in your <code>production.rb</code> file:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+config.action_view.cache_template_loading = true
+
+</pre>
+</div>
+<p>This line will be generated for you by default in a new Rails 2.3 application. If you've upgraded from an older version of Rails, Rails will default to caching templates in production and test but not in development.</p>
+
+<h4 id="other-action-view-changes">6.9 Other Action View Changes</h4>
+<ul>
+<li>Token generation for CSRF protection has been simplified; now Rails uses a simple random string generated by <code>ActiveSupport::SecureRandom</code> rather than mucking around with session IDs.</li>
+<li>
+<code>auto_link</code> now properly applies options (such as <code>:target</code> and <code>:class</code>) to generated e-mail links.</li>
+<li>The <code>autolink</code> helper has been refactored to make it a bit less messy and more intuitive.</li>
+<li>
+<code>current_page?</code> now works properly even when there are multiple query parameters in the URL.</li>
+</ul>
+</body>
+</html>

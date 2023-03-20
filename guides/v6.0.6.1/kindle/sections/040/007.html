@@ -1,0 +1,30 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>8 What are on_load hooks?</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v6.0.6.1/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="what-are-on-load-hooks-questionmark"><a class="anchorlink" href="#what-are-on-load-hooks-questionmark">8 What are <code>on_load</code> hooks?</a></h3>
+<p>Since Ruby is a dynamic language, some code will cause different Rails frameworks to load. Take this snippet for instance:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+ActiveRecord::Base.include(MyActiveRecordHelper)
+
+</pre>
+</div>
+<p>This snippet means that when this file is loaded, it will encounter <code>ActiveRecord::Base</code>. This encounter causes Ruby to look for the definition of that constant and will require it. This causes the entire Active Record framework to be loaded on boot.</p>
+
+<p><code>ActiveSupport.on_load</code> is a mechanism that can be used to defer the loading of code until it is actually needed. The snippet above can be changed to:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+ActiveSupport.on_load(:active_record) { include MyActiveRecordHelper }
+
+</pre>
+</div>
+<p>This new snippet will only include <code>MyActiveRecordHelper</code> when <code>ActiveRecord::Base</code> is loaded.</p>
+</body>
+</html>

@@ -1,0 +1,39 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>17 Extensions to File
+</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v4.2.11.3/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="extensions-to-file">17 Extensions to <code>File</code>
+</h3>
+<h4 id="atomic-write">17.1 <code>atomic_write</code>
+</h4>
+
+<p>With the class method <code>File.atomic_write</code> you can write to a file in a way that will prevent any reader from seeing half-written content.</p>
+
+<p>The name of the file is passed as an argument, and the method yields a file handle opened for writing. Once the block is done <code>atomic_write</code> closes the file handle and completes its job.</p>
+
+<p>For example, Action Pack uses this method to write asset cache files like <code>all.css</code>:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+File.atomic_write(joined_asset_path) do |cache|
+  cache.write(join_asset_file_contents(asset_paths))
+end
+
+</pre>
+</div>
+<p>To accomplish this <code>atomic_write</code> creates a temporary file. That's the file the code in the block actually writes to. On completion, the temporary file is renamed, which is an atomic operation on POSIX systems. If the target file exists <code>atomic_write</code> overwrites it and keeps owners and permissions. However there are a few cases where <code>atomic_write</code> cannot change the file ownership or permissions, this error is caught and skipped over trusting in the user/filesystem to ensure the file is accessible to the processes that need it.</p>
+
+<div class="note"><p>Due to the chmod operation <code>atomic_write</code> performs, if the target file has an ACL set on it this ACL will be recalculated/modified.</p></div>
+
+<div class="warning"><p>Note you can't append with <code>atomic_write</code>.</p></div>
+
+<p>The auxiliary file is written in a standard directory for temporary files, but you can pass a directory of your choice as second argument.</p>
+
+<div class="note"><p>Defined in <code>active_support/core_ext/file/atomic.rb</code>.</p></div>
+</body>
+</html>

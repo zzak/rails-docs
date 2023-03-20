@@ -1,0 +1,58 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>14 Extensions to Proc
+</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v4.0.13/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="extensions-to-proc">14 Extensions to <code>Proc</code>
+</h3>
+<h4 id="bind">14.1 <code>bind</code>
+</h4>
+<p>As you surely know Ruby has an <code>UnboundMethod</code> class whose instances are methods that belong to the limbo of methods without a self. The method <code>Module#instance_method</code> returns an unbound method for example:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+Hash.instance_method(:delete) # =&gt; #&lt;UnboundMethod: Hash#delete&gt;
+
+</pre>
+</div>
+<p>An unbound method is not callable as is, you need to bind it first to an object with <code>bind</code>:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+clear = Hash.instance_method(:clear)
+clear.bind({a: 1}).call # =&gt; {}
+
+</pre>
+</div>
+<p>Active Support defines <code>Proc#bind</code> with an analogous purpose:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+Proc.new { size }.bind([]).call # =&gt; 0
+
+</pre>
+</div>
+<p>As you see that's callable and bound to the argument, the return value is indeed a <code>Method</code>.</p>
+<div class="note"><p>To do so <code>Proc#bind</code> actually creates a method under the hood. If you ever see a method with a weird name like <code>__bind_1256598120_237302</code> in a stack trace you know now where it comes from.</p></div>
+<p>Action Pack uses this trick in <code>rescue_from</code> for example, which accepts the name of a method and also a proc as callbacks for a given rescued exception. It has to call them in either case, so a bound method is returned by <code>handler_for_rescue</code>, thus simplifying the code in the caller:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+def handler_for_rescue(exception)
+  _, rescuer = Array(rescue_handlers).reverse.detect do |klass_name, handler|
+    ...
+  end
+
+  case rescuer
+  when Symbol
+    method(rescuer)
+  when Proc
+    rescuer.bind(self)
+  end
+end
+
+</pre>
+</div>
+<div class="note"><p>Defined in <code>active_support/core_ext/proc.rb</code>.</p></div>
+</body>
+</html>

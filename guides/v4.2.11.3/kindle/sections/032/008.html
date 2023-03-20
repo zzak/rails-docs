@@ -1,0 +1,46 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>9 Dynamically Generated Methods</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v4.2.11.3/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="dynamically-generated-methods">9 Dynamically Generated Methods</h3>
+<p>Methods created with <code>(module|class)_eval(STRING)</code> have a comment by their side with an instance of the generated code. That comment is 2 spaces away from the template:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+for severity in Severity.constants
+  class_eval &lt;&lt;-EOT, __FILE__, __LINE__
+    def #{severity.downcase}(message = nil, progname = nil, &amp;block)  # def debug(message = nil, progname = nil, &amp;block)
+      add(#{severity}, message, progname, &amp;block)                    #   add(DEBUG, message, progname, &amp;block)
+    end                                                              # end
+                                                                     #
+    def #{severity.downcase}?                                        # def debug?
+      #{severity} &gt;= @level                                          #   DEBUG &gt;= @level
+    end                                                              # end
+  EOT
+end
+
+</pre>
+</div>
+<p>If the resulting lines are too wide, say 200 columns or more, put the comment above the call:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+# def self.find_by_login_and_activated(*args)
+#   options = args.extract_options!
+#   ...
+# end
+self.class_eval %{
+  def self.#{method_id}(*args)
+    options = args.extract_options!
+    ...
+  end
+}
+
+</pre>
+</div>
+</body>
+</html>

@@ -1,0 +1,64 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>1 What Is Webpacker?</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v7.0.4.2/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="what-is-webpacker-questionmark"><a class="anchorlink" href="#what-is-webpacker-questionmark">1 What Is Webpacker?</a></h3>
+<p>Webpacker is a Rails wrapper around the <a href="https://webpack.js.org">webpack</a> build system that provides a standard webpack configuration and reasonable defaults.</p>
+
+<h4 id="what-is-webpack-questionmark"><a class="anchorlink" href="#what-is-webpack-questionmark">1.1 What is webpack?</a></h4>
+
+<p>The goal of webpack, or any front-end build system, is to allow you to write your front-end code in a way that is convenient for developers and then package that code in a way that is convenient for browsers. With webpack, you can manage JavaScript, CSS, and static assets like images or fonts. Webpack will allow you to write your code, reference other code in your application, transform your code, and combine your code into easily downloadable packs.</p>
+
+<p>See the <a href="https://webpack.js.org">webpack documentation</a> for information.</p>
+
+<h4 id="how-is-webpacker-different-from-sprockets-questionmark"><a class="anchorlink" href="#how-is-webpacker-different-from-sprockets-questionmark">1.2 How is Webpacker Different from Sprockets?</a></h4>
+
+<p>Rails also ships with Sprockets, an asset-packaging tool whose features overlap with Webpacker. Both tools will compile your JavaScript into browser-friendly files and also minify and fingerprint them in production. In a development environment, Sprockets and Webpacker allow you to incrementally change files.</p>
+
+<p>Sprockets, which was designed to be used with Rails, is somewhat simpler to integrate. In particular, code can be added to Sprockets via a Ruby gem. However, webpack is better at integrating with more current JavaScript tools and NPM packages and allows for a wider range of integration. New Rails apps are configured to use webpack for JavaScript and Sprockets for CSS, although you can do CSS in webpack.</p>
+
+<p>You should choose Webpacker over Sprockets on a new project if you want to use NPM packages and/or want access to the most current JavaScript features and tools. You should choose Sprockets over Webpacker for legacy applications where migration might be costly, if you want to integrate using Gems, or if you have a very small amount of code to package.</p>
+
+<p>If you are familiar with Sprockets, the following guide might give you some idea of how to translate. Please note that each tool has a slightly different structure, and the concepts don't directly map onto each other.</p>
+<table>
+<thead>
+<tr>
+<th>Task</th>
+<th>Sprockets</th>
+<th>Webpacker</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Attach JavaScript</td>
+<td>javascript_include_tag</td>
+<td>javascript_pack_tag</td>
+</tr>
+<tr>
+<td>Attach CSS</td>
+<td>stylesheet_link_tag</td>
+<td>stylesheet_pack_tag</td>
+</tr>
+<tr>
+<td>Link to an image</td>
+<td>image_url</td>
+<td>image_pack_tag</td>
+</tr>
+<tr>
+<td>Link to an asset</td>
+<td>asset_url</td>
+<td>asset_pack_tag</td>
+</tr>
+<tr>
+<td>Require a script</td>
+<td>//= require</td>
+<td>import or require</td>
+</tr>
+</tbody>
+</table>
+</body>
+</html>

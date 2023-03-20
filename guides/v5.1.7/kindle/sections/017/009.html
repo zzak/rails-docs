@@ -1,0 +1,37 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>10 Exceptions</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v5.1.7/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="exceptions">10 Exceptions</h3>
+<p>Active Job provides a way to catch exceptions raised during the execution of the
+job:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class GuestsCleanupJob &lt; ApplicationJob
+  queue_as :default
+
+  rescue_from(ActiveRecord::RecordNotFound) do |exception|
+   # Do something with the exception
+  end
+
+  def perform
+    # Do something later
+  end
+end
+
+</pre>
+</div>
+<h4 id="deserialization">10.1 Deserialization</h4>
+
+<p>GlobalID allows serializing full Active Record objects passed to <code>#perform</code>.</p>
+
+<p>If a passed record is deleted after the job is enqueued but before the <code>#perform</code>
+method is called Active Job will raise an <code>ActiveJob::DeserializationError</code>
+exception.</p>
+</body>
+</html>

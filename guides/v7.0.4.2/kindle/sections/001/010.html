@@ -1,0 +1,97 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>11 Security</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v7.0.4.2/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="security"><a class="anchorlink" href="#security">11 Security</a></h3>
+<h4 id="basic-authentication"><a class="anchorlink" href="#basic-authentication">11.1 Basic Authentication</a></h4>
+
+<p>If you were to publish your blog online, anyone would be able to add, edit and
+delete articles or delete comments.</p>
+
+<p>Rails provides an HTTP authentication system that will work nicely in
+this situation.</p>
+
+<p>In the <code>ArticlesController</code> we need to have a way to block access to the
+various actions if the person is not authenticated. Here we can use the Rails
+<code>http_basic_authenticate_with</code> method, which allows access to the requested
+action if that method allows it.</p>
+
+<p>To use the authentication system, we specify it at the top of our
+<code>ArticlesController</code> in <code>app/controllers/articles_controller.rb</code>. In our case,
+we want the user to be authenticated on every action except <code>index</code> and <code>show</code>,
+so we write that:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">ArticlesController</span> <span class="o">&lt;</span> <span class="no">ApplicationController</span>
+
+  <span class="n">http_basic_authenticate_with</span> <span class="ss">name: </span><span class="s2">"dhh"</span><span class="p">,</span> <span class="ss">password: </span><span class="s2">"secret"</span><span class="p">,</span> <span class="ss">except: </span><span class="p">[</span><span class="ss">:index</span><span class="p">,</span> <span class="ss">:show</span><span class="p">]</span>
+
+  <span class="k">def</span> <span class="nf">index</span>
+    <span class="vi">@articles</span> <span class="o">=</span> <span class="no">Article</span><span class="p">.</span><span class="nf">all</span>
+  <span class="k">end</span>
+
+  <span class="c1"># snippet for brevity</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='class ArticlesController &lt; ApplicationController
+
+  http_basic_authenticate_with name: "dhh", password: "secret", except: [:index, :show]
+
+  def index
+    @articles = Article.all
+  end
+
+  # snippet for brevity
+'>Copy</button>
+</div>
+<p>We also want to allow only authenticated users to delete comments, so in the
+<code>CommentsController</code> (<code>app/controllers/comments_controller.rb</code>) we write:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">CommentsController</span> <span class="o">&lt;</span> <span class="no">ApplicationController</span>
+
+  <span class="n">http_basic_authenticate_with</span> <span class="ss">name: </span><span class="s2">"dhh"</span><span class="p">,</span> <span class="ss">password: </span><span class="s2">"secret"</span><span class="p">,</span> <span class="ss">only: :destroy</span>
+
+  <span class="k">def</span> <span class="nf">create</span>
+    <span class="vi">@article</span> <span class="o">=</span> <span class="no">Article</span><span class="p">.</span><span class="nf">find</span><span class="p">(</span><span class="n">params</span><span class="p">[</span><span class="ss">:article_id</span><span class="p">])</span>
+    <span class="c1"># ...</span>
+  <span class="k">end</span>
+
+  <span class="c1"># snippet for brevity</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='class CommentsController &lt; ApplicationController
+
+  http_basic_authenticate_with name: "dhh", password: "secret", only: :destroy
+
+  def create
+    @article = Article.find(params[:article_id])
+    # ...
+  end
+
+  # snippet for brevity
+'>Copy</button>
+</div>
+<p>Now if you try to create a new article, you will be greeted with a basic HTTP
+Authentication challenge:</p>
+
+<p><img src="/home/rails/v7.0.4.2/guides/output/kindle/images/getting_started/challenge.png" alt="Basic HTTP Authentication Challenge"></p>
+
+<p>After entering the correct username and password, you will remain authenticated
+until a different username and password is required or the browser is closed.</p>
+
+<p>Other authentication methods are available for Rails applications. Two popular
+authentication add-ons for Rails are the
+<a href="https://github.com/plataformatec/devise">Devise</a> rails engine and
+the <a href="https://github.com/binarylogic/authlogic">Authlogic</a> gem,
+along with a number of others.</p>
+
+<h4 id="other-security-considerations"><a class="anchorlink" href="#other-security-considerations">11.2 Other Security Considerations</a></h4>
+
+<p>Security, especially in web applications, is a broad and detailed area. Security
+in your Rails application is covered in more depth in
+the <a href="security.html">Ruby on Rails Security Guide</a>.</p>
+</body>
+</html>

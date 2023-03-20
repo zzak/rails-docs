@@ -1,0 +1,352 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>6 Adding a Second Model</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v5.2.8.1/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="adding-a-second-model"><a class="anchorlink" href="#adding-a-second-model">6 Adding a Second Model</a></h3>
+<p>It's time to add a second model to the application. The second model will handle
+comments on articles.</p>
+
+<h4 id="generating-a-model"><a class="anchorlink" href="#generating-a-model">6.1 Generating a Model</a></h4>
+
+<p>We're going to see the same generator that we used before when creating
+the <code>Article</code> model. This time we'll create a <code>Comment</code> model to hold
+reference to an article. Run this command in your terminal:</p>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+$ bin/rails generate model Comment commenter:string body:text article:references
+
+</pre>
+</div>
+<p>This command will generate four files:</p>
+<table>
+<thead>
+<tr>
+<th>File</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>db/migrate/20140120201010_create_comments.rb</td>
+<td>Migration to create the comments table in your database (your name will include a different timestamp)</td>
+</tr>
+<tr>
+<td>app/models/comment.rb</td>
+<td>The Comment model</td>
+</tr>
+<tr>
+<td>test/models/comment_test.rb</td>
+<td>Testing harness for the comment model</td>
+</tr>
+<tr>
+<td>test/fixtures/comments.yml</td>
+<td>Sample comments for use in testing</td>
+</tr>
+</tbody>
+</table>
+<p>First, take a look at <code>app/models/comment.rb</code>:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class Comment &lt; ApplicationRecord
+  belongs_to :article
+end
+
+</pre>
+</div>
+<p>This is very similar to the <code>Article</code> model that you saw earlier. The difference
+is the line <code>belongs_to :article</code>, which sets up an Active Record <em>association</em>.
+You'll learn a little about associations in the next section of this guide.</p>
+
+<p>The (<code>:references</code>) keyword used in the bash command is a special data type for models.
+It creates a new column on your database table with the provided model name appended with an <code>_id</code>
+that can hold integer values. To get a better understanding, analyze the
+<code>db/schema.rb</code> file after running the migration.</p>
+
+<p>In addition to the model, Rails has also made a migration to create the
+corresponding database table:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class CreateComments &lt; ActiveRecord::Migration[5.0]
+  def change
+    create_table :comments do |t|
+      t.string :commenter
+      t.text :body
+      t.references :article, foreign_key: true
+
+      t.timestamps
+    end
+  end
+end
+
+</pre>
+</div>
+<p>The <code>t.references</code> line creates an integer column called <code>article_id</code>, an index
+for it, and a foreign key constraint that points to the <code>id</code> column of the <code>articles</code>
+table. Go ahead and run the migration:</p>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+$ bin/rails db:migrate
+
+</pre>
+</div>
+<p>Rails is smart enough to only execute the migrations that have not already been
+run against the current database, so in this case you will just see:</p>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+==  CreateComments: migrating =================================================
+-- create_table(:comments)
+   -&gt; 0.0115s
+==  CreateComments: migrated (0.0119s) ========================================
+
+</pre>
+</div>
+<h4 id="associating-models"><a class="anchorlink" href="#associating-models">6.2 Associating Models</a></h4>
+
+<p>Active Record associations let you easily declare the relationship between two
+models. In the case of comments and articles, you could write out the
+relationships this way:</p>
+<ul>
+<li>Each comment belongs to one article.</li>
+<li>One article can have many comments.</li>
+</ul>
+<p>In fact, this is very close to the syntax that Rails uses to declare this
+association. You've already seen the line of code inside the <code>Comment</code> model
+(app/models/comment.rb) that makes each comment belong to an Article:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class Comment &lt; ApplicationRecord
+  belongs_to :article
+end
+
+</pre>
+</div>
+<p>You'll need to edit <code>app/models/article.rb</code> to add the other side of the
+association:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class Article &lt; ApplicationRecord
+  has_many :comments
+  validates :title, presence: true,
+                    length: { minimum: 5 }
+end
+
+</pre>
+</div>
+<p>These two declarations enable a good bit of automatic behavior. For example, if
+you have an instance variable <code>@article</code> containing an article, you can retrieve
+all the comments belonging to that article as an array using
+<code>@article.comments</code>.</p>
+
+<div class="info"><p>For more information on Active Record associations, see the <a href="association_basics.html">Active Record
+Associations</a> guide.</p></div>
+
+<h4 id="adding-a-route-for-comments"><a class="anchorlink" href="#adding-a-route-for-comments">6.3 Adding a Route for Comments</a></h4>
+
+<p>As with the <code>welcome</code> controller, we will need to add a route so that Rails
+knows where we would like to navigate to see <code>comments</code>. Open up the
+<code>config/routes.rb</code> file again, and edit it as follows:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+resources :articles do
+  resources :comments
+end
+
+</pre>
+</div>
+<p>This creates <code>comments</code> as a <em>nested resource</em> within <code>articles</code>. This is
+another part of capturing the hierarchical relationship that exists between
+articles and comments.</p>
+
+<div class="info"><p>For more information on routing, see the <a href="routing.html">Rails Routing</a>
+guide.</p></div>
+
+<h4 id="generating-a-controller"><a class="anchorlink" href="#generating-a-controller">6.4 Generating a Controller</a></h4>
+
+<p>With the model in hand, you can turn your attention to creating a matching
+controller. Again, we'll use the same generator we used before:</p>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+$ bin/rails generate controller Comments
+
+</pre>
+</div>
+<p>This creates five files and one empty directory:</p>
+<table>
+<thead>
+<tr>
+<th>File/Directory</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>app/controllers/comments_controller.rb</td>
+<td>The Comments controller</td>
+</tr>
+<tr>
+<td>app/views/comments/</td>
+<td>Views of the controller are stored here</td>
+</tr>
+<tr>
+<td>test/controllers/comments_controller_test.rb</td>
+<td>The test for the controller</td>
+</tr>
+<tr>
+<td>app/helpers/comments_helper.rb</td>
+<td>A view helper file</td>
+</tr>
+<tr>
+<td>app/assets/javascripts/comments.coffee</td>
+<td>CoffeeScript for the controller</td>
+</tr>
+<tr>
+<td>app/assets/stylesheets/comments.scss</td>
+<td>Cascading style sheet for the controller</td>
+</tr>
+</tbody>
+</table>
+<p>Like with any blog, our readers will create their comments directly after
+reading the article, and once they have added their comment, will be sent back
+to the article show page to see their comment now listed. Due to this, our
+<code>CommentsController</code> is there to provide a method to create comments and delete
+spam comments when they arrive.</p>
+
+<p>So first, we'll wire up the Article show template
+(<code>app/views/articles/show.html.erb</code>) to let us make a new comment:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; html-script: true; gutter: false; toolbar: false">
+&lt;p&gt;
+  &lt;strong&gt;Title:&lt;/strong&gt;
+  &lt;%= @article.title %&gt;
+&lt;/p&gt;
+
+&lt;p&gt;
+  &lt;strong&gt;Text:&lt;/strong&gt;
+  &lt;%= @article.text %&gt;
+&lt;/p&gt;
+
+&lt;h2&gt;Add a comment:&lt;/h2&gt;
+&lt;%= form_with(model: [ @article, @article.comments.build ], local: true) do |form| %&gt;
+  &lt;p&gt;
+    &lt;%= form.label :commenter %&gt;&lt;br&gt;
+    &lt;%= form.text_field :commenter %&gt;
+  &lt;/p&gt;
+  &lt;p&gt;
+    &lt;%= form.label :body %&gt;&lt;br&gt;
+    &lt;%= form.text_area :body %&gt;
+  &lt;/p&gt;
+  &lt;p&gt;
+    &lt;%= form.submit %&gt;
+  &lt;/p&gt;
+&lt;% end %&gt;
+
+&lt;%= link_to 'Edit', edit_article_path(@article) %&gt; |
+&lt;%= link_to 'Back', articles_path %&gt;
+
+</pre>
+</div>
+<p>This adds a form on the <code>Article</code> show page that creates a new comment by
+calling the <code>CommentsController</code> <code>create</code> action. The <code>form_with</code> call here uses
+an array, which will build a nested route, such as <code>/articles/1/comments</code>.</p>
+
+<p>Let's wire up the <code>create</code> in <code>app/controllers/comments_controller.rb</code>:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class CommentsController &lt; ApplicationController
+  def create
+    @article = Article.find(params[:article_id])
+    @comment = @article.comments.create(comment_params)
+    redirect_to article_path(@article)
+  end
+
+  private
+    def comment_params
+      params.require(:comment).permit(:commenter, :body)
+    end
+end
+
+</pre>
+</div>
+<p>You'll see a bit more complexity here than you did in the controller for
+articles. That's a side-effect of the nesting that you've set up. Each request
+for a comment has to keep track of the article to which the comment is attached,
+thus the initial call to the <code>find</code> method of the <code>Article</code> model to get the
+article in question.</p>
+
+<p>In addition, the code takes advantage of some of the methods available for an
+association. We use the <code>create</code> method on <code>@article.comments</code> to create and
+save the comment. This will automatically link the comment so that it belongs to
+that particular article.</p>
+
+<p>Once we have made the new comment, we send the user back to the original article
+using the <code>article_path(@article)</code> helper. As we have already seen, this calls
+the <code>show</code> action of the <code>ArticlesController</code> which in turn renders the
+<code>show.html.erb</code> template. This is where we want the comment to show, so let's
+add that to the <code>app/views/articles/show.html.erb</code>.</p>
+
+<div class="code_container">
+<pre class="brush: ruby; html-script: true; gutter: false; toolbar: false">
+&lt;p&gt;
+  &lt;strong&gt;Title:&lt;/strong&gt;
+  &lt;%= @article.title %&gt;
+&lt;/p&gt;
+
+&lt;p&gt;
+  &lt;strong&gt;Text:&lt;/strong&gt;
+  &lt;%= @article.text %&gt;
+&lt;/p&gt;
+
+&lt;h2&gt;Comments&lt;/h2&gt;
+&lt;% @article.comments.each do |comment| %&gt;
+  &lt;p&gt;
+    &lt;strong&gt;Commenter:&lt;/strong&gt;
+    &lt;%= comment.commenter %&gt;
+  &lt;/p&gt;
+
+  &lt;p&gt;
+    &lt;strong&gt;Comment:&lt;/strong&gt;
+    &lt;%= comment.body %&gt;
+  &lt;/p&gt;
+&lt;% end %&gt;
+
+&lt;h2&gt;Add a comment:&lt;/h2&gt;
+&lt;%= form_with(model: [ @article, @article.comments.build ], local: true) do |form| %&gt;
+  &lt;p&gt;
+    &lt;%= form.label :commenter %&gt;&lt;br&gt;
+    &lt;%= form.text_field :commenter %&gt;
+  &lt;/p&gt;
+  &lt;p&gt;
+    &lt;%= form.label :body %&gt;&lt;br&gt;
+    &lt;%= form.text_area :body %&gt;
+  &lt;/p&gt;
+  &lt;p&gt;
+    &lt;%= form.submit %&gt;
+  &lt;/p&gt;
+&lt;% end %&gt;
+
+&lt;%= link_to 'Edit', edit_article_path(@article) %&gt; |
+&lt;%= link_to 'Back', articles_path %&gt;
+
+</pre>
+</div>
+<p>Now you can add articles and comments to your blog and have them show up in the
+right places.</p>
+
+<p><img src="/home/rails/v5.2.8.1/guides/output/kindle/images/getting_started/article_with_comments.png" alt="Article with Comments"></p>
+</body>
+</html>

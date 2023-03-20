@@ -1,0 +1,163 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>16 Extensions to Time
+</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v4.2.11.3/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="extensions-to-time">16 Extensions to <code>Time</code>
+</h3>
+<h4 id="calculations">16.1 Calculations</h4>
+
+<div class="note"><p>All the following methods are defined in <code>active_support/core_ext/time/calculations.rb</code>.</p></div>
+
+<p>Active Support adds to <code>Time</code> many of the methods available for <code>DateTime</code>:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+past?
+today?
+future?
+yesterday
+tomorrow
+seconds_since_midnight
+change
+advance
+ago
+since (in)
+beginning_of_day (midnight, at_midnight, at_beginning_of_day)
+end_of_day
+beginning_of_hour (at_beginning_of_hour)
+end_of_hour
+beginning_of_week (at_beginning_of_week)
+end_of_week (at_end_of_week)
+monday
+sunday
+weeks_ago
+prev_week (last_week)
+next_week
+months_ago
+months_since
+beginning_of_month (at_beginning_of_month)
+end_of_month (at_end_of_month)
+prev_month (last_month)
+next_month
+beginning_of_quarter (at_beginning_of_quarter)
+end_of_quarter (at_end_of_quarter)
+beginning_of_year (at_beginning_of_year)
+end_of_year (at_end_of_year)
+years_ago
+years_since
+prev_year (last_year)
+next_year
+
+</pre>
+</div>
+<p>They are analogous. Please refer to their documentation above and take into account the following differences:</p>
+<ul>
+<li>
+<code>change</code> accepts an additional <code>:usec</code> option.</li>
+<li>
+<code>Time</code> understands DST, so you get correct DST calculations as in</li>
+</ul>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+Time.zone_default
+# =&gt; #&lt;ActiveSupport::TimeZone:0x7f73654d4f38 @utc_offset=nil, @name="Madrid", ...&gt;
+
+# In Barcelona, 2010/03/28 02:00 +0100 becomes 2010/03/28 03:00 +0200 due to DST.
+t = Time.local(2010, 3, 28, 1, 59, 59)
+# =&gt; Sun Mar 28 01:59:59 +0100 2010
+t.advance(seconds: 1)
+# =&gt; Sun Mar 28 03:00:00 +0200 2010
+
+</pre>
+</div>
+<ul>
+<li>If <code>since</code> or <code>ago</code> jump to a time that can't be expressed with <code>Time</code> a <code>DateTime</code> object is returned instead.</li>
+</ul>
+<h5 id="time-current">16.1.1 <code>Time.current</code>
+</h5>
+
+<p>Active Support defines <code>Time.current</code> to be today in the current time zone. That's like <code>Time.now</code>, except that it honors the user time zone, if defined. It also defines the instance predicates <code>past?</code>, <code>today?</code>, and <code>future?</code>, all of them relative to <code>Time.current</code>.</p>
+
+<p>When making Time comparisons using methods which honor the user time zone, make sure to use <code>Time.current</code> instead of <code>Time.now</code>. There are cases where the user time zone might be in the future compared to the system time zone, which <code>Time.now</code> uses by default. This means <code>Time.now.to_date</code> may equal <code>Date.yesterday</code>.</p>
+
+<h5 id="all-day-all-week-all-month-all-quarter-and-all-year">16.1.2 <code>all_day</code>, <code>all_week</code>, <code>all_month</code>, <code>all_quarter</code> and <code>all_year</code>
+</h5>
+
+<p>The method <code>all_day</code> returns a range representing the whole day of the current time.</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+now = Time.current
+# =&gt; Mon, 09 Aug 2010 23:20:05 UTC +00:00
+now.all_day
+# =&gt; Mon, 09 Aug 2010 00:00:00 UTC +00:00..Mon, 09 Aug 2010 23:59:59 UTC +00:00
+
+</pre>
+</div>
+<p>Analogously, <code>all_week</code>, <code>all_month</code>, <code>all_quarter</code> and <code>all_year</code> all serve the purpose of generating time ranges.</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+now = Time.current
+# =&gt; Mon, 09 Aug 2010 23:20:05 UTC +00:00
+now.all_week
+# =&gt; Mon, 09 Aug 2010 00:00:00 UTC +00:00..Sun, 15 Aug 2010 23:59:59 UTC +00:00
+now.all_week(:sunday)
+# =&gt; Sun, 16 Sep 2012 00:00:00 UTC +00:00..Sat, 22 Sep 2012 23:59:59 UTC +00:00
+now.all_month
+# =&gt; Sat, 01 Aug 2010 00:00:00 UTC +00:00..Tue, 31 Aug 2010 23:59:59 UTC +00:00
+now.all_quarter
+# =&gt; Thu, 01 Jul 2010 00:00:00 UTC +00:00..Thu, 30 Sep 2010 23:59:59 UTC +00:00
+now.all_year
+# =&gt; Fri, 01 Jan 2010 00:00:00 UTC +00:00..Fri, 31 Dec 2010 23:59:59 UTC +00:00
+
+</pre>
+</div>
+<h4 id="time-constructors">16.2 Time Constructors</h4>
+
+<p>Active Support defines <code>Time.current</code> to be <code>Time.zone.now</code> if there's a user time zone defined, with fallback to <code>Time.now</code>:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+Time.zone_default
+# =&gt; #&lt;ActiveSupport::TimeZone:0x7f73654d4f38 @utc_offset=nil, @name="Madrid", ...&gt;
+Time.current
+# =&gt; Fri, 06 Aug 2010 17:11:58 CEST +02:00
+
+</pre>
+</div>
+<p>Analogously to <code>DateTime</code>, the predicates <code>past?</code>, and <code>future?</code> are relative to <code>Time.current</code>.</p>
+
+<p>If the time to be constructed lies beyond the range supported by <code>Time</code> in the runtime platform, usecs are discarded and a <code>DateTime</code> object is returned instead.</p>
+
+<h5 id="durations">16.2.1 Durations</h5>
+
+<p>Durations can be added to and subtracted from time objects:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+now = Time.current
+# =&gt; Mon, 09 Aug 2010 23:20:05 UTC +00:00
+now + 1.year
+#  =&gt; Tue, 09 Aug 2011 23:21:11 UTC +00:00
+now - 1.week
+# =&gt; Mon, 02 Aug 2010 23:21:11 UTC +00:00
+
+</pre>
+</div>
+<p>They translate to calls to <code>since</code> or <code>advance</code>. For example here we get the correct jump in the calendar reform:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+Time.utc(1582, 10, 3) + 5.days
+# =&gt; Mon Oct 18 00:00:00 UTC 1582
+
+</pre>
+</div>
+</body>
+</html>

@@ -1,0 +1,69 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>6 Granular Database Connection Switching</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v6.1.7.3/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="granular-database-connection-switching"><a class="anchorlink" href="#granular-database-connection-switching">6 Granular Database Connection Switching</a></h3>
+<p>In Rails 6.1 it's possible to switch connections for one database instead of
+all databases globally. To use this feature you must first set
+<code>config.active_record.legacy_connection_handling</code> to <code>false</code> in your application
+configuration. The majority of applications should not need to make any other
+changes since the public APIs have the same behavior.</p>
+
+<p>With <code>legacy_connection_handling</code> set to false, any abstract connection class
+will be able to switch connections without affecting other connections. This
+is useful for switching your <code>AnimalsRecord</code> queries to read from the replica
+while ensuring your <code>ApplicationRecord</code> queries go to the primary.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="no">AnimalsRecord</span><span class="p">.</span><span class="nf">connected_to</span><span class="p">(</span><span class="ss">role: :reading</span><span class="p">)</span> <span class="k">do</span>
+  <span class="no">Dog</span><span class="p">.</span><span class="nf">first</span> <span class="c1"># Reads from animals_replica</span>
+  <span class="no">Person</span><span class="p">.</span><span class="nf">first</span>  <span class="c1"># Reads from primary</span>
+<span class="k">end</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-10c0ebc959988ea61f8bf5ada685daa1">AnimalsRecord.connected_to(role: :reading) do
+  Dog.first # Reads from animals_replica
+  Person.first  # Reads from primary
+end
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-10c0ebc959988ea61f8bf5ada685daa1">Copy</button>
+</div>
+<p>It's also possible to swap connections granularly for shards.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="no">AnimalsRecord</span><span class="p">.</span><span class="nf">connected_to</span><span class="p">(</span><span class="ss">role: :reading</span><span class="p">,</span> <span class="ss">shard: :shard_one</span><span class="p">)</span> <span class="k">do</span>
+  <span class="no">Dog</span><span class="p">.</span><span class="nf">first</span> <span class="c1"># Will read from shard_one_replica. If no connection exists for shard_one_replica,</span>
+  <span class="c1"># a ConnectionNotEstablished error will be raised</span>
+  <span class="no">Person</span><span class="p">.</span><span class="nf">first</span> <span class="c1"># Will read from primary writer</span>
+<span class="k">end</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-2495d8152c37d182bd0491bcbe52e8f8">AnimalsRecord.connected_to(role: :reading, shard: :shard_one) do
+  Dog.first # Will read from shard_one_replica. If no connection exists for shard_one_replica,
+  # a ConnectionNotEstablished error will be raised
+  Person.first # Will read from primary writer
+end
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-2495d8152c37d182bd0491bcbe52e8f8">Copy</button>
+</div>
+<p>To switch only the primary database cluster use <code>ApplicationRecord</code>:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="no">ApplicationRecord</span><span class="p">.</span><span class="nf">connected_to</span><span class="p">(</span><span class="ss">role: :reading</span><span class="p">,</span> <span class="ss">shard: :shard_one</span><span class="p">)</span> <span class="k">do</span>
+  <span class="no">Person</span><span class="p">.</span><span class="nf">first</span> <span class="c1"># Reads from primary_shard_one_replica</span>
+  <span class="no">Dog</span><span class="p">.</span><span class="nf">first</span> <span class="c1"># Reads from animals_primary</span>
+<span class="k">end</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-b3d9a93644a083979084650ccccfaf57">ApplicationRecord.connected_to(role: :reading, shard: :shard_one) do
+  Person.first # Reads from primary_shard_one_replica
+  Dog.first # Reads from animals_primary
+end
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-b3d9a93644a083979084650ccccfaf57">Copy</button>
+</div>
+<p><code>ActiveRecord::Base.connected_to</code> maintains the ability to switch
+connections globally.</p>
+</body>
+</html>

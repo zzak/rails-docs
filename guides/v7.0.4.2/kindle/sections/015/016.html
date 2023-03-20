@@ -1,0 +1,255 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>17 Extensions to Time</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v7.0.4.2/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="extensions-to-time"><a class="anchorlink" href="#extensions-to-time">17 Extensions to <code>Time</code></a></h3>
+<h4 id="calculations"><a class="anchorlink" href="#calculations">17.1 Calculations</a></h4>
+
+<p>They are analogous. Please refer to their documentation above and take into account the following differences:</p>
+<ul>
+<li>
+<a href="https://api.rubyonrails.org/v7.0.4.2/classes/Time.html#method-i-change"><code>change</code></a> accepts an additional <code>:usec</code> option.</li>
+<li>
+<code>Time</code> understands DST, so you get correct DST calculations as in</li>
+</ul>
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="no">Time</span><span class="p">.</span><span class="nf">zone_default</span>
+<span class="c1"># =&gt; #&lt;ActiveSupport::TimeZone:0x7f73654d4f38 @utc_offset=nil, @name="Madrid", ...&gt;</span>
+
+<span class="c1"># In Barcelona, 2010/03/28 02:00 +0100 becomes 2010/03/28 03:00 +0200 due to DST.</span>
+<span class="n">t</span> <span class="o">=</span> <span class="no">Time</span><span class="p">.</span><span class="nf">local</span><span class="p">(</span><span class="mi">2010</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">28</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">59</span><span class="p">,</span> <span class="mi">59</span><span class="p">)</span>
+<span class="c1"># =&gt; Sun Mar 28 01:59:59 +0100 2010</span>
+<span class="n">t</span><span class="p">.</span><span class="nf">advance</span><span class="p">(</span><span class="ss">seconds: </span><span class="mi">1</span><span class="p">)</span>
+<span class="c1"># =&gt; Sun Mar 28 03:00:00 +0200 2010</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='Time.zone_default
+# =&gt; #&lt;ActiveSupport::TimeZone:0x7f73654d4f38 @utc_offset=nil, @name="Madrid", ...&gt;
+
+# In Barcelona, 2010/03/28 02:00 +0100 becomes 2010/03/28 03:00 +0200 due to DST.
+t = Time.local(2010, 3, 28, 1, 59, 59)
+# =&gt; Sun Mar 28 01:59:59 +0100 2010
+t.advance(seconds: 1)
+# =&gt; Sun Mar 28 03:00:00 +0200 2010
+'>Copy</button>
+</div>
+<ul>
+<li>If <a href="https://api.rubyonrails.org/v7.0.4.2/classes/Time.html#method-i-since"><code>since</code></a> or <a href="https://api.rubyonrails.org/v7.0.4.2/classes/Time.html#method-i-ago"><code>ago</code></a> jumps to a time that can't be expressed with <code>Time</code> a <code>DateTime</code> object is returned instead.</li>
+</ul>
+<h5 id="time-current"><a class="anchorlink" href="#time-current">17.1.1 <code>Time.current</code></a></h5>
+
+<p>Active Support defines <a href="https://api.rubyonrails.org/v7.0.4.2/classes/Time.html#method-c-current"><code>Time.current</code></a> to be today in the current time zone. That's like <code>Time.now</code>, except that it honors the user time zone, if defined. It also defines the instance predicates <a href="https://api.rubyonrails.org/v7.0.4.2/classes/DateAndTime/Calculations.html#method-i-past-3F"><code>past?</code></a>, <a href="https://api.rubyonrails.org/v7.0.4.2/classes/DateAndTime/Calculations.html#method-i-today-3F"><code>today?</code></a>, <a href="https://api.rubyonrails.org/v7.0.4.2/classes/DateAndTime/Calculations.html#method-i-tomorrow-3F"><code>tomorrow?</code></a>, <a href="https://api.rubyonrails.org/v7.0.4.2/classes/DateAndTime/Calculations.html#method-i-next_day-3F"><code>next_day?</code></a>, <a href="https://api.rubyonrails.org/v7.0.4.2/classes/DateAndTime/Calculations.html#method-i-yesterday-3F"><code>yesterday?</code></a>, <a href="https://api.rubyonrails.org/v7.0.4.2/classes/DateAndTime/Calculations.html#method-i-prev_day-3F"><code>prev_day?</code></a> and <a href="https://api.rubyonrails.org/v7.0.4.2/classes/DateAndTime/Calculations.html#method-i-future-3F"><code>future?</code></a>, all of them relative to <code>Time.current</code>.</p>
+
+<p>When making Time comparisons using methods which honor the user time zone, make sure to use <code>Time.current</code> instead of <code>Time.now</code>. There are cases where the user time zone might be in the future compared to the system time zone, which <code>Time.now</code> uses by default. This means <code>Time.now.to_date</code> may equal <code>Date.yesterday</code>.</p>
+
+<div class="note"><p>Defined in <code><a href="https://github.com/rails/rails/tree/v7.0.4.2/activesupport/lib/active_support/core_ext/time/calculations.rb">active_support/core_ext/time/calculations.rb</a></code>.</p></div>
+
+<h5 id="all-day-all-week-all-month-all-quarter-and-all-year"><a class="anchorlink" href="#all-day-all-week-all-month-all-quarter-and-all-year">17.1.2 <code>all_day</code>, <code>all_week</code>, <code>all_month</code>, <code>all_quarter</code>, and <code>all_year</code></a></h5>
+
+<p>The method <a href="https://api.rubyonrails.org/v7.0.4.2/classes/DateAndTime/Calculations.html#method-i-all_day"><code>all_day</code></a> returns a range representing the whole day of the current time.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">now</span> <span class="o">=</span> <span class="no">Time</span><span class="p">.</span><span class="nf">current</span>
+<span class="c1"># =&gt; Mon, 09 Aug 2010 23:20:05 UTC +00:00</span>
+<span class="n">now</span><span class="p">.</span><span class="nf">all_day</span>
+<span class="c1"># =&gt; Mon, 09 Aug 2010 00:00:00 UTC +00:00..Mon, 09 Aug 2010 23:59:59 UTC +00:00</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="now = Time.current
+# =&gt; Mon, 09 Aug 2010 23:20:05 UTC +00:00
+now.all_day
+# =&gt; Mon, 09 Aug 2010 00:00:00 UTC +00:00..Mon, 09 Aug 2010 23:59:59 UTC +00:00
+">Copy</button>
+</div>
+<p>Analogously, <a href="https://api.rubyonrails.org/v7.0.4.2/classes/DateAndTime/Calculations.html#method-i-all_week"><code>all_week</code></a>, <a href="https://api.rubyonrails.org/v7.0.4.2/classes/DateAndTime/Calculations.html#method-i-all_month"><code>all_month</code></a>, <a href="https://api.rubyonrails.org/v7.0.4.2/classes/DateAndTime/Calculations.html#method-i-all_quarter"><code>all_quarter</code></a> and <a href="https://api.rubyonrails.org/v7.0.4.2/classes/DateAndTime/Calculations.html#method-i-all_year"><code>all_year</code></a> all serve the purpose of generating time ranges.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">now</span> <span class="o">=</span> <span class="no">Time</span><span class="p">.</span><span class="nf">current</span>
+<span class="c1"># =&gt; Mon, 09 Aug 2010 23:20:05 UTC +00:00</span>
+<span class="n">now</span><span class="p">.</span><span class="nf">all_week</span>
+<span class="c1"># =&gt; Mon, 09 Aug 2010 00:00:00 UTC +00:00..Sun, 15 Aug 2010 23:59:59 UTC +00:00</span>
+<span class="n">now</span><span class="p">.</span><span class="nf">all_week</span><span class="p">(</span><span class="ss">:sunday</span><span class="p">)</span>
+<span class="c1"># =&gt; Sun, 16 Sep 2012 00:00:00 UTC +00:00..Sat, 22 Sep 2012 23:59:59 UTC +00:00</span>
+<span class="n">now</span><span class="p">.</span><span class="nf">all_month</span>
+<span class="c1"># =&gt; Sat, 01 Aug 2010 00:00:00 UTC +00:00..Tue, 31 Aug 2010 23:59:59 UTC +00:00</span>
+<span class="n">now</span><span class="p">.</span><span class="nf">all_quarter</span>
+<span class="c1"># =&gt; Thu, 01 Jul 2010 00:00:00 UTC +00:00..Thu, 30 Sep 2010 23:59:59 UTC +00:00</span>
+<span class="n">now</span><span class="p">.</span><span class="nf">all_year</span>
+<span class="c1"># =&gt; Fri, 01 Jan 2010 00:00:00 UTC +00:00..Fri, 31 Dec 2010 23:59:59 UTC +00:00</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="now = Time.current
+# =&gt; Mon, 09 Aug 2010 23:20:05 UTC +00:00
+now.all_week
+# =&gt; Mon, 09 Aug 2010 00:00:00 UTC +00:00..Sun, 15 Aug 2010 23:59:59 UTC +00:00
+now.all_week(:sunday)
+# =&gt; Sun, 16 Sep 2012 00:00:00 UTC +00:00..Sat, 22 Sep 2012 23:59:59 UTC +00:00
+now.all_month
+# =&gt; Sat, 01 Aug 2010 00:00:00 UTC +00:00..Tue, 31 Aug 2010 23:59:59 UTC +00:00
+now.all_quarter
+# =&gt; Thu, 01 Jul 2010 00:00:00 UTC +00:00..Thu, 30 Sep 2010 23:59:59 UTC +00:00
+now.all_year
+# =&gt; Fri, 01 Jan 2010 00:00:00 UTC +00:00..Fri, 31 Dec 2010 23:59:59 UTC +00:00
+">Copy</button>
+</div>
+<div class="note"><p>Defined in <code><a href="https://github.com/rails/rails/tree/v7.0.4.2/activesupport/lib/active_support/core_ext/date_and_time/calculations.rb">active_support/core_ext/date_and_time/calculations.rb</a></code>.</p></div>
+
+<h5 id="prev-day-next-day"><a class="anchorlink" href="#prev-day-next-day">17.1.3 <code>prev_day</code>, <code>next_day</code></a></h5>
+
+<p><a href="https://api.rubyonrails.org/v7.0.4.2/classes/Time.html#method-i-prev_day"><code>prev_day</code></a> and <a href="https://api.rubyonrails.org/v7.0.4.2/classes/Time.html#method-i-next_day"><code>next_day</code></a> return the time in the last or next day:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">t</span> <span class="o">=</span> <span class="no">Time</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="mi">2010</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">8</span><span class="p">)</span> <span class="c1"># =&gt; 2010-05-08 00:00:00 +0900</span>
+<span class="n">t</span><span class="p">.</span><span class="nf">prev_day</span>               <span class="c1"># =&gt; 2010-05-07 00:00:00 +0900</span>
+<span class="n">t</span><span class="p">.</span><span class="nf">next_day</span>               <span class="c1"># =&gt; 2010-05-09 00:00:00 +0900</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="t = Time.new(2010, 5, 8) # =&gt; 2010-05-08 00:00:00 +0900
+t.prev_day               # =&gt; 2010-05-07 00:00:00 +0900
+t.next_day               # =&gt; 2010-05-09 00:00:00 +0900
+">Copy</button>
+</div>
+<div class="note"><p>Defined in <code><a href="https://github.com/rails/rails/tree/v7.0.4.2/activesupport/lib/active_support/core_ext/time/calculations.rb">active_support/core_ext/time/calculations.rb</a></code>.</p></div>
+
+<h5 id="prev-month-next-month"><a class="anchorlink" href="#prev-month-next-month">17.1.4 <code>prev_month</code>, <code>next_month</code></a></h5>
+
+<p><a href="https://api.rubyonrails.org/v7.0.4.2/classes/Time.html#method-i-prev_month"><code>prev_month</code></a> and <a href="https://api.rubyonrails.org/v7.0.4.2/classes/Time.html#method-i-next_month"><code>next_month</code></a> return the time with the same day in the last or next month:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">t</span> <span class="o">=</span> <span class="no">Time</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="mi">2010</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">8</span><span class="p">)</span> <span class="c1"># =&gt; 2010-05-08 00:00:00 +0900</span>
+<span class="n">t</span><span class="p">.</span><span class="nf">prev_month</span>             <span class="c1"># =&gt; 2010-04-08 00:00:00 +0900</span>
+<span class="n">t</span><span class="p">.</span><span class="nf">next_month</span>             <span class="c1"># =&gt; 2010-06-08 00:00:00 +0900</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="t = Time.new(2010, 5, 8) # =&gt; 2010-05-08 00:00:00 +0900
+t.prev_month             # =&gt; 2010-04-08 00:00:00 +0900
+t.next_month             # =&gt; 2010-06-08 00:00:00 +0900
+">Copy</button>
+</div>
+<p>If such a day does not exist, the last day of the corresponding month is returned:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="no">Time</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="mi">2000</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">31</span><span class="p">).</span><span class="nf">prev_month</span> <span class="c1"># =&gt; 2000-04-30 00:00:00 +0900</span>
+<span class="no">Time</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="mi">2000</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">31</span><span class="p">).</span><span class="nf">prev_month</span> <span class="c1"># =&gt; 2000-02-29 00:00:00 +0900</span>
+<span class="no">Time</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="mi">2000</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">31</span><span class="p">).</span><span class="nf">next_month</span> <span class="c1"># =&gt; 2000-06-30 00:00:00 +0900</span>
+<span class="no">Time</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="mi">2000</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">31</span><span class="p">).</span><span class="nf">next_month</span> <span class="c1"># =&gt; 2000-02-29 00:00:00 +0900</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="Time.new(2000, 5, 31).prev_month # =&gt; 2000-04-30 00:00:00 +0900
+Time.new(2000, 3, 31).prev_month # =&gt; 2000-02-29 00:00:00 +0900
+Time.new(2000, 5, 31).next_month # =&gt; 2000-06-30 00:00:00 +0900
+Time.new(2000, 1, 31).next_month # =&gt; 2000-02-29 00:00:00 +0900
+">Copy</button>
+</div>
+<div class="note"><p>Defined in <code><a href="https://github.com/rails/rails/tree/v7.0.4.2/activesupport/lib/active_support/core_ext/time/calculations.rb">active_support/core_ext/time/calculations.rb</a></code>.</p></div>
+
+<h5 id="prev-year-next-year"><a class="anchorlink" href="#prev-year-next-year">17.1.5 <code>prev_year</code>, <code>next_year</code></a></h5>
+
+<p><a href="https://api.rubyonrails.org/v7.0.4.2/classes/Time.html#method-i-prev_year"><code>prev_year</code></a> and <a href="https://api.rubyonrails.org/v7.0.4.2/classes/Time.html#method-i-next_year"><code>next_year</code></a> return a time with the same day/month in the last or next year:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">t</span> <span class="o">=</span> <span class="no">Time</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="mi">2010</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">8</span><span class="p">)</span> <span class="c1"># =&gt; 2010-05-08 00:00:00 +0900</span>
+<span class="n">t</span><span class="p">.</span><span class="nf">prev_year</span>              <span class="c1"># =&gt; 2009-05-08 00:00:00 +0900</span>
+<span class="n">t</span><span class="p">.</span><span class="nf">next_year</span>              <span class="c1"># =&gt; 2011-05-08 00:00:00 +0900</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="t = Time.new(2010, 5, 8) # =&gt; 2010-05-08 00:00:00 +0900
+t.prev_year              # =&gt; 2009-05-08 00:00:00 +0900
+t.next_year              # =&gt; 2011-05-08 00:00:00 +0900
+">Copy</button>
+</div>
+<p>If date is the 29th of February of a leap year, you obtain the 28th:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">t</span> <span class="o">=</span> <span class="no">Time</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="mi">2000</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">29</span><span class="p">)</span> <span class="c1"># =&gt; 2000-02-29 00:00:00 +0900</span>
+<span class="n">t</span><span class="p">.</span><span class="nf">prev_year</span>               <span class="c1"># =&gt; 1999-02-28 00:00:00 +0900</span>
+<span class="n">t</span><span class="p">.</span><span class="nf">next_year</span>               <span class="c1"># =&gt; 2001-02-28 00:00:00 +0900</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="t = Time.new(2000, 2, 29) # =&gt; 2000-02-29 00:00:00 +0900
+t.prev_year               # =&gt; 1999-02-28 00:00:00 +0900
+t.next_year               # =&gt; 2001-02-28 00:00:00 +0900
+">Copy</button>
+</div>
+<div class="note"><p>Defined in <code><a href="https://github.com/rails/rails/tree/v7.0.4.2/activesupport/lib/active_support/core_ext/time/calculations.rb">active_support/core_ext/time/calculations.rb</a></code>.</p></div>
+
+<h5 id="prev-quarter-next-quarter"><a class="anchorlink" href="#prev-quarter-next-quarter">17.1.6 <code>prev_quarter</code>, <code>next_quarter</code></a></h5>
+
+<p><a href="https://api.rubyonrails.org/v7.0.4.2/classes/DateAndTime/Calculations.html#method-i-prev_quarter"><code>prev_quarter</code></a> and <a href="https://api.rubyonrails.org/v7.0.4.2/classes/DateAndTime/Calculations.html#method-i-next_quarter"><code>next_quarter</code></a> return the date with the same day in the previous or next quarter:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">t</span> <span class="o">=</span> <span class="no">Time</span><span class="p">.</span><span class="nf">local</span><span class="p">(</span><span class="mi">2010</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">8</span><span class="p">)</span> <span class="c1"># =&gt; 2010-05-08 00:00:00 +0300</span>
+<span class="n">t</span><span class="p">.</span><span class="nf">prev_quarter</span>             <span class="c1"># =&gt; 2010-02-08 00:00:00 +0200</span>
+<span class="n">t</span><span class="p">.</span><span class="nf">next_quarter</span>             <span class="c1"># =&gt; 2010-08-08 00:00:00 +0300</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="t = Time.local(2010, 5, 8) # =&gt; 2010-05-08 00:00:00 +0300
+t.prev_quarter             # =&gt; 2010-02-08 00:00:00 +0200
+t.next_quarter             # =&gt; 2010-08-08 00:00:00 +0300
+">Copy</button>
+</div>
+<p>If such a day does not exist, the last day of the corresponding month is returned:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="no">Time</span><span class="p">.</span><span class="nf">local</span><span class="p">(</span><span class="mi">2000</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">31</span><span class="p">).</span><span class="nf">prev_quarter</span>  <span class="c1"># =&gt; 2000-04-30 00:00:00 +0300</span>
+<span class="no">Time</span><span class="p">.</span><span class="nf">local</span><span class="p">(</span><span class="mi">2000</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">31</span><span class="p">).</span><span class="nf">prev_quarter</span>  <span class="c1"># =&gt; 2000-02-29 00:00:00 +0200</span>
+<span class="no">Time</span><span class="p">.</span><span class="nf">local</span><span class="p">(</span><span class="mi">2000</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">31</span><span class="p">).</span><span class="nf">prev_quarter</span> <span class="c1"># =&gt; 2000-07-31 00:00:00 +0300</span>
+<span class="no">Time</span><span class="p">.</span><span class="nf">local</span><span class="p">(</span><span class="mi">2000</span><span class="p">,</span> <span class="mi">11</span><span class="p">,</span> <span class="mi">31</span><span class="p">).</span><span class="nf">next_quarter</span> <span class="c1"># =&gt; 2001-03-01 00:00:00 +0200</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="Time.local(2000, 7, 31).prev_quarter  # =&gt; 2000-04-30 00:00:00 +0300
+Time.local(2000, 5, 31).prev_quarter  # =&gt; 2000-02-29 00:00:00 +0200
+Time.local(2000, 10, 31).prev_quarter # =&gt; 2000-07-31 00:00:00 +0300
+Time.local(2000, 11, 31).next_quarter # =&gt; 2001-03-01 00:00:00 +0200
+">Copy</button>
+</div>
+<p><code>prev_quarter</code> is aliased to <a href="https://api.rubyonrails.org/v7.0.4.2/classes/DateAndTime/Calculations.html#method-i-last_quarter"><code>last_quarter</code></a>.</p>
+
+<div class="note"><p>Defined in <code><a href="https://github.com/rails/rails/tree/v7.0.4.2/activesupport/lib/active_support/core_ext/date_and_time/calculations.rb">active_support/core_ext/date_and_time/calculations.rb</a></code>.</p></div>
+
+<h4 id="time-constructors"><a class="anchorlink" href="#time-constructors">17.2 Time Constructors</a></h4>
+
+<p>Active Support defines <a href="https://api.rubyonrails.org/v7.0.4.2/classes/Time.html#method-c-current"><code>Time.current</code></a> to be <code>Time.zone.now</code> if there's a user time zone defined, with fallback to <code>Time.now</code>:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="no">Time</span><span class="p">.</span><span class="nf">zone_default</span>
+<span class="c1"># =&gt; #&lt;ActiveSupport::TimeZone:0x7f73654d4f38 @utc_offset=nil, @name="Madrid", ...&gt;</span>
+<span class="no">Time</span><span class="p">.</span><span class="nf">current</span>
+<span class="c1"># =&gt; Fri, 06 Aug 2010 17:11:58 CEST +02:00</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='Time.zone_default
+# =&gt; #&lt;ActiveSupport::TimeZone:0x7f73654d4f38 @utc_offset=nil, @name="Madrid", ...&gt;
+Time.current
+# =&gt; Fri, 06 Aug 2010 17:11:58 CEST +02:00
+'>Copy</button>
+</div>
+<p>Analogously to <code>DateTime</code>, the predicates <a href="https://api.rubyonrails.org/v7.0.4.2/classes/DateAndTime/Calculations.html#method-i-past-3F"><code>past?</code></a>, and <a href="https://api.rubyonrails.org/v7.0.4.2/classes/DateAndTime/Calculations.html#method-i-future-3F"><code>future?</code></a> are relative to <code>Time.current</code>.</p>
+
+<p>If the time to be constructed lies beyond the range supported by <code>Time</code> in the runtime platform, usecs are discarded and a <code>DateTime</code> object is returned instead.</p>
+
+<h5 id="durations"><a class="anchorlink" href="#durations">17.2.1 Durations</a></h5>
+
+<p><a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveSupport/Duration.html"><code>Duration</code></a> objects can be added to and subtracted from time objects:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">now</span> <span class="o">=</span> <span class="no">Time</span><span class="p">.</span><span class="nf">current</span>
+<span class="c1"># =&gt; Mon, 09 Aug 2010 23:20:05 UTC +00:00</span>
+<span class="n">now</span> <span class="o">+</span> <span class="mi">1</span><span class="p">.</span><span class="nf">year</span>
+<span class="c1"># =&gt; Tue, 09 Aug 2011 23:21:11 UTC +00:00</span>
+<span class="n">now</span> <span class="o">-</span> <span class="mi">1</span><span class="p">.</span><span class="nf">week</span>
+<span class="c1"># =&gt; Mon, 02 Aug 2010 23:21:11 UTC +00:00</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="now = Time.current
+# =&gt; Mon, 09 Aug 2010 23:20:05 UTC +00:00
+now + 1.year
+# =&gt; Tue, 09 Aug 2011 23:21:11 UTC +00:00
+now - 1.week
+# =&gt; Mon, 02 Aug 2010 23:21:11 UTC +00:00
+">Copy</button>
+</div>
+<p>They translate to calls to <code>since</code> or <code>advance</code>. For example here we get the correct jump in the calendar reform:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="no">Time</span><span class="p">.</span><span class="nf">utc</span><span class="p">(</span><span class="mi">1582</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span> <span class="o">+</span> <span class="mi">5</span><span class="p">.</span><span class="nf">days</span>
+<span class="c1"># =&gt; Mon Oct 18 00:00:00 UTC 1582</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="Time.utc(1582, 10, 3) + 5.days
+# =&gt; Mon Oct 18 00:00:00 UTC 1582
+">Copy</button>
+</div>
+</body>
+</html>

@@ -1,0 +1,275 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>14 Scopes</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v6.0.6.1/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="scopes"><a class="anchorlink" href="#scopes">14 Scopes</a></h3>
+<p>Scoping allows you to specify commonly-used queries which can be referenced as method calls on the association objects or models. With these scopes, you can use every method previously covered such as <code>where</code>, <code>joins</code> and <code>includes</code>. All scope bodies should return an <code>ActiveRecord::Relation</code> or <code>nil</code> to allow for further methods (such as other scopes) to be called on it.</p>
+
+<p>To define a simple scope, we use the <code>scope</code> method inside the class, passing the query that we'd like to run when this scope is called:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class Article &lt; ApplicationRecord
+  scope :published, -&gt; { where(published: true) }
+end
+
+</pre>
+</div>
+<p>Scopes are also chainable within scopes:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class Article &lt; ApplicationRecord
+  scope :published,               -&gt; { where(published: true) }
+  scope :published_and_commented, -&gt; { published.where("comments_count &gt; 0") }
+end
+
+</pre>
+</div>
+<p>To call this <code>published</code> scope we can call it on either the class:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+Article.published # =&gt; [published articles]
+
+</pre>
+</div>
+<p>Or on an association consisting of <code>Article</code> objects:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+category = Category.first
+category.articles.published # =&gt; [published articles belonging to this category]
+
+</pre>
+</div>
+<h4 id="passing-in-arguments"><a class="anchorlink" href="#passing-in-arguments">14.1 Passing in arguments</a></h4>
+
+<p>Your scope can take arguments:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class Article &lt; ApplicationRecord
+  scope :created_before, -&gt;(time) { where("created_at &lt; ?", time) }
+end
+
+</pre>
+</div>
+<p>Call the scope as if it were a class method:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+Article.created_before(Time.zone.now)
+
+</pre>
+</div>
+<p>However, this is just duplicating the functionality that would be provided to you by a class method.</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class Article &lt; ApplicationRecord
+  def self.created_before(time)
+    where("created_at &lt; ?", time)
+  end
+end
+
+</pre>
+</div>
+<p>Using a class method is the preferred way to accept arguments for scopes. These methods will still be accessible on the association objects:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+category.articles.created_before(time)
+
+</pre>
+</div>
+<h4 id="using-conditionals"><a class="anchorlink" href="#using-conditionals">14.2 Using conditionals</a></h4>
+
+<p>Your scope can utilize conditionals:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class Article &lt; ApplicationRecord
+  scope :created_before, -&gt;(time) { where("created_at &lt; ?", time) if time.present? }
+end
+
+</pre>
+</div>
+<p>Like the other examples, this will behave similarly to a class method.</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class Article &lt; ApplicationRecord
+  def self.created_before(time)
+    where("created_at &lt; ?", time) if time.present?
+  end
+end
+
+</pre>
+</div>
+<p>However, there is one important caveat: A scope will always return an <code>ActiveRecord::Relation</code> object, even if the conditional evaluates to <code>false</code>, whereas a class method, will return <code>nil</code>. This can cause <code>NoMethodError</code> when chaining class methods with conditionals, if any of the conditionals return <code>false</code>.</p>
+
+<h4 id="applying-a-default-scope"><a class="anchorlink" href="#applying-a-default-scope">14.3 Applying a default scope</a></h4>
+
+<p>If we wish for a scope to be applied across all queries to the model we can use the
+<code>default_scope</code> method within the model itself.</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class Client &lt; ApplicationRecord
+  default_scope { where("removed_at IS NULL") }
+end
+
+</pre>
+</div>
+<p>When queries are executed on this model, the SQL query will now look something like
+this:</p>
+
+<div class="code_container">
+<pre class="brush: sql; gutter: false; toolbar: false">
+SELECT * FROM clients WHERE removed_at IS NULL
+
+</pre>
+</div>
+<p>If you need to do more complex things with a default scope, you can alternatively
+define it as a class method:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class Client &lt; ApplicationRecord
+  def self.default_scope
+    # Should return an ActiveRecord::Relation.
+  end
+end
+
+</pre>
+</div>
+<div class="note"><p>The <code>default_scope</code> is also applied while creating/building a record
+when the scope arguments are given as a <code>Hash</code>. It is not applied while
+updating a record. E.g.:</p></div>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class Client &lt; ApplicationRecord
+  default_scope { where(active: true) }
+end
+
+Client.new          # =&gt; #&lt;Client id: nil, active: true&gt;
+Client.unscoped.new # =&gt; #&lt;Client id: nil, active: nil&gt;
+
+</pre>
+</div>
+<p>Be aware that, when given in the <code>Array</code> format, <code>default_scope</code> query arguments
+cannot be converted to a <code>Hash</code> for default attribute assignment. E.g.:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class Client &lt; ApplicationRecord
+  default_scope { where("active = ?", true) }
+end
+
+Client.new # =&gt; #&lt;Client id: nil, active: nil&gt;
+
+</pre>
+</div>
+<h4 id="merging-of-scopes"><a class="anchorlink" href="#merging-of-scopes">14.4 Merging of scopes</a></h4>
+
+<p>Just like <code>where</code> clauses scopes are merged using <code>AND</code> conditions.</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class User &lt; ApplicationRecord
+  scope :active, -&gt; { where state: 'active' }
+  scope :inactive, -&gt; { where state: 'inactive' }
+end
+
+User.active.inactive
+# SELECT "users".* FROM "users" WHERE "users"."state" = 'active' AND "users"."state" = 'inactive'
+
+</pre>
+</div>
+<p>We can mix and match <code>scope</code> and <code>where</code> conditions and the final sql
+will have all conditions joined with <code>AND</code>.</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+User.active.where(state: 'finished')
+# SELECT "users".* FROM "users" WHERE "users"."state" = 'active' AND "users"."state" = 'finished'
+
+</pre>
+</div>
+<p>If we do want the last <code>where</code> clause to win then <code>Relation#merge</code> can
+be used.</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+User.active.merge(User.inactive)
+# SELECT "users".* FROM "users" WHERE "users"."state" = 'inactive'
+
+</pre>
+</div>
+<p>One important caveat is that <code>default_scope</code> will be prepended in
+<code>scope</code> and <code>where</code> conditions.</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class User &lt; ApplicationRecord
+  default_scope { where state: 'pending' }
+  scope :active, -&gt; { where state: 'active' }
+  scope :inactive, -&gt; { where state: 'inactive' }
+end
+
+User.all
+# SELECT "users".* FROM "users" WHERE "users"."state" = 'pending'
+
+User.active
+# SELECT "users".* FROM "users" WHERE "users"."state" = 'pending' AND "users"."state" = 'active'
+
+User.where(state: 'inactive')
+# SELECT "users".* FROM "users" WHERE "users"."state" = 'pending' AND "users"."state" = 'inactive'
+
+</pre>
+</div>
+<p>As you can see above the <code>default_scope</code> is being merged in both
+<code>scope</code> and <code>where</code> conditions.</p>
+
+<h4 id="removing-all-scoping"><a class="anchorlink" href="#removing-all-scoping">14.5 Removing All Scoping</a></h4>
+
+<p>If we wish to remove scoping for any reason we can use the <code>unscoped</code> method. This is
+especially useful if a <code>default_scope</code> is specified in the model and should not be
+applied for this particular query.</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+Client.unscoped.load
+
+</pre>
+</div>
+<p>This method removes all scoping and will do a normal query on the table.</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+Client.unscoped.all
+# SELECT "clients".* FROM "clients"
+
+Client.where(published: false).unscoped.all
+# SELECT "clients".* FROM "clients"
+
+</pre>
+</div>
+<p><code>unscoped</code> can also accept a block.</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+Client.unscoped {
+  Client.created_before(Time.zone.now)
+}
+
+</pre>
+</div>
+</body>
+</html>

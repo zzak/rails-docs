@@ -1,0 +1,247 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>2 Major Features</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v6.0.6.1/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="major-features"><a class="anchorlink" href="#major-features">2 Major Features</a></h3>
+<h4 id="spring-application-preloader"><a class="anchorlink" href="#spring-application-preloader">2.1 Spring Application Preloader</a></h4>
+
+<p>Spring is a Rails application preloader. It speeds up development by keeping
+your application running in the background so you don't need to boot it every
+time you run a test, rake task or migration.</p>
+
+<p>New Rails 4.1 applications will ship with "springified" binstubs. This means
+that <code>bin/rails</code> and <code>bin/rake</code> will automatically take advantage of preloaded
+spring environments.</p>
+
+<p><strong>Running rake tasks:</strong></p>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+bin/rake test:models
+
+</pre>
+</div>
+<p><strong>Running a Rails command:</strong></p>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+bin/rails console
+
+</pre>
+</div>
+<p><strong>Spring introspection:</strong></p>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+$ bin/spring status
+Spring is running:
+
+ 1182 spring server | my_app | started 29 mins ago
+ 3656 spring app    | my_app | started 23 secs ago | test mode
+ 3746 spring app    | my_app | started 10 secs ago | development mode
+
+</pre>
+</div>
+<p>Have a look at the
+<a href="https://github.com/rails/spring/blob/master/README.md">Spring README</a> to
+see all available features.</p>
+
+<p>See the <a href="upgrading_ruby_on_rails.html#spring">Upgrading Ruby on Rails</a>
+guide on how to migrate existing applications to use this feature.</p>
+
+<h4 id="config-secrets-yml"><a class="anchorlink" href="#config-secrets-yml">2.2 <code>config/secrets.yml</code></a></h4>
+
+<p>Rails 4.1 generates a new <code>secrets.yml</code> file in the <code>config</code> folder. By default,
+this file contains the application's <code>secret_key_base</code>, but it could also be
+used to store other secrets such as access keys for external APIs.</p>
+
+<p>The secrets added to this file are accessible via <code>Rails.application.secrets</code>.
+For example, with the following <code>config/secrets.yml</code>:</p>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+development:
+  secret_key_base: 3b7cd727ee24e8444053437c36cc66c3
+  some_api_key: SOMEKEY
+
+</pre>
+</div>
+<p><code>Rails.application.secrets.some_api_key</code> returns <code>SOMEKEY</code> in the development
+environment.</p>
+
+<p>See the <a href="upgrading_ruby_on_rails.html#config-secrets-yml">Upgrading Ruby on Rails</a>
+guide on how to migrate existing applications to use this feature.</p>
+
+<h4 id="action-pack-variants"><a class="anchorlink" href="#action-pack-variants">2.3 Action Pack Variants</a></h4>
+
+<p>We often want to render different HTML/JSON/XML templates for phones,
+tablets, and desktop browsers. Variants make it easy.</p>
+
+<p>The request variant is a specialization of the request format, like <code>:tablet</code>,
+<code>:phone</code>, or <code>:desktop</code>.</p>
+
+<p>You can set the variant in a <code>before_action</code>:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+request.variant = :tablet if request.user_agent =~ /iPad/
+
+</pre>
+</div>
+<p>Respond to variants in the action just like you respond to formats:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+respond_to do |format|
+  format.html do |html|
+    html.tablet # renders app/views/projects/show.html+tablet.erb
+    html.phone { extra_setup; render ... }
+  end
+end
+
+</pre>
+</div>
+<p>Provide separate templates for each format and variant:</p>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+app/views/projects/show.html.erb
+app/views/projects/show.html+tablet.erb
+app/views/projects/show.html+phone.erb
+
+</pre>
+</div>
+<p>You can also simplify the variants definition using the inline syntax:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+respond_to do |format|
+  format.js         { render "trash" }
+  format.html.phone { redirect_to progress_path }
+  format.html.none  { render "trash" }
+end
+
+</pre>
+</div>
+<h4 id="action-mailer-previews"><a class="anchorlink" href="#action-mailer-previews">2.4 Action Mailer Previews</a></h4>
+
+<p>Action Mailer previews provide a way to see how emails look by visiting
+a special URL that renders them.</p>
+
+<p>You implement a preview class whose methods return the mail object you'd like
+to check:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class NotifierPreview &lt; ActionMailer::Preview
+  def welcome
+    Notifier.welcome(User.first)
+  end
+end
+
+</pre>
+</div>
+<p>The preview is available in <a href="http://localhost:3000/rails/mailers/notifier/welcome">http://localhost:3000/rails/mailers/notifier/welcome</a>,
+and a list of them in <a href="http://localhost:3000/rails/mailers">http://localhost:3000/rails/mailers</a>.</p>
+
+<p>By default, these preview classes live in <code>test/mailers/previews</code>.
+This can be configured using the <code>preview_path</code> option.</p>
+
+<p>See its
+<a href="https://api.rubyonrails.org/v4.1.0/classes/ActionMailer/Base.html#class-ActionMailer::Base-label-Previewing+emails">documentation</a>
+for a detailed write up.</p>
+
+<h4 id="active-record-enums"><a class="anchorlink" href="#active-record-enums">2.5 Active Record enums</a></h4>
+
+<p>Declare an enum attribute where the values map to integers in the database, but
+can be queried by name.</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class Conversation &lt; ActiveRecord::Base
+  enum status: [ :active, :archived ]
+end
+
+conversation.archived!
+conversation.active? # =&gt; false
+conversation.status  # =&gt; "archived"
+
+Conversation.archived # =&gt; Relation for all archived Conversations
+
+Conversation.statuses # =&gt; { "active" =&gt; 0, "archived" =&gt; 1 }
+
+</pre>
+</div>
+<p>See its
+<a href="http://api.rubyonrails.org/v4.1.0/classes/ActiveRecord/Enum.html">documentation</a>
+for a detailed write up.</p>
+
+<h4 id="message-verifiers"><a class="anchorlink" href="#message-verifiers">2.6 Message Verifiers</a></h4>
+
+<p>Message verifiers can be used to generate and verify signed messages. This can
+be useful to safely transport sensitive data like remember-me tokens and
+friends.</p>
+
+<p>The method <code>Rails.application.message_verifier</code> returns a new message verifier
+that signs messages with a key derived from secret_key_base and the given
+message verifier name:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+signed_token = Rails.application.message_verifier(:remember_me).generate(token)
+Rails.application.message_verifier(:remember_me).verify(signed_token) # =&gt; token
+
+Rails.application.message_verifier(:remember_me).verify(tampered_token)
+# raises ActiveSupport::MessageVerifier::InvalidSignature
+
+</pre>
+</div>
+<h4 id="module-concerning"><a class="anchorlink" href="#module-concerning">2.7 Module#concerning</a></h4>
+
+<p>A natural, low-ceremony way to separate responsibilities within a class:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class Todo &lt; ActiveRecord::Base
+  concerning :EventTracking do
+    included do
+      has_many :events
+    end
+
+    def latest_event
+      ...
+    end
+
+    private
+      def some_internal_method
+        ...
+      end
+  end
+end
+
+</pre>
+</div>
+<p>This example is equivalent to defining a <code>EventTracking</code> module inline,
+extending it with <code>ActiveSupport::Concern</code>, then mixing it in to the
+<code>Todo</code> class.</p>
+
+<p>See its
+<a href="https://api.rubyonrails.org/v4.1.0/classes/Module/Concerning.html">documentation</a>
+for a detailed write up and the intended use cases.</p>
+
+<h4 id="csrf-protection-from-remote-script-tags"><a class="anchorlink" href="#csrf-protection-from-remote-script-tags">2.8 CSRF protection from remote <code>&lt;script&gt;</code> tags</a></h4>
+
+<p>Cross-site request forgery (CSRF) protection now covers GET requests with
+JavaScript responses, too. That prevents a third-party site from referencing
+your JavaScript URL and attempting to run it to extract sensitive data.</p>
+
+<p>This means any of your tests that hit <code>.js</code> URLs will now fail CSRF protection
+unless they use <code>xhr</code>. Upgrade your tests to be explicit about expecting
+XmlHttpRequests. Instead of <code>post :create, format: :js</code>, switch to the explicit
+<code>xhr :post, :create, format: :js</code>.</p>
+</body>
+</html>

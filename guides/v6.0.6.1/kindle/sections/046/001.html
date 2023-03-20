@@ -1,0 +1,476 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>2 Upgrading from Rails 5.2 to Rails 6.0</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v6.0.6.1/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="upgrading-from-rails-5-2-to-rails-6-0"><a class="anchorlink" href="#upgrading-from-rails-5-2-to-rails-6-0">2 Upgrading from Rails 5.2 to Rails 6.0</a></h3>
+<p>For more information on changes made to Rails 6.0 please see the <a href="6_0_release_notes.html">release notes</a>.</p>
+
+<h4 id="using-webpacker"><a class="anchorlink" href="#using-webpacker">2.1 Using Webpacker</a></h4>
+
+<p><a href="https://github.com/rails/webpacker">Webpacker</a>
+is the default JavaScript compiler for Rails 6. But if you are upgrading the app, it is not activated by default.
+If you want to use Webpacker, then include it in your Gemfile and install it:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+gem "webpacker"
+
+</pre>
+</div>
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+bin/rails webpacker:install
+
+</pre>
+</div>
+<h4 id="force-ssl"><a class="anchorlink" href="#force-ssl">2.2 Force SSL</a></h4>
+
+<p>The <code>force_ssl</code> method on controllers has been deprecated and will be removed in
+Rails 6.1. You are encouraged to enable <code>config.force_ssl</code> to enforce HTTPS
+connections throughout your application. If you need to exempt certain endpoints
+from redirection, you can use <code>config.ssl_options</code> to configure that behavior.</p>
+
+<h4 id="purpose-in-signed-or-encrypted-cookie-is-now-embedded-within-cookies"><a class="anchorlink" href="#purpose-in-signed-or-encrypted-cookie-is-now-embedded-within-cookies">2.3 Purpose in signed or encrypted cookie is now embedded within cookies</a></h4>
+
+<p>To improve security, Rails embeds the purpose information in encrypted or signed cookies value.
+Rails can then thwart attacks that attempt to copy the signed/encrypted value
+of a cookie and use it as the value of another cookie.</p>
+
+<p>This new embed information make those cookies incompatible with versions of Rails older than 6.0.</p>
+
+<p>If you require your cookies to be read by Rails 5.2 and older, or you are still validating your 6.0 deploy and want
+to be able to rollback set
+<code>Rails.application.config.action_dispatch.use_cookies_with_metadata</code> to <code>false</code>.</p>
+
+<h4 id="all-npm-packages-have-been-moved-to-the-@rails-scope"><a class="anchorlink" href="#all-npm-packages-have-been-moved-to-the-@rails-scope">2.4 All npm packages have been moved to the <code>@rails</code> scope</a></h4>
+
+<p>If you were previously loading any of the <code>actioncable</code>, <code>activestorage</code>,
+or <code>rails-ujs</code> packages through npm/yarn, you must update the names of these
+dependencies before you can upgrade them to <code>6.0.0</code>:</p>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+actioncable   → @rails/actioncable
+activestorage → @rails/activestorage
+rails-ujs     → @rails/ujs
+
+</pre>
+</div>
+<h4 id="action-cable-javascript-api-changes"><a class="anchorlink" href="#action-cable-javascript-api-changes">2.5 Action Cable JavaScript API Changes</a></h4>
+
+<p>The Action Cable JavaScript package has been converted from CoffeeScript
+to ES2015, and we now publish the source code in the npm distribution.</p>
+
+<p>This release includes some breaking changes to optional parts of the
+Action Cable JavaScript API:</p>
+<ul>
+<li>Configuration of the WebSocket adapter and logger adapter have been moved
+from properties of <code>ActionCable</code> to properties of <code>ActionCable.adapters</code>.
+If you are configuring these adapters you will need to make
+these changes:</li>
+</ul>
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+  -    ActionCable.WebSocket = MyWebSocket
+  +    ActionCable.adapters.WebSocket = MyWebSocket
+
+</pre>
+</div>
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+  -    ActionCable.logger = myLogger
+  +    ActionCable.adapters.logger = myLogger
+
+</pre>
+</div>
+<ul>
+<li>The <code>ActionCable.startDebugging()</code> and <code>ActionCable.stopDebugging()</code>
+methods have been removed and replaced with the property
+<code>ActionCable.logger.enabled</code>. If you are using these methods you
+will need to make these changes:</li>
+</ul>
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+  -    ActionCable.startDebugging()
+  +    ActionCable.logger.enabled = true
+
+</pre>
+</div>
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+  -    ActionCable.stopDebugging()
+  +    ActionCable.logger.enabled = false
+
+</pre>
+</div>
+<h4 id="actiondispatch-response-content-type-now-returned-content-type-header-as-it-is"><a class="anchorlink" href="#actiondispatch-response-content-type-now-returned-content-type-header-as-it-is">2.6 <code>ActionDispatch::Response#content_type</code> now returned Content-Type header as it is.</a></h4>
+
+<p>Previously, <code>ActionDispatch::Response#content_type</code> returned value does NOT contain charset part.
+This behavior changed to returned Content-Type header containing charset part as it is.</p>
+
+<p>If you want just MIME type, please use <code>ActionDispatch::Response#media_type</code> instead.</p>
+
+<p>Before:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+resp = ActionDispatch::Response.new(200, "Content-Type" =&gt; "text/csv; header=present; charset=utf-16")
+resp.content_type #=&gt; "text/csv; header=present"
+
+</pre>
+</div>
+<p>After:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+resp = ActionDispatch::Response.new(200, "Content-Type" =&gt; "text/csv; header=present; charset=utf-16")
+resp.content_type #=&gt; "text/csv; header=present; charset=utf-16"
+resp.media_type   #=&gt; "text/csv"
+
+</pre>
+</div>
+<h4 id="autoloading"><a class="anchorlink" href="#autoloading">2.7 Autoloading</a></h4>
+
+<p>The default configuration for Rails 6</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+# config/application.rb
+
+config.load_defaults "6.0"
+
+</pre>
+</div>
+<p>enables <code>zeitwerk</code> autoloading mode on CRuby. In that mode, autoloading, reloading, and eager loading are managed by <a href="https://github.com/fxn/zeitwerk">Zeitwerk</a>.</p>
+
+<h5 id="public-api"><a class="anchorlink" href="#public-api">2.7.1 Public API</a></h5>
+
+<p>In general, applications do not need to use the API of Zeitwerk directly. Rails sets things up according to the existing contract: <code>config.autoload_paths</code>, <code>config.cache_classes</code>, etc.</p>
+
+<p>While applications should stick to that interface, the actual Zeitwerk loader object can be accessed as</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+Rails.autoloaders.main
+
+</pre>
+</div>
+<p>That may be handy if you need to preload STIs or configure a custom inflector, for example.</p>
+
+<h5 id="project-structure"><a class="anchorlink" href="#project-structure">2.7.2 Project Structure</a></h5>
+
+<p>If the application being upgraded autoloads correctly, the project structure should be already mostly compatible.</p>
+
+<p>However, <code>classic</code> mode infers file names from missing constant names (<code>underscore</code>), whereas <code>zeitwerk</code> mode infers constant names from file names (<code>camelize</code>). These helpers are not always inverse of each other, in particular if acronyms are involved. For instance, <code>"FOO".underscore</code> is <code>"foo"</code>, but <code>"foo".camelize</code> is <code>"Foo"</code>, not <code>"FOO"</code>.</p>
+
+<p>Compatibility can be checked with the <code>zeitwerk:check</code> task:</p>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+$ bin/rails zeitwerk:check
+Hold on, I am eager loading the application.
+All is good!
+
+</pre>
+</div>
+<h5 id="require-dependency"><a class="anchorlink" href="#require-dependency">2.7.3 require_dependency</a></h5>
+
+<p>All known use cases of <code>require_dependency</code> have been eliminated, you should grep the project and delete them.</p>
+
+<p>If your application has STIs, please check their section in the guide <a href="autoloading_and_reloading_constants.html#single-table-inheritance">Autoloading and Reloading Constants (Zeitwerk Mode)</a>.</p>
+
+<h5 id="qualified-names-in-class-and-module-definitions"><a class="anchorlink" href="#qualified-names-in-class-and-module-definitions">2.7.4 Qualified names in class and module definitions</a></h5>
+
+<p>You can now robustly use constant paths in class and module definitions:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+# Autoloading in this class' body matches Ruby semantics now.
+class Admin::UsersController &lt; ApplicationController
+  # ...
+end
+
+</pre>
+</div>
+<p>A gotcha to be aware of is that, depending on the order of execution, the classic autoloader could sometimes be able to autoload <code>Foo::Wadus</code> in</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class Foo::Bar
+  Wadus
+end
+
+</pre>
+</div>
+<p>That does not match Ruby semantics because <code>Foo</code> is not in the nesting, and won't work at all in <code>zeitwerk</code> mode. If you find such corner case you can use the qualified name <code>Foo::Wadus</code>:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class Foo::Bar
+  Foo::Wadus
+end
+
+</pre>
+</div>
+<p>or add <code>Foo</code> to the nesting:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+module Foo
+  class Bar
+    Wadus
+  end
+end
+
+</pre>
+</div>
+<h5 id="concerns"><a class="anchorlink" href="#concerns">2.7.5 Concerns</a></h5>
+
+<p>You can autoload and eager load from a standard structure like</p>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+app/models
+app/models/concerns
+
+</pre>
+</div>
+<p>In that case, <code>app/models/concerns</code> is assumed to be a root directory (because it belongs to the autoload paths), and it is ignored as namespace. So, <code>app/models/concerns/foo.rb</code> should define <code>Foo</code>, not <code>Concerns::Foo</code>.</p>
+
+<p>The <code>Concerns::</code> namespace worked with the classic autoloader as a side-effect of the implementation, but it was not really an intended behavior. An application using <code>Concerns::</code> needs to rename those classes and modules to be able to run in <code>zeitwerk</code> mode.</p>
+
+<h5 id="having-app-in-the-autoload-paths"><a class="anchorlink" href="#having-app-in-the-autoload-paths">2.7.6 Having <code>app</code> in the autoload paths</a></h5>
+
+<p>Some projects want something like <code>app/api/base.rb</code> to define <code>API::Base</code>, and add <code>app</code> to the autoload paths to accomplish that in <code>classic</code> mode. Since Rails adds all subdirectories of <code>app</code> to the autoload paths automatically, we have another situation in which there are nested root directories, so that setup no longer works. Similar principle we explained above with <code>concerns</code>.</p>
+
+<p>If you want to keep that structure, you'll need to delete the subdirectory from the autoload paths in an initializer:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+ActiveSupport::Dependencies.autoload_paths.delete("#{Rails.root}/app/api")
+
+</pre>
+</div>
+<h5 id="autoloaded-constants-and-explicit-namespaces"><a class="anchorlink" href="#autoloaded-constants-and-explicit-namespaces">2.7.7 Autoloaded Constants and Explicit Namespaces</a></h5>
+
+<p>If a namespace is defined in a file, as <code>Hotel</code> is here:</p>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+app/models/hotel.rb         # Defines Hotel.
+app/models/hotel/pricing.rb # Defines Hotel::Pricing.
+
+</pre>
+</div>
+<p>the <code>Hotel</code> constant has to be set using the <code>class</code> or <code>module</code> keywords. For example:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class Hotel
+end
+
+</pre>
+</div>
+<p>is good.</p>
+
+<p>Alternatives like</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+Hotel = Class.new
+
+</pre>
+</div>
+<p>or</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+Hotel = Struct.new
+
+</pre>
+</div>
+<p>won't work, child objects like <code>Hotel::Pricing</code> won't be found.</p>
+
+<p>This restriction only applies to explicit namespaces. Classes and modules not defining a namespace can be defined using those idioms.</p>
+
+<h5 id="one-file-one-constant-at-the-same-top-level"><a class="anchorlink" href="#one-file-one-constant-at-the-same-top-level">2.7.8 One file, one constant (at the same top-level)</a></h5>
+
+<p>In <code>classic</code> mode you could technically define several constants at the same top-level and have them all reloaded. For example, given</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+# app/models/foo.rb
+
+class Foo
+end
+
+class Bar
+end
+
+</pre>
+</div>
+<p>while <code>Bar</code> could not be autoloaded, autoloading <code>Foo</code> would mark <code>Bar</code> as autoloaded too. This is not the case in <code>zeitwerk</code> mode, you need to move <code>Bar</code> to its own file <code>bar.rb</code>. One file, one constant.</p>
+
+<p>This affects only to constants at the same top-level as in the example above. Inner classes and modules are fine. For example, consider</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+# app/models/foo.rb
+
+class Foo
+  class InnerClass
+  end
+end
+
+</pre>
+</div>
+<p>If the application reloads <code>Foo</code>, it will reload <code>Foo::InnerClass</code> too.</p>
+
+<h5 id="spring-and-the-test-environment"><a class="anchorlink" href="#spring-and-the-test-environment">2.7.9 Spring and the <code>test</code> Environment</a></h5>
+
+<p>Spring reloads the application code if something changes. In the <code>test</code> environment you need to enable reloading for that to work:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+# config/environments/test.rb
+
+config.cache_classes = false
+
+</pre>
+</div>
+<p>Otherwise you'll get this error:</p>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+reloading is disabled because config.cache_classes is true
+
+</pre>
+</div>
+<h5 id="autoloading-bootsnap"><a class="anchorlink" href="#autoloading-bootsnap">2.7.10 Bootsnap</a></h5>
+
+<p>Bootsnap should be at least version 1.4.2.</p>
+
+<p>In addition to that, Bootsnap needs to disable the iseq cache due to a bug in the interpreter if running Ruby 2.5. Please make sure to depend on at least Bootsnap 1.4.4 in that case.</p>
+
+<h5 id="config-add-autoload-paths-to-load-path"><a class="anchorlink" href="#config-add-autoload-paths-to-load-path">2.7.11 <code>config.add_autoload_paths_to_load_path</code></a></h5>
+
+<p>The new configuration point</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+config.add_autoload_paths_to_load_path
+
+</pre>
+</div>
+<p>is <code>true</code> by default for backwards compatibility, but allows you to opt-out from adding the autoload paths to <code>$LOAD_PATH</code>.</p>
+
+<p>This makes sense in most applications, since you never should require a file in <code>app/models</code>, for example, and Zeitwerk only uses absolute file names internally.</p>
+
+<p>By opting-out you optimize <code>$LOAD_PATH</code> lookups (less directories to check), and save Bootsnap work and memory consumption, since it does not need to build an index for these directories.</p>
+
+<h5 id="thread-safety"><a class="anchorlink" href="#thread-safety">2.7.12 Thread-safety</a></h5>
+
+<p>In classic mode, constant autoloading is not thread-safe, though Rails has locks in place for example to make web requests thread-safe when autoloading is enabled, as it is common in <code>development</code> mode.</p>
+
+<p>Constant autoloading is thread-safe in <code>zeitwerk</code> mode. For example, you can now autoload in multi-threaded scripts executed by the <code>runner</code> command.</p>
+
+<h5 id="globs-in-config-autoload-paths"><a class="anchorlink" href="#globs-in-config-autoload-paths">2.7.13 Globs in config.autoload_paths</a></h5>
+
+<p>Beware of configurations like</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+config.autoload_paths += Dir["#{config.root}/lib/**/"]
+
+</pre>
+</div>
+<p>Every element of <code>config.autoload_paths</code> should represent the top-level namespace (<code>Object</code>) and they cannot be nested in consequence (with the exception of <code>concerns</code> directories explained above).</p>
+
+<p>To fix this, just remove the wildcards:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+config.autoload_paths &lt;&lt; "#{config.root}/lib"
+
+</pre>
+</div>
+<h5 id="eager-loading-and-autoloading-are-consistent"><a class="anchorlink" href="#eager-loading-and-autoloading-are-consistent">2.7.14 Eager loading and autoloading are consistent</a></h5>
+
+<p>In <code>classic</code> mode, if <code>app/models/foo.rb</code> defines <code>Bar</code>, you won't be able to autoload that file, but eager loading will work because it loads files recursively blindly. This can be a source of errors if you test things first eager loading, execution may fail later autoloading.</p>
+
+<p>In <code>zeitwerk</code> mode both loading modes are consistent, they fail and err in the same files.</p>
+
+<h5 id="how-to-use-the-classic-autoloader-in-rails-6"><a class="anchorlink" href="#how-to-use-the-classic-autoloader-in-rails-6">2.7.15 How to Use the Classic Autoloader in Rails 6</a></h5>
+
+<p>Applications can load Rails 6 defaults and still use the classic autoloader by setting <code>config.autoloader</code> this way:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+# config/application.rb
+
+config.load_defaults "6.0"
+config.autoloader = :classic
+
+</pre>
+</div>
+<p>When using the Classic Autoloader in Rails 6 application it is recommended to set concurrency level to 1 in development environment, for the web servers and background processors, due to the thread-safety concerns.</p>
+
+<h4 id="active-storage-assignment-behavior-change"><a class="anchorlink" href="#active-storage-assignment-behavior-change">2.8 Active Storage assignment behavior change</a></h4>
+
+<p>In Rails 5.2, assigning to a collection of attachments declared with <code>has_many_attached</code> appended new files:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class User &lt; ApplicationRecord
+  has_many_attached :highlights
+end
+
+user.highlights.attach(filename: "funky.jpg", ...)
+user.higlights.count # =&gt; 1
+
+blob = ActiveStorage::Blob.create_after_upload!(filename: "town.jpg", ...)
+user.update!(highlights: [ blob ])
+
+user.highlights.count # =&gt; 2
+user.highlights.first.filename # =&gt; "funky.jpg"
+user.highlights.second.filename # =&gt; "town.jpg"
+
+</pre>
+</div>
+<p>With the default configuration for Rails 6.0, assigning to a collection of attachments replaces existing files
+instead of appending to them. This matches Active Record behavior when assigning to a collection association:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+user.highlights.attach(filename: "funky.jpg", ...)
+user.highlights.count # =&gt; 1
+
+blob = ActiveStorage::Blob.create_after_upload!(filename: "town.jpg", ...)
+user.update!(highlights: [ blob ])
+
+user.highlights.count # =&gt; 1
+user.highlights.first.filename # =&gt; "town.jpg"
+
+</pre>
+</div>
+<p><code>#attach</code> can be used to add new attachments without removing the existing ones:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+blob = ActiveStorage::Blob.create_after_upload!(filename: "town.jpg", ...)
+user.highlights.attach(blob)
+
+user.highlights.count # =&gt; 2
+user.highlights.first.filename # =&gt; "funky.jpg"
+user.highlights.second.filename # =&gt; "town.jpg"
+
+</pre>
+</div>
+<p>Opt in to the new default behavior by setting <code>config.active_storage.replace_on_assign_to_many</code> to <code>true</code>.
+The old behavior will be deprecated in Rails 6.1 and removed in a subsequent release.</p>
+</body>
+</html>

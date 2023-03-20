@@ -1,0 +1,54 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>6 Group</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v4.2.11.3/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="group">6 Group</h3>
+<p>To apply a <code>GROUP BY</code> clause to the SQL fired by the finder, you can specify the <code>group</code> method on the find.</p>
+
+<p>For example, if you want to find a collection of the dates orders were created on:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+Order.select("date(created_at) as ordered_date, sum(price) as total_price").group("date(created_at)")
+
+</pre>
+</div>
+<p>And this will give you a single <code>Order</code> object for each date where there are orders in the database.</p>
+
+<p>The SQL that would be executed would be something like this:</p>
+
+<div class="code_container">
+<pre class="brush: sql; gutter: false; toolbar: false">
+SELECT date(created_at) as ordered_date, sum(price) as total_price
+FROM orders
+GROUP BY date(created_at)
+
+</pre>
+</div>
+<h4 id="total-of-grouped-items">6.1 Total of grouped items</h4>
+
+<p>To get the total of grouped items on a single query call <code>count</code> after the <code>group</code>.</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+Order.group(:status).count
+# =&gt; { 'awaiting_approval' =&gt; 7, 'paid' =&gt; 12 }
+
+</pre>
+</div>
+<p>The SQL that would be executed would be something like this:</p>
+
+<div class="code_container">
+<pre class="brush: sql; gutter: false; toolbar: false">
+SELECT COUNT (*) AS count_all, status AS status
+FROM "orders"
+GROUP BY status
+
+</pre>
+</div>
+</body>
+</html>

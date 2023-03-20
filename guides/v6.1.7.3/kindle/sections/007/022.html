@@ -1,0 +1,203 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>23 Running EXPLAIN</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v6.1.7.3/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="running-explain"><a class="anchorlink" href="#running-explain">23 Running EXPLAIN</a></h3>
+<p>You can run <a href="https://api.rubyonrails.org/v6.1.7.3/classes/ActiveRecord/Relation.html#method-i-explain"><code>explain</code></a> on a relation. EXPLAIN output varies for each database.</p>
+
+<p>For example, running</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="no">Customer</span><span class="p">.</span><span class="nf">where</span><span class="p">(</span><span class="ss">id: </span><span class="mi">1</span><span class="p">).</span><span class="nf">joins</span><span class="p">(</span><span class="ss">:orders</span><span class="p">).</span><span class="nf">explain</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-283a76348367092e32edafe71673d94f">Customer.where(id: 1).joins(:orders).explain
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-283a76348367092e32edafe71673d94f">Copy</button>
+</div>
+<p>may yield</p>
+
+<div class="code_container">
+<pre><code class="highlight plaintext">EXPLAIN for: SELECT `customers`.* FROM `customers` INNER JOIN `orders` ON `orders`.`customer_id` = `customers`.`id` WHERE `customers`.`id` = 1
++----+-------------+------------+-------+---------------+
+| id | select_type | table      | type  | possible_keys |
++----+-------------+------------+-------+---------------+
+|  1 | SIMPLE      | customers  | const | PRIMARY       |
+|  1 | SIMPLE      | orders     | ALL   | NULL          |
++----+-------------+------------+-------+---------------+
++---------+---------+-------+------+-------------+
+| key     | key_len | ref   | rows | Extra       |
++---------+---------+-------+------+-------------+
+| PRIMARY | 4       | const |    1 |             |
+| NULL    | NULL    | NULL  |    1 | Using where |
++---------+---------+-------+------+-------------+
+
+2 rows in set (0.00 sec)
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-7078b242c27b6b7a4e693e942ed994da">EXPLAIN for: SELECT `customers`.* FROM `customers` INNER JOIN `orders` ON `orders`.`customer_id` = `customers`.`id` WHERE `customers`.`id` = 1
++----+-------------+------------+-------+---------------+
+| id | select_type | table      | type  | possible_keys |
++----+-------------+------------+-------+---------------+
+|  1 | SIMPLE      | customers  | const | PRIMARY       |
+|  1 | SIMPLE      | orders     | ALL   | NULL          |
++----+-------------+------------+-------+---------------+
++---------+---------+-------+------+-------------+
+| key     | key_len | ref   | rows | Extra       |
++---------+---------+-------+------+-------------+
+| PRIMARY | 4       | const |    1 |             |
+| NULL    | NULL    | NULL  |    1 | Using where |
++---------+---------+-------+------+-------------+
+
+2 rows in set (0.00 sec)
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-7078b242c27b6b7a4e693e942ed994da">Copy</button>
+</div>
+<p>under MySQL and MariaDB.</p>
+
+<p>Active Record performs a pretty printing that emulates that of the
+corresponding database shell. So, the same query running with the
+PostgreSQL adapter would yield instead</p>
+
+<div class="code_container">
+<pre><code class="highlight plaintext">EXPLAIN for: SELECT "customers".* FROM "customers" INNER JOIN "orders" ON "orders"."customer_id" = "customers"."id" WHERE "customers"."id" = $1 [["id", 1]]
+                                  QUERY PLAN
+------------------------------------------------------------------------------
+ Nested Loop  (cost=4.33..20.85 rows=4 width=164)
+    -&gt;  Index Scan using customers_pkey on customers  (cost=0.15..8.17 rows=1 width=164)
+          Index Cond: (id = '1'::bigint)
+    -&gt;  Bitmap Heap Scan on orders  (cost=4.18..12.64 rows=4 width=8)
+          Recheck Cond: (customer_id = '1'::bigint)
+          -&gt;  Bitmap Index Scan on index_orders_on_customer_id  (cost=0.00..4.18 rows=4 width=0)
+                Index Cond: (customer_id = '1'::bigint)
+(7 rows)
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-6e979f48fbd8028c413239ef3531bf3e">EXPLAIN for: SELECT "customers".* FROM "customers" INNER JOIN "orders" ON "orders"."customer_id" = "customers"."id" WHERE "customers"."id" = $1 [["id", 1]]
+                                  QUERY PLAN
+------------------------------------------------------------------------------
+ Nested Loop  (cost=4.33..20.85 rows=4 width=164)
+    -&gt;  Index Scan using customers_pkey on customers  (cost=0.15..8.17 rows=1 width=164)
+          Index Cond: (id = '1'::bigint)
+    -&gt;  Bitmap Heap Scan on orders  (cost=4.18..12.64 rows=4 width=8)
+          Recheck Cond: (customer_id = '1'::bigint)
+          -&gt;  Bitmap Index Scan on index_orders_on_customer_id  (cost=0.00..4.18 rows=4 width=0)
+                Index Cond: (customer_id = '1'::bigint)
+(7 rows)
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-6e979f48fbd8028c413239ef3531bf3e">Copy</button>
+</div>
+<p>Eager loading may trigger more than one query under the hood, and some queries
+may need the results of previous ones. Because of that, <code>explain</code> actually
+executes the query, and then asks for the query plans. For example,</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="no">Customer</span><span class="p">.</span><span class="nf">where</span><span class="p">(</span><span class="ss">id: </span><span class="mi">1</span><span class="p">).</span><span class="nf">includes</span><span class="p">(</span><span class="ss">:orders</span><span class="p">).</span><span class="nf">explain</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-c0d4dbafd50ce6d7ff6ea0cd93ef7292">Customer.where(id: 1).includes(:orders).explain
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-c0d4dbafd50ce6d7ff6ea0cd93ef7292">Copy</button>
+</div>
+<p>may yield this for MySQL and MariaDB:</p>
+
+<div class="code_container">
+<pre><code class="highlight plaintext">EXPLAIN for: SELECT `customers`.* FROM `customers`  WHERE `customers`.`id` = 1
++----+-------------+-----------+-------+---------------+
+| id | select_type | table     | type  | possible_keys |
++----+-------------+-----------+-------+---------------+
+|  1 | SIMPLE      | customers | const | PRIMARY       |
++----+-------------+-----------+-------+---------------+
++---------+---------+-------+------+-------+
+| key     | key_len | ref   | rows | Extra |
++---------+---------+-------+------+-------+
+| PRIMARY | 4       | const |    1 |       |
++---------+---------+-------+------+-------+
+
+1 row in set (0.00 sec)
+
+EXPLAIN for: SELECT `orders`.* FROM `orders`  WHERE `orders`.`customer_id` IN (1)
++----+-------------+--------+------+---------------+
+| id | select_type | table  | type | possible_keys |
++----+-------------+--------+------+---------------+
+|  1 | SIMPLE      | orders | ALL  | NULL          |
++----+-------------+--------+------+---------------+
++------+---------+------+------+-------------+
+| key  | key_len | ref  | rows | Extra       |
++------+---------+------+------+-------------+
+| NULL | NULL    | NULL |    1 | Using where |
++------+---------+------+------+-------------+
+
+
+1 row in set (0.00 sec)
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-8793fbc781faa74b4cff820453900ca8">EXPLAIN for: SELECT `customers`.* FROM `customers`  WHERE `customers`.`id` = 1
++----+-------------+-----------+-------+---------------+
+| id | select_type | table     | type  | possible_keys |
++----+-------------+-----------+-------+---------------+
+|  1 | SIMPLE      | customers | const | PRIMARY       |
++----+-------------+-----------+-------+---------------+
++---------+---------+-------+------+-------+
+| key     | key_len | ref   | rows | Extra |
++---------+---------+-------+------+-------+
+| PRIMARY | 4       | const |    1 |       |
++---------+---------+-------+------+-------+
+
+1 row in set (0.00 sec)
+
+EXPLAIN for: SELECT `orders`.* FROM `orders`  WHERE `orders`.`customer_id` IN (1)
++----+-------------+--------+------+---------------+
+| id | select_type | table  | type | possible_keys |
++----+-------------+--------+------+---------------+
+|  1 | SIMPLE      | orders | ALL  | NULL          |
++----+-------------+--------+------+---------------+
++------+---------+------+------+-------------+
+| key  | key_len | ref  | rows | Extra       |
++------+---------+------+------+-------------+
+| NULL | NULL    | NULL |    1 | Using where |
++------+---------+------+------+-------------+
+
+
+1 row in set (0.00 sec)
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-8793fbc781faa74b4cff820453900ca8">Copy</button>
+</div>
+<p>and may yield this for PostgreSQL:</p>
+
+<div class="code_container">
+<pre><code class="highlight plaintext">  Customer Load (0.3ms)  SELECT "customers".* FROM "customers" WHERE "customers"."id" = $1  [["id", 1]]
+  Order Load (0.3ms)  SELECT "orders".* FROM "orders" WHERE "orders"."customer_id" = $1  [["customer_id", 1]]
+=&gt; EXPLAIN for: SELECT "customers".* FROM "customers" WHERE "customers"."id" = $1 [["id", 1]]
+                                    QUERY PLAN
+----------------------------------------------------------------------------------
+ Index Scan using customers_pkey on customers  (cost=0.15..8.17 rows=1 width=164)
+   Index Cond: (id = '1'::bigint)
+(2 rows)
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-819b91a266f1a8eec1922855af9415f1">  Customer Load (0.3ms)  SELECT "customers".* FROM "customers" WHERE "customers"."id" = $1  [["id", 1]]
+  Order Load (0.3ms)  SELECT "orders".* FROM "orders" WHERE "orders"."customer_id" = $1  [["customer_id", 1]]
+=&gt; EXPLAIN for: SELECT "customers".* FROM "customers" WHERE "customers"."id" = $1 [["id", 1]]
+                                    QUERY PLAN
+----------------------------------------------------------------------------------
+ Index Scan using customers_pkey on customers  (cost=0.15..8.17 rows=1 width=164)
+   Index Cond: (id = '1'::bigint)
+(2 rows)
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-819b91a266f1a8eec1922855af9415f1">Copy</button>
+</div>
+<h4 id="interpreting-explain"><a class="anchorlink" href="#interpreting-explain">23.1 Interpreting EXPLAIN</a></h4>
+
+<p>Interpretation of the output of EXPLAIN is beyond the scope of this guide. The
+following pointers may be helpful:</p>
+<ul>
+<li>SQLite3: <a href="https://www.sqlite.org/eqp.html">EXPLAIN QUERY PLAN</a>
+</li>
+<li>MySQL: <a href="https://dev.mysql.com/doc/refman/en/explain-output.html">EXPLAIN Output Format</a>
+</li>
+<li>MariaDB: <a href="https://mariadb.com/kb/en/mariadb/explain/">EXPLAIN</a>
+</li>
+<li>PostgreSQL: <a href="https://www.postgresql.org/docs/current/static/using-explain.html">Using EXPLAIN</a>
+</li>
+</ul>
+</body>
+</html>

@@ -1,0 +1,717 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html 
+     PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+  <head>
+    <title>Class: Numeric</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <link rel="stylesheet" href="../rdoc-style.css" type="text/css" media="screen" />
+
+    <script language="JavaScript" type="text/javascript">
+    // <![CDATA[
+
+        function toggleSource( id )
+        {
+          var elem
+          var link
+
+          if( document.getElementById )
+          {
+            elem = document.getElementById( id )
+            link = document.getElementById( "l_" + id )
+          }
+          else if ( document.all )
+          {
+            elem = eval( "document.all." + id )
+            link = eval( "document.all.l_" + id )
+          }
+          else
+            return false;
+
+          if( elem.style.display == "block" )
+          {
+            elem.style.display = "none"
+            link.innerHTML = "show source"
+          }
+          else
+          {
+            elem.style.display = "block"
+            link.innerHTML = "hide source"
+          }
+        }
+
+        function openCode( url )
+        {
+          window.open( url, "SOURCE_CODE", "resizable=yes,scrollbars=yes,toolbar=no,status=no,height=480,width=750" ).focus();
+        }
+      // ]]>
+    </script>
+  </head>
+
+  <body>
+    <table width="100%" border='0' cellpadding='0' cellspacing='0' class='banner'>
+    <tr><td>Ruby on Rails v3.0.9</td></tr>
+    <tr>
+  <td class="file-title"><span class="file-title-prefix">Class</span><br />Numeric</td>
+  <td align="right">
+    <table cellspacing="0" cellpadding="2">
+      <tr valign="top">
+        <td>In:</td>
+        <td>
+<a href="../files/activesupport/lib/active_support/json/encoding_rb.html">activesupport/lib/active_support/json/encoding.rb</a>:
+<a href="../files/activesupport/lib/active_support/core_ext/object/duplicable_rb.html">activesupport/lib/active_support/core_ext/object/duplicable.rb</a>:
+<a href="../files/activesupport/lib/active_support/core_ext/object/blank_rb.html">activesupport/lib/active_support/core_ext/object/blank.rb</a>:
+<a href="../files/activesupport/lib/active_support/core_ext/numeric/bytes_rb.html">activesupport/lib/active_support/core_ext/numeric/bytes.rb</a>:
+<a href="../files/activesupport/lib/active_support/core_ext/numeric/time_rb.html">activesupport/lib/active_support/core_ext/numeric/time.rb</a>:
+        </td>
+      </tr>
+      <tr>
+        <td>Parent:</td>
+        <td>
+
+      <a href="Object.html">Object</a>         </td>
+     </tr>
+         </table>
+        </td>
+        </tr>
+      </table>
+  <div id="bodyContent">
+  <div id="content">
+
+  <div class="description"></div>
+
+
+  <div class="sectiontitle">Methods</div>
+  <ul>
+                <li><a href="#method-i-ago">ago</a></li>
+                <li><a href="#method-i-as_json">as_json</a></li>
+                      <li><a href="#method-i-bytes">bytes</a></li>
+                      <li><a href="#method-i-days">days</a></li>
+                <li><a href="#method-i-encode_json">encode_json</a></li>
+                      <li><a href="#method-i-exabytes">exabytes</a></li>
+                      <li><a href="#method-i-fortnights">fortnights</a></li>
+                            <li><a href="#method-i-gigabytes">gigabytes</a></li>
+                      <li><a href="#method-i-hours">hours</a></li>
+                      <li><a href="#method-i-kilobytes">kilobytes</a></li>
+                      <li><a href="#method-i-megabytes">megabytes</a></li>
+                      <li><a href="#method-i-minutes">minutes</a></li>
+                      <li><a href="#method-i-petabytes">petabytes</a></li>
+                      <li><a href="#method-i-seconds">seconds</a></li>
+                <li><a href="#method-i-since">since</a></li>
+                      <li><a href="#method-i-terabytes">terabytes</a></li>
+                            <li><a href="#method-i-weeks">weeks</a></li>
+      </ul>
+
+
+  <div class="sectiontitle">Constants</div>
+  <table border='0' cellpadding='5'>
+  <tr valign='top'>
+    <td class="attr-name">KILOBYTE</td>
+    <td>=</td>
+    <td class="attr-value">1024</td>
+  </tr>
+  <tr valign='top'>
+    <td class="attr-name">MEGABYTE</td>
+    <td>=</td>
+    <td class="attr-value">KILOBYTE * 1024</td>
+  </tr>
+  <tr valign='top'>
+    <td class="attr-name">GIGABYTE</td>
+    <td>=</td>
+    <td class="attr-value">MEGABYTE * 1024</td>
+  </tr>
+  <tr valign='top'>
+    <td class="attr-name">TERABYTE</td>
+    <td>=</td>
+    <td class="attr-value">GIGABYTE * 1024</td>
+  </tr>
+  <tr valign='top'>
+    <td class="attr-name">PETABYTE</td>
+    <td>=</td>
+    <td class="attr-value">TERABYTE * 1024</td>
+  </tr>
+  <tr valign='top'>
+    <td class="attr-name">EXABYTE</td>
+    <td>=</td>
+    <td class="attr-value">PETABYTE * 1024</td>
+  </tr>
+  </table>
+
+
+                        
+    <div class="sectiontitle">
+      Public      Instance      methods
+    </div>
+
+          
+      <div class="method">
+        <div class="title">
+                      <a name="method-i-ago"></a>
+            <b>ago</b>(time = ::Time.current)          
+        </div>
+
+                  <div class="description">
+            <p>Reads best without arguments:  10.minutes.ago</p>          </div>
+        
+                  <div class="aka">
+            This method is also aliased as
+                          <a href="Numeric.html#method-i-until">until</a>                      </div>
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('ago_source')"
+                 id="l_method-i-ago_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="ago_source">
+<pre>
+  <span class="ruby-comment"># File activesupport/lib/active_support/core_ext/numeric/time.rb, line 63</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">ago</span>(<span class="ruby-identifier">time</span> = <span class="ruby-operator">::</span><span class="ruby-constant">Time</span>.<span class="ruby-identifier">current</span>)
+  <span class="ruby-identifier">time</span> <span class="ruby-operator">-</span> <span class="ruby-keyword">self</span>
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+          
+      <div class="method">
+        <div class="title">
+                      <a name="method-i-as_json"></a>
+            <b>as_json</b>(options = nil)          
+        </div>
+
+                  <div class="description">
+                      </div>
+        
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('as_json_source')"
+                 id="l_method-i-as_json_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="as_json_source">
+<pre>
+  <span class="ruby-comment"># File activesupport/lib/active_support/json/encoding.rb, line 181</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">as_json</span>(<span class="ruby-identifier">options</span> = <span class="ruby-keyword">nil</span>) <span class="ruby-keyword">self</span> <span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+                
+      <div class="method">
+        <div class="title">
+                      <a name="method-i-bytes"></a>
+            <b>bytes</b>()          
+        </div>
+
+                  <div class="description">
+            <p>Enables the use of byte calculations and declarations, like 45.bytes +
+2.6.megabytes</p>          </div>
+        
+                  <div class="aka">
+            This method is also aliased as
+                          <a href="Numeric.html#method-i-byte">byte</a>                      </div>
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('bytes_source')"
+                 id="l_method-i-bytes_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="bytes_source">
+<pre>
+  <span class="ruby-comment"># File activesupport/lib/active_support/core_ext/numeric/bytes.rb, line 10</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">bytes</span>
+  <span class="ruby-keyword">self</span>
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+                
+      <div class="method">
+        <div class="title">
+                      <a name="method-i-days"></a>
+            <b>days</b>()          
+        </div>
+
+                  <div class="description">
+                      </div>
+        
+                  <div class="aka">
+            This method is also aliased as
+                          <a href="Numeric.html#method-i-day">day</a>                      </div>
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('days_source')"
+                 id="l_method-i-days_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="days_source">
+<pre>
+  <span class="ruby-comment"># File activesupport/lib/active_support/core_ext/numeric/time.rb, line 47</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">days</span>
+  <span class="ruby-constant">ActiveSupport</span><span class="ruby-operator">::</span><span class="ruby-constant">Duration</span>.<span class="ruby-identifier">new</span>(<span class="ruby-keyword">self</span> * <span class="ruby-value">24</span>.<span class="ruby-identifier">hours</span>, [[<span class="ruby-value">:days</span>, <span class="ruby-keyword">self</span>]])
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+          
+      <div class="method">
+        <div class="title">
+                      <a name="method-i-encode_json"></a>
+            <b>encode_json</b>(encoder)          
+        </div>
+
+                  <div class="description">
+                      </div>
+        
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('encode_json_source')"
+                 id="l_method-i-encode_json_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="encode_json_source">
+<pre>
+  <span class="ruby-comment"># File activesupport/lib/active_support/json/encoding.rb, line 182</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">encode_json</span>(<span class="ruby-identifier">encoder</span>) <span class="ruby-identifier">to_s</span> <span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+                
+      <div class="method">
+        <div class="title">
+                      <a name="method-i-exabytes"></a>
+            <b>exabytes</b>()          
+        </div>
+
+                  <div class="description">
+                      </div>
+        
+                  <div class="aka">
+            This method is also aliased as
+                          <a href="Numeric.html#method-i-exabyte">exabyte</a>                      </div>
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('exabytes_source')"
+                 id="l_method-i-exabytes_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="exabytes_source">
+<pre>
+  <span class="ruby-comment"># File activesupport/lib/active_support/core_ext/numeric/bytes.rb, line 40</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">exabytes</span>
+  <span class="ruby-keyword">self</span> * <span class="ruby-constant">EXABYTE</span>
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+                
+      <div class="method">
+        <div class="title">
+                      <a name="method-i-fortnights"></a>
+            <b>fortnights</b>()          
+        </div>
+
+                  <div class="description">
+                      </div>
+        
+                  <div class="aka">
+            This method is also aliased as
+                          <a href="Numeric.html#method-i-fortnight">fortnight</a>                      </div>
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('fortnights_source')"
+                 id="l_method-i-fortnights_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="fortnights_source">
+<pre>
+  <span class="ruby-comment"># File activesupport/lib/active_support/core_ext/numeric/time.rb, line 57</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">fortnights</span>
+  <span class="ruby-constant">ActiveSupport</span><span class="ruby-operator">::</span><span class="ruby-constant">Duration</span>.<span class="ruby-identifier">new</span>(<span class="ruby-keyword">self</span> * <span class="ruby-value">2</span>.<span class="ruby-identifier">weeks</span>, [[<span class="ruby-value">:days</span>, <span class="ruby-keyword">self</span> * <span class="ruby-value">14</span>]])
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+                      
+      <div class="method">
+        <div class="title">
+                      <a name="method-i-gigabytes"></a>
+            <b>gigabytes</b>()          
+        </div>
+
+                  <div class="description">
+                      </div>
+        
+                  <div class="aka">
+            This method is also aliased as
+                          <a href="Numeric.html#method-i-gigabyte">gigabyte</a>                      </div>
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('gigabytes_source')"
+                 id="l_method-i-gigabytes_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="gigabytes_source">
+<pre>
+  <span class="ruby-comment"># File activesupport/lib/active_support/core_ext/numeric/bytes.rb, line 25</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">gigabytes</span>
+  <span class="ruby-keyword">self</span> * <span class="ruby-constant">GIGABYTE</span>
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+                
+      <div class="method">
+        <div class="title">
+                      <a name="method-i-hours"></a>
+            <b>hours</b>()          
+        </div>
+
+                  <div class="description">
+                      </div>
+        
+                  <div class="aka">
+            This method is also aliased as
+                          <a href="Numeric.html#method-i-hour">hour</a>                      </div>
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('hours_source')"
+                 id="l_method-i-hours_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="hours_source">
+<pre>
+  <span class="ruby-comment"># File activesupport/lib/active_support/core_ext/numeric/time.rb, line 42</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">hours</span>
+  <span class="ruby-constant">ActiveSupport</span><span class="ruby-operator">::</span><span class="ruby-constant">Duration</span>.<span class="ruby-identifier">new</span>(<span class="ruby-keyword">self</span> * <span class="ruby-value">3600</span>, [[<span class="ruby-value">:seconds</span>, <span class="ruby-keyword">self</span> * <span class="ruby-value">3600</span>]])
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+                
+      <div class="method">
+        <div class="title">
+                      <a name="method-i-kilobytes"></a>
+            <b>kilobytes</b>()          
+        </div>
+
+                  <div class="description">
+                      </div>
+        
+                  <div class="aka">
+            This method is also aliased as
+                          <a href="Numeric.html#method-i-kilobyte">kilobyte</a>                      </div>
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('kilobytes_source')"
+                 id="l_method-i-kilobytes_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="kilobytes_source">
+<pre>
+  <span class="ruby-comment"># File activesupport/lib/active_support/core_ext/numeric/bytes.rb, line 15</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">kilobytes</span>
+  <span class="ruby-keyword">self</span> * <span class="ruby-constant">KILOBYTE</span>
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+                
+      <div class="method">
+        <div class="title">
+                      <a name="method-i-megabytes"></a>
+            <b>megabytes</b>()          
+        </div>
+
+                  <div class="description">
+                      </div>
+        
+                  <div class="aka">
+            This method is also aliased as
+                          <a href="Numeric.html#method-i-megabyte">megabyte</a>                      </div>
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('megabytes_source')"
+                 id="l_method-i-megabytes_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="megabytes_source">
+<pre>
+  <span class="ruby-comment"># File activesupport/lib/active_support/core_ext/numeric/bytes.rb, line 20</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">megabytes</span>
+  <span class="ruby-keyword">self</span> * <span class="ruby-constant">MEGABYTE</span>
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+                
+      <div class="method">
+        <div class="title">
+                      <a name="method-i-minutes"></a>
+            <b>minutes</b>()          
+        </div>
+
+                  <div class="description">
+                      </div>
+        
+                  <div class="aka">
+            This method is also aliased as
+                          <a href="Numeric.html#method-i-minute">minute</a>                      </div>
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('minutes_source')"
+                 id="l_method-i-minutes_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="minutes_source">
+<pre>
+  <span class="ruby-comment"># File activesupport/lib/active_support/core_ext/numeric/time.rb, line 37</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">minutes</span>
+  <span class="ruby-constant">ActiveSupport</span><span class="ruby-operator">::</span><span class="ruby-constant">Duration</span>.<span class="ruby-identifier">new</span>(<span class="ruby-keyword">self</span> * <span class="ruby-value">60</span>, [[<span class="ruby-value">:seconds</span>, <span class="ruby-keyword">self</span> * <span class="ruby-value">60</span>]])
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+                
+      <div class="method">
+        <div class="title">
+                      <a name="method-i-petabytes"></a>
+            <b>petabytes</b>()          
+        </div>
+
+                  <div class="description">
+                      </div>
+        
+                  <div class="aka">
+            This method is also aliased as
+                          <a href="Numeric.html#method-i-petabyte">petabyte</a>                      </div>
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('petabytes_source')"
+                 id="l_method-i-petabytes_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="petabytes_source">
+<pre>
+  <span class="ruby-comment"># File activesupport/lib/active_support/core_ext/numeric/bytes.rb, line 35</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">petabytes</span>
+  <span class="ruby-keyword">self</span> * <span class="ruby-constant">PETABYTE</span>
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+                
+      <div class="method">
+        <div class="title">
+                      <a name="method-i-seconds"></a>
+            <b>seconds</b>()          
+        </div>
+
+                  <div class="description">
+            <p>Enables the use of time calculations and declarations, like 45.minutes +
+2.hours + 4.years.</p>
+
+<p>These methods use <a href="Time.html#method-i-advance">Time#advance</a> for
+precise date calculations when using <a
+href="Numeric.html#method-i-from_now">from_now</a>, ago, etc. as well as
+adding or subtracting their results from a <a href="Time.html">Time</a>
+object. For example:</p>
+
+<pre># equivalent to Time.now.advance(:months =&gt; 1)
+1.month.from_now
+
+# equivalent to Time.now.advance(:years =&gt; 2)
+2.years.from_now
+
+# equivalent to Time.now.advance(:months =&gt; 4, :years =&gt; 5)
+(4.months + 5.years).from_now</pre>
+
+<p>While these methods provide precise calculation when used as in the
+examples above, care should be taken to note that this is not true if the
+result of `months’, `years’, etc is converted before use:</p>
+
+<pre># equivalent to 30.days.to_i.from_now
+1.month.to_i.from_now
+
+# equivalent to 365.25.days.to_f.from_now
+1.year.to_f.from_now</pre>
+
+<p>In such cases, Ruby’s core <a
+href="http://stdlib.rubyonrails.org/libdoc/date/rdoc/index.html">Date</a>
+and <a
+href="http://stdlib.rubyonrails.org/libdoc/time/rdoc/index.html">Time</a>
+should be used for precision date and time arithmetic</p>          </div>
+        
+                  <div class="aka">
+            This method is also aliased as
+                          <a href="Numeric.html#method-i-second">second</a>                      </div>
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('seconds_source')"
+                 id="l_method-i-seconds_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="seconds_source">
+<pre>
+  <span class="ruby-comment"># File activesupport/lib/active_support/core_ext/numeric/time.rb, line 32</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">seconds</span>
+  <span class="ruby-constant">ActiveSupport</span><span class="ruby-operator">::</span><span class="ruby-constant">Duration</span>.<span class="ruby-identifier">new</span>(<span class="ruby-keyword">self</span>, [[<span class="ruby-value">:seconds</span>, <span class="ruby-keyword">self</span>]])
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+          
+      <div class="method">
+        <div class="title">
+                      <a name="method-i-since"></a>
+            <b>since</b>(time = ::Time.current)          
+        </div>
+
+                  <div class="description">
+            <p>Reads best with argument:  10.minutes.since(time)</p>          </div>
+        
+                  <div class="aka">
+            This method is also aliased as
+                          <a href="Numeric.html#method-i-from_now">from_now</a>                      </div>
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('since_source')"
+                 id="l_method-i-since_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="since_source">
+<pre>
+  <span class="ruby-comment"># File activesupport/lib/active_support/core_ext/numeric/time.rb, line 71</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">since</span>(<span class="ruby-identifier">time</span> = <span class="ruby-operator">::</span><span class="ruby-constant">Time</span>.<span class="ruby-identifier">current</span>)
+  <span class="ruby-identifier">time</span> <span class="ruby-operator">+</span> <span class="ruby-keyword">self</span>
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+                
+      <div class="method">
+        <div class="title">
+                      <a name="method-i-terabytes"></a>
+            <b>terabytes</b>()          
+        </div>
+
+                  <div class="description">
+                      </div>
+        
+                  <div class="aka">
+            This method is also aliased as
+                          <a href="Numeric.html#method-i-terabyte">terabyte</a>                      </div>
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('terabytes_source')"
+                 id="l_method-i-terabytes_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="terabytes_source">
+<pre>
+  <span class="ruby-comment"># File activesupport/lib/active_support/core_ext/numeric/bytes.rb, line 30</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">terabytes</span>
+  <span class="ruby-keyword">self</span> * <span class="ruby-constant">TERABYTE</span>
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+                      
+      <div class="method">
+        <div class="title">
+                      <a name="method-i-weeks"></a>
+            <b>weeks</b>()          
+        </div>
+
+                  <div class="description">
+                      </div>
+        
+                  <div class="aka">
+            This method is also aliased as
+                          <a href="Numeric.html#method-i-week">week</a>                      </div>
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('weeks_source')"
+                 id="l_method-i-weeks_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="weeks_source">
+<pre>
+  <span class="ruby-comment"># File activesupport/lib/active_support/core_ext/numeric/time.rb, line 52</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">weeks</span>
+  <span class="ruby-constant">ActiveSupport</span><span class="ruby-operator">::</span><span class="ruby-constant">Duration</span>.<span class="ruby-identifier">new</span>(<span class="ruby-keyword">self</span> * <span class="ruby-value">7</span>.<span class="ruby-identifier">days</span>, [[<span class="ruby-value">:days</span>, <span class="ruby-keyword">self</span> * <span class="ruby-value">7</span>]])
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+              </div>
+  </div>
+  </body>
+</html>

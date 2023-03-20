@@ -1,0 +1,212 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>5 Session</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v4.1.16/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="session">5 Session</h3>
+<p>Your application has a session for each user in which you can store small amounts of data that will be persisted between requests. The session is only available in the controller and the view and can use one of a number of different storage mechanisms:</p>
+<ul>
+<li>
+<code>ActionDispatch::Session::CookieStore</code> - Stores everything on the client.</li>
+<li>
+<code>ActionDispatch::Session::CacheStore</code> - Stores the data in the Rails cache.</li>
+<li>
+<code>ActionDispatch::Session::ActiveRecordStore</code> - Stores the data in a database using Active Record. (require <code>activerecord-session_store</code> gem).</li>
+<li>
+<code>ActionDispatch::Session::MemCacheStore</code> - Stores the data in a memcached cluster (this is a legacy implementation; consider using CacheStore instead).</li>
+</ul>
+<p>All session stores use a cookie to store a unique ID for each session (you must use a cookie, Rails will not allow you to pass the session ID in the URL as this is less secure).</p>
+<p>For most stores, this ID is used to look up the session data on the server, e.g. in a database table. There is one exception, and that is the default and recommended session store - the CookieStore - which stores all session data in the cookie itself (the ID is still available to you if you need it). This has the advantage of being very lightweight and it requires zero setup in a new application in order to use the session. The cookie data is cryptographically signed to make it tamper-proof. And it is also encrypted so anyone with access to it can't read its contents. (Rails will not accept it if it has been edited).</p>
+<p>The CookieStore can store around 4kB of data - much less than the others - but this is usually enough. Storing large amounts of data in the session is discouraged no matter which session store your application uses. You should especially avoid storing complex objects (anything other than basic Ruby objects, the most common example being model instances) in the session, as the server might not be able to reassemble them between requests, which will result in an error.</p>
+<p>If your user sessions don't store critical data or don't need to be around for long periods (for instance if you just use the flash for messaging), you can consider using <code>ActionDispatch::Session::CacheStore</code>. This will store sessions using the cache implementation you have configured for your application. The advantage of this is that you can use your existing cache infrastructure for storing sessions without requiring any additional setup or administration. The downside, of course, is that the sessions will be ephemeral and could disappear at any time.</p>
+<p>Read more about session storage in the <a href="security.html">Security Guide</a>.</p>
+<p>If you need a different session storage mechanism, you can change it in the <code>config/initializers/session_store.rb</code> file:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+# Use the database for sessions instead of the cookie-based default,
+# which shouldn't be used to store highly confidential information
+# (create the session table with "rails g active_record:session_migration")
+# Rails.application.config.session_store :active_record_store
+
+</pre>
+</div>
+<p>Rails sets up a session key (the name of the cookie) when signing the session data. These can also be changed in <code>config/initializers/session_store.rb</code>:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+# Be sure to restart your server when you modify this file.
+Rails.application.config.session_store :cookie_store, key: '_your_app_session'
+
+</pre>
+</div>
+<p>You can also pass a <code>:domain</code> key and specify the domain name for the cookie:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+# Be sure to restart your server when you modify this file.
+Rails.application.config.session_store :cookie_store, key: '_your_app_session', domain: ".example.com"
+
+</pre>
+</div>
+<p>Rails sets up (for the CookieStore) a secret key used for signing the session data. This can be changed in <code>config/initializers/secret_token.rb</code></p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+# Be sure to restart your server when you modify this file.
+
+# Your secret key for verifying the integrity of signed cookies.
+# If you change this key, all old signed cookies will become invalid!
+# Make sure the secret is at least 30 characters and all random,
+# no regular words or you'll be exposed to dictionary attacks.
+YourApp::Application.config.secret_key_base = '49d3f3de9ed86c74b94ad6bd0...'
+
+</pre>
+</div>
+<div class="note"><p>Changing the secret when using the <code>CookieStore</code> will invalidate all existing sessions.</p></div>
+<h4 id="accessing-the-session">5.1 Accessing the Session</h4>
+<p>In your controller you can access the session through the <code>session</code> instance method.</p>
+<div class="note"><p>Sessions are lazily loaded. If you don't access sessions in your action's code, they will not be loaded. Hence you will never need to disable sessions, just not accessing them will do the job.</p></div>
+<p>Session values are stored using key/value pairs like a hash:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class ApplicationController &lt; ActionController::Base
+
+  private
+
+  # Finds the User with the ID stored in the session with the key
+  # :current_user_id This is a common way to handle user login in
+  # a Rails application; logging in sets the session value and
+  # logging out removes it.
+  def current_user
+    @_current_user ||= session[:current_user_id] &amp;&amp;
+      User.find_by(id: session[:current_user_id])
+  end
+end
+
+</pre>
+</div>
+<p>To store something in the session, just assign it to the key like a hash:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class LoginsController &lt; ApplicationController
+  # "Create" a login, aka "log the user in"
+  def create
+    if user = User.authenticate(params[:username], params[:password])
+      # Save the user ID in the session so it can be used in
+      # subsequent requests
+      session[:current_user_id] = user.id
+      redirect_to root_url
+    end
+  end
+end
+
+</pre>
+</div>
+<p>To remove something from the session, assign that key to be <code>nil</code>:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class LoginsController &lt; ApplicationController
+  # "Delete" a login, aka "log the user out"
+  def destroy
+    # Remove the user id from the session
+    @_current_user = session[:current_user_id] = nil
+    redirect_to root_url
+  end
+end
+
+</pre>
+</div>
+<p>To reset the entire session, use <code>reset_session</code>.</p>
+<h4 id="the-flash">5.2 The Flash</h4>
+<p>The flash is a special part of the session which is cleared with each request. This means that values stored there will only be available in the next request, which is useful for passing error messages etc.</p>
+<p>It is accessed in much the same way as the session, as a hash (it's a <a href="http://api.rubyonrails.org/classes/ActionDispatch/Flash/FlashHash.html">FlashHash</a> instance).</p>
+<p>Let's use the act of logging out as an example. The controller can send a message which will be displayed to the user on the next request:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class LoginsController &lt; ApplicationController
+  def destroy
+    session[:current_user_id] = nil
+    flash[:notice] = "You have successfully logged out."
+    redirect_to root_url
+  end
+end
+
+</pre>
+</div>
+<p>Note that it is also possible to assign a flash message as part of the redirection. You can assign <code>:notice</code>, <code>:alert</code> or the general purpose <code>:flash</code>:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+redirect_to root_url, notice: "You have successfully logged out."
+redirect_to root_url, alert: "You're stuck here!"
+redirect_to root_url, flash: { referral_code: 1234 }
+
+</pre>
+</div>
+<p>The <code>destroy</code> action redirects to the application's <code>root_url</code>, where the message will be displayed. Note that it's entirely up to the next action to decide what, if anything, it will do with what the previous action put in the flash. It's conventional to display any error alerts or notices from the flash in the application's layout:</p>
+<div class="code_container">
+<pre class="brush: ruby; html-script: true; gutter: false; toolbar: false">
+&lt;html&gt;
+  &lt;!-- &lt;head/&gt; --&gt;
+  &lt;body&gt;
+    &lt;% flash.each do |name, msg| -%&gt;
+      &lt;%= content_tag :div, msg, class: name %&gt;
+    &lt;% end -%&gt;
+
+    &lt;!-- more content --&gt;
+  &lt;/body&gt;
+&lt;/html&gt;
+
+</pre>
+</div>
+<p>This way, if an action sets a notice or an alert message, the layout will display it automatically.</p>
+<p>You can pass anything that the session can store; you're not limited to notices and alerts:</p>
+<div class="code_container">
+<pre class="brush: ruby; html-script: true; gutter: false; toolbar: false">
+&lt;% if flash[:just_signed_up] %&gt;
+  &lt;p class="welcome"&gt;Welcome to our site!&lt;/p&gt;
+&lt;% end %&gt;
+
+</pre>
+</div>
+<p>If you want a flash value to be carried over to another request, use the <code>keep</code> method:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class MainController &lt; ApplicationController
+  # Let's say this action corresponds to root_url, but you want
+  # all requests here to be redirected to UsersController#index.
+  # If an action sets the flash and redirects here, the values
+  # would normally be lost when another redirect happens, but you
+  # can use 'keep' to make it persist for another request.
+  def index
+    # Will persist all flash values.
+    flash.keep
+
+    # You can also use a key to keep only some kind of value.
+    # flash.keep(:notice)
+    redirect_to users_url
+  end
+end
+
+</pre>
+</div>
+<h5 id="flash-now">5.2.1 <code>flash.now</code>
+</h5>
+<p>By default, adding values to the flash will make them available to the next request, but sometimes you may want to access those values in the same request. For example, if the <code>create</code> action fails to save a resource and you render the <code>new</code> template directly, that's not going to result in a new request, but you may still want to display a message using the flash. To do this, you can use <code>flash.now</code> in the same way you use the normal <code>flash</code>:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class ClientsController &lt; ApplicationController
+  def create
+    @client = Client.new(params[:client])
+    if @client.save
+      # ...
+    else
+      flash.now[:error] = "Could not save client"
+      render action: "new"
+    end
+  end
+end
+
+</pre>
+</div>
+</body>
+</html>

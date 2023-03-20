@@ -1,0 +1,750 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html 
+     PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+  <head>
+    <title>Class: ActionController::Metal</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <link rel="stylesheet" href="../../rdoc-style.css" type="text/css" media="screen" />
+
+    <script language="JavaScript" type="text/javascript">
+    // <![CDATA[
+
+        function toggleSource( id )
+        {
+          var elem
+          var link
+
+          if( document.getElementById )
+          {
+            elem = document.getElementById( id )
+            link = document.getElementById( "l_" + id )
+          }
+          else if ( document.all )
+          {
+            elem = eval( "document.all." + id )
+            link = eval( "document.all.l_" + id )
+          }
+          else
+            return false;
+
+          if( elem.style.display == "block" )
+          {
+            elem.style.display = "none"
+            link.innerHTML = "show source"
+          }
+          else
+          {
+            elem.style.display = "block"
+            link.innerHTML = "hide source"
+          }
+        }
+
+        function openCode( url )
+        {
+          window.open( url, "SOURCE_CODE", "resizable=yes,scrollbars=yes,toolbar=no,status=no,height=480,width=750" ).focus();
+        }
+      // ]]>
+    </script>
+  </head>
+
+  <body>
+    <table width="100%" border='0' cellpadding='0' cellspacing='0' class='banner'>
+    <tr><td>Ruby on Rails v3.0.9</td></tr>
+    <tr>
+  <td class="file-title"><span class="file-title-prefix">Class</span><br />ActionController::Metal</td>
+  <td align="right">
+    <table cellspacing="0" cellpadding="2">
+      <tr valign="top">
+        <td>In:</td>
+        <td>
+<a href="../../files/actionpack/lib/action_controller/metal_rb.html">actionpack/lib/action_controller/metal.rb</a>:
+        </td>
+      </tr>
+      <tr>
+        <td>Parent:</td>
+        <td>
+
+      <a href="../AbstractController/Base.html">AbstractController::Base</a>         </td>
+     </tr>
+         </table>
+        </td>
+        </tr>
+      </table>
+  <div id="bodyContent">
+  <div id="content">
+
+  <div class="description">
+<p><a href="Metal.html">ActionController::Metal</a> provides a way to get a
+valid Rack application from a controller.</p>
+
+<p>In <a href="../AbstractController.html">AbstractController</a>, dispatching
+is triggered directly by calling <a
+href="../AbstractController/Base.html#method-i-process">process</a> on a
+new controller. <a href="Metal.html">ActionController::Metal</a> provides
+an #action method that returns a valid Rack application for a given action.
+Other rack builders, such as Rack::Builder, Rack::URLMap, and the <a
+href="../Rails.html">Rails</a> router, can dispatch directly to the action
+returned by FooController.action(:index).</p>
+</div>
+
+
+  <div class="sectiontitle">Methods</div>
+  <ul>
+                <li><a href="#method-c-action">action</a></li>
+                <li><a href="#method-c-call">call</a></li>
+                <li><a href="#method-i-content_type">content_type</a></li>
+                <li><a href="#method-i-content_type-3D">content_type=</a></li>
+                <li><a href="#method-i-controller_name">controller_name</a></li>
+                <li><a href="#method-c-controller_name">controller_name</a></li>
+                <li><a href="#method-i-dispatch">dispatch</a></li>
+                <li><a href="#method-c-inherited">inherited</a></li>
+                <li><a href="#method-i-location">location</a></li>
+                <li><a href="#method-i-location-3D">location=</a></li>
+                <li><a href="#method-c-middleware">middleware</a></li>
+                <li><a href="#method-c-new">new</a></li>
+                <li><a href="#method-i-params">params</a></li>
+                <li><a href="#method-i-params-3D">params=</a></li>
+                <li><a href="#method-i-response_body-3D">response_body=</a></li>
+                <li><a href="#method-i-status">status</a></li>
+                <li><a href="#method-i-status-3D">status=</a></li>
+                <li><a href="#method-i-to_a">to_a</a></li>
+                <li><a href="#method-i-url_for">url_for</a></li>
+                <li><a href="#method-c-use">use</a></li>
+      </ul>
+
+
+
+
+        
+    <div class="sectiontitle">
+      Public      Class      methods
+    </div>
+
+          
+      <div class="method">
+        <div class="title">
+                      <a name="method-c-action"></a>
+            <b>action</b>(name, klass = ActionDispatch::Request)          
+        </div>
+
+                  <div class="description">
+            <p>Return a rack endpoint for the given action. Memoize the endpoint, so
+multiple calls into MyController.action will return the same object for the
+same action.</p>
+
+<h4>Parameters</h4>
+<table class="rdoc-list"><tr><td class="rdoc-term"><p>action&lt;#to_s&gt;</p></td>
+<td>
+<p>An action name</p>
+</td></tr></table>
+
+<h4>Returns</h4>
+<table class="rdoc-list"><tr><td class="rdoc-term"><p>Proc</p></td>
+<td>
+<p>A rack application</p>
+</td></tr></table>          </div>
+        
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('action_source')"
+                 id="l_method-c-action_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="action_source">
+<pre>
+  <span class="ruby-comment"># File actionpack/lib/action_controller/metal.rb, line 176</span>
+<span class="ruby-keyword">def</span> <span class="ruby-keyword">self</span>.<span class="ruby-identifier">action</span>(<span class="ruby-identifier">name</span>, <span class="ruby-identifier">klass</span> = <span class="ruby-constant">ActionDispatch</span><span class="ruby-operator">::</span><span class="ruby-constant">Request</span>)
+  <span class="ruby-identifier">middleware_stack</span>.<span class="ruby-identifier">build</span>(<span class="ruby-identifier">name</span>.<span class="ruby-identifier">to_s</span>) <span class="ruby-keyword">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">env</span><span class="ruby-operator">|</span>
+    <span class="ruby-identifier">new</span>.<span class="ruby-identifier">dispatch</span>(<span class="ruby-identifier">name</span>, <span class="ruby-identifier">klass</span>.<span class="ruby-identifier">new</span>(<span class="ruby-identifier">env</span>))
+  <span class="ruby-keyword">end</span>
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+          
+      <div class="method">
+        <div class="title">
+                      <a name="method-c-call"></a>
+            <b>call</b>(env)          
+        </div>
+
+                  <div class="description">
+                      </div>
+        
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('call_source')"
+                 id="l_method-c-call_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="call_source">
+<pre>
+  <span class="ruby-comment"># File actionpack/lib/action_controller/metal.rb, line 163</span>
+<span class="ruby-keyword">def</span> <span class="ruby-keyword">self</span>.<span class="ruby-identifier">call</span>(<span class="ruby-identifier">env</span>)
+  <span class="ruby-identifier">action</span>(<span class="ruby-identifier">env</span>[<span class="ruby-string">'action_dispatch.request.path_parameters'</span>][<span class="ruby-value">:action</span>]).<span class="ruby-identifier">call</span>(<span class="ruby-identifier">env</span>)
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+          
+      <div class="method">
+        <div class="title">
+                      <a name="method-c-controller_name"></a>
+            <b>controller_name</b>()          
+        </div>
+
+                  <div class="description">
+            <p>Returns the last part of the controller’s name, underscored, without the
+ending “Controller”. For instance, MyApp::MyPostsController would
+return “my_posts” for <a
+href="Metal.html#method-c-controller_name">controller_name</a></p>
+
+<h4>Returns</h4>
+
+<p><a href="../String.html">String</a></p>          </div>
+        
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('controller_name_source')"
+                 id="l_method-c-controller_name_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="controller_name_source">
+<pre>
+  <span class="ruby-comment"># File actionpack/lib/action_controller/metal.rb, line 63</span>
+<span class="ruby-keyword">def</span> <span class="ruby-keyword">self</span>.<span class="ruby-identifier">controller_name</span>
+  <span class="ruby-ivar">@controller_name</span> <span class="ruby-operator">||=</span> <span class="ruby-keyword">self</span>.<span class="ruby-identifier">name</span>.<span class="ruby-identifier">demodulize</span>.<span class="ruby-identifier">sub</span>(<span class="ruby-regexp">/Controller$/</span>, <span class="ruby-string">''</span>).<span class="ruby-identifier">underscore</span>
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+          
+      <div class="method">
+        <div class="title">
+                      <a name="method-c-inherited"></a>
+            <b>inherited</b>(base)          
+        </div>
+
+                  <div class="description">
+                      </div>
+        
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('inherited_source')"
+                 id="l_method-c-inherited_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="inherited_source">
+<pre>
+  <span class="ruby-comment"># File actionpack/lib/action_controller/metal.rb, line 150</span>
+<span class="ruby-keyword">def</span> <span class="ruby-keyword">self</span>.<span class="ruby-identifier">inherited</span>(<span class="ruby-identifier">base</span>)
+  <span class="ruby-identifier">base</span>.<span class="ruby-identifier">middleware_stack</span> = <span class="ruby-keyword">self</span>.<span class="ruby-identifier">middleware_stack</span>.<span class="ruby-identifier">dup</span>
+  <span class="ruby-keyword">super</span>
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+          
+      <div class="method">
+        <div class="title">
+                      <a name="method-c-middleware"></a>
+            <b>middleware</b>()          
+        </div>
+
+                  <div class="description">
+                      </div>
+        
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('middleware_source')"
+                 id="l_method-c-middleware_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="middleware_source">
+<pre>
+  <span class="ruby-comment"># File actionpack/lib/action_controller/metal.rb, line 159</span>
+<span class="ruby-keyword">def</span> <span class="ruby-keyword">self</span>.<span class="ruby-identifier">middleware</span>
+  <span class="ruby-identifier">middleware_stack</span>
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+          
+      <div class="method">
+        <div class="title">
+                      <a name="method-c-new"></a>
+            <b>new</b>(*)          
+        </div>
+
+                  <div class="description">
+                      </div>
+        
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('new_source')"
+                 id="l_method-c-new_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="new_source">
+<pre>
+  <span class="ruby-comment"># File actionpack/lib/action_controller/metal.rb, line 81</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">initialize</span>(*)
+  <span class="ruby-ivar">@_headers</span> = {<span class="ruby-string">&quot;Content-Type&quot;</span> =<span class="ruby-operator">&gt;</span> <span class="ruby-string">&quot;text/html&quot;</span>}
+  <span class="ruby-ivar">@_status</span> = <span class="ruby-value">200</span>
+  <span class="ruby-keyword">super</span>
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+          
+      <div class="method">
+        <div class="title">
+                      <a name="method-c-use"></a>
+            <b>use</b>(*args, &block)          
+        </div>
+
+                  <div class="description">
+                      </div>
+        
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('use_source')"
+                 id="l_method-c-use_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="use_source">
+<pre>
+  <span class="ruby-comment"># File actionpack/lib/action_controller/metal.rb, line 155</span>
+<span class="ruby-keyword">def</span> <span class="ruby-keyword">self</span>.<span class="ruby-identifier">use</span>(*<span class="ruby-identifier">args</span>, &amp;<span class="ruby-identifier">block</span>)
+  <span class="ruby-identifier">middleware_stack</span>.<span class="ruby-identifier">use</span>(*<span class="ruby-identifier">args</span>, &amp;<span class="ruby-identifier">block</span>)
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+                      
+    <div class="sectiontitle">
+      Public      Instance      methods
+    </div>
+
+          
+      <div class="method">
+        <div class="title">
+                      <a name="method-i-content_type"></a>
+            <b>content_type</b>()          
+        </div>
+
+                  <div class="description">
+                      </div>
+        
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('content_type_source')"
+                 id="l_method-i-content_type_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="content_type_source">
+<pre>
+  <span class="ruby-comment"># File actionpack/lib/action_controller/metal.rb, line 103</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">content_type</span>
+  <span class="ruby-identifier">headers</span>[<span class="ruby-string">&quot;Content-Type&quot;</span>]
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+          
+      <div class="method">
+        <div class="title">
+                      <a name="method-i-content_type-3D"></a>
+            <b>content_type=</b>(type)          
+        </div>
+
+                  <div class="description">
+            <p>Basic implementations for <a
+href="Metal.html#method-i-content_type">content_type</a>=, location=, and
+headers are provided to reduce the dependency on the <a
+href="RackDelegation.html">RackDelegation</a> module in Renderer and
+Redirector.</p>          </div>
+        
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('content_type-3D_source')"
+                 id="l_method-i-content_type-3D_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="content_type-3D_source">
+<pre>
+  <span class="ruby-comment"># File actionpack/lib/action_controller/metal.rb, line 99</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">content_type=</span>(<span class="ruby-identifier">type</span>)
+  <span class="ruby-identifier">headers</span>[<span class="ruby-string">&quot;Content-Type&quot;</span>] = <span class="ruby-identifier">type</span>.<span class="ruby-identifier">to_s</span>
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+          
+      <div class="method">
+        <div class="title">
+                      <a name="method-i-controller_name"></a>
+            <b>controller_name</b>()          
+        </div>
+
+                  <div class="description">
+            <p>Delegates to the class’ <a
+href="Metal.html#method-i-controller_name">controller_name</a></p>          </div>
+        
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('controller_name_source')"
+                 id="l_method-i-controller_name_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="controller_name_source">
+<pre>
+  <span class="ruby-comment"># File actionpack/lib/action_controller/metal.rb, line 68</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">controller_name</span>
+  <span class="ruby-keyword">self</span>.<span class="ruby-identifier">class</span>.<span class="ruby-identifier">controller_name</span>
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+          
+      <div class="method">
+        <div class="title">
+                      <a name="method-i-dispatch"></a>
+            <b>dispatch</b>(name, request)          
+        </div>
+
+                  <div class="description">
+            <p>:api: private</p>          </div>
+        
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('dispatch_source')"
+                 id="l_method-i-dispatch_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="dispatch_source">
+<pre>
+  <span class="ruby-comment"># File actionpack/lib/action_controller/metal.rb, line 134</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">dispatch</span>(<span class="ruby-identifier">name</span>, <span class="ruby-identifier">request</span>)
+  <span class="ruby-ivar">@_request</span> = <span class="ruby-identifier">request</span>
+  <span class="ruby-ivar">@_env</span> = <span class="ruby-identifier">request</span>.<span class="ruby-identifier">env</span>
+  <span class="ruby-ivar">@_env</span>[<span class="ruby-string">'action_controller.instance'</span>] = <span class="ruby-keyword">self</span>
+  <span class="ruby-identifier">process</span>(<span class="ruby-identifier">name</span>)
+  <span class="ruby-identifier">to_a</span>
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+          
+      <div class="method">
+        <div class="title">
+                      <a name="method-i-location"></a>
+            <b>location</b>()          
+        </div>
+
+                  <div class="description">
+                      </div>
+        
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('location_source')"
+                 id="l_method-i-location_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="location_source">
+<pre>
+  <span class="ruby-comment"># File actionpack/lib/action_controller/metal.rb, line 107</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">location</span>
+  <span class="ruby-identifier">headers</span>[<span class="ruby-string">&quot;Location&quot;</span>]
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+          
+      <div class="method">
+        <div class="title">
+                      <a name="method-i-location-3D"></a>
+            <b>location=</b>(url)          
+        </div>
+
+                  <div class="description">
+                      </div>
+        
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('location-3D_source')"
+                 id="l_method-i-location-3D_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="location-3D_source">
+<pre>
+  <span class="ruby-comment"># File actionpack/lib/action_controller/metal.rb, line 111</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">location=</span>(<span class="ruby-identifier">url</span>)
+  <span class="ruby-identifier">headers</span>[<span class="ruby-string">&quot;Location&quot;</span>] = <span class="ruby-identifier">url</span>
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+          
+      <div class="method">
+        <div class="title">
+                      <a name="method-i-params"></a>
+            <b>params</b>()          
+        </div>
+
+                  <div class="description">
+                      </div>
+        
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('params_source')"
+                 id="l_method-i-params_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="params_source">
+<pre>
+  <span class="ruby-comment"># File actionpack/lib/action_controller/metal.rb, line 87</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">params</span>
+  <span class="ruby-ivar">@_params</span> <span class="ruby-operator">||=</span> <span class="ruby-identifier">request</span>.<span class="ruby-identifier">parameters</span>
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+          
+      <div class="method">
+        <div class="title">
+                      <a name="method-i-params-3D"></a>
+            <b>params=</b>(val)          
+        </div>
+
+                  <div class="description">
+                      </div>
+        
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('params-3D_source')"
+                 id="l_method-i-params-3D_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="params-3D_source">
+<pre>
+  <span class="ruby-comment"># File actionpack/lib/action_controller/metal.rb, line 91</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">params=</span>(<span class="ruby-identifier">val</span>)
+  <span class="ruby-ivar">@_params</span> = <span class="ruby-identifier">val</span>
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+          
+      <div class="method">
+        <div class="title">
+                      <a name="method-i-response_body-3D"></a>
+            <b>response_body=</b>(val)          
+        </div>
+
+                  <div class="description">
+                      </div>
+        
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('response_body-3D_source')"
+                 id="l_method-i-response_body-3D_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="response_body-3D_source">
+<pre>
+  <span class="ruby-comment"># File actionpack/lib/action_controller/metal.rb, line 128</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">response_body=</span>(<span class="ruby-identifier">val</span>)
+  <span class="ruby-identifier">body</span> = <span class="ruby-identifier">val</span>.<span class="ruby-identifier">respond_to?</span>(<span class="ruby-value">:each</span>) <span class="ruby-operator">?</span> <span class="ruby-identifier">val</span> <span class="ruby-operator">:</span> [<span class="ruby-identifier">val</span>]
+  <span class="ruby-keyword">super</span> <span class="ruby-identifier">body</span>
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+          
+      <div class="method">
+        <div class="title">
+                      <a name="method-i-status"></a>
+            <b>status</b>()          
+        </div>
+
+                  <div class="description">
+                      </div>
+        
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('status_source')"
+                 id="l_method-i-status_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="status_source">
+<pre>
+  <span class="ruby-comment"># File actionpack/lib/action_controller/metal.rb, line 120</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">status</span>
+  <span class="ruby-ivar">@_status</span>
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+          
+      <div class="method">
+        <div class="title">
+                      <a name="method-i-status-3D"></a>
+            <b>status=</b>(status)          
+        </div>
+
+                  <div class="description">
+                      </div>
+        
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('status-3D_source')"
+                 id="l_method-i-status-3D_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="status-3D_source">
+<pre>
+  <span class="ruby-comment"># File actionpack/lib/action_controller/metal.rb, line 124</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">status=</span>(<span class="ruby-identifier">status</span>)
+  <span class="ruby-ivar">@_status</span> = <span class="ruby-constant">Rack</span><span class="ruby-operator">::</span><span class="ruby-constant">Utils</span>.<span class="ruby-identifier">status_code</span>(<span class="ruby-identifier">status</span>)
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+          
+      <div class="method">
+        <div class="title">
+                      <a name="method-i-to_a"></a>
+            <b>to_a</b>()          
+        </div>
+
+                  <div class="description">
+            <p>:api: private</p>          </div>
+        
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('to_a_source')"
+                 id="l_method-i-to_a_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="to_a_source">
+<pre>
+  <span class="ruby-comment"># File actionpack/lib/action_controller/metal.rb, line 143</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">to_a</span>
+  <span class="ruby-identifier">response</span> <span class="ruby-operator">?</span> <span class="ruby-identifier">response</span>.<span class="ruby-identifier">to_a</span> <span class="ruby-operator">:</span> [<span class="ruby-identifier">status</span>, <span class="ruby-identifier">headers</span>, <span class="ruby-identifier">response_body</span>]
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+          
+      <div class="method">
+        <div class="title">
+                      <a name="method-i-url_for"></a>
+            <b>url_for</b>(string)          
+        </div>
+
+                  <div class="description">
+            <p>basic <a href="Metal.html#method-i-url_for">url_for</a> that can be
+overridden for more robust functionality</p>          </div>
+        
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('url_for_source')"
+                 id="l_method-i-url_for_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="url_for_source">
+<pre>
+  <span class="ruby-comment"># File actionpack/lib/action_controller/metal.rb, line 116</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">url_for</span>(<span class="ruby-identifier">string</span>)
+  <span class="ruby-identifier">string</span>
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+              </div>
+  </div>
+  </body>
+</html>

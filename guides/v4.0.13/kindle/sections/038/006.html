@@ -1,0 +1,66 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>7 Active Support</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v4.0.13/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="active-support">7 Active Support</h3>
+<p>Active Support has a few interesting changes, including the introduction of <code>Object#try</code>.</p>
+<h4 id="object-try">7.1 Object#try</h4>
+<p>A lot of folks have adopted the notion of using try() to attempt operations on objects. It's especially helpful in views where you can avoid nil-checking by writing code like <code>&lt;%= @person.try(:name) %&gt;</code>. Well, now it's baked right into Rails. As implemented in Rails, it raises <code>NoMethodError</code> on private methods and always returns <code>nil</code> if the object is nil.</p>
+<ul>
+<li>More Information: <a href="http://ozmm.org/posts/try.html.">try()</a>
+</li>
+</ul>
+<h4 id="object-tap-backport">7.2 Object#tap Backport</h4>
+<p><code>Object#tap</code> is an addition to <a href="http://www.ruby-doc.org/core-1.9/classes/Object.html#M000309">Ruby 1.9</a> and 1.8.7 that is similar to the <code>returning</code> method that Rails has had for a while: it yields to a block, and then returns the object that was yielded. Rails now includes code to make this available under older versions of Ruby as well.</p>
+<h4 id="swappable-parsers-for-xmlmini">7.3 Swappable Parsers for XMLmini</h4>
+<p>The support for XML parsing in Active Support has been made more flexible by allowing you to swap in different parsers. By default, it uses the standard REXML implementation, but you can easily specify the faster LibXML or Nokogiri implementations for your own applications, provided you have the appropriate gems installed:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+XmlMini.backend = 'LibXML'
+
+</pre>
+</div>
+<ul>
+<li>Lead Contributor: <a href="http://www.movesonrails.com/">Bart ten Brinke</a>
+</li>
+<li>Lead Contributor: <a href="http://tenderlovemaking.com/">Aaron Patterson</a>
+</li>
+</ul>
+<h4 id="fractional-seconds-for-timewithzone">7.4 Fractional seconds for TimeWithZone</h4>
+<p>The <code>Time</code> and <code>TimeWithZone</code> classes include an <code>xmlschema</code> method to return the time in an XML-friendly string. As of Rails 2.3, <code>TimeWithZone</code> supports the same argument for specifying the number of digits in the fractional second part of the returned string that <code>Time</code> does:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+&gt;&gt; Time.zone.now.xmlschema(6)
+=&gt; "2009-01-16T13:00:06.13653Z"
+
+</pre>
+</div>
+<ul>
+<li>Lead Contributor: <a href="http://www.workingwithrails.com/person/13536-nicholas-dainty">Nicholas Dainty</a>
+</li>
+</ul>
+<h4 id="json-key-quoting">7.5 JSON Key Quoting</h4>
+<p>If you look up the spec on the "json.org" site, you'll discover that all keys in a JSON structure must be strings, and they must be quoted with double quotes. Starting with Rails 2.3, we do the right thing here, even with numeric keys.</p>
+<h4 id="other-active-support-changes">7.6 Other Active Support Changes</h4>
+<ul>
+<li>You can use <code>Enumerable#none?</code> to check that none of the elements match the supplied block.</li>
+<li>If you're using Active Support <a href="http://afreshcup.com/2008/10/19/coming-in-rails-22-delegate-prefixes/,">delegates</a> the new <code>:allow_nil</code> option lets you return <code>nil</code> instead of raising an exception when the target object is nil.</li>
+<li>
+<code>ActiveSupport::OrderedHash</code>: now implements <code>each_key</code> and <code>each_value</code>.</li>
+<li>
+<code>ActiveSupport::MessageEncryptor</code> provides a simple way to encrypt information for storage in an untrusted location (like cookies).</li>
+<li>Active Support's <code>from_xml</code> no longer depends on XmlSimple. Instead, Rails now includes its own XmlMini implementation, with just the functionality that it requires. This lets Rails dispense with the bundled copy of XmlSimple that it's been carting around.</li>
+<li>If you memoize a private method, the result will now be private.</li>
+<li>
+<code>String#parameterize</code> accepts an optional separator: <code>"Quick Brown Fox".parameterize('_') =&gt; "quick_brown_fox"</code>.</li>
+<li>
+<code>number_to_phone</code> accepts 7-digit phone numbers now.</li>
+<li>
+<code>ActiveSupport::Json.decode</code> now handles <code>\u0000</code> style escape sequences.</li>
+</ul>
+</body>
+</html>

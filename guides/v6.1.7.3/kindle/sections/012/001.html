@@ -1,0 +1,216 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>2 Dealing with Model Objects</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v6.1.7.3/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="dealing-with-model-objects"><a class="anchorlink" href="#dealing-with-model-objects">2 Dealing with Model Objects</a></h3>
+<h4 id="binding-a-form-to-an-object"><a class="anchorlink" href="#binding-a-form-to-an-object">2.1 Binding a Form to an Object</a></h4>
+
+<p>The <code>:model</code> argument of <code>form_with</code> allows us to bind the form builder object to a model object. This means that the form will be scoped to that model object, and the form's fields will be populated with values from that model object.</p>
+
+<p>For example, if we have an <code>@article</code> model object like:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="vi">@article</span> <span class="o">=</span> <span class="no">Article</span><span class="p">.</span><span class="nf">find</span><span class="p">(</span><span class="mi">42</span><span class="p">)</span>
+<span class="c1"># =&gt; #&lt;Article id: 42, title: "My Title", body: "My Body"&gt;</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-e30d0e4611afb1f0289a70c2eb320495">@article = Article.find(42)
+# =&gt; #&lt;Article id: 42, title: "My Title", body: "My Body"&gt;
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-e30d0e4611afb1f0289a70c2eb320495">Copy</button>
+</div>
+<p>The following form:</p>
+
+<div class="code_container">
+<pre><code class="highlight erb"><span class="cp">&lt;%=</span> <span class="n">form_with</span> <span class="ss">model: </span><span class="vi">@article</span> <span class="k">do</span> <span class="o">|</span><span class="n">form</span><span class="o">|</span> <span class="cp">%&gt;</span>
+  <span class="cp">&lt;%=</span> <span class="n">form</span><span class="p">.</span><span class="nf">text_field</span> <span class="ss">:title</span> <span class="cp">%&gt;</span>
+  <span class="cp">&lt;%=</span> <span class="n">form</span><span class="p">.</span><span class="nf">text_area</span> <span class="ss">:body</span><span class="p">,</span> <span class="ss">size: </span><span class="s2">"60x10"</span> <span class="cp">%&gt;</span>
+  <span class="cp">&lt;%=</span> <span class="n">form</span><span class="p">.</span><span class="nf">submit</span> <span class="cp">%&gt;</span>
+<span class="cp">&lt;%</span> <span class="k">end</span> <span class="cp">%&gt;</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-d698279e2ee0698ef84e0200f5d73ee0">&lt;%= form_with model: @article do |form| %&gt;
+  &lt;%= form.text_field :title %&gt;
+  &lt;%= form.text_area :body, size: "60x10" %&gt;
+  &lt;%= form.submit %&gt;
+&lt;% end %&gt;
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-d698279e2ee0698ef84e0200f5d73ee0">Copy</button>
+</div>
+<p>Outputs:</p>
+
+<div class="code_container">
+<pre><code class="highlight html"><span class="nt">&lt;form</span> <span class="na">action=</span><span class="s">"/articles/42"</span> <span class="na">method=</span><span class="s">"post"</span> <span class="na">accept-charset=</span><span class="s">"UTF-8"</span> <span class="nt">&gt;</span>
+  <span class="nt">&lt;input</span> <span class="na">name=</span><span class="s">"authenticity_token"</span> <span class="na">type=</span><span class="s">"hidden"</span> <span class="na">value=</span><span class="s">"..."</span> <span class="nt">/&gt;</span>
+  <span class="nt">&lt;input</span> <span class="na">type=</span><span class="s">"text"</span> <span class="na">name=</span><span class="s">"article[title]"</span> <span class="na">id=</span><span class="s">"article_title"</span> <span class="na">value=</span><span class="s">"My Title"</span> <span class="nt">/&gt;</span>
+  <span class="nt">&lt;textarea</span> <span class="na">name=</span><span class="s">"article[body]"</span> <span class="na">id=</span><span class="s">"article_body"</span> <span class="na">cols=</span><span class="s">"60"</span> <span class="na">rows=</span><span class="s">"10"</span><span class="nt">&gt;</span>
+    My Body
+  <span class="nt">&lt;/textarea&gt;</span>
+  <span class="nt">&lt;input</span> <span class="na">type=</span><span class="s">"submit"</span> <span class="na">name=</span><span class="s">"commit"</span> <span class="na">value=</span><span class="s">"Update Article"</span> <span class="na">data-disable-with=</span><span class="s">"Update Article"</span><span class="nt">&gt;</span>
+<span class="nt">&lt;/form&gt;</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-b0c498ef8913c7c265a5573231528a46">&lt;form action="/articles/42" method="post" accept-charset="UTF-8" &gt;
+  &lt;input name="authenticity_token" type="hidden" value="..." /&gt;
+  &lt;input type="text" name="article[title]" id="article_title" value="My Title" /&gt;
+  &lt;textarea name="article[body]" id="article_body" cols="60" rows="10"&gt;
+    My Body
+  &lt;/textarea&gt;
+  &lt;input type="submit" name="commit" value="Update Article" data-disable-with="Update Article"&gt;
+&lt;/form&gt;
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-b0c498ef8913c7c265a5573231528a46">Copy</button>
+</div>
+<p>The are several things to notice here:</p>
+<ul>
+<li>The form <code>action</code> is automatically filled with an appropriate value for <code>@article</code>.</li>
+<li>The form fields are automatically filled with the corresponding values from <code>@article</code>.</li>
+<li>The form field names are scoped with <code>article[...]</code>. This means that <code>params[:article]</code> will be a hash containing all these field's values. You can read more about the significance of input names in chapter <a href="#understanding-parameter-naming-conventions">Understanding Parameter Naming Conventions</a> of this guide.</li>
+<li>The submit button is automatically given an appropriate text value.</li>
+</ul>
+<div class="info"><p>Conventionally your inputs will mirror model attributes. However, they don't have to! If there is other information you need you can include it in your form just as with attributes and access it via <code>params[:article][:my_nifty_non_attribute_input]</code>.</p></div>
+
+<h5 id="binding-a-form-to-an-object-the-fields-for-helper"><a class="anchorlink" href="#binding-a-form-to-an-object-the-fields-for-helper">2.1.1 The <code>fields_for</code> Helper</a></h5>
+
+<p>You can create a similar binding without actually creating <code>&lt;form&gt;</code> tags with the <a href="https://api.rubyonrails.org/v6.1.7.3/classes/ActionView/Helpers/FormBuilder.html#method-i-fields_for"><code>fields_for</code></a> helper. This is useful for editing additional model objects with the same form. For example, if you had a <code>Person</code> model with an associated <code>ContactDetail</code> model, you could create a form for creating both like so:</p>
+
+<div class="code_container">
+<pre><code class="highlight erb"><span class="cp">&lt;%=</span> <span class="n">form_with</span> <span class="ss">model: </span><span class="vi">@person</span> <span class="k">do</span> <span class="o">|</span><span class="n">person_form</span><span class="o">|</span> <span class="cp">%&gt;</span>
+  <span class="cp">&lt;%=</span> <span class="n">person_form</span><span class="p">.</span><span class="nf">text_field</span> <span class="ss">:name</span> <span class="cp">%&gt;</span>
+  <span class="cp">&lt;%=</span> <span class="n">fields_for</span> <span class="ss">:contact_detail</span><span class="p">,</span> <span class="vi">@person</span><span class="p">.</span><span class="nf">contact_detail</span> <span class="k">do</span> <span class="o">|</span><span class="n">contact_detail_form</span><span class="o">|</span> <span class="cp">%&gt;</span>
+    <span class="cp">&lt;%=</span> <span class="n">contact_detail_form</span><span class="p">.</span><span class="nf">text_field</span> <span class="ss">:phone_number</span> <span class="cp">%&gt;</span>
+  <span class="cp">&lt;%</span> <span class="k">end</span> <span class="cp">%&gt;</span>
+<span class="cp">&lt;%</span> <span class="k">end</span> <span class="cp">%&gt;</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-5e1938db2235b2c91fb3c70793b7c6b3">&lt;%= form_with model: @person do |person_form| %&gt;
+  &lt;%= person_form.text_field :name %&gt;
+  &lt;%= fields_for :contact_detail, @person.contact_detail do |contact_detail_form| %&gt;
+    &lt;%= contact_detail_form.text_field :phone_number %&gt;
+  &lt;% end %&gt;
+&lt;% end %&gt;
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-5e1938db2235b2c91fb3c70793b7c6b3">Copy</button>
+</div>
+<p>which produces the following output:</p>
+
+<div class="code_container">
+<pre><code class="highlight html"><span class="nt">&lt;form</span> <span class="na">action=</span><span class="s">"/people"</span> <span class="na">accept-charset=</span><span class="s">"UTF-8"</span> <span class="na">method=</span><span class="s">"post"</span><span class="nt">&gt;</span>
+  <span class="nt">&lt;input</span> <span class="na">type=</span><span class="s">"hidden"</span> <span class="na">name=</span><span class="s">"authenticity_token"</span> <span class="na">value=</span><span class="s">"bL13x72pldyDD8bgtkjKQakJCpd4A8JdXGbfksxBDHdf1uC0kCMqe2tvVdUYfidJt0fj3ihC4NxiVHv8GVYxJA=="</span> <span class="nt">/&gt;</span>
+  <span class="nt">&lt;input</span> <span class="na">type=</span><span class="s">"text"</span> <span class="na">name=</span><span class="s">"person[name]"</span> <span class="na">id=</span><span class="s">"person_name"</span> <span class="nt">/&gt;</span>
+  <span class="nt">&lt;input</span> <span class="na">type=</span><span class="s">"text"</span> <span class="na">name=</span><span class="s">"contact_detail[phone_number]"</span> <span class="na">id=</span><span class="s">"contact_detail_phone_number"</span> <span class="nt">/&gt;</span>
+<span class="nt">&lt;/form&gt;</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-465829d9680f7bd99cf797286ac84da6">&lt;form action="/people" accept-charset="UTF-8" method="post"&gt;
+  &lt;input type="hidden" name="authenticity_token" value="bL13x72pldyDD8bgtkjKQakJCpd4A8JdXGbfksxBDHdf1uC0kCMqe2tvVdUYfidJt0fj3ihC4NxiVHv8GVYxJA==" /&gt;
+  &lt;input type="text" name="person[name]" id="person_name" /&gt;
+  &lt;input type="text" name="contact_detail[phone_number]" id="contact_detail_phone_number" /&gt;
+&lt;/form&gt;
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-465829d9680f7bd99cf797286ac84da6">Copy</button>
+</div>
+<p>The object yielded by <code>fields_for</code> is a form builder like the one yielded by <code>form_with</code>.</p>
+
+<h4 id="relying-on-record-identification"><a class="anchorlink" href="#relying-on-record-identification">2.2 Relying on Record Identification</a></h4>
+
+<p>The Article model is directly available to users of the application, so - following the best practices for developing with Rails - you should declare it <strong>a resource</strong>:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">resources</span> <span class="ss">:articles</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-5f3ca8890fcc1703d819935ad73394e5">resources :articles
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-5f3ca8890fcc1703d819935ad73394e5">Copy</button>
+</div>
+<div class="info"><p>Declaring a resource has a number of side effects. See <a href="routing.html#resource-routing-the-rails-default">Rails Routing from the Outside In</a> guide for more information on setting up and using resources.</p></div>
+
+<p>When dealing with RESTful resources, calls to <code>form_with</code> can get significantly easier if you rely on <strong>record identification</strong>. In short, you can just pass the model instance and have Rails figure out model name and the rest:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="c1">## Creating a new article</span>
+<span class="c1"># long-style:</span>
+<span class="n">form_with</span><span class="p">(</span><span class="ss">model: </span><span class="vi">@article</span><span class="p">,</span> <span class="ss">url: </span><span class="n">articles_path</span><span class="p">)</span>
+<span class="c1"># short-style:</span>
+<span class="n">form_with</span><span class="p">(</span><span class="ss">model: </span><span class="vi">@article</span><span class="p">)</span>
+
+<span class="c1">## Editing an existing article</span>
+<span class="c1"># long-style:</span>
+<span class="n">form_with</span><span class="p">(</span><span class="ss">model: </span><span class="vi">@article</span><span class="p">,</span> <span class="ss">url: </span><span class="n">article_path</span><span class="p">(</span><span class="vi">@article</span><span class="p">),</span> <span class="ss">method: </span><span class="s2">"patch"</span><span class="p">)</span>
+<span class="c1"># short-style:</span>
+<span class="n">form_with</span><span class="p">(</span><span class="ss">model: </span><span class="vi">@article</span><span class="p">)</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-f9b356547a996e9a17e42f0b36f9fde6">## Creating a new article
+# long-style:
+form_with(model: @article, url: articles_path)
+# short-style:
+form_with(model: @article)
+
+## Editing an existing article
+# long-style:
+form_with(model: @article, url: article_path(@article), method: "patch")
+# short-style:
+form_with(model: @article)
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-f9b356547a996e9a17e42f0b36f9fde6">Copy</button>
+</div>
+<p>Notice how the short-style <code>form_with</code> invocation is conveniently the same, regardless of the record being new or existing. Record identification is smart enough to figure out if the record is new by asking <code>record.persisted?</code>. It also selects the correct path to submit to, and the name based on the class of the object.</p>
+
+<div class="warning"><p>When you're using STI (single-table inheritance) with your models, you can't rely on record identification on a subclass if only their parent class is declared a resource. You will have to specify <code>:url</code>, and <code>:scope</code> (the model name) explicitly.</p></div>
+
+<h5 id="dealing-with-namespaces"><a class="anchorlink" href="#dealing-with-namespaces">2.2.1 Dealing with Namespaces</a></h5>
+
+<p>If you have created namespaced routes, <code>form_with</code> has a nifty shorthand for that too. If your application has an admin namespace then</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">form_with</span> <span class="ss">model: </span><span class="p">[</span><span class="ss">:admin</span><span class="p">,</span> <span class="vi">@article</span><span class="p">]</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-97613f26a869182817b899d27e8f05bb">form_with model: [:admin, @article]
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-97613f26a869182817b899d27e8f05bb">Copy</button>
+</div>
+<p>will create a form that submits to the <code>ArticlesController</code> inside the admin namespace (submitting to <code>admin_article_path(@article)</code> in the case of an update). If you have several levels of namespacing then the syntax is similar:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">form_with</span> <span class="ss">model: </span><span class="p">[</span><span class="ss">:admin</span><span class="p">,</span> <span class="ss">:management</span><span class="p">,</span> <span class="vi">@article</span><span class="p">]</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-d2485b48e8675be9abe67ac207be9e1e">form_with model: [:admin, :management, @article]
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-d2485b48e8675be9abe67ac207be9e1e">Copy</button>
+</div>
+<p>For more information on Rails' routing system and the associated conventions, please see <a href="routing.html">Rails Routing from the Outside In</a> guide.</p>
+
+<h4 id="how-do-forms-with-patch-put-or-delete-methods-work-questionmark"><a class="anchorlink" href="#how-do-forms-with-patch-put-or-delete-methods-work-questionmark">2.3 How do forms with PATCH, PUT, or DELETE methods work?</a></h4>
+
+<p>The Rails framework encourages RESTful design of your applications, which means you'll be making a lot of "PATCH", "PUT", and "DELETE" requests (besides "GET" and "POST"). However, most browsers <em>don't support</em> methods other than "GET" and "POST" when it comes to submitting forms.</p>
+
+<p>Rails works around this issue by emulating other methods over POST with a hidden input named <code>"_method"</code>, which is set to reflect the desired method:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">form_with</span><span class="p">(</span><span class="ss">url: </span><span class="n">search_path</span><span class="p">,</span> <span class="ss">method: </span><span class="s2">"patch"</span><span class="p">)</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-20ae9f800f317258db64d993bcbf8a32">form_with(url: search_path, method: "patch")
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-20ae9f800f317258db64d993bcbf8a32">Copy</button>
+</div>
+<p>Output:</p>
+
+<div class="code_container">
+<pre><code class="highlight html"><span class="nt">&lt;form</span> <span class="na">accept-charset=</span><span class="s">"UTF-8"</span> <span class="na">action=</span><span class="s">"/search"</span> <span class="na">method=</span><span class="s">"post"</span><span class="nt">&gt;</span>
+  <span class="nt">&lt;input</span> <span class="na">name=</span><span class="s">"_method"</span> <span class="na">type=</span><span class="s">"hidden"</span> <span class="na">value=</span><span class="s">"patch"</span> <span class="nt">/&gt;</span>
+  <span class="nt">&lt;input</span> <span class="na">name=</span><span class="s">"authenticity_token"</span> <span class="na">type=</span><span class="s">"hidden"</span> <span class="na">value=</span><span class="s">"f755bb0ed134b76c432144748a6d4b7a7ddf2b71"</span> <span class="nt">/&gt;</span>
+  ...
+<span class="nt">&lt;/form&gt;</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-301b64f9b51dedc988db77a14072de8a">&lt;form accept-charset="UTF-8" action="/search" method="post"&gt;
+  &lt;input name="_method" type="hidden" value="patch" /&gt;
+  &lt;input name="authenticity_token" type="hidden" value="f755bb0ed134b76c432144748a6d4b7a7ddf2b71" /&gt;
+  ...
+&lt;/form&gt;
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-301b64f9b51dedc988db77a14072de8a">Copy</button>
+</div>
+<p>When parsing POSTed data, Rails will take into account the special <code>_method</code> parameter and act as if the HTTP method was the one specified inside it ("PATCH" in this example).</p>
+
+<div class="warning"><p>In Rails 6.0 and 5.2, all forms using <code>form_with</code> implement <code>remote: true</code> by default. These forms will submit data using an XHR (Ajax) request. To disable this include <code>local: true</code>. To dive deeper see <a href="working_with_javascript_in_rails.html#remote-elements">Working with JavaScript in Rails</a> guide.</p></div>
+</body>
+</html>

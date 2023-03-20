@@ -1,0 +1,210 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>2 Setup</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v5.2.8.1/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="setup"><a class="anchorlink" href="#setup">2 Setup</a></h3>
+<p>Active Storage uses two tables in your application’s database named
+<code>active_storage_blobs</code> and <code>active_storage_attachments</code>. After creating a new
+application (or upgrading your application to Rails 5.2), run
+<code>rails active_storage:install</code> to generate a migration that creates these
+tables. Use <code>rails db:migrate</code> to run the migration.</p>
+
+<p>Declare Active Storage services in <code>config/storage.yml</code>. For each service your
+application uses, provide a name and the requisite configuration. The example
+below declares three services named <code>local</code>, <code>test</code>, and <code>amazon</code>:</p>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+local:
+  service: Disk
+  root: &lt;%= Rails.root.join("storage") %&gt;
+
+test:
+  service: Disk
+  root: &lt;%= Rails.root.join("tmp/storage") %&gt;
+
+amazon:
+  service: S3
+  access_key_id: ""
+  secret_access_key: ""
+
+</pre>
+</div>
+<p>Tell Active Storage which service to use by setting
+<code>Rails.application.config.active_storage.service</code>. Because each environment will
+likely use a different service, it is recommended to do this on a
+per-environment basis. To use the disk service from the previous example in the
+development environment, you would add the following to
+<code>config/environments/development.rb</code>:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+# Store files locally.
+config.active_storage.service = :local
+
+</pre>
+</div>
+<p>To use the Amazon S3 service in production, you add the following to
+<code>config/environments/production.rb</code>:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+# Store files on Amazon S3.
+config.active_storage.service = :amazon
+
+</pre>
+</div>
+<p>Continue reading for more information on the built-in service adapters (e.g.
+<code>Disk</code> and <code>S3</code>) and the configuration they require.</p>
+
+<h4 id="disk-service"><a class="anchorlink" href="#disk-service">2.1 Disk Service</a></h4>
+
+<p>Declare a Disk service in <code>config/storage.yml</code>:</p>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+local:
+  service: Disk
+  root: &lt;%= Rails.root.join("storage") %&gt;
+
+</pre>
+</div>
+<h4 id="amazon-s3-service"><a class="anchorlink" href="#amazon-s3-service">2.2 Amazon S3 Service</a></h4>
+
+<p>Declare an S3 service in <code>config/storage.yml</code>:</p>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+amazon:
+  service: S3
+  access_key_id: ""
+  secret_access_key: ""
+  region: ""
+  bucket: ""
+
+</pre>
+</div>
+<p>Add the <a href="https://github.com/aws/aws-sdk-ruby"><code>aws-sdk-s3</code></a> gem to your <code>Gemfile</code>:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+gem "aws-sdk-s3", require: false
+
+</pre>
+</div>
+<div class="note"><p>The core features of Active Storage require the following permissions: <code>s3:ListBucket</code>, <code>s3:PutObject</code>, <code>s3:GetObject</code>, and <code>s3:DeleteObject</code>. If you have additional upload options configured such as setting ACLs then additional permissions may be required.</p></div>
+
+<div class="note"><p>If you want to use environment variables, standard SDK configuration files, profiles,
+IAM instance profiles or task roles, you can omit the <code>access_key_id</code>, <code>secret_access_key</code>,
+and <code>region</code> keys in the example above. The Amazon S3 Service supports all of the
+authentication options described in the <a href="https://docs.aws.amazon.com/sdk-for-ruby/v3/developer-guide/setup-config.html">AWS SDK documentation</a>.</p></div>
+
+<h4 id="microsoft-azure-storage-service"><a class="anchorlink" href="#microsoft-azure-storage-service">2.3 Microsoft Azure Storage Service</a></h4>
+
+<p>Declare an Azure Storage service in <code>config/storage.yml</code>:</p>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+azure:
+  service: AzureStorage
+  storage_account_name: ""
+  storage_access_key: ""
+  container: ""
+
+</pre>
+</div>
+<p>Add the <a href="https://github.com/Azure/azure-storage-ruby"><code>azure-storage</code></a> gem to your <code>Gemfile</code>:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+gem "azure-storage", require: false
+
+</pre>
+</div>
+<h4 id="google-cloud-storage-service"><a class="anchorlink" href="#google-cloud-storage-service">2.4 Google Cloud Storage Service</a></h4>
+
+<p>Declare a Google Cloud Storage service in <code>config/storage.yml</code>:</p>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+google:
+  service: GCS
+  credentials: &lt;%= Rails.root.join("path/to/keyfile.json") %&gt;
+  project: ""
+  bucket: ""
+
+</pre>
+</div>
+<p>Optionally provide a Hash of credentials instead of a keyfile path:</p>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+google:
+  service: GCS
+  credentials:
+    type: "service_account"
+    project_id: ""
+    private_key_id: &lt;%= Rails.application.credentials.dig(:gcs, :private_key_id) %&gt;
+    private_key: &lt;%= Rails.application.credentials.dig(:gcs, :private_key).dump %&gt;
+    client_email: ""
+    client_id: ""
+    auth_uri: "https://accounts.google.com/o/oauth2/auth"
+    token_uri: "https://accounts.google.com/o/oauth2/token"
+    auth_provider_x509_cert_url: "https://www.googleapis.com/oauth2/v1/certs"
+    client_x509_cert_url: ""
+  project: ""
+  bucket: ""
+
+</pre>
+</div>
+<p>Add the <a href="https://github.com/GoogleCloudPlatform/google-cloud-ruby/tree/master/google-cloud-storage"><code>google-cloud-storage</code></a> gem to your <code>Gemfile</code>:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+gem "google-cloud-storage", "~&gt; 1.8", require: false
+
+</pre>
+</div>
+<h4 id="mirror-service"><a class="anchorlink" href="#mirror-service">2.5 Mirror Service</a></h4>
+
+<p>You can keep multiple services in sync by defining a mirror service. When a file
+is uploaded or deleted, it's done across all the mirrored services. Mirrored
+services can be used to facilitate a migration between services in production.
+You can start mirroring to the new service, copy existing files from the old
+service to the new, then go all-in on the new service. Define each of the
+services you'd like to use as described above and reference them from a mirrored
+service.</p>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+s3_west_coast:
+  service: S3
+  access_key_id: ""
+  secret_access_key: ""
+  region: ""
+  bucket: ""
+
+s3_east_coast:
+  service: S3
+  access_key_id: ""
+  secret_access_key: ""
+  region: ""
+  bucket: ""
+
+production:
+  service: Mirror
+  primary: s3_east_coast
+  mirrors:
+    - s3_west_coast
+
+</pre>
+</div>
+<div class="note"><p>Files are served from the primary service.</p></div>
+
+<div class="note"><p>This is not compatible with the <a href="#direct-uploads">direct uploads</a> feature.</p></div>
+</body>
+</html>

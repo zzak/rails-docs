@@ -1,0 +1,291 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html 
+     PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+  <head>
+    <title>Class: ActiveSupport::Testing::Performance::Profiler</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <link rel="stylesheet" href="../../../../rdoc-style.css" type="text/css" media="screen" />
+
+    <script language="JavaScript" type="text/javascript">
+    // <![CDATA[
+
+        function toggleSource( id )
+        {
+          var elem
+          var link
+
+          if( document.getElementById )
+          {
+            elem = document.getElementById( id )
+            link = document.getElementById( "l_" + id )
+          }
+          else if ( document.all )
+          {
+            elem = eval( "document.all." + id )
+            link = eval( "document.all.l_" + id )
+          }
+          else
+            return false;
+
+          if( elem.style.display == "block" )
+          {
+            elem.style.display = "none"
+            link.innerHTML = "show source"
+          }
+          else
+          {
+            elem.style.display = "block"
+            link.innerHTML = "hide source"
+          }
+        }
+
+        function openCode( url )
+        {
+          window.open( url, "SOURCE_CODE", "resizable=yes,scrollbars=yes,toolbar=no,status=no,height=480,width=750" ).focus();
+        }
+      // ]]>
+    </script>
+  </head>
+
+  <body>
+    <table width="100%" border='0' cellpadding='0' cellspacing='0' class='banner'>
+    <tr><td>Ruby on Rails v3.0.9</td></tr>
+    <tr>
+  <td class="file-title"><span class="file-title-prefix">Class</span><br />ActiveSupport::Testing::Performance::Profiler</td>
+  <td align="right">
+    <table cellspacing="0" cellpadding="2">
+      <tr valign="top">
+        <td>In:</td>
+        <td>
+<a href="../../../../files/activesupport/lib/active_support/testing/performance_rb.html">activesupport/lib/active_support/testing/performance.rb</a>:
+        </td>
+      </tr>
+      <tr>
+        <td>Parent:</td>
+        <td>
+
+      <a href="Performer.html">ActiveSupport::Testing::Performance::Performer</a>         </td>
+     </tr>
+         </table>
+        </td>
+        </tr>
+      </table>
+  <div id="bodyContent">
+  <div id="content">
+
+  <div class="description"></div>
+
+
+  <div class="sectiontitle">Methods</div>
+  <ul>
+                <li><a href="#method-c-new">new</a></li>
+                <li><a href="#method-i-output_filename">output_filename</a></li>
+                <li><a href="#method-i-record">record</a></li>
+                <li><a href="#method-i-report">report</a></li>
+                <li><a href="#method-i-run">run</a></li>
+      </ul>
+
+
+
+
+        
+    <div class="sectiontitle">
+      Public      Class      methods
+    </div>
+
+          
+      <div class="method">
+        <div class="title">
+                      <a name="method-c-new"></a>
+            <b>new</b>(*args)          
+        </div>
+
+                  <div class="description">
+                      </div>
+        
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('new_source')"
+                 id="l_method-c-new_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="new_source">
+<pre>
+  <span class="ruby-comment"># File activesupport/lib/active_support/testing/performance.rb, line 168</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">initialize</span>(*<span class="ruby-identifier">args</span>)
+  <span class="ruby-keyword">super</span>
+  <span class="ruby-ivar">@supported</span> = <span class="ruby-ivar">@metric</span>.<span class="ruby-identifier">measure_mode</span> <span class="ruby-keyword">rescue</span> <span class="ruby-keyword">false</span>
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+                      
+    <div class="sectiontitle">
+      Public      Instance      methods
+    </div>
+
+          
+      <div class="method">
+        <div class="title">
+                      <a name="method-i-record"></a>
+            <b>record</b>()          
+        </div>
+
+                  <div class="description">
+                      </div>
+        
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('record_source')"
+                 id="l_method-i-record_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="record_source">
+<pre>
+  <span class="ruby-comment"># File activesupport/lib/active_support/testing/performance.rb, line 192</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">record</span>
+  <span class="ruby-keyword">return</span> <span class="ruby-keyword">unless</span> <span class="ruby-ivar">@supported</span>
+
+  <span class="ruby-identifier">klasses</span> = <span class="ruby-identifier">profile_options</span>[<span class="ruby-value">:formats</span>].<span class="ruby-identifier">map</span> { <span class="ruby-operator">|</span><span class="ruby-identifier">f</span><span class="ruby-operator">|</span> <span class="ruby-constant">RubyProf</span>.<span class="ruby-identifier">const_get</span>(<span class="ruby-node">&quot;#{f.to_s.camelize}Printer&quot;</span>) }.<span class="ruby-identifier">compact</span>
+
+  <span class="ruby-identifier">klasses</span>.<span class="ruby-identifier">each</span> <span class="ruby-keyword">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">klass</span><span class="ruby-operator">|</span>
+    <span class="ruby-identifier">fname</span> = <span class="ruby-identifier">output_filename</span>(<span class="ruby-identifier">klass</span>)
+    <span class="ruby-constant">FileUtils</span>.<span class="ruby-identifier">mkdir_p</span>(<span class="ruby-constant">File</span>.<span class="ruby-identifier">dirname</span>(<span class="ruby-identifier">fname</span>))
+    <span class="ruby-constant">File</span>.<span class="ruby-identifier">open</span>(<span class="ruby-identifier">fname</span>, <span class="ruby-string">'wb'</span>) <span class="ruby-keyword">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">file</span><span class="ruby-operator">|</span>
+      <span class="ruby-identifier">klass</span>.<span class="ruby-identifier">new</span>(<span class="ruby-ivar">@data</span>).<span class="ruby-identifier">print</span>(<span class="ruby-identifier">file</span>, <span class="ruby-identifier">profile_options</span>.<span class="ruby-identifier">slice</span>(<span class="ruby-value">:min_percent</span>))
+    <span class="ruby-keyword">end</span>
+  <span class="ruby-keyword">end</span>
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+          
+      <div class="method">
+        <div class="title">
+                      <a name="method-i-report"></a>
+            <b>report</b>()          
+        </div>
+
+                  <div class="description">
+                      </div>
+        
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('report_source')"
+                 id="l_method-i-report_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="report_source">
+<pre>
+  <span class="ruby-comment"># File activesupport/lib/active_support/testing/performance.rb, line 184</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">report</span>
+  <span class="ruby-keyword">if</span> <span class="ruby-ivar">@supported</span>
+    <span class="ruby-keyword">super</span>
+  <span class="ruby-keyword">else</span>
+    <span class="ruby-string">'%20s: unsupported'</span> <span class="ruby-operator">%</span> <span class="ruby-ivar">@metric</span>.<span class="ruby-identifier">name</span>
+  <span class="ruby-keyword">end</span>
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+          
+      <div class="method">
+        <div class="title">
+                      <a name="method-i-run"></a>
+            <b>run</b>()          
+        </div>
+
+                  <div class="description">
+                      </div>
+        
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('run_source')"
+                 id="l_method-i-run_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="run_source">
+<pre>
+  <span class="ruby-comment"># File activesupport/lib/active_support/testing/performance.rb, line 173</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">run</span>
+  <span class="ruby-keyword">return</span> <span class="ruby-keyword">unless</span> <span class="ruby-ivar">@supported</span>
+
+  <span class="ruby-constant">RubyProf</span>.<span class="ruby-identifier">measure_mode</span> = <span class="ruby-ivar">@metric</span>.<span class="ruby-identifier">measure_mode</span>
+  <span class="ruby-constant">RubyProf</span>.<span class="ruby-identifier">start</span>
+  <span class="ruby-constant">RubyProf</span>.<span class="ruby-identifier">pause</span>
+  <span class="ruby-identifier">profile_options</span>[<span class="ruby-value">:runs</span>].<span class="ruby-identifier">to_i</span>.<span class="ruby-identifier">times</span> { <span class="ruby-identifier">run_test</span>(<span class="ruby-ivar">@metric</span>, <span class="ruby-value">:profile</span>) }
+  <span class="ruby-ivar">@data</span> = <span class="ruby-constant">RubyProf</span>.<span class="ruby-identifier">stop</span>
+  <span class="ruby-ivar">@total</span> = <span class="ruby-ivar">@data</span>.<span class="ruby-identifier">threads</span>.<span class="ruby-identifier">values</span>.<span class="ruby-identifier">sum</span>(<span class="ruby-value">0</span>) { <span class="ruby-operator">|</span><span class="ruby-identifier">method_infos</span><span class="ruby-operator">|</span> <span class="ruby-identifier">method_infos</span>.<span class="ruby-identifier">max</span>.<span class="ruby-identifier">total_time</span> }
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+          
+    <div class="sectiontitle">
+      Protected      Instance      methods
+    </div>
+
+          
+      <div class="method">
+        <div class="title">
+                      <a name="method-i-output_filename"></a>
+            <b>output_filename</b>(printer_class)          
+        </div>
+
+                  <div class="description">
+                      </div>
+        
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('output_filename_source')"
+                 id="l_method-i-output_filename_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="output_filename_source">
+<pre>
+  <span class="ruby-comment"># File activesupport/lib/active_support/testing/performance.rb, line 207</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">output_filename</span>(<span class="ruby-identifier">printer_class</span>)
+  <span class="ruby-identifier">suffix</span> =
+    <span class="ruby-keyword">case</span> <span class="ruby-identifier">printer_class</span>.<span class="ruby-identifier">name</span>.<span class="ruby-identifier">demodulize</span>
+      <span class="ruby-keyword">when</span> <span class="ruby-string">'FlatPrinter'</span>;                 <span class="ruby-string">'flat.txt'</span>
+      <span class="ruby-keyword">when</span> <span class="ruby-string">'FlatPrinterWithLineNumbers'</span>;  <span class="ruby-string">'flat_line_numbers.txt'</span>
+      <span class="ruby-keyword">when</span> <span class="ruby-string">'GraphPrinter'</span>;                <span class="ruby-string">'graph.txt'</span>
+      <span class="ruby-keyword">when</span> <span class="ruby-string">'GraphHtmlPrinter'</span>;            <span class="ruby-string">'graph.html'</span>
+      <span class="ruby-keyword">when</span> <span class="ruby-string">'GraphYamlPrinter'</span>;            <span class="ruby-string">'graph.yml'</span>
+      <span class="ruby-keyword">when</span> <span class="ruby-string">'CallTreePrinter'</span>;             <span class="ruby-string">'tree.txt'</span>
+      <span class="ruby-keyword">when</span> <span class="ruby-string">'CallStackPrinter'</span>;            <span class="ruby-string">'stack.html'</span>
+      <span class="ruby-keyword">when</span> <span class="ruby-string">'DotPrinter'</span>;                  <span class="ruby-string">'graph.dot'</span>
+      <span class="ruby-keyword">else</span> <span class="ruby-identifier">printer_class</span>.<span class="ruby-identifier">name</span>.<span class="ruby-identifier">sub</span>(<span class="ruby-regexp">/Printer$/</span>, <span class="ruby-string">''</span>).<span class="ruby-identifier">underscore</span>
+    <span class="ruby-keyword">end</span>
+
+  <span class="ruby-node">&quot;#{super()}_#{suffix}&quot;</span>
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+          </div>
+  </div>
+  </body>
+</html>

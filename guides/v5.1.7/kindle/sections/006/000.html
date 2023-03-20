@@ -1,0 +1,74 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>1 Why Associations?</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v5.1.7/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="why-associations-questionmark">1 Why Associations?</h3>
+<p>In Rails, an <em>association</em> is a connection between two Active Record models. Why do we need associations between models? Because they make common operations simpler and easier in your code. For example, consider a simple Rails application that includes a model for authors and a model for books. Each author can have many books. Without associations, the model declarations would look like this:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class Author &lt; ApplicationRecord
+end
+
+class Book &lt; ApplicationRecord
+end
+
+</pre>
+</div>
+<p>Now, suppose we wanted to add a new book for an existing author. We'd need to do something like this:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+@book = Book.create(published_at: Time.now, author_id: @author.id)
+
+</pre>
+</div>
+<p>Or consider deleting an author, and ensuring that all of its books get deleted as well:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+@books = Book.where(author_id: @author.id)
+@books.each do |book|
+  book.destroy
+end
+@author.destroy
+
+</pre>
+</div>
+<p>With Active Record associations, we can streamline these - and other - operations by declaratively telling Rails that there is a connection between the two models. Here's the revised code for setting up authors and books:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class Author &lt; ApplicationRecord
+  has_many :books, dependent: :destroy
+end
+
+class Book &lt; ApplicationRecord
+  belongs_to :author
+end
+
+</pre>
+</div>
+<p>With this change, creating a new book for a particular author is easier:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+@book = @author.books.create(published_at: Time.now)
+
+</pre>
+</div>
+<p>Deleting an author and all of its books is <em>much</em> easier:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+@author.destroy
+
+</pre>
+</div>
+<p>To learn more about the different types of associations, read the next section of this guide. That's followed by some tips and tricks for working with associations, and then by a complete reference to the methods and options for associations in Rails.</p>
+</body>
+</html>

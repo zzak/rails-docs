@@ -1,0 +1,41 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>16 Enums</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v5.0.7.2/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="enums">16 Enums</h3>
+<p>The <code>enum</code> macro maps an integer column to a set of possible values.</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class Book &lt; ApplicationRecord
+  enum availability: [:available, :unavailable]
+end
+
+</pre>
+</div>
+<p>This will automatically create the corresponding <a href="#scopes">scopes</a> to query the
+model. Methods to transition between states and query the current state are also
+added.</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+# Both examples below query just available books.
+Book.available
+# or
+Book.where(availability: :available)
+
+book = Book.new(availability: :available)
+book.available?   # =&gt; true
+book.unavailable! # =&gt; true
+book.available?   # =&gt; false
+
+</pre>
+</div>
+<p>Read the full documentation about enums
+<a href="http://api.rubyonrails.org/classes/ActiveRecord/Enum.html">in the Rails API docs</a>.</p>
+</body>
+</html>

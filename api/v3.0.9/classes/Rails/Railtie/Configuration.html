@@ -1,0 +1,424 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html 
+     PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+  <head>
+    <title>Class: Rails::Railtie::Configuration</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <link rel="stylesheet" href="../../../rdoc-style.css" type="text/css" media="screen" />
+
+    <script language="JavaScript" type="text/javascript">
+    // <![CDATA[
+
+        function toggleSource( id )
+        {
+          var elem
+          var link
+
+          if( document.getElementById )
+          {
+            elem = document.getElementById( id )
+            link = document.getElementById( "l_" + id )
+          }
+          else if ( document.all )
+          {
+            elem = eval( "document.all." + id )
+            link = eval( "document.all.l_" + id )
+          }
+          else
+            return false;
+
+          if( elem.style.display == "block" )
+          {
+            elem.style.display = "none"
+            link.innerHTML = "show source"
+          }
+          else
+          {
+            elem.style.display = "block"
+            link.innerHTML = "hide source"
+          }
+        }
+
+        function openCode( url )
+        {
+          window.open( url, "SOURCE_CODE", "resizable=yes,scrollbars=yes,toolbar=no,status=no,height=480,width=750" ).focus();
+        }
+      // ]]>
+    </script>
+  </head>
+
+  <body>
+    <table width="100%" border='0' cellpadding='0' cellspacing='0' class='banner'>
+    <tr><td>Ruby on Rails v3.0.9</td></tr>
+    <tr>
+  <td class="file-title"><span class="file-title-prefix">Class</span><br />Rails::Railtie::Configuration</td>
+  <td align="right">
+    <table cellspacing="0" cellpadding="2">
+      <tr valign="top">
+        <td>In:</td>
+        <td>
+<a href="../../../files/railties/lib/rails/railtie/configuration_rb.html">railties/lib/rails/railtie/configuration.rb</a>:
+        </td>
+      </tr>
+      <tr>
+        <td>Parent:</td>
+        <td>
+
+      <a href="../../Object.html">Object</a>         </td>
+     </tr>
+         </table>
+        </td>
+        </tr>
+      </table>
+  <div id="bodyContent">
+  <div id="content">
+
+  <div class="description"></div>
+
+
+  <div class="sectiontitle">Methods</div>
+  <ul>
+                <li><a href="#method-i-after_initialize">after_initialize</a></li>
+                <li><a href="#method-i-app_generators">app_generators</a></li>
+                <li><a href="#method-i-app_middleware">app_middleware</a></li>
+                <li><a href="#method-i-before_configuration">before_configuration</a></li>
+                <li><a href="#method-i-before_eager_load">before_eager_load</a></li>
+                <li><a href="#method-i-before_initialize">before_initialize</a></li>
+                      <li><a href="#method-c-new">new</a></li>
+                <li><a href="#method-i-respond_to-3F">respond_to?</a></li>
+                <li><a href="#method-i-to_prepare">to_prepare</a></li>
+                <li><a href="#method-i-to_prepare_blocks">to_prepare_blocks</a></li>
+      </ul>
+
+
+
+
+        
+    <div class="sectiontitle">
+      Public      Class      methods
+    </div>
+
+          
+      <div class="method">
+        <div class="title">
+                      <a name="method-c-new"></a>
+            <b>new</b>()          
+        </div>
+
+                  <div class="description">
+                      </div>
+        
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('new_source')"
+                 id="l_method-c-new_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="new_source">
+<pre>
+  <span class="ruby-comment"># File railties/lib/rails/railtie/configuration.rb, line 6</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">initialize</span>
+  <span class="ruby-identifier">@@options</span> <span class="ruby-operator">||=</span> {}
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+                      
+    <div class="sectiontitle">
+      Public      Instance      methods
+    </div>
+
+          
+      <div class="method">
+        <div class="title">
+                      <a name="method-i-after_initialize"></a>
+            <b>after_initialize</b>(&block)          
+        </div>
+
+                  <div class="description">
+                      </div>
+        
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('after_initialize_source')"
+                 id="l_method-i-after_initialize_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="after_initialize_source">
+<pre>
+  <span class="ruby-comment"># File railties/lib/rails/railtie/configuration.rb, line 53</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">after_initialize</span>(&amp;<span class="ruby-identifier">block</span>)
+  <span class="ruby-constant">ActiveSupport</span>.<span class="ruby-identifier">on_load</span>(<span class="ruby-value">:after_initialize</span>, <span class="ruby-value">:yield</span> =<span class="ruby-operator">&gt;</span> <span class="ruby-keyword">true</span>, &amp;<span class="ruby-identifier">block</span>)
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+          
+      <div class="method">
+        <div class="title">
+                      <a name="method-i-app_generators"></a>
+            <b>app_generators</b>()          
+        </div>
+
+                  <div class="description">
+            <p>Holds generators configuration:</p>
+
+<pre>config.app_generators do |g|
+  g.orm             :datamapper, :migration =&gt; true
+  g.template_engine :haml
+  g.test_framework  :rspec
+end</pre>
+
+<p>If you want to disable color in console, do:</p>
+
+<pre>config.app_generators.colorize_logging = false</pre>          </div>
+        
+                  <div class="aka">
+            This method is also aliased as
+                          <a href="Configuration.html#method-i-generators">generators</a>                      </div>
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('app_generators_source')"
+                 id="l_method-i-app_generators_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="app_generators_source">
+<pre>
+  <span class="ruby-comment"># File railties/lib/rails/railtie/configuration.rb, line 31</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">app_generators</span>
+  <span class="ruby-identifier">@@generators</span> <span class="ruby-operator">||=</span> <span class="ruby-constant">Rails</span><span class="ruby-operator">::</span><span class="ruby-constant">Configuration</span><span class="ruby-operator">::</span><span class="ruby-constant">Generators</span>.<span class="ruby-identifier">new</span>
+  <span class="ruby-keyword">if</span> <span class="ruby-identifier">block_given?</span>
+    <span class="ruby-keyword">yield</span> <span class="ruby-identifier">@@generators</span>
+  <span class="ruby-keyword">else</span>
+    <span class="ruby-identifier">@@generators</span>
+  <span class="ruby-keyword">end</span>
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+          
+      <div class="method">
+        <div class="title">
+                      <a name="method-i-app_middleware"></a>
+            <b>app_middleware</b>()          
+        </div>
+
+                  <div class="description">
+            <p>This allows you to modify the application’s middlewares from Engines.</p>
+
+<p>All operations you run on the <a
+href="Configuration.html#method-i-app_middleware">app_middleware</a> will
+be replayed on the application once it is defined and the
+default_middlewares are created</p>          </div>
+        
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('app_middleware_source')"
+                 id="l_method-i-app_middleware_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="app_middleware_source">
+<pre>
+  <span class="ruby-comment"># File railties/lib/rails/railtie/configuration.rb, line 15</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">app_middleware</span>
+  <span class="ruby-identifier">@@app_middleware</span> <span class="ruby-operator">||=</span> <span class="ruby-constant">Rails</span><span class="ruby-operator">::</span><span class="ruby-constant">Configuration</span><span class="ruby-operator">::</span><span class="ruby-constant">MiddlewareStackProxy</span>.<span class="ruby-identifier">new</span>
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+          
+      <div class="method">
+        <div class="title">
+                      <a name="method-i-before_configuration"></a>
+            <b>before_configuration</b>(&block)          
+        </div>
+
+                  <div class="description">
+                      </div>
+        
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('before_configuration_source')"
+                 id="l_method-i-before_configuration_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="before_configuration_source">
+<pre>
+  <span class="ruby-comment"># File railties/lib/rails/railtie/configuration.rb, line 41</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">before_configuration</span>(&amp;<span class="ruby-identifier">block</span>)
+  <span class="ruby-constant">ActiveSupport</span>.<span class="ruby-identifier">on_load</span>(<span class="ruby-value">:before_configuration</span>, <span class="ruby-value">:yield</span> =<span class="ruby-operator">&gt;</span> <span class="ruby-keyword">true</span>, &amp;<span class="ruby-identifier">block</span>)
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+          
+      <div class="method">
+        <div class="title">
+                      <a name="method-i-before_eager_load"></a>
+            <b>before_eager_load</b>(&block)          
+        </div>
+
+                  <div class="description">
+                      </div>
+        
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('before_eager_load_source')"
+                 id="l_method-i-before_eager_load_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="before_eager_load_source">
+<pre>
+  <span class="ruby-comment"># File railties/lib/rails/railtie/configuration.rb, line 45</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">before_eager_load</span>(&amp;<span class="ruby-identifier">block</span>)
+  <span class="ruby-constant">ActiveSupport</span>.<span class="ruby-identifier">on_load</span>(<span class="ruby-value">:before_eager_load</span>, <span class="ruby-value">:yield</span> =<span class="ruby-operator">&gt;</span> <span class="ruby-keyword">true</span>, &amp;<span class="ruby-identifier">block</span>)
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+          
+      <div class="method">
+        <div class="title">
+                      <a name="method-i-before_initialize"></a>
+            <b>before_initialize</b>(&block)          
+        </div>
+
+                  <div class="description">
+                      </div>
+        
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('before_initialize_source')"
+                 id="l_method-i-before_initialize_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="before_initialize_source">
+<pre>
+  <span class="ruby-comment"># File railties/lib/rails/railtie/configuration.rb, line 49</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">before_initialize</span>(&amp;<span class="ruby-identifier">block</span>)
+  <span class="ruby-constant">ActiveSupport</span>.<span class="ruby-identifier">on_load</span>(<span class="ruby-value">:before_initialize</span>, <span class="ruby-value">:yield</span> =<span class="ruby-operator">&gt;</span> <span class="ruby-keyword">true</span>, &amp;<span class="ruby-identifier">block</span>)
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+                
+      <div class="method">
+        <div class="title">
+                      <a name="method-i-respond_to-3F"></a>
+            <b>respond_to?</b>(name)          
+        </div>
+
+                  <div class="description">
+                      </div>
+        
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('respond_to-3F_source')"
+                 id="l_method-i-respond_to-3F_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="respond_to-3F_source">
+<pre>
+  <span class="ruby-comment"># File railties/lib/rails/railtie/configuration.rb, line 65</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">respond_to?</span>(<span class="ruby-identifier">name</span>)
+  <span class="ruby-keyword">super</span> <span class="ruby-operator">||</span> <span class="ruby-identifier">@@options</span>.<span class="ruby-identifier">key?</span>(<span class="ruby-identifier">name</span>.<span class="ruby-identifier">to_sym</span>)
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+          
+      <div class="method">
+        <div class="title">
+                      <a name="method-i-to_prepare"></a>
+            <b>to_prepare</b>(&blk)          
+        </div>
+
+                  <div class="description">
+                      </div>
+        
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('to_prepare_source')"
+                 id="l_method-i-to_prepare_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="to_prepare_source">
+<pre>
+  <span class="ruby-comment"># File railties/lib/rails/railtie/configuration.rb, line 61</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">to_prepare</span>(&amp;<span class="ruby-identifier">blk</span>)
+  <span class="ruby-identifier">to_prepare_blocks</span> <span class="ruby-operator">&lt;&lt;</span> <span class="ruby-identifier">blk</span> <span class="ruby-keyword">if</span> <span class="ruby-identifier">blk</span>
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+          
+      <div class="method">
+        <div class="title">
+                      <a name="method-i-to_prepare_blocks"></a>
+            <b>to_prepare_blocks</b>()          
+        </div>
+
+                  <div class="description">
+                      </div>
+        
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('to_prepare_blocks_source')"
+                 id="l_method-i-to_prepare_blocks_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="to_prepare_blocks_source">
+<pre>
+  <span class="ruby-comment"># File railties/lib/rails/railtie/configuration.rb, line 57</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">to_prepare_blocks</span>
+  <span class="ruby-identifier">@@to_prepare_blocks</span> <span class="ruby-operator">||=</span> []
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+              </div>
+  </div>
+  </body>
+</html>

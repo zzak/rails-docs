@@ -1,0 +1,105 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>2 Callbacks Overview</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v6.1.7.3/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="callbacks-overview"><a class="anchorlink" href="#callbacks-overview">2 Callbacks Overview</a></h3>
+<p>Callbacks are methods that get called at certain moments of an object's life cycle. With callbacks it is possible to write code that will run whenever an Active Record object is created, saved, updated, deleted, validated, or loaded from the database.</p>
+
+<h4 id="callback-registration"><a class="anchorlink" href="#callback-registration">2.1 Callback Registration</a></h4>
+
+<p>In order to use the available callbacks, you need to register them. You can implement the callbacks as ordinary methods and use a macro-style class method to register them as callbacks:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">User</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="n">validates</span> <span class="ss">:login</span><span class="p">,</span> <span class="ss">:email</span><span class="p">,</span> <span class="ss">presence: </span><span class="kp">true</span>
+
+  <span class="n">before_validation</span> <span class="ss">:ensure_login_has_a_value</span>
+
+  <span class="kp">private</span>
+    <span class="k">def</span> <span class="nf">ensure_login_has_a_value</span>
+      <span class="k">if</span> <span class="n">login</span><span class="p">.</span><span class="nf">nil?</span>
+        <span class="nb">self</span><span class="p">.</span><span class="nf">login</span> <span class="o">=</span> <span class="n">email</span> <span class="k">unless</span> <span class="n">email</span><span class="p">.</span><span class="nf">blank?</span>
+      <span class="k">end</span>
+    <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-22545d762548abafa3ee0ce8b5cf7c74">class User &lt; ApplicationRecord
+  validates :login, :email, presence: true
+
+  before_validation :ensure_login_has_a_value
+
+  private
+    def ensure_login_has_a_value
+      if login.nil?
+        self.login = email unless email.blank?
+      end
+    end
+end
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-22545d762548abafa3ee0ce8b5cf7c74">Copy</button>
+</div>
+<p>The macro-style class methods can also receive a block. Consider using this style if the code inside your block is so short that it fits in a single line:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">User</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="n">validates</span> <span class="ss">:login</span><span class="p">,</span> <span class="ss">:email</span><span class="p">,</span> <span class="ss">presence: </span><span class="kp">true</span>
+
+  <span class="n">before_create</span> <span class="k">do</span>
+    <span class="nb">self</span><span class="p">.</span><span class="nf">name</span> <span class="o">=</span> <span class="n">login</span><span class="p">.</span><span class="nf">capitalize</span> <span class="k">if</span> <span class="nb">name</span><span class="p">.</span><span class="nf">blank?</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-1422a79ea2870ae31f368dea5cd80b84">class User &lt; ApplicationRecord
+  validates :login, :email, presence: true
+
+  before_create do
+    self.name = login.capitalize if name.blank?
+  end
+end
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-1422a79ea2870ae31f368dea5cd80b84">Copy</button>
+</div>
+<p>Callbacks can also be registered to only fire on certain life cycle events:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">User</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="n">before_validation</span> <span class="ss">:normalize_name</span><span class="p">,</span> <span class="ss">on: :create</span>
+
+  <span class="c1"># :on takes an array as well</span>
+  <span class="n">after_validation</span> <span class="ss">:set_location</span><span class="p">,</span> <span class="ss">on: </span><span class="p">[</span> <span class="ss">:create</span><span class="p">,</span> <span class="ss">:update</span> <span class="p">]</span>
+
+  <span class="kp">private</span>
+    <span class="k">def</span> <span class="nf">normalize_name</span>
+      <span class="nb">self</span><span class="p">.</span><span class="nf">name</span> <span class="o">=</span> <span class="nb">name</span><span class="p">.</span><span class="nf">downcase</span><span class="p">.</span><span class="nf">titleize</span>
+    <span class="k">end</span>
+
+    <span class="k">def</span> <span class="nf">set_location</span>
+      <span class="nb">self</span><span class="p">.</span><span class="nf">location</span> <span class="o">=</span> <span class="no">LocationService</span><span class="p">.</span><span class="nf">query</span><span class="p">(</span><span class="nb">self</span><span class="p">)</span>
+    <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-87cf95624cb6381d230f22d18ce1892f">class User &lt; ApplicationRecord
+  before_validation :normalize_name, on: :create
+
+  # :on takes an array as well
+  after_validation :set_location, on: [ :create, :update ]
+
+  private
+    def normalize_name
+      self.name = name.downcase.titleize
+    end
+
+    def set_location
+      self.location = LocationService.query(self)
+    end
+end
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-87cf95624cb6381d230f22d18ce1892f">Copy</button>
+</div>
+<p>It is considered good practice to declare callback methods as private. If left public, they can be called from outside of the model and violate the principle of object encapsulation.</p>
+</body>
+</html>

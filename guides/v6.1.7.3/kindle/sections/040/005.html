@@ -1,0 +1,69 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>6 Customizing Your Workflow by Changing Generators Templates</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v6.1.7.3/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="customizing-your-workflow-by-changing-generators-templates"><a class="anchorlink" href="#customizing-your-workflow-by-changing-generators-templates">6 Customizing Your Workflow by Changing Generators Templates</a></h3>
+<p>In the step above we simply wanted to add a line to the generated helper, without adding any extra functionality. There is a simpler way to do that, and it's by replacing the templates of already existing generators, in that case <code>Rails::Generators::HelperGenerator</code>.</p>
+
+<p>In Rails 3.0 and above, generators don't just look in the source root for templates, they also search for templates in other paths. And one of them is <code>lib/templates</code>. Since we want to customize <code>Rails::Generators::HelperGenerator</code>, we can do that by simply making a template copy inside <code>lib/templates/rails/helper</code> with the name <code>helper.rb</code>. So let's create that file with the following content:</p>
+
+<div class="code_container">
+<pre><code class="highlight erb">module <span class="cp">&lt;%=</span> <span class="n">class_name</span> <span class="cp">%&gt;</span>Helper
+  attr_reader :<span class="cp">&lt;%=</span> <span class="n">plural_name</span> <span class="cp">%&gt;</span>, :<span class="cp">&lt;%=</span> <span class="n">plural_name</span><span class="p">.</span><span class="nf">singularize</span> <span class="cp">%&gt;</span>
+end
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-2c3caa47d9afbc008af571035fb61605">module &lt;%= class_name %&gt;Helper
+  attr_reader :&lt;%= plural_name %&gt;, :&lt;%= plural_name.singularize %&gt;
+end
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-2c3caa47d9afbc008af571035fb61605">Copy</button>
+</div>
+<p>and revert the last change in <code>config/application.rb</code>:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">config</span><span class="p">.</span><span class="nf">generators</span> <span class="k">do</span> <span class="o">|</span><span class="n">g</span><span class="o">|</span>
+  <span class="n">g</span><span class="p">.</span><span class="nf">orm</span>             <span class="ss">:active_record</span>
+  <span class="n">g</span><span class="p">.</span><span class="nf">template_engine</span> <span class="ss">:erb</span>
+  <span class="n">g</span><span class="p">.</span><span class="nf">test_framework</span>  <span class="ss">:test_unit</span><span class="p">,</span> <span class="ss">fixture: </span><span class="kp">false</span>
+  <span class="n">g</span><span class="p">.</span><span class="nf">stylesheets</span>     <span class="kp">false</span>
+<span class="k">end</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-a81b3c6dab92cfb57b89dadc1d5b82d5">config.generators do |g|
+  g.orm             :active_record
+  g.template_engine :erb
+  g.test_framework  :test_unit, fixture: false
+  g.stylesheets     false
+end
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-a81b3c6dab92cfb57b89dadc1d5b82d5">Copy</button>
+</div>
+<p>If you generate another resource, you can see that we get exactly the same result! This is useful if you want to customize your scaffold templates and/or layout by just creating <code>edit.html.erb</code>, <code>index.html.erb</code> and so on inside <code>lib/templates/erb/scaffold</code>.</p>
+
+<p>Scaffold templates in Rails frequently use ERB tags; these tags need to be
+escaped so that the generated output is valid ERB code.</p>
+
+<p>For example, the following escaped ERB tag would be needed in the template
+(note the extra <code>%</code>)...</p>
+
+<div class="code_container">
+<pre><code class="highlight erb"><span class="cp">&lt;%%</span><span class="o">=</span> <span class="n">stylesheet_include_tag</span> <span class="ss">:application</span> <span class="cp">%&gt;</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-ae8894d3bd4fc6a6dfee5fc6ec17af97">&lt;%%= stylesheet_include_tag :application %&gt;
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-ae8894d3bd4fc6a6dfee5fc6ec17af97">Copy</button>
+</div>
+<p>...to generate the following output:</p>
+
+<div class="code_container">
+<pre><code class="highlight erb"><span class="cp">&lt;%=</span> <span class="n">stylesheet_include_tag</span> <span class="ss">:application</span> <span class="cp">%&gt;</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-38e82b475fe147effe61f3067b6b24a8">&lt;%= stylesheet_include_tag :application %&gt;
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-38e82b475fe147effe61f3067b6b24a8">Copy</button>
+</div>
+</body>
+</html>

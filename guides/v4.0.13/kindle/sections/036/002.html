@@ -1,0 +1,27 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>3 Rails Architectural Changes</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v4.0.13/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="rails-architectural-changes">3 Rails Architectural Changes</h3>
+<h4 id="assets-pipeline">3.1 Assets Pipeline</h4>
+<p>The major change in Rails 3.1 is the Assets Pipeline. It makes CSS and JavaScript first-class code citizens and enables proper organization, including use in plugins and engines.</p>
+<p>The assets pipeline is powered by <a href="https://github.com/sstephenson/sprockets">Sprockets</a> and is covered in the <a href="asset_pipeline.html">Asset Pipeline</a> guide.</p>
+<h4 id="http-streaming">3.2 HTTP Streaming</h4>
+<p>HTTP Streaming is another change that is new in Rails 3.1. This lets the browser download your stylesheets and JavaScript files while the server is still generating the response. This requires Ruby 1.9.2, is opt-in and requires support from the web server as well, but the popular combo of nginx and unicorn is ready to take advantage of it.</p>
+<h4 id="default-js-library-is-now-jquery">3.3 Default JS library is now jQuery</h4>
+<p>jQuery is the default JavaScript library that ships with Rails 3.1. But if you use Prototype, it's simple to switch.</p>
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+$ rails new myapp -j prototype
+
+</pre>
+</div>
+<h4 id="identity-map">3.4 Identity Map</h4>
+<p>Active Record has an Identity Map in Rails 3.1. An identity map keeps previously instantiated records and returns the object associated with the record if accessed again. The identity map is created on a per-request basis and is flushed at request completion.</p>
+<p>Rails 3.1 comes with the identity map turned off by default.</p>
+</body>
+</html>

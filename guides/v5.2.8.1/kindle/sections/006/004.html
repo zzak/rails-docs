@@ -1,0 +1,86 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>5 Single Table Inheritance</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v5.2.8.1/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="single-table-inheritance"><a class="anchorlink" href="#single-table-inheritance">5 Single Table Inheritance</a></h3>
+<p>Sometimes, you may want to share fields and behavior between different models.
+Let's say we have Car, Motorcycle and Bicycle models. We will want to share
+the <code>color</code> and <code>price</code> fields and some methods for all of them, but having some
+specific behavior for each, and separated controllers too.</p>
+
+<p>Rails makes this quite easy. First, let's generate the base Vehicle model:</p>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+$ rails generate model vehicle type:string color:string price:decimal{10.2}
+
+</pre>
+</div>
+<p>Did you note we are adding a "type" field? Since all models will be saved in a
+single database table, Rails will save in this column the name of the model that
+is being saved. In our example, this can be "Car", "Motorcycle" or "Bicycle."
+STI won't work without a "type" field in the table.</p>
+
+<p>Next, we will generate the three models that inherit from Vehicle. For this,
+we can use the <code>--parent=PARENT</code> option, which will generate a model that
+inherits from the specified parent and without equivalent migration (since the
+table already exists).</p>
+
+<p>For example, to generate the Car model:</p>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+$ rails generate model car --parent=Vehicle
+
+</pre>
+</div>
+<p>The generated model will look like this:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class Car &lt; Vehicle
+end
+
+</pre>
+</div>
+<p>This means that all behavior added to Vehicle is available for Car too, as
+associations, public methods, etc.</p>
+
+<p>Creating a car will save it in the <code>vehicles</code> table with "Car" as the <code>type</code> field:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+Car.create(color: 'Red', price: 10000)
+
+</pre>
+</div>
+<p>will generate the following SQL:</p>
+
+<div class="code_container">
+<pre class="brush: sql; gutter: false; toolbar: false">
+INSERT INTO "vehicles" ("type", "color", "price") VALUES ('Car', 'Red', 10000)
+
+</pre>
+</div>
+<p>Querying car records will just search for vehicles that are cars:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+Car.all
+
+</pre>
+</div>
+<p>will run a query like:</p>
+
+<div class="code_container">
+<pre class="brush: sql; gutter: false; toolbar: false">
+SELECT "vehicles".* FROM "vehicles" WHERE "vehicles"."type" IN ('Car')
+
+</pre>
+</div>
+</body>
+</html>

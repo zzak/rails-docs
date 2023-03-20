@@ -1,0 +1,32 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>3 Installation</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v7.0.4.2/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="installation"><a class="anchorlink" href="#installation">3 Installation</a></h3>
+<p>Run <code>bin/rails action_text:install</code> to add the Yarn package and copy over the necessary migration. Also, you need to set up Active Storage for embedded images and other attachments. Please refer to the <a href="active_storage_overview.html">Active Storage Overview</a> guide.</p>
+
+<div class="note"><p>Action Text uses polymorphic relationships with the <code>action_text_rich_texts</code> table so that it can be shared with all models that have rich text attributes. If your models with Action Text content use UUID values for identifiers, all models that use Action Text attributes will need to use UUID values for their unique identifiers. The generated migration for Action Text will also need to be updated to specify <code>type: :uuid</code> for the <code>:record</code> <code>references</code> line.</p></div>
+
+<p>After the installation is complete, a Rails app should have the following changes:</p>
+<ol>
+<li>
+Both <code>trix</code> and <code>@rails/actiontext</code> should be required in your JavaScript entrypoint.
+<div class="code_container">
+<pre><code class="highlight js"><span class="c1">// application.js</span>
+<span class="k">import</span> <span class="dl">"</span><span class="s2">trix</span><span class="dl">"</span>
+<span class="k">import</span> <span class="dl">"</span><span class="s2">@rails/actiontext</span><span class="dl">"</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='// application.js
+import "trix"
+import "@rails/actiontext"
+'>Copy</button>
+</div>
+</li>
+<li>The <code>trix</code> stylesheet will be included together with Action Text styles in your <code>application.css</code> file.</li>
+</ol>
+</body>
+</html>

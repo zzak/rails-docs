@@ -1,0 +1,59 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>9 Default Headers</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v5.1.7/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="default-headers">9 Default Headers</h3>
+<p>Every HTTP response from your Rails application receives the following default security headers.</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+config.action_dispatch.default_headers = {
+  'X-Frame-Options' =&gt; 'SAMEORIGIN',
+  'X-XSS-Protection' =&gt; '1; mode=block',
+  'X-Content-Type-Options' =&gt; 'nosniff'
+}
+
+</pre>
+</div>
+<p>You can configure default headers in <code>config/application.rb</code>.</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+config.action_dispatch.default_headers = {
+  'Header-Name' =&gt; 'Header-Value',
+  'X-Frame-Options' =&gt; 'DENY'
+}
+
+</pre>
+</div>
+<p>Or you can remove them.</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+config.action_dispatch.default_headers.clear
+
+</pre>
+</div>
+<p>Here is a list of common headers:</p>
+<ul>
+<li>
+<strong>X-Frame-Options:</strong> <em>'SAMEORIGIN' in Rails by default</em> - allow framing on same domain. Set it to 'DENY' to deny framing at all or 'ALLOWALL' if you want to allow framing for all website.</li>
+<li>
+<strong>X-XSS-Protection:</strong> <em>'1; mode=block' in Rails by default</em> - use XSS Auditor and block page if XSS attack is detected. Set it to '0;' if you want to switch XSS Auditor off(useful if response contents scripts from request parameters)</li>
+<li>
+<strong>X-Content-Type-Options:</strong> <em>'nosniff' in Rails by default</em> - stops the browser from guessing the MIME type of a file.</li>
+<li>
+<strong>X-Content-Security-Policy:</strong> <a href="http://w3c.github.io/webappsec/specs/content-security-policy/csp-specification.dev.html">A powerful mechanism for controlling which sites certain content types can be loaded from</a>
+</li>
+<li>
+<strong>Access-Control-Allow-Origin:</strong> Used to control which sites are allowed to bypass same origin policies and send cross-origin requests.</li>
+<li>
+<strong>Strict-Transport-Security:</strong> <a href="http://en.wikipedia.org/wiki/HTTP_Strict_Transport_Security">Used to control if the browser is allowed to only access a site over a secure connection</a>
+</li>
+</ul>
+</body>
+</html>

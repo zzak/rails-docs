@@ -1,0 +1,61 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>2 Adding NPM Packages with JavaScript Bundlers</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v7.0.4.2/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="adding-npm-packages-with-javascript-bundlers"><a class="anchorlink" href="#adding-npm-packages-with-javascript-bundlers">2 Adding NPM Packages with JavaScript Bundlers</a></h3>
+<p>Import maps are the default for new Rails applications, but if you prefer traditional JavaScript
+bundling, you can create new Rails applications with your choice of
+<a href="https://esbuild.github.io/">esbuild</a>, <a href="https://webpack.js.org/">webpack</a>, or
+<a href="https://rollupjs.org/guide/en/">rollup.js</a>.</p>
+
+<p>To use a bundler instead of import maps in a new Rails application, pass the <code>—javascript</code> or <code>-j</code>
+option to <code>rails new</code>:</p>
+
+<div class="code_container">
+<pre><code class="highlight console"><span class="gp">$</span><span class="w"> </span><span class="nb">rails </span>new my_new_app <span class="nt">--javascript</span><span class="o">=</span>webpack
+<span class="go">OR
+</span><span class="gp">$</span><span class="w"> </span><span class="nb">rails </span>new my_new_app <span class="nt">-j</span> webpack
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="rails new my_new_app --javascript=webpack
+rails new my_new_app -j webpack
+">Copy</button>
+</div>
+<p>These bundling options each come with a simple configuration and integration with the asset
+pipeline via the <a href="https://github.com/rails/jsbundling-rails">jsbundling-rails</a> gem.</p>
+
+<p>When using a bundling option, use <code>bin/dev</code> to start the Rails server and build JavaScript for
+development.</p>
+
+<h4 id="installing-node-js-and-yarn"><a class="anchorlink" href="#installing-node-js-and-yarn">2.1 Installing Node.js and Yarn</a></h4>
+
+<p>If you are using a JavaScript bundler in your Rails application, Node.js and Yarn must be
+installed.</p>
+
+<p>Find the installation instructions at the <a href="https://nodejs.org/en/download/">Node.js website</a> and
+verify it’s installed correctly with the following command:</p>
+
+<div class="code_container">
+<pre><code class="highlight console"><span class="gp">$</span><span class="w"> </span><span class="nb">node</span> <span class="nt">--version</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="node --version
+">Copy</button>
+</div>
+<p>The version of your Node.js runtime should be printed out. Make sure it’s greater than <code>8.16.0</code>.</p>
+
+<p>To install Yarn, follow the installation instructions at the
+<a href="https://classic.yarnpkg.com/en/docs/install">Yarn website</a>. Running this command should print out
+the Yarn version:</p>
+
+<div class="code_container">
+<pre><code class="highlight console"><span class="gp">$</span><span class="w"> </span><span class="nb">yarn</span> <span class="nt">--version</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="yarn --version
+">Copy</button>
+</div>
+<p>If it says something like <code>1.22.0</code>, Yarn has been installed correctly.</p>
+</body>
+</html>

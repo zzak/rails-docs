@@ -1,0 +1,98 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>5 Testing an Engine</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v6.1.7.3/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="testing-an-engine"><a class="anchorlink" href="#testing-an-engine">5 Testing an Engine</a></h3>
+<p>When an engine is generated, there is a smaller dummy application created inside
+it at <code>test/dummy</code>. This application is used as a mounting point for the engine,
+to make testing the engine extremely simple. You may extend this application by
+generating controllers, models, or views from within the directory, and then use
+those to test your engine.</p>
+
+<p>The <code>test</code> directory should be treated like a typical Rails testing environment,
+allowing for unit, functional, and integration tests.</p>
+
+<h4 id="functional-tests"><a class="anchorlink" href="#functional-tests">5.1 Functional Tests</a></h4>
+
+<p>A matter worth taking into consideration when writing functional tests is that
+the tests are going to be running on an application - the <code>test/dummy</code>
+application - rather than your engine. This is due to the setup of the testing
+environment; an engine needs an application as a host for testing its main
+functionality, especially controllers. This means that if you were to make a
+typical <code>GET</code> to a controller in a controller's functional test like this:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">module</span> <span class="nn">Blorgh</span>
+  <span class="k">class</span> <span class="nc">FooControllerTest</span> <span class="o">&lt;</span> <span class="no">ActionDispatch</span><span class="o">::</span><span class="no">IntegrationTest</span>
+    <span class="kp">include</span> <span class="no">Engine</span><span class="p">.</span><span class="nf">routes</span><span class="p">.</span><span class="nf">url_helpers</span>
+
+    <span class="k">def</span> <span class="nf">test_index</span>
+      <span class="n">get</span> <span class="n">foos_url</span>
+      <span class="c1"># ...</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-f02425038f4062be224b4eb8ade772c7">module Blorgh
+  class FooControllerTest &lt; ActionDispatch::IntegrationTest
+    include Engine.routes.url_helpers
+
+    def test_index
+      get foos_url
+      # ...
+    end
+  end
+end
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-f02425038f4062be224b4eb8ade772c7">Copy</button>
+</div>
+<p>It may not function correctly. This is because the application doesn't know how
+to route these requests to the engine unless you explicitly tell it <strong>how</strong>. To
+do this, you must set the <code>@routes</code> instance variable to the engine's route set
+in your setup code:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">module</span> <span class="nn">Blorgh</span>
+  <span class="k">class</span> <span class="nc">FooControllerTest</span> <span class="o">&lt;</span> <span class="no">ActionDispatch</span><span class="o">::</span><span class="no">IntegrationTest</span>
+    <span class="kp">include</span> <span class="no">Engine</span><span class="p">.</span><span class="nf">routes</span><span class="p">.</span><span class="nf">url_helpers</span>
+
+    <span class="n">setup</span> <span class="k">do</span>
+      <span class="vi">@routes</span> <span class="o">=</span> <span class="no">Engine</span><span class="p">.</span><span class="nf">routes</span>
+    <span class="k">end</span>
+
+    <span class="k">def</span> <span class="nf">test_index</span>
+      <span class="n">get</span> <span class="n">foos_url</span>
+      <span class="c1"># ...</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-2abd5a39ff57e3f27e4ebfd4d0538f8e">module Blorgh
+  class FooControllerTest &lt; ActionDispatch::IntegrationTest
+    include Engine.routes.url_helpers
+
+    setup do
+      @routes = Engine.routes
+    end
+
+    def test_index
+      get foos_url
+      # ...
+    end
+  end
+end
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-2abd5a39ff57e3f27e4ebfd4d0538f8e">Copy</button>
+</div>
+<p>This tells the application that you still want to perform a <code>GET</code> request to the
+<code>index</code> action of this controller, but you want to use the engine's route to get
+there, rather than the application's one.</p>
+
+<p>This also ensures that the engine's URL helpers will work as expected in your
+tests.</p>
+</body>
+</html>

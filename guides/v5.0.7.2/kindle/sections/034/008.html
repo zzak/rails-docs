@@ -1,0 +1,313 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>9 Generator methods</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v5.0.7.2/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="generator-methods">9 Generator methods</h3>
+<p>The following are methods available for both generators and templates for Rails.</p>
+
+<div class="note"><p>Methods provided by Thor are not covered this guide and can be found in <a href="http://rdoc.info/github/erikhuda/thor/master/Thor/Actions.html">Thor's documentation</a></p></div>
+
+<h4 id="gem">9.1 <code>gem</code>
+</h4>
+
+<p>Specifies a gem dependency of the application.</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+gem "rspec", group: "test", version: "2.1.0"
+gem "devise", "1.1.5"
+
+</pre>
+</div>
+<p>Available options are:</p>
+<ul>
+<li>
+<code>:group</code> - The group in the <code>Gemfile</code> where this gem should go.</li>
+<li>
+<code>:version</code> - The version string of the gem you want to use. Can also be specified as the second argument to the method.</li>
+<li>
+<code>:git</code> - The URL to the git repository for this gem.</li>
+</ul>
+<p>Any additional options passed to this method are put on the end of the line:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+gem "devise", git: "git://github.com/plataformatec/devise", branch: "master"
+
+</pre>
+</div>
+<p>The above code will put the following line into <code>Gemfile</code>:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+gem "devise", git: "git://github.com/plataformatec/devise", branch: "master"
+
+</pre>
+</div>
+<h4 id="gem-group">9.2 <code>gem_group</code>
+</h4>
+
+<p>Wraps gem entries inside a group:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+gem_group :development, :test do
+  gem "rspec-rails"
+end
+
+</pre>
+</div>
+<h4 id="add-source">9.3 <code>add_source</code>
+</h4>
+
+<p>Adds a specified source to <code>Gemfile</code>:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+add_source "http://gems.github.com"
+
+</pre>
+</div>
+<p>This method also takes a block:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+add_source "http://gems.github.com" do
+  gem "rspec-rails"
+end
+
+</pre>
+</div>
+<h4 id="inject-into-file">9.4 <code>inject_into_file</code>
+</h4>
+
+<p>Injects a block of code into a defined position in your file.</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+inject_into_file 'name_of_file.rb', after: "#The code goes below this line. Don't forget the Line break at the end\n" do &lt;&lt;-'RUBY'
+  puts "Hello World"
+RUBY
+end
+
+</pre>
+</div>
+<h4 id="gsub-file">9.5 <code>gsub_file</code>
+</h4>
+
+<p>Replaces text inside a file.</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+gsub_file 'name_of_file.rb', 'method.to_be_replaced', 'method.the_replacing_code'
+
+</pre>
+</div>
+<p>Regular Expressions can be used to make this method more precise. You can also use <code>append_file</code> and <code>prepend_file</code> in the same way to place code at the beginning and end of a file respectively.</p>
+
+<h4 id="application">9.6 <code>application</code>
+</h4>
+
+<p>Adds a line to <code>config/application.rb</code> directly after the application class definition.</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+application "config.asset_host = 'http://example.com'"
+
+</pre>
+</div>
+<p>This method can also take a block:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+application do
+  "config.asset_host = 'http://example.com'"
+end
+
+</pre>
+</div>
+<p>Available options are:</p>
+<ul>
+<li>
+<code>:env</code> - Specify an environment for this configuration option. If you wish to use this option with the block syntax the recommended syntax is as follows:</li>
+</ul>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+application(nil, env: "development") do
+  "config.asset_host = 'http://localhost:3000'"
+end
+
+</pre>
+</div>
+<h4 id="git">9.7 <code>git</code>
+</h4>
+
+<p>Runs the specified git command:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+git :init
+git add: "."
+git commit: "-m First commit!"
+git add: "onefile.rb", rm: "badfile.cxx"
+
+</pre>
+</div>
+<p>The values of the hash here being the arguments or options passed to the specific git command. As per the final example shown here, multiple git commands can be specified at a time, but the order of their running is not guaranteed to be the same as the order that they were specified in.</p>
+
+<h4 id="vendor">9.8 <code>vendor</code>
+</h4>
+
+<p>Places a file into <code>vendor</code> which contains the specified code.</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+vendor "sekrit.rb", '#top secret stuff'
+
+</pre>
+</div>
+<p>This method also takes a block:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+vendor "seeds.rb" do
+  "puts 'in your app, seeding your database'"
+end
+
+</pre>
+</div>
+<h4 id="lib">9.9 <code>lib</code>
+</h4>
+
+<p>Places a file into <code>lib</code> which contains the specified code.</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+lib "special.rb", "p Rails.root"
+
+</pre>
+</div>
+<p>This method also takes a block:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+lib "super_special.rb" do
+  puts "Super special!"
+end
+
+</pre>
+</div>
+<h4 id="rakefile">9.10 <code>rakefile</code>
+</h4>
+
+<p>Creates a Rake file in the <code>lib/tasks</code> directory of the application.</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+rakefile "test.rake", "hello there"
+
+</pre>
+</div>
+<p>This method also takes a block:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+rakefile "test.rake" do
+  %Q{
+    task rock: :environment do
+      puts "Rockin'"
+    end
+  }
+end
+
+</pre>
+</div>
+<h4 id="initializer">9.11 <code>initializer</code>
+</h4>
+
+<p>Creates an initializer in the <code>config/initializers</code> directory of the application:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+initializer "begin.rb", "puts 'this is the beginning'"
+
+</pre>
+</div>
+<p>This method also takes a block, expected to return a string:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+initializer "begin.rb" do
+  "puts 'this is the beginning'"
+end
+
+</pre>
+</div>
+<h4 id="generate">9.12 <code>generate</code>
+</h4>
+
+<p>Runs the specified generator where the first argument is the generator name and the remaining arguments are passed directly to the generator.</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+generate "scaffold", "forums title:string description:text"
+
+</pre>
+</div>
+<h4 id="rake">9.13 <code>rake</code>
+</h4>
+
+<p>Runs the specified Rake task.</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+rake "db:migrate"
+
+</pre>
+</div>
+<p>Available options are:</p>
+<ul>
+<li>
+<code>:env</code> - Specifies the environment in which to run this rake task.</li>
+<li>
+<code>:sudo</code> - Whether or not to run this task using <code>sudo</code>. Defaults to <code>false</code>.</li>
+</ul>
+<h4 id="capify-bang">9.14 <code>capify!</code>
+</h4>
+
+<p>Runs the <code>capify</code> command from Capistrano at the root of the application which generates Capistrano configuration.</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+capify!
+
+</pre>
+</div>
+<h4 id="route">9.15 <code>route</code>
+</h4>
+
+<p>Adds text to the <code>config/routes.rb</code> file:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+route "resources :people"
+
+</pre>
+</div>
+<h4 id="readme">9.16 <code>readme</code>
+</h4>
+
+<p>Output the contents of a file in the template's <code>source_path</code>, usually a README.</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+readme "README"
+
+</pre>
+</div>
+</body>
+</html>

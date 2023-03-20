@@ -1,0 +1,56 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>8 Active Model</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v5.1.7/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="active-model">8 Active Model</h3>
+<p>Please refer to the <a href="https://github.com/rails/rails/blob/5-0-stable/activemodel/CHANGELOG.md">Changelog</a> for detailed changes.</p>
+
+<h4 id="active-model-removals">8.1 Removals</h4>
+<ul>
+<li>  Removed deprecated <code>ActiveModel::Dirty#reset_#{attribute}</code> and
+<code>ActiveModel::Dirty#reset_changes</code>.
+(<a href="https://github.com/rails/rails/commit/37175a24bd508e2983247ec5d011d57df836c743">Pull Request</a>)</li>
+<li>  Removed XML serialization. This feature has been extracted into the
+<a href="https://github.com/rails/activemodel-serializers-xml">activemodel-serializers-xml</a> gem.
+(<a href="https://github.com/rails/rails/pull/21161">Pull Request</a>)</li>
+<li>  Removed <code>ActionController::ModelNaming</code> module.
+(<a href="https://github.com/rails/rails/pull/18194">Pull Request</a>)</li>
+</ul>
+<h4 id="active-model-deprecations">8.2 Deprecations</h4>
+<ul>
+<li>  Deprecated returning <code>false</code> as a way to halt Active Model and
+<code>ActiveModel::Validations</code> callback chains. The recommended way is to
+<code>throw(:abort)</code>. (<a href="https://github.com/rails/rails/pull/17227">Pull Request</a>)</li>
+<li>  Deprecated <code>ActiveModel::Errors#get</code>, <code>ActiveModel::Errors#set</code> and
+<code>ActiveModel::Errors#[]=</code> methods that have inconsistent behavior.
+(<a href="https://github.com/rails/rails/pull/18634">Pull Request</a>)</li>
+<li>  Deprecated the <code>:tokenizer</code> option for <code>validates_length_of</code>, in favor of
+plain Ruby.
+(<a href="https://github.com/rails/rails/pull/19585">Pull Request</a>)</li>
+<li>  Deprecated <code>ActiveModel::Errors#add_on_empty</code> and <code>ActiveModel::Errors#add_on_blank</code>
+with no replacement.
+(<a href="https://github.com/rails/rails/pull/18996">Pull Request</a>)</li>
+</ul>
+<h4 id="active-model-notable-changes">8.3 Notable changes</h4>
+<ul>
+<li>  Added <code>ActiveModel::Errors#details</code> to determine what validator has failed.
+(<a href="https://github.com/rails/rails/pull/18322">Pull Request</a>)</li>
+<li>  Extracted <code>ActiveRecord::AttributeAssignment</code> to <code>ActiveModel::AttributeAssignment</code>
+allowing to use it for any object as an includable module.
+(<a href="https://github.com/rails/rails/pull/10776">Pull Request</a>)</li>
+<li>  Added <code>ActiveModel::Dirty#[attr_name]_previously_changed?</code> and
+<code>ActiveModel::Dirty#[attr_name]_previous_change</code> to improve access
+to recorded changes after the model has been saved.
+(<a href="https://github.com/rails/rails/pull/19847">Pull Request</a>)</li>
+<li>  Validate multiple contexts on <code>valid?</code> and <code>invalid?</code> at once.
+(<a href="https://github.com/rails/rails/pull/21069">Pull Request</a>)</li>
+<li>  Change <code>validates_acceptance_of</code> to accept <code>true</code> as default value
+apart from <code>1</code>.
+(<a href="https://github.com/rails/rails/pull/18439">Pull Request</a>)</li>
+</ul>
+</body>
+</html>

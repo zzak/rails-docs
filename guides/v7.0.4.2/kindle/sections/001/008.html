@@ -1,0 +1,585 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>9 Refactoring</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v7.0.4.2/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="refactoring"><a class="anchorlink" href="#refactoring">9 Refactoring</a></h3>
+<p>Now that we have articles and comments working, take a look at the
+<code>app/views/articles/show.html.erb</code> template. It is getting long and awkward. We
+can use partials to clean it up.</p>
+
+<h4 id="rendering-partial-collections"><a class="anchorlink" href="#rendering-partial-collections">9.1 Rendering Partial Collections</a></h4>
+
+<p>First, we will make a comment partial to extract showing all the comments for
+the article. Create the file <code>app/views/comments/_comment.html.erb</code> and put the
+following into it:</p>
+
+<div class="code_container">
+<pre><code class="highlight erb"><span class="nt">&lt;p&gt;</span>
+  <span class="nt">&lt;strong&gt;</span>Commenter:<span class="nt">&lt;/strong&gt;</span>
+  <span class="cp">&lt;%=</span> <span class="n">comment</span><span class="p">.</span><span class="nf">commenter</span> <span class="cp">%&gt;</span>
+<span class="nt">&lt;/p&gt;</span>
+
+<span class="nt">&lt;p&gt;</span>
+  <span class="nt">&lt;strong&gt;</span>Comment:<span class="nt">&lt;/strong&gt;</span>
+  <span class="cp">&lt;%=</span> <span class="n">comment</span><span class="p">.</span><span class="nf">body</span> <span class="cp">%&gt;</span>
+<span class="nt">&lt;/p&gt;</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="&lt;p&gt;
+  &lt;strong&gt;Commenter:&lt;/strong&gt;
+  &lt;%= comment.commenter %&gt;
+&lt;/p&gt;
+
+&lt;p&gt;
+  &lt;strong&gt;Comment:&lt;/strong&gt;
+  &lt;%= comment.body %&gt;
+&lt;/p&gt;
+">Copy</button>
+</div>
+<p>Then you can change <code>app/views/articles/show.html.erb</code> to look like the
+following:</p>
+
+<div class="code_container">
+<pre><code class="highlight erb"><span class="nt">&lt;h1&gt;</span><span class="cp">&lt;%=</span> <span class="vi">@article</span><span class="p">.</span><span class="nf">title</span> <span class="cp">%&gt;</span><span class="nt">&lt;/h1&gt;</span>
+
+<span class="nt">&lt;p&gt;</span><span class="cp">&lt;%=</span> <span class="vi">@article</span><span class="p">.</span><span class="nf">body</span> <span class="cp">%&gt;</span><span class="nt">&lt;/p&gt;</span>
+
+<span class="nt">&lt;ul&gt;</span>
+  <span class="nt">&lt;li&gt;</span><span class="cp">&lt;%=</span> <span class="n">link_to</span> <span class="s2">"Edit"</span><span class="p">,</span> <span class="n">edit_article_path</span><span class="p">(</span><span class="vi">@article</span><span class="p">)</span> <span class="cp">%&gt;</span><span class="nt">&lt;/li&gt;</span>
+  <span class="nt">&lt;li&gt;</span><span class="cp">&lt;%=</span> <span class="n">link_to</span> <span class="s2">"Destroy"</span><span class="p">,</span> <span class="n">article_path</span><span class="p">(</span><span class="vi">@article</span><span class="p">),</span> <span class="ss">data: </span><span class="p">{</span>
+                    <span class="ss">turbo_method: :delete</span><span class="p">,</span>
+                    <span class="ss">turbo_confirm: </span><span class="s2">"Are you sure?"</span>
+                  <span class="p">}</span> <span class="cp">%&gt;</span><span class="nt">&lt;/li&gt;</span>
+<span class="nt">&lt;/ul&gt;</span>
+
+<span class="nt">&lt;h2&gt;</span>Comments<span class="nt">&lt;/h2&gt;</span>
+<span class="cp">&lt;%=</span> <span class="n">render</span> <span class="vi">@article</span><span class="p">.</span><span class="nf">comments</span> <span class="cp">%&gt;</span>
+
+<span class="nt">&lt;h2&gt;</span>Add a comment:<span class="nt">&lt;/h2&gt;</span>
+<span class="cp">&lt;%=</span> <span class="n">form_with</span> <span class="ss">model: </span><span class="p">[</span> <span class="vi">@article</span><span class="p">,</span> <span class="vi">@article</span><span class="p">.</span><span class="nf">comments</span><span class="p">.</span><span class="nf">build</span> <span class="p">]</span> <span class="k">do</span> <span class="o">|</span><span class="n">form</span><span class="o">|</span> <span class="cp">%&gt;</span>
+  <span class="nt">&lt;p&gt;</span>
+    <span class="cp">&lt;%=</span> <span class="n">form</span><span class="p">.</span><span class="nf">label</span> <span class="ss">:commenter</span> <span class="cp">%&gt;</span><span class="nt">&lt;br&gt;</span>
+    <span class="cp">&lt;%=</span> <span class="n">form</span><span class="p">.</span><span class="nf">text_field</span> <span class="ss">:commenter</span> <span class="cp">%&gt;</span>
+  <span class="nt">&lt;/p&gt;</span>
+  <span class="nt">&lt;p&gt;</span>
+    <span class="cp">&lt;%=</span> <span class="n">form</span><span class="p">.</span><span class="nf">label</span> <span class="ss">:body</span> <span class="cp">%&gt;</span><span class="nt">&lt;br&gt;</span>
+    <span class="cp">&lt;%=</span> <span class="n">form</span><span class="p">.</span><span class="nf">text_area</span> <span class="ss">:body</span> <span class="cp">%&gt;</span>
+  <span class="nt">&lt;/p&gt;</span>
+  <span class="nt">&lt;p&gt;</span>
+    <span class="cp">&lt;%=</span> <span class="n">form</span><span class="p">.</span><span class="nf">submit</span> <span class="cp">%&gt;</span>
+  <span class="nt">&lt;/p&gt;</span>
+<span class="cp">&lt;%</span> <span class="k">end</span> <span class="cp">%&gt;</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='&lt;h1&gt;&lt;%= @article.title %&gt;&lt;/h1&gt;
+
+&lt;p&gt;&lt;%= @article.body %&gt;&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;%= link_to "Edit", edit_article_path(@article) %&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;%= link_to "Destroy", article_path(@article), data: {
+                    turbo_method: :delete,
+                    turbo_confirm: "Are you sure?"
+                  } %&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2&gt;Comments&lt;/h2&gt;
+&lt;%= render @article.comments %&gt;
+
+&lt;h2&gt;Add a comment:&lt;/h2&gt;
+&lt;%= form_with model: [ @article, @article.comments.build ] do |form| %&gt;
+  &lt;p&gt;
+    &lt;%= form.label :commenter %&gt;&lt;br&gt;
+    &lt;%= form.text_field :commenter %&gt;
+  &lt;/p&gt;
+  &lt;p&gt;
+    &lt;%= form.label :body %&gt;&lt;br&gt;
+    &lt;%= form.text_area :body %&gt;
+  &lt;/p&gt;
+  &lt;p&gt;
+    &lt;%= form.submit %&gt;
+  &lt;/p&gt;
+&lt;% end %&gt;
+'>Copy</button>
+</div>
+<p>This will now render the partial in <code>app/views/comments/_comment.html.erb</code> once
+for each comment that is in the <code>@article.comments</code> collection. As the <code>render</code>
+method iterates over the <code>@article.comments</code> collection, it assigns each
+comment to a local variable named the same as the partial, in this case
+<code>comment</code>, which is then available in the partial for us to show.</p>
+
+<h4 id="rendering-a-partial-form"><a class="anchorlink" href="#rendering-a-partial-form">9.2 Rendering a Partial Form</a></h4>
+
+<p>Let us also move that new comment section out to its own partial. Again, you
+create a file <code>app/views/comments/_form.html.erb</code> containing:</p>
+
+<div class="code_container">
+<pre><code class="highlight erb"><span class="cp">&lt;%=</span> <span class="n">form_with</span> <span class="ss">model: </span><span class="p">[</span> <span class="vi">@article</span><span class="p">,</span> <span class="vi">@article</span><span class="p">.</span><span class="nf">comments</span><span class="p">.</span><span class="nf">build</span> <span class="p">]</span> <span class="k">do</span> <span class="o">|</span><span class="n">form</span><span class="o">|</span> <span class="cp">%&gt;</span>
+  <span class="nt">&lt;p&gt;</span>
+    <span class="cp">&lt;%=</span> <span class="n">form</span><span class="p">.</span><span class="nf">label</span> <span class="ss">:commenter</span> <span class="cp">%&gt;</span><span class="nt">&lt;br&gt;</span>
+    <span class="cp">&lt;%=</span> <span class="n">form</span><span class="p">.</span><span class="nf">text_field</span> <span class="ss">:commenter</span> <span class="cp">%&gt;</span>
+  <span class="nt">&lt;/p&gt;</span>
+  <span class="nt">&lt;p&gt;</span>
+    <span class="cp">&lt;%=</span> <span class="n">form</span><span class="p">.</span><span class="nf">label</span> <span class="ss">:body</span> <span class="cp">%&gt;</span><span class="nt">&lt;br&gt;</span>
+    <span class="cp">&lt;%=</span> <span class="n">form</span><span class="p">.</span><span class="nf">text_area</span> <span class="ss">:body</span> <span class="cp">%&gt;</span>
+  <span class="nt">&lt;/p&gt;</span>
+  <span class="nt">&lt;p&gt;</span>
+    <span class="cp">&lt;%=</span> <span class="n">form</span><span class="p">.</span><span class="nf">submit</span> <span class="cp">%&gt;</span>
+  <span class="nt">&lt;/p&gt;</span>
+<span class="cp">&lt;%</span> <span class="k">end</span> <span class="cp">%&gt;</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="&lt;%= form_with model: [ @article, @article.comments.build ] do |form| %&gt;
+  &lt;p&gt;
+    &lt;%= form.label :commenter %&gt;&lt;br&gt;
+    &lt;%= form.text_field :commenter %&gt;
+  &lt;/p&gt;
+  &lt;p&gt;
+    &lt;%= form.label :body %&gt;&lt;br&gt;
+    &lt;%= form.text_area :body %&gt;
+  &lt;/p&gt;
+  &lt;p&gt;
+    &lt;%= form.submit %&gt;
+  &lt;/p&gt;
+&lt;% end %&gt;
+">Copy</button>
+</div>
+<p>Then you make the <code>app/views/articles/show.html.erb</code> look like the following:</p>
+
+<div class="code_container">
+<pre><code class="highlight erb"><span class="nt">&lt;h1&gt;</span><span class="cp">&lt;%=</span> <span class="vi">@article</span><span class="p">.</span><span class="nf">title</span> <span class="cp">%&gt;</span><span class="nt">&lt;/h1&gt;</span>
+
+<span class="nt">&lt;p&gt;</span><span class="cp">&lt;%=</span> <span class="vi">@article</span><span class="p">.</span><span class="nf">body</span> <span class="cp">%&gt;</span><span class="nt">&lt;/p&gt;</span>
+
+<span class="nt">&lt;ul&gt;</span>
+  <span class="nt">&lt;li&gt;</span><span class="cp">&lt;%=</span> <span class="n">link_to</span> <span class="s2">"Edit"</span><span class="p">,</span> <span class="n">edit_article_path</span><span class="p">(</span><span class="vi">@article</span><span class="p">)</span> <span class="cp">%&gt;</span><span class="nt">&lt;/li&gt;</span>
+  <span class="nt">&lt;li&gt;</span><span class="cp">&lt;%=</span> <span class="n">link_to</span> <span class="s2">"Destroy"</span><span class="p">,</span> <span class="n">article_path</span><span class="p">(</span><span class="vi">@article</span><span class="p">),</span> <span class="ss">data: </span><span class="p">{</span>
+                    <span class="ss">turbo_method: :delete</span><span class="p">,</span>
+                    <span class="ss">turbo_confirm: </span><span class="s2">"Are you sure?"</span>
+                  <span class="p">}</span> <span class="cp">%&gt;</span><span class="nt">&lt;/li&gt;</span>
+<span class="nt">&lt;/ul&gt;</span>
+
+<span class="nt">&lt;h2&gt;</span>Comments<span class="nt">&lt;/h2&gt;</span>
+<span class="cp">&lt;%=</span> <span class="n">render</span> <span class="vi">@article</span><span class="p">.</span><span class="nf">comments</span> <span class="cp">%&gt;</span>
+
+<span class="nt">&lt;h2&gt;</span>Add a comment:<span class="nt">&lt;/h2&gt;</span>
+<span class="cp">&lt;%=</span> <span class="n">render</span> <span class="s1">'comments/form'</span> <span class="cp">%&gt;</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="&lt;h1&gt;&lt;%= @article.title %&gt;&lt;/h1&gt;
+
+&lt;p&gt;&lt;%= @article.body %&gt;&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;%= link_to &quot;Edit&quot;, edit_article_path(@article) %&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;%= link_to &quot;Destroy&quot;, article_path(@article), data: {
+                    turbo_method: :delete,
+                    turbo_confirm: &quot;Are you sure?&quot;
+                  } %&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2&gt;Comments&lt;/h2&gt;
+&lt;%= render @article.comments %&gt;
+
+&lt;h2&gt;Add a comment:&lt;/h2&gt;
+&lt;%= render 'comments/form' %&gt;
+">Copy</button>
+</div>
+<p>The second render just defines the partial template we want to render,
+<code>comments/form</code>. Rails is smart enough to spot the forward slash in that
+string and realize that you want to render the <code>_form.html.erb</code> file in
+the <code>app/views/comments</code> directory.</p>
+
+<p>The <code>@article</code> object is available to any partials rendered in the view because
+we defined it as an instance variable.</p>
+
+<h4 id="using-concerns"><a class="anchorlink" href="#using-concerns">9.3 Using Concerns</a></h4>
+
+<p>Concerns are a way to make large controllers or models easier to understand and manage. This also has the advantage of reusability when multiple models (or controllers) share the same concerns. Concerns are implemented using modules that contain methods representing a well-defined slice of the functionality that a model or controller is responsible for. In other languages, modules are often known as mixins.</p>
+
+<p>You can use concerns in your controller or model the same way you would use any module. When you first created your app with <code>rails new blog</code>, two folders were created within <code>app/</code> along with the rest:</p>
+
+<div class="code_container">
+<pre><code class="highlight plaintext">app/controllers/concerns
+app/models/concerns
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="app/controllers/concerns
+app/models/concerns
+">Copy</button>
+</div>
+<p>In the example below, we will implement a new feature for our blog that would benefit from using a concern. Then, we will create a concern, and refactor the code to use it, making the code more DRY and maintainable.</p>
+
+<p>A blog article might have various statuses - for instance, it might be visible to everyone (i.e. <code>public</code>), or only visible to the author (i.e. <code>private</code>). It may also be hidden to all but still retrievable (i.e. <code>archived</code>). Comments may similarly be hidden or visible. This could be represented using a <code>status</code> column in each model.</p>
+
+<p>First, let's run the following migrations to add <code>status</code> to <code>Articles</code> and <code>Comments</code>:</p>
+
+<div class="code_container">
+<pre><code class="highlight console"><span class="gp">$</span><span class="w"> </span><span class="nb">bin/rails </span>generate migration AddStatusToArticles status:string
+<span class="gp">$</span><span class="w"> </span><span class="nb">bin/rails </span>generate migration AddStatusToComments status:string
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="bin/rails generate migration AddStatusToArticles status:string
+bin/rails generate migration AddStatusToComments status:string
+">Copy</button>
+</div>
+<p>And next, let's update the database with the generated migrations:</p>
+
+<div class="code_container">
+<pre><code class="highlight console"><span class="gp">$</span><span class="w"> </span><span class="nb">bin/rails </span>db:migrate
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="bin/rails db:migrate
+">Copy</button>
+</div>
+<div class="info"><p>To learn more about migrations, see <a href="active_record_migrations.html">Active Record Migrations</a>.</p></div>
+
+<p>We also have to permit the <code>:status</code> key as part of the strong parameter, in <code>app/controllers/articles_controller.rb</code>:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby">  <span class="kp">private</span>
+    <span class="k">def</span> <span class="nf">article_params</span>
+      <span class="n">params</span><span class="p">.</span><span class="nf">require</span><span class="p">(</span><span class="ss">:article</span><span class="p">).</span><span class="nf">permit</span><span class="p">(</span><span class="ss">:title</span><span class="p">,</span> <span class="ss">:body</span><span class="p">,</span> <span class="ss">:status</span><span class="p">)</span>
+    <span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="  private
+    def article_params
+      params.require(:article).permit(:title, :body, :status)
+    end
+">Copy</button>
+</div>
+<p>and in <code>app/controllers/comments_controller.rb</code>:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby">  <span class="kp">private</span>
+    <span class="k">def</span> <span class="nf">comment_params</span>
+      <span class="n">params</span><span class="p">.</span><span class="nf">require</span><span class="p">(</span><span class="ss">:comment</span><span class="p">).</span><span class="nf">permit</span><span class="p">(</span><span class="ss">:commenter</span><span class="p">,</span> <span class="ss">:body</span><span class="p">,</span> <span class="ss">:status</span><span class="p">)</span>
+    <span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="  private
+    def comment_params
+      params.require(:comment).permit(:commenter, :body, :status)
+    end
+">Copy</button>
+</div>
+<p>Within the <code>article</code> model, after running a migration to add a <code>status</code> column using <code>bin/rails db:migrate</code> command, you would add:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">Article</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="n">has_many</span> <span class="ss">:comments</span>
+
+  <span class="n">validates</span> <span class="ss">:title</span><span class="p">,</span> <span class="ss">presence: </span><span class="kp">true</span>
+  <span class="n">validates</span> <span class="ss">:body</span><span class="p">,</span> <span class="ss">presence: </span><span class="kp">true</span><span class="p">,</span> <span class="ss">length: </span><span class="p">{</span> <span class="ss">minimum: </span><span class="mi">10</span> <span class="p">}</span>
+
+  <span class="no">VALID_STATUSES</span> <span class="o">=</span> <span class="p">[</span><span class="s1">'public'</span><span class="p">,</span> <span class="s1">'private'</span><span class="p">,</span> <span class="s1">'archived'</span><span class="p">]</span>
+
+  <span class="n">validates</span> <span class="ss">:status</span><span class="p">,</span> <span class="ss">inclusion: </span><span class="p">{</span> <span class="ss">in: </span><span class="no">VALID_STATUSES</span> <span class="p">}</span>
+
+  <span class="k">def</span> <span class="nf">archived?</span>
+    <span class="n">status</span> <span class="o">==</span> <span class="s1">'archived'</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="class Article &lt; ApplicationRecord
+  has_many :comments
+
+  validates :title, presence: true
+  validates :body, presence: true, length: { minimum: 10 }
+
+  VALID_STATUSES = ['public', 'private', 'archived']
+
+  validates :status, inclusion: { in: VALID_STATUSES }
+
+  def archived?
+    status == 'archived'
+  end
+end
+">Copy</button>
+</div>
+<p>and in the <code>Comment</code> model:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">Comment</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="n">belongs_to</span> <span class="ss">:article</span>
+
+  <span class="no">VALID_STATUSES</span> <span class="o">=</span> <span class="p">[</span><span class="s1">'public'</span><span class="p">,</span> <span class="s1">'private'</span><span class="p">,</span> <span class="s1">'archived'</span><span class="p">]</span>
+
+  <span class="n">validates</span> <span class="ss">:status</span><span class="p">,</span> <span class="ss">inclusion: </span><span class="p">{</span> <span class="ss">in: </span><span class="no">VALID_STATUSES</span> <span class="p">}</span>
+
+  <span class="k">def</span> <span class="nf">archived?</span>
+    <span class="n">status</span> <span class="o">==</span> <span class="s1">'archived'</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="class Comment &lt; ApplicationRecord
+  belongs_to :article
+
+  VALID_STATUSES = ['public', 'private', 'archived']
+
+  validates :status, inclusion: { in: VALID_STATUSES }
+
+  def archived?
+    status == 'archived'
+  end
+end
+">Copy</button>
+</div>
+<p>Then, in our <code>index</code> action template (<code>app/views/articles/index.html.erb</code>) we would use the <code>archived?</code> method to avoid displaying any article that is archived:</p>
+
+<div class="code_container">
+<pre><code class="highlight erb"><span class="nt">&lt;h1&gt;</span>Articles<span class="nt">&lt;/h1&gt;</span>
+
+<span class="nt">&lt;ul&gt;</span>
+  <span class="cp">&lt;%</span> <span class="vi">@articles</span><span class="p">.</span><span class="nf">each</span> <span class="k">do</span> <span class="o">|</span><span class="n">article</span><span class="o">|</span> <span class="cp">%&gt;</span>
+    <span class="cp">&lt;%</span> <span class="k">unless</span> <span class="n">article</span><span class="p">.</span><span class="nf">archived?</span> <span class="cp">%&gt;</span>
+      <span class="nt">&lt;li&gt;</span>
+        <span class="cp">&lt;%=</span> <span class="n">link_to</span> <span class="n">article</span><span class="p">.</span><span class="nf">title</span><span class="p">,</span> <span class="n">article</span> <span class="cp">%&gt;</span>
+      <span class="nt">&lt;/li&gt;</span>
+    <span class="cp">&lt;%</span> <span class="k">end</span> <span class="cp">%&gt;</span>
+  <span class="cp">&lt;%</span> <span class="k">end</span> <span class="cp">%&gt;</span>
+<span class="nt">&lt;/ul&gt;</span>
+
+<span class="cp">&lt;%=</span> <span class="n">link_to</span> <span class="s2">"New Article"</span><span class="p">,</span> <span class="n">new_article_path</span> <span class="cp">%&gt;</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='&lt;h1&gt;Articles&lt;/h1&gt;
+
+&lt;ul&gt;
+  &lt;% @articles.each do |article| %&gt;
+    &lt;% unless article.archived? %&gt;
+      &lt;li&gt;
+        &lt;%= link_to article.title, article %&gt;
+      &lt;/li&gt;
+    &lt;% end %&gt;
+  &lt;% end %&gt;
+&lt;/ul&gt;
+
+&lt;%= link_to "New Article", new_article_path %&gt;
+'>Copy</button>
+</div>
+<p>Similarly, in our comment partial view (<code>app/views/comments/_comment.html.erb</code>) we would use the <code>archived?</code> method to avoid displaying any comment that is archived:</p>
+
+<div class="code_container">
+<pre><code class="highlight erb"><span class="cp">&lt;%</span> <span class="k">unless</span> <span class="n">comment</span><span class="p">.</span><span class="nf">archived?</span> <span class="cp">%&gt;</span>
+  <span class="nt">&lt;p&gt;</span>
+    <span class="nt">&lt;strong&gt;</span>Commenter:<span class="nt">&lt;/strong&gt;</span>
+    <span class="cp">&lt;%=</span> <span class="n">comment</span><span class="p">.</span><span class="nf">commenter</span> <span class="cp">%&gt;</span>
+  <span class="nt">&lt;/p&gt;</span>
+
+  <span class="nt">&lt;p&gt;</span>
+    <span class="nt">&lt;strong&gt;</span>Comment:<span class="nt">&lt;/strong&gt;</span>
+    <span class="cp">&lt;%=</span> <span class="n">comment</span><span class="p">.</span><span class="nf">body</span> <span class="cp">%&gt;</span>
+  <span class="nt">&lt;/p&gt;</span>
+<span class="cp">&lt;%</span> <span class="k">end</span> <span class="cp">%&gt;</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="&lt;% unless comment.archived? %&gt;
+  &lt;p&gt;
+    &lt;strong&gt;Commenter:&lt;/strong&gt;
+    &lt;%= comment.commenter %&gt;
+  &lt;/p&gt;
+
+  &lt;p&gt;
+    &lt;strong&gt;Comment:&lt;/strong&gt;
+    &lt;%= comment.body %&gt;
+  &lt;/p&gt;
+&lt;% end %&gt;
+">Copy</button>
+</div>
+<p>However, if you look again at our models now, you can see that the logic is duplicated. If in the future we increase the functionality of our blog - to include private messages, for instance -  we might find ourselves duplicating the logic yet again. This is where concerns come in handy.</p>
+
+<p>A concern is only responsible for a focused subset of the model's responsibility; the methods in our concern will all be related to the visibility of a model. Let's call our new concern (module) <code>Visible</code>. We can create a new file inside <code>app/models/concerns</code> called <code>visible.rb</code> , and store all of the status methods that were duplicated in the models.</p>
+
+<p><code>app/models/concerns/visible.rb</code></p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">module</span> <span class="nn">Visible</span>
+  <span class="k">def</span> <span class="nf">archived?</span>
+    <span class="n">status</span> <span class="o">==</span> <span class="s1">'archived'</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="module Visible
+  def archived?
+    status == 'archived'
+  end
+end
+">Copy</button>
+</div>
+<p>We can add our status validation to the concern, but this is slightly more complex as validations are methods called at the class level. The <code>ActiveSupport::Concern</code> (<a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveSupport/Concern.html">API Guide</a>) gives us a simpler way to include them:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">module</span> <span class="nn">Visible</span>
+  <span class="kp">extend</span> <span class="no">ActiveSupport</span><span class="o">::</span><span class="no">Concern</span>
+
+  <span class="no">VALID_STATUSES</span> <span class="o">=</span> <span class="p">[</span><span class="s1">'public'</span><span class="p">,</span> <span class="s1">'private'</span><span class="p">,</span> <span class="s1">'archived'</span><span class="p">]</span>
+
+  <span class="n">included</span> <span class="k">do</span>
+    <span class="n">validates</span> <span class="ss">:status</span><span class="p">,</span> <span class="ss">inclusion: </span><span class="p">{</span> <span class="ss">in: </span><span class="no">VALID_STATUSES</span> <span class="p">}</span>
+  <span class="k">end</span>
+
+  <span class="k">def</span> <span class="nf">archived?</span>
+    <span class="n">status</span> <span class="o">==</span> <span class="s1">'archived'</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="module Visible
+  extend ActiveSupport::Concern
+
+  VALID_STATUSES = ['public', 'private', 'archived']
+
+  included do
+    validates :status, inclusion: { in: VALID_STATUSES }
+  end
+
+  def archived?
+    status == 'archived'
+  end
+end
+">Copy</button>
+</div>
+<p>Now, we can remove the duplicated logic from each model and instead include our new <code>Visible</code> module:</p>
+
+<p>In <code>app/models/article.rb</code>:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">Article</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="kp">include</span> <span class="no">Visible</span>
+
+  <span class="n">has_many</span> <span class="ss">:comments</span>
+
+  <span class="n">validates</span> <span class="ss">:title</span><span class="p">,</span> <span class="ss">presence: </span><span class="kp">true</span>
+  <span class="n">validates</span> <span class="ss">:body</span><span class="p">,</span> <span class="ss">presence: </span><span class="kp">true</span><span class="p">,</span> <span class="ss">length: </span><span class="p">{</span> <span class="ss">minimum: </span><span class="mi">10</span> <span class="p">}</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="class Article &lt; ApplicationRecord
+  include Visible
+
+  has_many :comments
+
+  validates :title, presence: true
+  validates :body, presence: true, length: { minimum: 10 }
+end
+">Copy</button>
+</div>
+<p>and in <code>app/models/comment.rb</code>:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">Comment</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="kp">include</span> <span class="no">Visible</span>
+
+  <span class="n">belongs_to</span> <span class="ss">:article</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="class Comment &lt; ApplicationRecord
+  include Visible
+
+  belongs_to :article
+end
+">Copy</button>
+</div>
+<p>Class methods can also be added to concerns. If we want to display a count of public articles or comments on our main page, we might add a class method to Visible as follows:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">module</span> <span class="nn">Visible</span>
+  <span class="kp">extend</span> <span class="no">ActiveSupport</span><span class="o">::</span><span class="no">Concern</span>
+
+  <span class="no">VALID_STATUSES</span> <span class="o">=</span> <span class="p">[</span><span class="s1">'public'</span><span class="p">,</span> <span class="s1">'private'</span><span class="p">,</span> <span class="s1">'archived'</span><span class="p">]</span>
+
+  <span class="n">included</span> <span class="k">do</span>
+    <span class="n">validates</span> <span class="ss">:status</span><span class="p">,</span> <span class="ss">inclusion: </span><span class="p">{</span> <span class="ss">in: </span><span class="no">VALID_STATUSES</span> <span class="p">}</span>
+  <span class="k">end</span>
+
+  <span class="n">class_methods</span> <span class="k">do</span>
+    <span class="k">def</span> <span class="nf">public_count</span>
+      <span class="n">where</span><span class="p">(</span><span class="ss">status: </span><span class="s1">'public'</span><span class="p">).</span><span class="nf">count</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+
+  <span class="k">def</span> <span class="nf">archived?</span>
+    <span class="n">status</span> <span class="o">==</span> <span class="s1">'archived'</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="module Visible
+  extend ActiveSupport::Concern
+
+  VALID_STATUSES = ['public', 'private', 'archived']
+
+  included do
+    validates :status, inclusion: { in: VALID_STATUSES }
+  end
+
+  class_methods do
+    def public_count
+      where(status: 'public').count
+    end
+  end
+
+  def archived?
+    status == 'archived'
+  end
+end
+">Copy</button>
+</div>
+<p>Then in the view, you can call it like any class method:</p>
+
+<div class="code_container">
+<pre><code class="highlight erb"><span class="nt">&lt;h1&gt;</span>Articles<span class="nt">&lt;/h1&gt;</span>
+
+Our blog has <span class="cp">&lt;%=</span> <span class="no">Article</span><span class="p">.</span><span class="nf">public_count</span> <span class="cp">%&gt;</span> articles and counting!
+
+<span class="nt">&lt;ul&gt;</span>
+  <span class="cp">&lt;%</span> <span class="vi">@articles</span><span class="p">.</span><span class="nf">each</span> <span class="k">do</span> <span class="o">|</span><span class="n">article</span><span class="o">|</span> <span class="cp">%&gt;</span>
+    <span class="cp">&lt;%</span> <span class="k">unless</span> <span class="n">article</span><span class="p">.</span><span class="nf">archived?</span> <span class="cp">%&gt;</span>
+      <span class="nt">&lt;li&gt;</span>
+        <span class="cp">&lt;%=</span> <span class="n">link_to</span> <span class="n">article</span><span class="p">.</span><span class="nf">title</span><span class="p">,</span> <span class="n">article</span> <span class="cp">%&gt;</span>
+      <span class="nt">&lt;/li&gt;</span>
+    <span class="cp">&lt;%</span> <span class="k">end</span> <span class="cp">%&gt;</span>
+  <span class="cp">&lt;%</span> <span class="k">end</span> <span class="cp">%&gt;</span>
+<span class="nt">&lt;/ul&gt;</span>
+
+<span class="cp">&lt;%=</span> <span class="n">link_to</span> <span class="s2">"New Article"</span><span class="p">,</span> <span class="n">new_article_path</span> <span class="cp">%&gt;</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='&lt;h1&gt;Articles&lt;/h1&gt;
+
+Our blog has &lt;%= Article.public_count %&gt; articles and counting!
+
+&lt;ul&gt;
+  &lt;% @articles.each do |article| %&gt;
+    &lt;% unless article.archived? %&gt;
+      &lt;li&gt;
+        &lt;%= link_to article.title, article %&gt;
+      &lt;/li&gt;
+    &lt;% end %&gt;
+  &lt;% end %&gt;
+&lt;/ul&gt;
+
+&lt;%= link_to "New Article", new_article_path %&gt;
+'>Copy</button>
+</div>
+<p>To finish up, we will add a select box to the forms, and let the user select the status when they create a new article or post a new comment. We can also specify the default status as <code>public</code>. In <code>app/views/articles/_form.html.erb</code>, we can add:</p>
+
+<div class="code_container">
+<pre><code class="highlight erb"><span class="nt">&lt;div&gt;</span>
+  <span class="cp">&lt;%=</span> <span class="n">form</span><span class="p">.</span><span class="nf">label</span> <span class="ss">:status</span> <span class="cp">%&gt;</span><span class="nt">&lt;br&gt;</span>
+  <span class="cp">&lt;%=</span> <span class="n">form</span><span class="p">.</span><span class="nf">select</span> <span class="ss">:status</span><span class="p">,</span> <span class="p">[</span><span class="s1">'public'</span><span class="p">,</span> <span class="s1">'private'</span><span class="p">,</span> <span class="s1">'archived'</span><span class="p">],</span> <span class="ss">selected: </span><span class="s1">'public'</span> <span class="cp">%&gt;</span>
+<span class="nt">&lt;/div&gt;</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="&lt;div&gt;
+  &lt;%= form.label :status %&gt;&lt;br&gt;
+  &lt;%= form.select :status, ['public', 'private', 'archived'], selected: 'public' %&gt;
+&lt;/div&gt;
+">Copy</button>
+</div>
+<p>and in <code>app/views/comments/_form.html.erb</code>:</p>
+
+<div class="code_container">
+<pre><code class="highlight erb"><span class="nt">&lt;p&gt;</span>
+  <span class="cp">&lt;%=</span> <span class="n">form</span><span class="p">.</span><span class="nf">label</span> <span class="ss">:status</span> <span class="cp">%&gt;</span><span class="nt">&lt;br&gt;</span>
+  <span class="cp">&lt;%=</span> <span class="n">form</span><span class="p">.</span><span class="nf">select</span> <span class="ss">:status</span><span class="p">,</span> <span class="p">[</span><span class="s1">'public'</span><span class="p">,</span> <span class="s1">'private'</span><span class="p">,</span> <span class="s1">'archived'</span><span class="p">],</span> <span class="ss">selected: </span><span class="s1">'public'</span> <span class="cp">%&gt;</span>
+<span class="nt">&lt;/p&gt;</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="&lt;p&gt;
+  &lt;%= form.label :status %&gt;&lt;br&gt;
+  &lt;%= form.select :status, ['public', 'private', 'archived'], selected: 'public' %&gt;
+&lt;/p&gt;
+">Copy</button>
+</div>
+</body>
+</html>

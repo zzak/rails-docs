@@ -1,0 +1,156 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>7 Action Pack</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v5.0.7.2/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="action-pack">7 Action Pack</h3>
+<p>There have been significant internal and external changes in Action Pack.</p>
+
+<h4 id="abstract-controller">7.1 Abstract Controller</h4>
+
+<p>Abstract Controller pulls out the generic parts of Action Controller into a reusable module that any library can use to render templates, render partials, helpers, translations, logging, any part of the request response cycle. This abstraction allowed <code>ActionMailer::Base</code> to now just inherit from <code>AbstractController</code> and just wrap the Rails DSL onto the Mail gem.</p>
+
+<p>It also provided an opportunity to clean up Action Controller, abstracting out what could to simplify the code.</p>
+
+<p>Note however that Abstract Controller is not a user facing API, you will not run into it in your day to day use of Rails.</p>
+
+<p>More Information: - <a href="http://yehudakatz.com/2009/06/11/rails-edge-architecture/">Rails Edge Architecture</a></p>
+
+<h4 id="action-controller">7.2 Action Controller</h4>
+<ul>
+<li>
+<code>application_controller.rb</code> now has <code>protect_from_forgery</code> on by default.</li>
+<li>The <code>cookie_verifier_secret</code> has been deprecated and now instead it is assigned through <code>Rails.application.config.cookie_secret</code> and moved into its own file: <code>config/initializers/cookie_verification_secret.rb</code>.</li>
+<li>The <code>session_store</code> was configured in <code>ActionController::Base.session</code>, and that is now moved to <code>Rails.application.config.session_store</code>. Defaults are set up in <code>config/initializers/session_store.rb</code>.</li>
+<li>
+<code>cookies.secure</code> allowing you to set encrypted values in cookies with <code>cookie.secure[:key] =&gt; value</code>.</li>
+<li>
+<code>cookies.permanent</code> allowing you to set permanent values in the cookie hash <code>cookie.permanent[:key] =&gt; value</code> that raise exceptions on signed values if verification failures.</li>
+<li>You can now pass <code>:notice =&gt; 'This is a flash message'</code> or <code>:alert =&gt; 'Something went wrong'</code> to the <code>format</code> call inside a <code>respond_to</code> block. The <code>flash[]</code> hash still works as previously.</li>
+<li>
+<code>respond_with</code> method has now been added to your controllers simplifying the venerable <code>format</code> blocks.</li>
+<li>
+<code>ActionController::Responder</code> added allowing you flexibility in how your responses get generated.</li>
+</ul>
+<p>Deprecations:</p>
+<ul>
+<li>
+<code>filter_parameter_logging</code> is deprecated in favor of <code>config.filter_parameters &lt;&lt; :password</code>.</li>
+</ul>
+<p>More Information:</p>
+<ul>
+<li><a href="https://blog.engineyard.com/2010/render-options-in-rails-3">Render Options in Rails 3</a></li>
+<li><a href="http://weblog.rubyonrails.org/2009/8/31/three-reasons-love-responder">Three reasons to love ActionController::Responder</a></li>
+</ul>
+<h4 id="action-dispatch">7.3 Action Dispatch</h4>
+
+<p>Action Dispatch is new in Rails 3.0 and provides a new, cleaner implementation for routing.</p>
+<ul>
+<li>Big clean up and re-write of the router, the Rails router is now <code>rack_mount</code> with a Rails DSL on top, it is a stand alone piece of software.</li>
+<li>
+Routes defined by each application are now name spaced within your Application module, that is:
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+# Instead of:
+
+ActionController::Routing::Routes.draw do |map|
+  map.resources :posts
+end
+
+# You do:
+
+AppName::Application.routes do
+  resources :posts
+end
+
+</pre>
+</div>
+</li>
+<li>Added <code>match</code> method to the router, you can also pass any Rack application to the matched route.</li>
+<li>Added <code>constraints</code> method to the router, allowing you to guard routers with defined constraints.</li>
+<li>
+Added <code>scope</code> method to the router, allowing you to namespace routes for different languages or different actions, for example:
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+scope 'es' do
+  resources :projects, :path_names =&gt; { :edit =&gt; 'cambiar' }, :path =&gt; 'proyecto'
+end
+
+# Gives you the edit action with /es/proyecto/1/cambiar
+
+</pre>
+</div>
+</li>
+<li>Added <code>root</code> method to the router as a short cut for <code>match '/', :to =&gt; path</code>.</li>
+<li>You can pass optional segments into the match, for example <code>match "/:controller(/:action(/:id))(.:format)"</code>, each parenthesized segment is optional.</li>
+<li>Routes can be expressed via blocks, for example you can call <code>controller :home { match '/:action' }</code>.</li>
+</ul>
+<div class="note"><p>The old style <code>map</code> commands still work as before with a backwards compatibility layer, however this will be removed in the 3.1 release.</p></div>
+
+<p>Deprecations</p>
+<ul>
+<li>The catch all route for non-REST applications (<code>/:controller/:action/:id</code>) is now commented out.</li>
+<li>Routes <code>:path_prefix</code> no longer exists and <code>:name_prefix</code> now automatically adds "_" at the end of the given value.</li>
+</ul>
+<p>More Information:
+* <a href="http://yehudakatz.com/2009/12/26/the-rails-3-router-rack-it-up/">The Rails 3 Router: Rack it Up</a>
+* <a href="https://medium.com/fusion-of-thoughts/revamped-routes-in-rails-3-b6d00654e5b0">Revamped Routes in Rails 3</a>
+* <a href="http://yehudakatz.com/2009/12/20/generic-actions-in-rails-3/">Generic Actions in Rails 3</a></p>
+
+<h4 id="action-view">7.4 Action View</h4>
+
+<h5 id="unobtrusive-javascript">7.4.1 Unobtrusive JavaScript</h5>
+
+<p>Major re-write was done in the Action View helpers, implementing Unobtrusive JavaScript (UJS) hooks and removing the old inline AJAX commands. This enables Rails to use any compliant UJS driver to implement the UJS hooks in the helpers.</p>
+
+<p>What this means is that all previous <code>remote_&lt;method&gt;</code> helpers have been removed from Rails core and put into the <a href="http://github.com/rails/prototype_legacy_helper">Prototype Legacy Helper</a>. To get UJS hooks into your HTML, you now pass <code>:remote =&gt; true</code> instead. For example:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+form_for @post, :remote =&gt; true
+
+</pre>
+</div>
+<p>Produces:</p>
+
+<div class="code_container">
+<pre class="brush: xml; gutter: false; toolbar: false">
+&lt;form action="http://host.com" id="create-post" method="post" data-remote="true"&gt;
+
+</pre>
+</div>
+<h5 id="helpers-with-blocks">7.4.2 Helpers with Blocks</h5>
+
+<p>Helpers like <code>form_for</code> or <code>div_for</code> that insert content from a block use <code>&lt;%=</code> now:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; html-script: true; gutter: false; toolbar: false">
+&lt;%= form_for @post do |f| %&gt;
+  ...
+&lt;% end %&gt;
+
+</pre>
+</div>
+<p>Your own helpers of that kind are expected to return a string, rather than appending to the output buffer by hand.</p>
+
+<p>Helpers that do something else, like <code>cache</code> or <code>content_for</code>, are not affected by this change, they need <code>&amp;lt;%</code> as before.</p>
+
+<h5 id="other-changes">7.4.3 Other Changes</h5>
+<ul>
+<li>You no longer need to call <code>h(string)</code> to escape HTML output, it is on by default in all view templates. If you want the unescaped string, call <code>raw(string)</code>.</li>
+<li>Helpers now output HTML 5 by default.</li>
+<li>Form label helper now pulls values from I18n with a single value, so <code>f.label :name</code> will pull the <code>:name</code> translation.</li>
+<li>I18n select label on should now be :en.helpers.select instead of :en.support.select.</li>
+<li>You no longer need to place a minus sign at the end of a Ruby interpolation inside an ERB template to remove the trailing carriage return in the HTML output.</li>
+<li>Added <code>grouped_collection_select</code> helper to Action View.</li>
+<li>
+<code>content_for?</code> has been added allowing you to check for the existence of content in a view before rendering.</li>
+<li>passing <code>:value =&gt; nil</code> to form helpers will set the field's <code>value</code> attribute to nil as opposed to using the default value</li>
+<li>passing <code>:id =&gt; nil</code> to form helpers will cause those fields to be rendered with no <code>id</code> attribute</li>
+<li>passing <code>:alt =&gt; nil</code> to <code>image_tag</code> will cause the <code>img</code> tag to render with no <code>alt</code> attribute</li>
+</ul>
+</body>
+</html>

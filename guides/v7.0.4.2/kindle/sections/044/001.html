@@ -1,0 +1,103 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>2 Executor</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v7.0.4.2/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="executor"><a class="anchorlink" href="#executor">2 Executor</a></h3>
+<p>The Rails Executor separates application code from framework code: any time the
+framework invokes code you've written in your application, it will be wrapped by
+the Executor.</p>
+
+<p>The Executor consists of two callbacks: <code>to_run</code> and <code>to_complete</code>. The Run
+callback is called before the application code, and the Complete callback is
+called after.</p>
+
+<h4 id="default-callbacks"><a class="anchorlink" href="#default-callbacks">2.1 Default callbacks</a></h4>
+
+<p>In a default Rails application, the Executor callbacks are used to:</p>
+<ul>
+<li>track which threads are in safe positions for autoloading and reloading</li>
+<li>enable and disable the Active Record query cache</li>
+<li>return acquired Active Record connections to the pool</li>
+<li>constrain internal cache lifetimes</li>
+</ul>
+<p>Prior to Rails 5.0, some of these were handled by separate Rack middleware
+classes (such as <code>ActiveRecord::ConnectionAdapters::ConnectionManagement</code>), or
+directly wrapping code with methods like
+<code>ActiveRecord::Base.connection_pool.with_connection</code>. The Executor replaces
+these with a single more abstract interface.</p>
+
+<h4 id="wrapping-application-code"><a class="anchorlink" href="#wrapping-application-code">2.2 Wrapping application code</a></h4>
+
+<p>If you're writing a library or component that will invoke application code, you
+should wrap it with a call to the executor:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="no">Rails</span><span class="p">.</span><span class="nf">application</span><span class="p">.</span><span class="nf">executor</span><span class="p">.</span><span class="nf">wrap</span> <span class="k">do</span>
+  <span class="c1"># call application code here</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="Rails.application.executor.wrap do
+  # call application code here
+end
+">Copy</button>
+</div>
+<div class="info"><p>If you repeatedly invoke application code from a long-running process, you
+may want to wrap using the <a href="#reloader">Reloader</a> instead.</p></div>
+
+<p>Each thread should be wrapped before it runs application code, so if your
+application manually delegates work to other threads, such as via <code>Thread.new</code>
+or Concurrent Ruby features that use thread pools, you should immediately wrap
+the block:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="no">Thread</span><span class="p">.</span><span class="nf">new</span> <span class="k">do</span>
+  <span class="no">Rails</span><span class="p">.</span><span class="nf">application</span><span class="p">.</span><span class="nf">executor</span><span class="p">.</span><span class="nf">wrap</span> <span class="k">do</span>
+    <span class="c1"># your code here</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="Thread.new do
+  Rails.application.executor.wrap do
+    # your code here
+  end
+end
+">Copy</button>
+</div>
+<div class="note"><p>Concurrent Ruby uses a <code>ThreadPoolExecutor</code>, which it sometimes configures
+with an <code>executor</code> option. Despite the name, it is unrelated.</p></div>
+
+<p>The Executor is safely re-entrant; if it is already active on the current
+thread, <code>wrap</code> is a no-op.</p>
+
+<p>If it's impractical to wrap the application code in a block (for
+example, the Rack API makes this problematic), you can also use the <code>run!</code> /
+<code>complete!</code> pair:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="no">Thread</span><span class="p">.</span><span class="nf">new</span> <span class="k">do</span>
+  <span class="n">execution_context</span> <span class="o">=</span> <span class="no">Rails</span><span class="p">.</span><span class="nf">application</span><span class="p">.</span><span class="nf">executor</span><span class="p">.</span><span class="nf">run!</span>
+  <span class="c1"># your code here</span>
+<span class="k">ensure</span>
+  <span class="n">execution_context</span><span class="p">.</span><span class="nf">complete!</span> <span class="k">if</span> <span class="n">execution_context</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="Thread.new do
+  execution_context = Rails.application.executor.run!
+  # your code here
+ensure
+  execution_context.complete! if execution_context
+end
+">Copy</button>
+</div>
+<h4 id="executor-concurrency"><a class="anchorlink" href="#executor-concurrency">2.3 Concurrency</a></h4>
+
+<p>The Executor will put the current thread into <code>running</code> mode in the <a href="#load-interlock">Load
+Interlock</a>. This operation will block temporarily if another
+thread is currently either autoloading a constant or unloading/reloading
+the application.</p>
+</body>
+</html>

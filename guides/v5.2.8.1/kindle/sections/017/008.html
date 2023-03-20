@@ -1,0 +1,40 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>9 GlobalID</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v5.2.8.1/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="globalid"><a class="anchorlink" href="#globalid">9 GlobalID</a></h3>
+<p>Active Job supports GlobalID for parameters. This makes it possible to pass live
+Active Record objects to your job instead of class/id pairs, which you then have
+to manually deserialize. Before, jobs would look like this:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class TrashableCleanupJob &lt; ApplicationJob
+  def perform(trashable_class, trashable_id, depth)
+    trashable = trashable_class.constantize.find(trashable_id)
+    trashable.cleanup(depth)
+  end
+end
+
+</pre>
+</div>
+<p>Now you can simply do:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class TrashableCleanupJob &lt; ApplicationJob
+  def perform(trashable, depth)
+    trashable.cleanup(depth)
+  end
+end
+
+</pre>
+</div>
+<p>This works with any class that mixes in <code>GlobalID::Identification</code>, which
+by default has been mixed into Active Record classes.</p>
+</body>
+</html>

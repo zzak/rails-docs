@@ -1,0 +1,52 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>1 Introduction</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v6.0.6.1/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="introduction"><a class="anchorlink" href="#introduction">1 Introduction</a></h3>
+<div class="info"><p>This guide documents autoloading in <code>classic</code> mode, which is the traditional one. If you'd like to read about <code>zeiwerk</code> mode instead, the new one in Rails 6, please check <a href="autoloading_and_reloading_constants.html">Autoloading and Reloading Constants (Zeitwerk Mode)</a>.</p></div>
+
+<p>Ruby on Rails allows applications to be written as if their code was preloaded.</p>
+
+<p>In a normal Ruby program classes need to load their dependencies:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+require 'application_controller'
+require 'post'
+
+class PostsController &lt; ApplicationController
+  def index
+    @posts = Post.all
+  end
+end
+
+</pre>
+</div>
+<p>Our Rubyist instinct quickly sees some redundancy in there: If classes were
+defined in files matching their name, couldn't their loading be automated
+somehow? We could save scanning the file for dependencies, which is brittle.</p>
+
+<p>Moreover, <code>Kernel#require</code> loads files once, but development is much more smooth
+if code gets refreshed when it changes without restarting the server. It would
+be nice to be able to use <code>Kernel#load</code> in development, and <code>Kernel#require</code> in
+production.</p>
+
+<p>Indeed, those features are provided by Ruby on Rails, where we just write</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class PostsController &lt; ApplicationController
+  def index
+    @posts = Post.all
+  end
+end
+
+</pre>
+</div>
+<p>This guide documents how that works.</p>
+</body>
+</html>

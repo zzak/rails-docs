@@ -1,0 +1,210 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>5 Serving Files</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v7.0.4.2/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="serving-files"><a class="anchorlink" href="#serving-files">5 Serving Files</a></h3>
+<p>Active Storage supports two ways to serve files: redirecting and proxying.</p>
+
+<div class="warning"><p>All Active Storage controllers are publicly accessible by default. The
+generated URLs are hard to guess, but permanent by design. If your files
+require a higher level of protection consider implementing
+<a href="#authenticated-controllers">Authenticated Controllers</a>.</p></div>
+
+<h4 id="redirect-mode"><a class="anchorlink" href="#redirect-mode">5.1 Redirect mode</a></h4>
+
+<p>To generate a permanent URL for a blob, you can pass the blob to the
+<a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActionView/RoutingUrlFor.html#method-i-url_for"><code>url_for</code></a> view helper. This generates a
+URL with the blob's <a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveStorage/Blob.html#method-i-signed_id"><code>signed_id</code></a>
+that is routed to the blob's <a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveStorage/Blobs/RedirectController.html"><code>RedirectController</code></a></p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">url_for</span><span class="p">(</span><span class="n">user</span><span class="p">.</span><span class="nf">avatar</span><span class="p">)</span>
+<span class="c1"># =&gt; /rails/active_storage/blobs/:signed_id/my-avatar.png</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="url_for(user.avatar)
+# =&gt; /rails/active_storage/blobs/:signed_id/my-avatar.png
+">Copy</button>
+</div>
+<p>The <code>RedirectController</code> redirects to the actual service endpoint. This
+indirection decouples the service URL from the actual one, and allows, for
+example, mirroring attachments in different services for high-availability. The
+redirection has an HTTP expiration of 5 minutes.</p>
+
+<p>To create a download link, use the <code>rails_blob_{path|url}</code> helper. Using this
+helper allows you to set the disposition.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">rails_blob_path</span><span class="p">(</span><span class="n">user</span><span class="p">.</span><span class="nf">avatar</span><span class="p">,</span> <span class="ss">disposition: </span><span class="s2">"attachment"</span><span class="p">)</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='rails_blob_path(user.avatar, disposition: "attachment")
+'>Copy</button>
+</div>
+<div class="warning"><p>To prevent XSS attacks, Active Storage forces the Content-Disposition header
+to "attachment" for some kind of files. To change this behaviour see the
+available configuration options in <a href="configuring.html#configuring-active-storage">Configuring Rails Applications</a>.</p></div>
+
+<p>If you need to create a link from outside of controller/view context (Background
+jobs, Cronjobs, etc.), you can access the <code>rails_blob_path</code> like this:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="no">Rails</span><span class="p">.</span><span class="nf">application</span><span class="p">.</span><span class="nf">routes</span><span class="p">.</span><span class="nf">url_helpers</span><span class="p">.</span><span class="nf">rails_blob_path</span><span class="p">(</span><span class="n">user</span><span class="p">.</span><span class="nf">avatar</span><span class="p">,</span> <span class="ss">only_path: </span><span class="kp">true</span><span class="p">)</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="Rails.application.routes.url_helpers.rails_blob_path(user.avatar, only_path: true)
+">Copy</button>
+</div>
+<h4 id="proxy-mode"><a class="anchorlink" href="#proxy-mode">5.2 Proxy mode</a></h4>
+
+<p>Optionally, files can be proxied instead. This means that your application servers will download file data from the storage service in response to requests. This can be useful for serving files from a CDN.</p>
+
+<p>You can configure Active Storage to use proxying by default:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="c1"># config/initializers/active_storage.rb</span>
+<span class="no">Rails</span><span class="p">.</span><span class="nf">application</span><span class="p">.</span><span class="nf">config</span><span class="p">.</span><span class="nf">active_storage</span><span class="p">.</span><span class="nf">resolve_model_to_route</span> <span class="o">=</span> <span class="ss">:rails_storage_proxy</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="# config/initializers/active_storage.rb
+Rails.application.config.active_storage.resolve_model_to_route = :rails_storage_proxy
+">Copy</button>
+</div>
+<p>Or if you want to explicitly proxy specific attachments there are URL helpers you can use in the form of <code>rails_storage_proxy_path</code> and <code>rails_storage_proxy_url</code>.</p>
+
+<div class="code_container">
+<pre><code class="highlight erb"><span class="cp">&lt;%=</span> <span class="n">image_tag</span> <span class="n">rails_storage_proxy_path</span><span class="p">(</span><span class="vi">@user</span><span class="p">.</span><span class="nf">avatar</span><span class="p">)</span> <span class="cp">%&gt;</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="&lt;%= image_tag rails_storage_proxy_path(@user.avatar) %&gt;
+">Copy</button>
+</div>
+<h5 id="putting-a-cdn-in-front-of-active-storage"><a class="anchorlink" href="#putting-a-cdn-in-front-of-active-storage">5.2.1 Putting a CDN in front of Active Storage</a></h5>
+
+<p>Additionally, in order to use a CDN for Active Storage attachments, you will need to generate URLs with proxy mode so that they are served by your app and the CDN will cache the attachment without any extra configuration. This works out of the box because the default Active Storage proxy controller sets an HTTP header indicating to the CDN to cache the response.</p>
+
+<p>You should also make sure that the generated URLs use the CDN host instead of your app host. There are multiple ways to achieve this, but in general it involves tweaking your <code>config/routes.rb</code> file so that you can generate the proper URLs for the attachments and their variations. As an example, you could add this:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="c1"># config/routes.rb</span>
+<span class="n">direct</span> <span class="ss">:cdn_image</span> <span class="k">do</span> <span class="o">|</span><span class="n">model</span><span class="p">,</span> <span class="n">options</span><span class="o">|</span>
+  <span class="k">if</span> <span class="n">model</span><span class="p">.</span><span class="nf">respond_to?</span><span class="p">(</span><span class="ss">:signed_id</span><span class="p">)</span>
+    <span class="n">route_for</span><span class="p">(</span>
+      <span class="ss">:rails_service_blob_proxy</span><span class="p">,</span>
+      <span class="n">model</span><span class="p">.</span><span class="nf">signed_id</span><span class="p">,</span>
+      <span class="n">model</span><span class="p">.</span><span class="nf">filename</span><span class="p">,</span>
+      <span class="n">options</span><span class="p">.</span><span class="nf">merge</span><span class="p">(</span><span class="ss">host: </span><span class="no">ENV</span><span class="p">[</span><span class="s1">'CDN_HOST'</span><span class="p">])</span>
+    <span class="p">)</span>
+  <span class="k">else</span>
+    <span class="n">signed_blob_id</span> <span class="o">=</span> <span class="n">model</span><span class="p">.</span><span class="nf">blob</span><span class="p">.</span><span class="nf">signed_id</span>
+    <span class="n">variation_key</span>  <span class="o">=</span> <span class="n">model</span><span class="p">.</span><span class="nf">variation</span><span class="p">.</span><span class="nf">key</span>
+    <span class="n">filename</span>       <span class="o">=</span> <span class="n">model</span><span class="p">.</span><span class="nf">blob</span><span class="p">.</span><span class="nf">filename</span>
+
+    <span class="n">route_for</span><span class="p">(</span>
+      <span class="ss">:rails_blob_representation_proxy</span><span class="p">,</span>
+      <span class="n">signed_blob_id</span><span class="p">,</span>
+      <span class="n">variation_key</span><span class="p">,</span>
+      <span class="n">filename</span><span class="p">,</span>
+      <span class="n">options</span><span class="p">.</span><span class="nf">merge</span><span class="p">(</span><span class="ss">host: </span><span class="no">ENV</span><span class="p">[</span><span class="s1">'CDN_HOST'</span><span class="p">])</span>
+    <span class="p">)</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="# config/routes.rb
+direct :cdn_image do |model, options|
+  if model.respond_to?(:signed_id)
+    route_for(
+      :rails_service_blob_proxy,
+      model.signed_id,
+      model.filename,
+      options.merge(host: ENV['CDN_HOST'])
+    )
+  else
+    signed_blob_id = model.blob.signed_id
+    variation_key  = model.variation.key
+    filename       = model.blob.filename
+
+    route_for(
+      :rails_blob_representation_proxy,
+      signed_blob_id,
+      variation_key,
+      filename,
+      options.merge(host: ENV['CDN_HOST'])
+    )
+  end
+end
+">Copy</button>
+</div>
+<p>and then generate routes like this:</p>
+
+<div class="code_container">
+<pre><code class="highlight erb"><span class="cp">&lt;%=</span> <span class="n">cdn_image_url</span><span class="p">(</span><span class="n">user</span><span class="p">.</span><span class="nf">avatar</span><span class="p">.</span><span class="nf">variant</span><span class="p">(</span><span class="ss">resize_to_limit: </span><span class="p">[</span><span class="mi">128</span><span class="p">,</span> <span class="mi">128</span><span class="p">]))</span> <span class="cp">%&gt;</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="&lt;%= cdn_image_url(user.avatar.variant(resize_to_limit: [128, 128])) %&gt;
+">Copy</button>
+</div>
+<h4 id="authenticated-controllers"><a class="anchorlink" href="#authenticated-controllers">5.3 Authenticated Controllers</a></h4>
+
+<p>All Active Storage controllers are publicly accessible by default. The generated
+URLs use a plain <a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveStorage/Blob.html#method-i-signed_id"><code>signed_id</code></a>, making them hard to
+guess but permanent. Anyone that knows the blob URL will be able to access it,
+even if a <code>before_action</code> in your <code>ApplicationController</code> would otherwise
+require a login. If your files require a higher level of protection, you can
+implement your own authenticated controllers, based on the
+<a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveStorage/Blobs/RedirectController.html"><code>ActiveStorage::Blobs::RedirectController</code></a>,
+<a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveStorage/Blobs/ProxyController.html"><code>ActiveStorage::Blobs::ProxyController</code></a>,
+<a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveStorage/Representations/RedirectController.html"><code>ActiveStorage::Representations::RedirectController</code></a> and
+<a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveStorage/Representations/ProxyController.html"><code>ActiveStorage::Representations::ProxyController</code></a></p>
+
+<p>To only allow an account to access their own logo you could do the following:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="c1"># config/routes.rb</span>
+<span class="n">resource</span> <span class="ss">:account</span> <span class="k">do</span>
+  <span class="n">resource</span> <span class="ss">:logo</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="# config/routes.rb
+resource :account do
+  resource :logo
+end
+">Copy</button>
+</div>
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="c1"># app/controllers/logos_controller.rb</span>
+<span class="k">class</span> <span class="nc">LogosController</span> <span class="o">&lt;</span> <span class="no">ApplicationController</span>
+  <span class="c1"># Through ApplicationController:</span>
+  <span class="c1"># include Authenticate, SetCurrentAccount</span>
+
+  <span class="k">def</span> <span class="nf">show</span>
+    <span class="n">redirect_to</span> <span class="no">Current</span><span class="p">.</span><span class="nf">account</span><span class="p">.</span><span class="nf">logo</span><span class="p">.</span><span class="nf">url</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="# app/controllers/logos_controller.rb
+class LogosController &lt; ApplicationController
+  # Through ApplicationController:
+  # include Authenticate, SetCurrentAccount
+
+  def show
+    redirect_to Current.account.logo.url
+  end
+end
+">Copy</button>
+</div>
+<div class="code_container">
+<pre><code class="highlight erb"><span class="cp">&lt;%=</span> <span class="n">image_tag</span> <span class="n">account_logo_path</span> <span class="cp">%&gt;</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="&lt;%= image_tag account_logo_path %&gt;
+">Copy</button>
+</div>
+<p>And then you might want to disable the Active Storage default routes with:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">config</span><span class="p">.</span><span class="nf">active_storage</span><span class="p">.</span><span class="nf">draw_routes</span> <span class="o">=</span> <span class="kp">false</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="config.active_storage.draw_routes = false
+">Copy</button>
+</div>
+<p>to prevent files being accessed with the publicly accessible URLs.</p>
+</body>
+</html>

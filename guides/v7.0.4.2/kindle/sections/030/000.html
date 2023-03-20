@@ -1,0 +1,44 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>1 Import maps</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v7.0.4.2/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="import-maps"><a class="anchorlink" href="#import-maps">1 Import maps</a></h3>
+<p><a href="https://github.com/rails/importmap-rails">Import maps</a> let you import JavaScript modules using
+logical names that map to versioned files directly from the browser. Import maps are the default
+from Rails 7, allowing anyone to build modern JavaScript applications using most NPM packages
+without the need for transpiling or bundling.</p>
+
+<p>Applications using import maps do not need <a href="https://nodejs.org/en/">Node.js</a> or
+<a href="https://yarnpkg.com/">Yarn</a> to function. If you plan to use Rails with <code>importmap-rails</code> to
+manage your JavaScript dependencies, there is no need to install Node.js or Yarn.</p>
+
+<p>When using import maps, no separate build process is required, just start your server with
+<code>bin/rails server</code> and you are good to go.</p>
+
+<h4 id="adding-npm-packages-with-importmap-rails"><a class="anchorlink" href="#adding-npm-packages-with-importmap-rails">1.1 Adding NPM Packages with importmap-rails</a></h4>
+
+<p>To add new packages to your import map-powered application, run the <code>bin/importmap pin</code> command
+from your terminal:</p>
+
+<div class="code_container">
+<pre><code class="highlight console"><span class="gp">$</span><span class="w"> </span>bin/importmap pin react react-dom
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="bin/importmap pin react react-dom
+">Copy</button>
+</div>
+<p>Then, import the package into <code>application.js</code> as usual:</p>
+
+<div class="code_container">
+<pre><code class="highlight javascript"><span class="k">import</span> <span class="nx">React</span> <span class="k">from</span> <span class="dl">"</span><span class="s2">react</span><span class="dl">"</span>
+<span class="k">import</span> <span class="nx">ReactDOM</span> <span class="k">from</span> <span class="dl">"</span><span class="s2">react-dom</span><span class="dl">"</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='import React from "react"
+import ReactDOM from "react-dom"
+'>Copy</button>
+</div>
+</body>
+</html>

@@ -1,0 +1,222 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>2 Major Features</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v5.1.7/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="major-features">2 Major Features</h3>
+<h4 id="yarn-support">2.1 Yarn Support</h4>
+
+<p><a href="https://github.com/rails/rails/pull/26836">Pull Request</a></p>
+
+<p>Rails 5.1 allows managing JavaScript dependencies
+from NPM via Yarn. This will make it easy to use libraries like React, VueJS
+or any other library from NPM world. The Yarn support is integrated with
+the asset pipeline so that all dependencies will work seamlessly with the
+Rails 5.1 app.</p>
+
+<h4 id="optional-webpack-support">2.2 Optional Webpack support</h4>
+
+<p><a href="https://github.com/rails/rails/pull/27288">Pull Request</a></p>
+
+<p>Rails apps can integrate with <a href="https://webpack.js.org/">Webpack</a>, a JavaScript
+asset bundler, more easily using the new <a href="https://github.com/rails/webpacker">Webpacker</a>
+gem. Use the <code>--webpack</code> flag when generating new applications to enable Webpack
+integration.</p>
+
+<p>This is fully compatible with the asset pipeline, which you can continue to use for
+images, fonts, sounds, and other assets. You can even have some JavaScript code
+managed by the asset pipeline, and other code processed via Webpack. All of this is managed
+by Yarn, which is enabled by default.</p>
+
+<h4 id="jquery-no-longer-a-default-dependency">2.3 jQuery no longer a default dependency</h4>
+
+<p><a href="https://github.com/rails/rails/pull/27113">Pull Request</a></p>
+
+<p>jQuery was required by default in earlier versions of Rails to provide features
+like <code>data-remote</code>, <code>data-confirm</code> and other parts of Rails' Unobtrusive JavaScript
+offerings. It is no longer required, as the UJS has been rewritten to use plain,
+vanilla JavaScript. This code now ships inside of Action View as
+<code>rails-ujs</code>.</p>
+
+<p>You can still use jQuery if needed, but it is no longer required by default.</p>
+
+<h4 id="system-tests">2.4 System tests</h4>
+
+<p><a href="https://github.com/rails/rails/pull/26703">Pull Request</a></p>
+
+<p>Rails 5.1 has baked-in support for writing Capybara tests, in the form of
+System tests. You no longer need to worry about configuring Capybara and
+database cleaning strategies for such tests. Rails 5.1 provides a wrapper
+for running tests in Chrome with additional features such as failure
+screenshots.</p>
+
+<h4 id="encrypted-secrets">2.5 Encrypted secrets</h4>
+
+<p><a href="https://github.com/rails/rails/pull/28038">Pull Request</a></p>
+
+<p>Rails now allows management of application secrets in a secure way,
+inspired by the <a href="https://github.com/ahoward/sekrets">sekrets</a> gem.</p>
+
+<p>Run <code>bin/rails secrets:setup</code> to setup a new encrypted secrets file. This will
+also generate a master key, which must be stored outside of the repository. The
+secrets themselves can then be safely checked into the revision control system,
+in an encrypted form.</p>
+
+<p>Secrets will be decrypted in production, using a key stored either in the
+<code>RAILS_MASTER_KEY</code> environment variable, or in a key file.</p>
+
+<h4 id="parameterized-mailers">2.6 Parameterized mailers</h4>
+
+<p><a href="https://github.com/rails/rails/pull/27825">Pull Request</a></p>
+
+<p>Allows specifying common parameters used for all methods in a mailer class in
+order to share instance variables, headers and other common setup.</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class InvitationsMailer &lt; ApplicationMailer
+  before_action { @inviter, @invitee = params[:inviter], params[:invitee] }
+  before_action { @account = params[:inviter].account }
+
+  def account_invitation
+    mail subject: "#{@inviter.name} invited you to their Basecamp (#{@account.name})"
+  end
+end
+
+InvitationsMailer.with(inviter: person_a, invitee: person_b)
+                 .account_invitation.deliver_later
+
+</pre>
+</div>
+<h4 id="direct-resolved-routes">2.7 Direct &amp; resolved routes</h4>
+
+<p><a href="https://github.com/rails/rails/pull/23138">Pull Request</a></p>
+
+<p>Rails 5.1 adds two new methods, <code>resolve</code> and <code>direct</code>, to the routing
+DSL. The <code>resolve</code> method allows customizing polymorphic mapping of models.</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+resource :basket
+
+resolve("Basket") { [:basket] }
+
+</pre>
+</div>
+<div class="code_container">
+<pre class="brush: ruby; html-script: true; gutter: false; toolbar: false">
+&lt;%= form_for @basket do |form| %&gt;
+  &lt;!-- basket form --&gt;
+&lt;% end %&gt;
+
+</pre>
+</div>
+<p>This will generate the singular URL <code>/basket</code> instead of the usual <code>/baskets/:id</code>.</p>
+
+<p>The <code>direct</code> method allows creation of custom URL helpers.</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+direct(:homepage) { "http://www.rubyonrails.org" }
+
+&gt;&gt; homepage_url
+=&gt; "http://www.rubyonrails.org"
+
+</pre>
+</div>
+<p>The return value of the block must be a valid argument for the <code>url_for</code>
+method. So, you can pass a valid string URL, Hash, Array, an
+Active Model instance, or an Active Model class.</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+direct :commentable do |model|
+  [ model, anchor: model.dom_id ]
+end
+
+direct :main do
+  { controller: 'pages', action: 'index', subdomain: 'www' }
+end
+
+</pre>
+</div>
+<h4 id="unification-of-form-for-and-form-tag-into-form-with">2.8 Unification of form_for and form_tag into form_with</h4>
+
+<p><a href="https://github.com/rails/rails/pull/26976">Pull Request</a></p>
+
+<p>Before Rails 5.1, there were two interfaces for handling HTML forms:
+<code>form_for</code> for model instances and <code>form_tag</code> for custom URLs.</p>
+
+<p>Rails 5.1 combines both of these interfaces with <code>form_with</code>, and
+can generate form tags based on URLs, scopes or models.</p>
+
+<p>Using just a URL:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; html-script: true; gutter: false; toolbar: false">
+&lt;%= form_with url: posts_path do |form| %&gt;
+  &lt;%= form.text_field :title %&gt;
+&lt;% end %&gt;
+
+&lt;%# Will generate %&gt;
+
+&lt;form action="/posts" method="post" data-remote="true"&gt;
+  &lt;input type="text" name="title"&gt;
+&lt;/form&gt;
+
+</pre>
+</div>
+<p>Adding a scope prefixes the input field names:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; html-script: true; gutter: false; toolbar: false">
+&lt;%= form_with scope: :post, url: posts_path do |form| %&gt;
+  &lt;%= form.text_field :title %&gt;
+&lt;% end %&gt;
+
+&lt;%# Will generate %&gt;
+
+&lt;form action="/posts" method="post" data-remote="true"&gt;
+  &lt;input type="text" name="post[title]"&gt;
+&lt;/form&gt;
+
+</pre>
+</div>
+<p>Using a model infers both the URL and scope:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; html-script: true; gutter: false; toolbar: false">
+&lt;%= form_with model: Post.new do |form| %&gt;
+  &lt;%= form.text_field :title %&gt;
+&lt;% end %&gt;
+
+&lt;%# Will generate %&gt;
+
+&lt;form action="/posts" method="post" data-remote="true"&gt;
+  &lt;input type="text" name="post[title]"&gt;
+&lt;/form&gt;
+
+</pre>
+</div>
+<p>An existing model makes an update form and fills out field values:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; html-script: true; gutter: false; toolbar: false">
+&lt;%= form_with model: Post.first do |form| %&gt;
+  &lt;%= form.text_field :title %&gt;
+&lt;% end %&gt;
+
+&lt;%# Will generate %&gt;
+
+&lt;form action="/posts/1" method="post" data-remote="true"&gt;
+  &lt;input type="hidden" name="_method" value="patch"&gt;
+  &lt;input type="text" name="post[title]" value="&lt;the title of the post&gt;"&gt;
+&lt;/form&gt;
+
+</pre>
+</div>
+</body>
+</html>

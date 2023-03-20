@@ -1,0 +1,141 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>4 The Test Database</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v6.0.6.1/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="the-test-database"><a class="anchorlink" href="#the-test-database">4 The Test Database</a></h3>
+<p>Just about every Rails application interacts heavily with a database and, as a result, your tests will need a database to interact with as well. To write efficient tests, you'll need to understand how to set up this database and populate it with sample data.</p>
+
+<p>By default, every Rails application has three environments: development, test, and production. The database for each one of them is configured in <code>config/database.yml</code>.</p>
+
+<p>A dedicated test database allows you to set up and interact with test data in isolation. This way your tests can mangle test data with confidence, without worrying about the data in the development or production databases.</p>
+
+<h4 id="maintaining-the-test-database-schema"><a class="anchorlink" href="#maintaining-the-test-database-schema">4.1 Maintaining the test database schema</a></h4>
+
+<p>In order to run your tests, your test database will need to have the current
+structure. The test helper checks whether your test database has any pending
+migrations. It will try to load your <code>db/schema.rb</code> or <code>db/structure.sql</code>
+into the test database. If migrations are still pending, an error will be
+raised. Usually this indicates that your schema is not fully migrated. Running
+the migrations against the development database (<code>rails db:migrate</code>) will
+bring the schema up to date.</p>
+
+<div class="note"><p>If there were modifications to existing migrations, the test database needs to
+be rebuilt. This can be done by executing <code>rails db:test:prepare</code>.</p></div>
+
+<h4 id="the-low-down-on-fixtures"><a class="anchorlink" href="#the-low-down-on-fixtures">4.2 The Low-Down on Fixtures</a></h4>
+
+<p>For good tests, you'll need to give some thought to setting up test data.
+In Rails, you can handle this by defining and customizing fixtures.
+You can find comprehensive documentation in the <a href="https://api.rubyonrails.org/v6.0.6.1/classes/ActiveRecord/FixtureSet.html">Fixtures API documentation</a>.</p>
+
+<h5 id="what-are-fixtures-questionmark"><a class="anchorlink" href="#what-are-fixtures-questionmark">4.2.1 What Are Fixtures?</a></h5>
+
+<p><em>Fixtures</em> is a fancy word for sample data. Fixtures allow you to populate your testing database with predefined data before your tests run. Fixtures are database independent and written in YAML. There is one file per model.</p>
+
+<div class="note"><p>Fixtures are not designed to create every object that your tests need, and are best managed when only used for default data that can be applied to the common case.</p></div>
+
+<p>You'll find fixtures under your <code>test/fixtures</code> directory. When you run <code>rails generate model</code> to create a new model, Rails automatically creates fixture stubs in this directory.</p>
+
+<h5 id="yaml"><a class="anchorlink" href="#yaml">4.2.2 YAML</a></h5>
+
+<p>YAML-formatted fixtures are a human-friendly way to describe your sample data. These types of fixtures have the <strong>.yml</strong> file extension (as in <code>users.yml</code>).</p>
+
+<p>Here's a sample YAML fixture file:</p>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+# lo &amp; behold! I am a YAML comment!
+david:
+  name: David Heinemeier Hansson
+  birthday: 1979-10-15
+  profession: Systems development
+
+steve:
+  name: Steve Ross Kellock
+  birthday: 1974-09-27
+  profession: guy with keyboard
+
+</pre>
+</div>
+<p>Each fixture is given a name followed by an indented list of colon-separated key/value pairs. Records are typically separated by a blank line. You can place comments in a fixture file by using the # character in the first column.</p>
+
+<p>If you are working with <a href="/association_basics.html">associations</a>, you can
+define a reference node between two different fixtures. Here's an example with
+a <code>belongs_to</code>/<code>has_many</code> association:</p>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+# In fixtures/categories.yml
+about:
+  name: About
+
+# In fixtures/articles.yml
+first:
+  title: Welcome to Rails!
+  body: Hello world!
+  category: about
+
+</pre>
+</div>
+<p>Notice the <code>category</code> key of the <code>first</code> article found in <code>fixtures/articles.yml</code> has a value of <code>about</code>. This tells Rails to load the category <code>about</code> found in <code>fixtures/categories.yml</code>.</p>
+
+<div class="note"><p>For associations to reference one another by name, you can use the fixture name instead of specifying the <code>id:</code> attribute on the associated fixtures. Rails will auto assign a primary key to be consistent between runs. For more information on this association behavior please read the <a href="https://api.rubyonrails.org/v6.0.6.1/classes/ActiveRecord/FixtureSet.html">Fixtures API documentation</a>.</p></div>
+
+<h5 id="erb-in-it-up"><a class="anchorlink" href="#erb-in-it-up">4.2.3 ERB'in It Up</a></h5>
+
+<p>ERB allows you to embed Ruby code within templates. The YAML fixture format is pre-processed with ERB when Rails loads fixtures. This allows you to use Ruby to help you generate some sample data. For example, the following code generates a thousand users:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; html-script: true; gutter: false; toolbar: false">
+&lt;% 1000.times do |n| %&gt;
+user_&lt;%= n %&gt;:
+  username: &lt;%= "user#{n}" %&gt;
+  email: &lt;%= "user#{n}@example.com" %&gt;
+&lt;% end %&gt;
+
+</pre>
+</div>
+<h5 id="fixtures-in-action"><a class="anchorlink" href="#fixtures-in-action">4.2.4 Fixtures in Action</a></h5>
+
+<p>Rails automatically loads all fixtures from the <code>test/fixtures</code> directory by
+default. Loading involves three steps:</p>
+<ol>
+<li>Remove any existing data from the table corresponding to the fixture</li>
+<li>Load the fixture data into the table</li>
+<li>Dump the fixture data into a method in case you want to access it directly</li>
+</ol>
+<div class="info"><p>In order to remove existing data from the database, Rails tries to disable referential integrity triggers (like foreign keys and check constraints). If you are getting annoying permission errors on running tests, make sure the database user has privilege to disable these triggers in testing environment. (In PostgreSQL, only superusers can disable all triggers. Read more about PostgreSQL permissions <a href="http://blog.endpoint.com/2012/10/postgres-system-triggers-error.html">here</a>).</p></div>
+
+<h5 id="fixtures-are-active-record-objects"><a class="anchorlink" href="#fixtures-are-active-record-objects">4.2.5 Fixtures are Active Record objects</a></h5>
+
+<p>Fixtures are instances of Active Record. As mentioned in point #3 above, you can access the object directly because it is automatically available as a method whose scope is local of the test case. For example:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+# this will return the User object for the fixture named david
+users(:david)
+
+# this will return the property for david called id
+users(:david).id
+
+# one can also access methods available on the User class
+david = users(:david)
+david.call(david.partner)
+
+</pre>
+</div>
+<p>To get multiple fixtures at once, you can pass in a list of fixture names. For example:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+# this will return an array containing the fixtures david and steve
+users(:david, :steve)
+
+</pre>
+</div>
+</body>
+</html>

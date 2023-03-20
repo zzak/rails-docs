@@ -1,0 +1,79 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>4 Ordering</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v6.1.7.3/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="ordering"><a class="anchorlink" href="#ordering">4 Ordering</a></h3>
+<p>To retrieve records from the database in a specific order, you can use the <a href="https://api.rubyonrails.org/v6.1.7.3/classes/ActiveRecord/QueryMethods.html#method-i-order"><code>order</code></a> method.</p>
+
+<p>For example, if you're getting a set of records and want to order them in ascending order by the <code>created_at</code> field in your table:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="no">Customer</span><span class="p">.</span><span class="nf">order</span><span class="p">(</span><span class="ss">:created_at</span><span class="p">)</span>
+<span class="c1"># OR</span>
+<span class="no">Customer</span><span class="p">.</span><span class="nf">order</span><span class="p">(</span><span class="s2">"created_at"</span><span class="p">)</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-92ba0b526457485d9055e1368e6c789a">Customer.order(:created_at)
+# OR
+Customer.order("created_at")
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-92ba0b526457485d9055e1368e6c789a">Copy</button>
+</div>
+<p>You could specify <code>ASC</code> or <code>DESC</code> as well:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="no">Customer</span><span class="p">.</span><span class="nf">order</span><span class="p">(</span><span class="ss">created_at: :desc</span><span class="p">)</span>
+<span class="c1"># OR</span>
+<span class="no">Customer</span><span class="p">.</span><span class="nf">order</span><span class="p">(</span><span class="ss">created_at: :asc</span><span class="p">)</span>
+<span class="c1"># OR</span>
+<span class="no">Customer</span><span class="p">.</span><span class="nf">order</span><span class="p">(</span><span class="s2">"created_at DESC"</span><span class="p">)</span>
+<span class="c1"># OR</span>
+<span class="no">Customer</span><span class="p">.</span><span class="nf">order</span><span class="p">(</span><span class="s2">"created_at ASC"</span><span class="p">)</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-de29c6eee22cb45f52b304420fac6460">Customer.order(created_at: :desc)
+# OR
+Customer.order(created_at: :asc)
+# OR
+Customer.order("created_at DESC")
+# OR
+Customer.order("created_at ASC")
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-de29c6eee22cb45f52b304420fac6460">Copy</button>
+</div>
+<p>Or ordering by multiple fields:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="no">Customer</span><span class="p">.</span><span class="nf">order</span><span class="p">(</span><span class="ss">orders_count: :asc</span><span class="p">,</span> <span class="ss">created_at: :desc</span><span class="p">)</span>
+<span class="c1"># OR</span>
+<span class="no">Customer</span><span class="p">.</span><span class="nf">order</span><span class="p">(</span><span class="ss">:orders_count</span><span class="p">,</span> <span class="ss">created_at: :desc</span><span class="p">)</span>
+<span class="c1"># OR</span>
+<span class="no">Customer</span><span class="p">.</span><span class="nf">order</span><span class="p">(</span><span class="s2">"orders_count ASC, created_at DESC"</span><span class="p">)</span>
+<span class="c1"># OR</span>
+<span class="no">Customer</span><span class="p">.</span><span class="nf">order</span><span class="p">(</span><span class="s2">"orders_count ASC"</span><span class="p">,</span> <span class="s2">"created_at DESC"</span><span class="p">)</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-8ccce8fee4e86ff0769284a7a2537e76">Customer.order(orders_count: :asc, created_at: :desc)
+# OR
+Customer.order(:orders_count, created_at: :desc)
+# OR
+Customer.order("orders_count ASC, created_at DESC")
+# OR
+Customer.order("orders_count ASC", "created_at DESC")
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-8ccce8fee4e86ff0769284a7a2537e76">Copy</button>
+</div>
+<p>If you want to call <code>order</code> multiple times, subsequent orders will be appended to the first:</p>
+
+<div class="code_container">
+<pre><code class="highlight irb"><span class="gp">irb&gt;</span><span class="w"> </span><span class="no">Customer</span><span class="p">.</span><span class="nf">order</span><span class="p">(</span><span class="s2">"orders_count ASC"</span><span class="p">).</span><span class="nf">order</span><span class="p">(</span><span class="s2">"created_at DESC"</span><span class="p">)</span>
+<span class="go">SELECT * FROM customers ORDER BY orders_count ASC, created_at DESC
+</span></code></pre>
+<textarea class="clipboard-content" id="clipboard-090684c2c1ad5d6afd8a7e4d07b44d51">Customer.order("orders_count ASC").order("created_at DESC")
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-090684c2c1ad5d6afd8a7e4d07b44d51">Copy</button>
+</div>
+<div class="warning"><p>In most database systems, on selecting fields with <code>distinct</code> from a result set using methods like <code>select</code>, <code>pluck</code> and <code>ids</code>; the <code>order</code> method will raise an <code>ActiveRecord::StatementInvalid</code> exception unless the field(s) used in <code>order</code> clause are included in the select list. See the next section for selecting fields from the result set.</p></div>
+</body>
+</html>

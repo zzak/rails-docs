@@ -1,0 +1,265 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html 
+     PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+  <head>
+    <title>Class: Range</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <link rel="stylesheet" href="../rdoc-style.css" type="text/css" media="screen" />
+
+    <script language="JavaScript" type="text/javascript">
+    // <![CDATA[
+
+        function toggleSource( id )
+        {
+          var elem
+          var link
+
+          if( document.getElementById )
+          {
+            elem = document.getElementById( id )
+            link = document.getElementById( "l_" + id )
+          }
+          else if ( document.all )
+          {
+            elem = eval( "document.all." + id )
+            link = eval( "document.all.l_" + id )
+          }
+          else
+            return false;
+
+          if( elem.style.display == "block" )
+          {
+            elem.style.display = "none"
+            link.innerHTML = "show source"
+          }
+          else
+          {
+            elem.style.display = "block"
+            link.innerHTML = "hide source"
+          }
+        }
+
+        function openCode( url )
+        {
+          window.open( url, "SOURCE_CODE", "resizable=yes,scrollbars=yes,toolbar=no,status=no,height=480,width=750" ).focus();
+        }
+      // ]]>
+    </script>
+  </head>
+
+  <body>
+    <table width="100%" border='0' cellpadding='0' cellspacing='0' class='banner'>
+    <tr><td>Ruby on Rails v3.0.9</td></tr>
+    <tr>
+  <td class="file-title"><span class="file-title-prefix">Class</span><br />Range</td>
+  <td align="right">
+    <table cellspacing="0" cellpadding="2">
+      <tr valign="top">
+        <td>In:</td>
+        <td>
+<a href="../files/activesupport/lib/active_support/core_ext/range/blockless_step_rb.html">activesupport/lib/active_support/core_ext/range/blockless_step.rb</a>:
+<a href="../files/activesupport/lib/active_support/core_ext/range/overlaps_rb.html">activesupport/lib/active_support/core_ext/range/overlaps.rb</a>:
+<a href="../files/activesupport/lib/active_support/core_ext/range/include_range_rb.html">activesupport/lib/active_support/core_ext/range/include_range.rb</a>:
+<a href="../files/activesupport/lib/active_support/core_ext/range/conversions_rb.html">activesupport/lib/active_support/core_ext/range/conversions.rb</a>:
+<a href="../files/activesupport/lib/active_support/core_ext/enumerable_rb.html">activesupport/lib/active_support/core_ext/enumerable.rb</a>:
+        </td>
+      </tr>
+      <tr>
+        <td>Parent:</td>
+        <td>
+
+      <a href="Object.html">Object</a>         </td>
+     </tr>
+         </table>
+        </td>
+        </tr>
+      </table>
+  <div id="bodyContent">
+  <div id="content">
+
+  <div class="description"></div>
+
+
+  <div class="sectiontitle">Methods</div>
+  <ul>
+                <li><a href="#method-i-include_with_range-3F">include_with_range?</a></li>
+                <li><a href="#method-i-overlaps-3F">overlaps?</a></li>
+                <li><a href="#method-i-step_with_blockless">step_with_blockless</a></li>
+                      <li><a href="#method-i-to_formatted_s">to_formatted_s</a></li>
+            </ul>
+
+
+  <div class="sectiontitle">Constants</div>
+  <table border='0' cellpadding='5'>
+  <tr valign='top'>
+    <td class="attr-name">RANGE_FORMATS</td>
+    <td>=</td>
+    <td class="attr-value">{
+:db => Proc.new { |start, stop| "BETWEEN '#{start.to_s(:db)}' AND '#{stop.to_s(:db)}'" }
+}</td>
+  </tr>
+  </table>
+
+
+                        
+    <div class="sectiontitle">
+      Public      Instance      methods
+    </div>
+
+          
+      <div class="method">
+        <div class="title">
+                      <a name="method-i-include_with_range-3F"></a>
+            <b>include_with_range?</b>(value)          
+        </div>
+
+                  <div class="description">
+            <p>Extends the default Range#include? to support range comparisons.</p>
+
+<pre>(1..5).include?(1..5) # =&gt; true
+(1..5).include?(2..3) # =&gt; true
+(1..5).include?(2..6) # =&gt; false</pre>
+
+<p>The native Range#include? behavior is untouched.</p>
+
+<pre>(&quot;a&quot;..&quot;f&quot;).include?(&quot;c&quot;) # =&gt; true
+(5..9).include?(11) # =&gt; false</pre>          </div>
+        
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('include_with_range-3F_source')"
+                 id="l_method-i-include_with_range-3F_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="include_with_range-3F_source">
+<pre>
+  <span class="ruby-comment"># File activesupport/lib/active_support/core_ext/range/include_range.rb, line 10</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">include_with_range?</span>(<span class="ruby-identifier">value</span>)
+  <span class="ruby-keyword">if</span> <span class="ruby-identifier">value</span>.<span class="ruby-identifier">is_a?</span>(<span class="ruby-operator">::</span><span class="ruby-constant">Range</span>)
+    <span class="ruby-identifier">operator</span> = <span class="ruby-identifier">exclude_end?</span> <span class="ruby-operator">?</span> <span class="ruby-value">:&lt;</span> <span class="ruby-operator">:</span> <span class="ruby-value">:&lt;=</span>
+    <span class="ruby-identifier">end_value</span> = <span class="ruby-identifier">value</span>.<span class="ruby-identifier">exclude_end?</span> <span class="ruby-operator">?</span> <span class="ruby-identifier">last</span>.<span class="ruby-identifier">succ</span> <span class="ruby-operator">:</span> <span class="ruby-identifier">last</span>
+    <span class="ruby-identifier">include_without_range?</span>(<span class="ruby-identifier">value</span>.<span class="ruby-identifier">first</span>) <span class="ruby-operator">&amp;&amp;</span> (<span class="ruby-identifier">value</span>.<span class="ruby-identifier">last</span> <span class="ruby-operator">&lt;=&gt;</span> <span class="ruby-identifier">end_value</span>).<span class="ruby-identifier">send</span>(<span class="ruby-identifier">operator</span>, <span class="ruby-value">0</span>)
+  <span class="ruby-keyword">else</span>
+    <span class="ruby-identifier">include_without_range?</span>(<span class="ruby-identifier">value</span>)
+  <span class="ruby-keyword">end</span>
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+          
+      <div class="method">
+        <div class="title">
+                      <a name="method-i-overlaps-3F"></a>
+            <b>overlaps?</b>(other)          
+        </div>
+
+                  <div class="description">
+            <p>Compare two ranges and see if they overlap each other</p>
+
+<pre>(1..5).overlaps?(4..6) # =&gt; true
+(1..5).overlaps?(7..9) # =&gt; false</pre>          </div>
+        
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('overlaps-3F_source')"
+                 id="l_method-i-overlaps-3F_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="overlaps-3F_source">
+<pre>
+  <span class="ruby-comment"># File activesupport/lib/active_support/core_ext/range/overlaps.rb, line 5</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">overlaps?</span>(<span class="ruby-identifier">other</span>)
+  <span class="ruby-identifier">include?</span>(<span class="ruby-identifier">other</span>.<span class="ruby-identifier">first</span>) <span class="ruby-operator">||</span> <span class="ruby-identifier">other</span>.<span class="ruby-identifier">include?</span>(<span class="ruby-identifier">first</span>)
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+          
+      <div class="method">
+        <div class="title">
+                      <a name="method-i-step_with_blockless"></a>
+            <b>step_with_blockless</b>(*args, &block)          
+        </div>
+
+                  <div class="description">
+            <p>Return an array when step is called without a block.</p>          </div>
+        
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('step_with_blockless_source')"
+                 id="l_method-i-step_with_blockless_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="step_with_blockless_source">
+<pre>
+  <span class="ruby-comment"># File activesupport/lib/active_support/core_ext/range/blockless_step.rb, line 9</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">step_with_blockless</span>(*<span class="ruby-identifier">args</span>, &amp;<span class="ruby-identifier">block</span>)
+  <span class="ruby-keyword">if</span> <span class="ruby-identifier">block_given?</span>
+    <span class="ruby-identifier">step_without_blockless</span>(*<span class="ruby-identifier">args</span>, &amp;<span class="ruby-identifier">block</span>)
+  <span class="ruby-keyword">else</span>
+    <span class="ruby-identifier">array</span> = []
+    <span class="ruby-identifier">step_without_blockless</span>(*<span class="ruby-identifier">args</span>) { <span class="ruby-operator">|</span><span class="ruby-identifier">step</span><span class="ruby-operator">|</span> <span class="ruby-identifier">array</span> <span class="ruby-operator">&lt;&lt;</span> <span class="ruby-identifier">step</span> }
+    <span class="ruby-identifier">array</span>
+  <span class="ruby-keyword">end</span>
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+                
+      <div class="method">
+        <div class="title">
+                      <a name="method-i-to_formatted_s"></a>
+            <b>to_formatted_s</b>(format = :default)          
+        </div>
+
+                  <div class="description">
+            <p>Gives a human readable format of the range.</p>
+
+<h4>Example</h4>
+
+<pre>[1..100].to_formatted_s # =&gt; &quot;1..100&quot;</pre>          </div>
+        
+                  <div class="aka">
+            This method is also aliased as
+                          <a href="Range.html#method-i-to_s">to_s</a>                      </div>
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('to_formatted_s_source')"
+                 id="l_method-i-to_formatted_s_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="to_formatted_s_source">
+<pre>
+  <span class="ruby-comment"># File activesupport/lib/active_support/core_ext/range/conversions.rb, line 11</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">to_formatted_s</span>(<span class="ruby-identifier">format</span> = <span class="ruby-value">:default</span>)
+  <span class="ruby-keyword">if</span> <span class="ruby-identifier">formatter</span> = <span class="ruby-constant">RANGE_FORMATS</span>[<span class="ruby-identifier">format</span>]
+    <span class="ruby-identifier">formatter</span>.<span class="ruby-identifier">call</span>(<span class="ruby-identifier">first</span>, <span class="ruby-identifier">last</span>)
+  <span class="ruby-keyword">else</span>
+    <span class="ruby-identifier">to_default_s</span>
+  <span class="ruby-keyword">end</span>
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+                    </div>
+  </div>
+  </body>
+</html>

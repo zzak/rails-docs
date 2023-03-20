@@ -1,0 +1,89 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>3 Creating a Job</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v6.0.6.1/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="creating-a-job"><a class="anchorlink" href="#creating-a-job">3 Creating a Job</a></h3>
+<p>This section will provide a step-by-step guide to creating a job and enqueuing it.</p>
+
+<h4 id="create-the-job"><a class="anchorlink" href="#create-the-job">3.1 Create the Job</a></h4>
+
+<p>Active Job provides a Rails generator to create jobs. The following will create a
+job in <code>app/jobs</code> (with an attached test case under <code>test/jobs</code>):</p>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+$ rails generate job guests_cleanup
+invoke  test_unit
+create    test/jobs/guests_cleanup_job_test.rb
+create  app/jobs/guests_cleanup_job.rb
+
+</pre>
+</div>
+<p>You can also create a job that will run on a specific queue:</p>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+$ rails generate job guests_cleanup --queue urgent
+
+</pre>
+</div>
+<p>If you don't want to use a generator, you could create your own file inside of
+<code>app/jobs</code>, just make sure that it inherits from <code>ApplicationJob</code>.</p>
+
+<p>Here's what a job looks like:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class GuestsCleanupJob &lt; ApplicationJob
+  queue_as :default
+
+  def perform(*guests)
+    # Do something later
+  end
+end
+
+</pre>
+</div>
+<p>Note that you can define <code>perform</code> with as many arguments as you want.</p>
+
+<h4 id="enqueue-the-job"><a class="anchorlink" href="#enqueue-the-job">3.2 Enqueue the Job</a></h4>
+
+<p>Enqueue a job like so:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+# Enqueue a job to be performed as soon as the queuing system is
+# free.
+GuestsCleanupJob.perform_later guest
+
+</pre>
+</div>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+# Enqueue a job to be performed tomorrow at noon.
+GuestsCleanupJob.set(wait_until: Date.tomorrow.noon).perform_later(guest)
+
+</pre>
+</div>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+# Enqueue a job to be performed 1 week from now.
+GuestsCleanupJob.set(wait: 1.week).perform_later(guest)
+
+</pre>
+</div>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+# `perform_now` and `perform_later` will call `perform` under the hood so
+# you can pass as many arguments as defined in the latter.
+GuestsCleanupJob.perform_later(guest1, guest2, filter: 'some_filter')
+
+</pre>
+</div>
+<p>That's it!</p>
+</body>
+</html>

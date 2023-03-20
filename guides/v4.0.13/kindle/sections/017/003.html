@@ -1,0 +1,81 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>4 Redirection and Files</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v4.0.13/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="redirection-and-files">4 Redirection and Files</h3>
+<p>Another class of security vulnerabilities surrounds the use of redirection and files in web applications.</p>
+<h4 id="redirection">4.1 Redirection</h4>
+<div class="warning"><p><em>Redirection in a web application is an underestimated cracker tool: Not only can the attacker forward the user to a trap web site, they may also create a self-contained attack.</em></p></div>
+<p>Whenever the user is allowed to pass (parts of) the URL for redirection, it is possibly vulnerable. The most obvious attack would be to redirect users to a fake web application which looks and feels exactly as the original one. This so-called phishing attack works by sending an unsuspicious link in an email to the users, injecting the link by XSS in the web application or putting the link into an external site. It is unsuspicious, because the link starts with the URL to the web application and the URL to the malicious site is hidden in the redirection parameter: <a href="http://www.example.com/site/redirect?to=">http://www.example.com/site/redirect?to=</a> <a href="http://www.attacker.com">www.attacker.com</a>. Here is an example of a legacy action:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+def legacy
+  redirect_to(params.update(action:'main'))
+end
+
+</pre>
+</div>
+<p>This will redirect the user to the main action if they tried to access a legacy action. The intention was to preserve the URL parameters to the legacy action and pass them to the main action. However, it can be exploited by attacker if they included a host key in the URL:</p>
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+http://www.example.com/site/legacy?param1=xy&amp;param2=23&amp;host=www.attacker.com
+
+</pre>
+</div>
+<p>If it is at the end of the URL it will hardly be noticed and redirects the user to the attacker.com host. A simple countermeasure would be to <em>include only the expected parameters in a legacy action</em> (again a whitelist approach, as opposed to removing unexpected parameters). <em>And if you redirect to an URL, check it with a whitelist or a regular expression</em>.</p>
+<h5 id="self-contained-xss">4.1.1 Self-contained XSS</h5>
+<p>Another redirection and self-contained XSS attack works in Firefox and Opera by the use of the data protocol. This protocol displays its contents directly in the browser and can be anything from HTML or JavaScript to entire images:</p>
+<p><code>data:text/html;base64,PHNjcmlwdD5hbGVydCgnWFNTJyk8L3NjcmlwdD4K</code></p>
+<p>This example is a Base64 encoded JavaScript which displays a simple message box. In a redirection URL, an attacker could redirect to this URL with the malicious code in it. As a countermeasure, <em>do not allow the user to supply (parts of) the URL to be redirected to</em>.</p>
+<h4 id="file-uploads">4.2 File Uploads</h4>
+<div class="note"><p><em>Make sure file uploads don't overwrite important files, and process media files asynchronously.</em></p></div>
+<p>Many web applications allow users to upload files. <em>File names, which the user may choose (partly), should always be filtered</em> as an attacker could use a malicious file name to overwrite any file on the server. If you store file uploads at /var/www/uploads, and the user enters a file name like “../../../etc/passwd”, it may overwrite an important file. Of course, the Ruby interpreter would need the appropriate permissions to do so – one more reason to run web servers, database servers and other programs as a less privileged Unix user.</p>
+<p>When filtering user input file names, <em>don't try to remove malicious parts</em>. Think of a situation where the web application removes all “../” in a file name and an attacker uses a string such as “....//” - the result will be “../”. It is best to use a whitelist approach, which <em>checks for the validity of a file name with a set of accepted characters</em>. This is opposed to a blacklist approach which attempts to remove not allowed characters. In case it isn't a valid file name, reject it (or replace not accepted characters), but don't remove them. Here is the file name sanitizer from the <a href="https://github.com/technoweenie/attachment_fu/tree/master:">attachment_fu plugin</a></p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+def sanitize_filename(filename)
+  filename.strip.tap do |name|
+    # NOTE: File.basename doesn't work right with Windows paths on Unix
+    # get only the filename, not the whole path
+    name.sub! /\A.*(\\|\/)/, ''
+    # Finally, replace all non alphanumeric, underscore
+    # or periods with underscore
+    name.gsub! /[^\w\.\-]/, '_'
+  end
+end
+
+</pre>
+</div>
+<p>A significant disadvantage of synchronous processing of file uploads (as the attachment_fu plugin may do with images), is its <em>vulnerability to denial-of-service attacks</em>. An attacker can synchronously start image file uploads from many computers which increases the server load and may eventually crash or stall the server.</p>
+<p>The solution to this is best to <em>process media files asynchronously</em>: Save the media file and schedule a processing request in the database. A second process will handle the processing of the file in the background.</p>
+<h4 id="executable-code-in-file-uploads">4.3 Executable Code in File Uploads</h4>
+<div class="warning"><p><em>Source code in uploaded files may be executed when placed in specific directories. Do not place file uploads in Rails' /public directory if it is Apache's home directory.</em></p></div>
+<p>The popular Apache web server has an option called DocumentRoot. This is the home directory of the web site, everything in this directory tree will be served by the web server. If there are files with a certain file name extension, the code in it will be executed when requested (might require some options to be set). Examples for this are PHP and CGI files. Now think of a situation where an attacker uploads a file “file.cgi” with code in it, which will be executed when someone downloads the file.</p>
+<p><em>If your Apache DocumentRoot points to Rails' /public directory, do not put file uploads in it</em>, store files at least one level downwards.</p>
+<h4 id="file-downloads">4.4 File Downloads</h4>
+<div class="note"><p><em>Make sure users cannot download arbitrary files.</em></p></div>
+<p>Just as you have to filter file names for uploads, you have to do so for downloads. The send_file() method sends files from the server to the client. If you use a file name, that the user entered, without filtering, any file can be downloaded:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+send_file('/var/www/uploads/' + params[:filename])
+
+</pre>
+</div>
+<p>Simply pass a file name like “../../../etc/passwd” to download the server's login information. A simple solution against this, is to <em>check that the requested file is in the expected directory</em>:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+basename = File.expand_path(File.join(File.dirname(__FILE__), '../../files'))
+filename = File.expand_path(File.join(basename, @file.public_filename))
+raise if basename !=
+     File.expand_path(File.join(File.dirname(filename), '../../../'))
+send_file filename, disposition: 'inline'
+
+</pre>
+</div>
+<p>Another (additional) approach is to store the file names in the database and name the files on the disk after the ids in the database. This is also a good approach to avoid possible code in an uploaded file to be executed. The attachment_fu plugin does this in a similar way.</p>
+</body>
+</html>

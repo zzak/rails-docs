@@ -1,0 +1,58 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>1 Introduction</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v7.0.4.2/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="introduction"><a class="anchorlink" href="#introduction">1 Introduction</a></h3>
+<div class="info"><p>This guide documents autoloading, reloading, and eager loading in Rails applications.</p></div>
+
+<p>In a normal Ruby program, dependencies need to be loaded by hand. For example, the following controller uses classes <code>ApplicationController</code> and <code>Post</code>, and normally you'd need to put <code>require</code> calls for them:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="c1"># DO NOT DO THIS.</span>
+<span class="nb">require</span> <span class="s2">"application_controller"</span>
+<span class="nb">require</span> <span class="s2">"post"</span>
+<span class="c1"># DO NOT DO THIS.</span>
+
+<span class="k">class</span> <span class="nc">PostsController</span> <span class="o">&lt;</span> <span class="no">ApplicationController</span>
+  <span class="k">def</span> <span class="nf">index</span>
+    <span class="vi">@posts</span> <span class="o">=</span> <span class="no">Post</span><span class="p">.</span><span class="nf">all</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='# DO NOT DO THIS.
+require "application_controller"
+require "post"
+# DO NOT DO THIS.
+
+class PostsController &lt; ApplicationController
+  def index
+    @posts = Post.all
+  end
+end
+'>Copy</button>
+</div>
+<p>This is not the case in Rails applications, where application classes and modules are just available everywhere:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">PostsController</span> <span class="o">&lt;</span> <span class="no">ApplicationController</span>
+  <span class="k">def</span> <span class="nf">index</span>
+    <span class="vi">@posts</span> <span class="o">=</span> <span class="no">Post</span><span class="p">.</span><span class="nf">all</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="class PostsController &lt; ApplicationController
+  def index
+    @posts = Post.all
+  end
+end
+">Copy</button>
+</div>
+<p>Idiomatic Rails applications only issue <code>require</code> calls to load stuff from their <code>lib</code> directory, the Ruby standard library, Ruby gems, etc. That is, anything that does not belong to their autoload paths, explained below.</p>
+
+<p>To provide this feature, Rails manages a couple of <a href="https://github.com/fxn/zeitwerk">Zeitwerk</a> loaders on your behalf.</p>
+</body>
+</html>

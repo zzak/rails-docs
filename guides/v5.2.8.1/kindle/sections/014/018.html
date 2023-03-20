@@ -1,0 +1,34 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>19 Extensions to NameError</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v5.2.8.1/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="extensions-to-nameerror"><a class="anchorlink" href="#extensions-to-nameerror">19 Extensions to <code>NameError</code></a></h3>
+<p>Active Support adds <code>missing_name?</code> to <code>NameError</code>, which tests whether the exception was raised because of the name passed as argument.</p>
+
+<p>The name may be given as a symbol or string. A symbol is tested against the bare constant name, a string is against the fully qualified constant name.</p>
+
+<div class="info"><p>A symbol can represent a fully qualified constant name as in <code>:"ActiveRecord::Base"</code>, so the behavior for symbols is defined for convenience, not because it has to be that way technically.</p></div>
+
+<p>For example, when an action of <code>ArticlesController</code> is called Rails tries optimistically to use <code>ArticlesHelper</code>. It is OK that the helper module does not exist, so if an exception for that constant name is raised it should be silenced. But it could be the case that <code>articles_helper.rb</code> raises a <code>NameError</code> due to an actual unknown constant. That should be reraised. The method <code>missing_name?</code> provides a way to distinguish both cases:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+def default_helper_module!
+  module_name = name.sub(/Controller$/, '')
+  module_path = module_name.underscore
+  helper module_path
+rescue LoadError =&gt; e
+  raise e unless e.is_missing? "helpers/#{module_path}_helper"
+rescue NameError =&gt; e
+  raise e unless e.missing_name? "#{module_name}Helper"
+end
+
+</pre>
+</div>
+<div class="note"><p>Defined in <code><a href="https://github.com/rails/rails/tree/v5.2.8.1/activesupport/lib/active_support/core_ext/name_error.rb">active_support/core_ext/name_error.rb</a></code>.</p></div>
+</body>
+</html>

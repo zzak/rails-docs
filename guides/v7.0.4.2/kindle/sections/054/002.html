@@ -1,0 +1,38 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>3 Incompatibilities</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v7.0.4.2/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="incompatibilities"><a class="anchorlink" href="#incompatibilities">3 Incompatibilities</a></h3>
+<p>The following changes may require immediate action upon upgrade.</p>
+
+<h4 id="transactional-tests-with-multiple-connections"><a class="anchorlink" href="#transactional-tests-with-multiple-connections">3.1 Transactional tests with multiple connections</a></h4>
+
+<p>Transactional tests now wrap all Active Record connections in database
+transactions.</p>
+
+<p>When a test spawns additional threads, and those threads obtain database
+connections, those connections are now handled specially:</p>
+
+<p>The threads will share a single connection, which is inside the managed
+transaction. This ensures all threads see the database in the same
+state, ignoring the outermost transaction. Previously, such additional
+connections were unable to see the fixture rows, for example.</p>
+
+<p>When a thread enters a nested transaction, it will temporarily obtain
+exclusive use of the connection, to maintain isolation.</p>
+
+<p>If your tests currently rely on obtaining a separate,
+outside-of-transaction, connection in a spawned thread, you'll need to
+switch to more explicit connection management.</p>
+
+<p>If your tests spawn threads and those threads interact while also using
+explicit database transactions, this change may introduce a deadlock.</p>
+
+<p>The easy way to opt-out of this new behavior is to disable transactional
+tests on any test cases it affects.</p>
+</body>
+</html>

@@ -1,0 +1,45 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>13 Log Filtering</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v5.0.7.2/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="log-filtering">13 Log Filtering</h3>
+<p>Rails keeps a log file for each environment in the <code>log</code> folder. These are extremely useful when debugging what's actually going on in your application, but in a live application you may not want every bit of information to be stored in the log file.</p>
+
+<h4 id="parameters-filtering">13.1 Parameters Filtering</h4>
+
+<p>You can filter out sensitive request parameters from your log files by appending them to <code>config.filter_parameters</code> in the application configuration. These parameters will be marked [FILTERED] in the log.</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+config.filter_parameters &lt;&lt; :password
+
+</pre>
+</div>
+<div class="note"><p>Provided parameters will be filtered out by partial matching regular expression. Rails adds default <code>:password</code> in the appropriate initializer (<code>initializers/filter_parameter_logging.rb</code>) and cares about typical application parameters <code>password</code> and <code>password_confirmation</code>.</p></div>
+
+<h4 id="redirects-filtering">13.2 Redirects Filtering</h4>
+
+<p>Sometimes it's desirable to filter out from log files some sensitive locations your application is redirecting to.
+You can do that by using the <code>config.filter_redirect</code> configuration option:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+config.filter_redirect &lt;&lt; 's3.amazonaws.com'
+
+</pre>
+</div>
+<p>You can set it to a String, a Regexp, or an array of both.</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+config.filter_redirect.concat ['s3.amazonaws.com', /private_path/]
+
+</pre>
+</div>
+<p>Matching URLs will be marked as '[FILTERED]'.</p>
+</body>
+</html>

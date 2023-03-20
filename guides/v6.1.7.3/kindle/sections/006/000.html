@@ -1,0 +1,94 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>1 Why Associations?</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v6.1.7.3/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="why-associations-questionmark"><a class="anchorlink" href="#why-associations-questionmark">1 Why Associations?</a></h3>
+<p>In Rails, an <em>association</em> is a connection between two Active Record models. Why do we need associations between models? Because they make common operations simpler and easier in your code. For example, consider a simple Rails application that includes a model for authors and a model for books. Each author can have many books. Without associations, the model declarations would look like this:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">Author</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+<span class="k">end</span>
+
+<span class="k">class</span> <span class="nc">Book</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+<span class="k">end</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-66bbc4f0bde579287ba7be3065ecca64">class Author &lt; ApplicationRecord
+end
+
+class Book &lt; ApplicationRecord
+end
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-66bbc4f0bde579287ba7be3065ecca64">Copy</button>
+</div>
+<p>Now, suppose we wanted to add a new book for an existing author. We'd need to do something like this:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="vi">@book</span> <span class="o">=</span> <span class="no">Book</span><span class="p">.</span><span class="nf">create</span><span class="p">(</span><span class="ss">published_at: </span><span class="no">Time</span><span class="p">.</span><span class="nf">now</span><span class="p">,</span> <span class="ss">author_id: </span><span class="vi">@author</span><span class="p">.</span><span class="nf">id</span><span class="p">)</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-621ea209ad3ed2ed5c212a45e066115e">@book = Book.create(published_at: Time.now, author_id: @author.id)
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-621ea209ad3ed2ed5c212a45e066115e">Copy</button>
+</div>
+<p>Or consider deleting an author, and ensuring that all of its books get deleted as well:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="vi">@books</span> <span class="o">=</span> <span class="no">Book</span><span class="p">.</span><span class="nf">where</span><span class="p">(</span><span class="ss">author_id: </span><span class="vi">@author</span><span class="p">.</span><span class="nf">id</span><span class="p">)</span>
+<span class="vi">@books</span><span class="p">.</span><span class="nf">each</span> <span class="k">do</span> <span class="o">|</span><span class="n">book</span><span class="o">|</span>
+  <span class="n">book</span><span class="p">.</span><span class="nf">destroy</span>
+<span class="k">end</span>
+<span class="vi">@author</span><span class="p">.</span><span class="nf">destroy</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-27fa7fe4f50cf4e0214c0ce33c161b7a">@books = Book.where(author_id: @author.id)
+@books.each do |book|
+  book.destroy
+end
+@author.destroy
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-27fa7fe4f50cf4e0214c0ce33c161b7a">Copy</button>
+</div>
+<p>With Active Record associations, we can streamline these - and other - operations by declaratively telling Rails that there is a connection between the two models. Here's the revised code for setting up authors and books:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">Author</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="n">has_many</span> <span class="ss">:books</span><span class="p">,</span> <span class="ss">dependent: :destroy</span>
+<span class="k">end</span>
+
+<span class="k">class</span> <span class="nc">Book</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="n">belongs_to</span> <span class="ss">:author</span>
+<span class="k">end</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-ce6b41123e6900e7f20762dbccc3b960">class Author &lt; ApplicationRecord
+  has_many :books, dependent: :destroy
+end
+
+class Book &lt; ApplicationRecord
+  belongs_to :author
+end
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-ce6b41123e6900e7f20762dbccc3b960">Copy</button>
+</div>
+<p>With this change, creating a new book for a particular author is easier:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="vi">@book</span> <span class="o">=</span> <span class="vi">@author</span><span class="p">.</span><span class="nf">books</span><span class="p">.</span><span class="nf">create</span><span class="p">(</span><span class="ss">published_at: </span><span class="no">Time</span><span class="p">.</span><span class="nf">now</span><span class="p">)</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-7e3368ec21c02e8f0d3a62bf902cf069">@book = @author.books.create(published_at: Time.now)
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-7e3368ec21c02e8f0d3a62bf902cf069">Copy</button>
+</div>
+<p>Deleting an author and all of its books is <em>much</em> easier:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="vi">@author</span><span class="p">.</span><span class="nf">destroy</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-d6042d7efb721699c9c19de95388b38f">@author.destroy
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-d6042d7efb721699c9c19de95388b38f">Copy</button>
+</div>
+<p>To learn more about the different types of associations, read the next section of this guide. That's followed by some tips and tricks for working with associations, and then by a complete reference to the methods and options for associations in Rails.</p>
+</body>
+</html>

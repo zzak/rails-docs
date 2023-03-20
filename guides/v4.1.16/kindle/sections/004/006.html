@@ -1,0 +1,153 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>7 Working with Validation Errors</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v4.1.16/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="working-with-validation-errors">7 Working with Validation Errors</h3>
+<p>In addition to the <code>valid?</code> and <code>invalid?</code> methods covered earlier, Rails provides a number of methods for working with the <code>errors</code> collection and inquiring about the validity of objects.</p>
+<p>The following is a list of the most commonly used methods. Please refer to the <code>ActiveModel::Errors</code> documentation for a list of all the available methods.</p>
+<h4 id="working-with-validation-errors-errors">7.1 <code>errors</code>
+</h4>
+<p>Returns an instance of the class <code>ActiveModel::Errors</code> containing all errors. Each key is the attribute name and the value is an array of strings with all errors.</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class Person &lt; ActiveRecord::Base
+  validates :name, presence: true, length: { minimum: 3 }
+end
+
+person = Person.new
+person.valid? # =&gt; false
+person.errors.messages
+ # =&gt; {:name=&gt;["can't be blank", "is too short (minimum is 3 characters)"]}
+
+person = Person.new(name: "John Doe")
+person.valid? # =&gt; true
+person.errors.messages # =&gt; {}
+
+</pre>
+</div>
+<h4 id="errors">7.2 <code>errors[]</code>
+</h4>
+<p><code>errors[]</code> is used when you want to check the error messages for a specific attribute. It returns an array of strings with all error messages for the given attribute, each string with one error message. If there are no errors related to the attribute, it returns an empty array.</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class Person &lt; ActiveRecord::Base
+  validates :name, presence: true, length: { minimum: 3 }
+end
+
+person = Person.new(name: "John Doe")
+person.valid? # =&gt; true
+person.errors[:name] # =&gt; []
+
+person = Person.new(name: "JD")
+person.valid? # =&gt; false
+person.errors[:name] # =&gt; ["is too short (minimum is 3 characters)"]
+
+person = Person.new
+person.valid? # =&gt; false
+person.errors[:name]
+ # =&gt; ["can't be blank", "is too short (minimum is 3 characters)"]
+
+</pre>
+</div>
+<h4 id="errors-add">7.3 <code>errors.add</code>
+</h4>
+<p>The <code>add</code> method lets you manually add messages that are related to particular attributes. You can use the <code>errors.full_messages</code> or <code>errors.to_a</code> methods to view the messages in the form they might be displayed to a user. Those particular messages get the attribute name prepended (and capitalized). <code>add</code> receives the name of the attribute you want to add the message to, and the message itself.</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class Person &lt; ActiveRecord::Base
+  def a_method_used_for_validation_purposes
+    errors.add(:name, "cannot contain the characters !@#%*()_-+=")
+  end
+end
+
+person = Person.create(name: "!@#")
+
+person.errors[:name]
+ # =&gt; ["cannot contain the characters !@#%*()_-+="]
+
+person.errors.full_messages
+ # =&gt; ["Name cannot contain the characters !@#%*()_-+="]
+
+</pre>
+</div>
+<p>Another way to do this is using <code>[]=</code> setter</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+  class Person &lt; ActiveRecord::Base
+    def a_method_used_for_validation_purposes
+      errors[:name] = "cannot contain the characters !@#%*()_-+="
+    end
+  end
+
+  person = Person.create(name: "!@#")
+
+  person.errors[:name]
+   # =&gt; ["cannot contain the characters !@#%*()_-+="]
+
+  person.errors.to_a
+   # =&gt; ["Name cannot contain the characters !@#%*()_-+="]
+
+</pre>
+</div>
+<h4 id="errors-base">7.4 <code>errors[:base]</code>
+</h4>
+<p>You can add error messages that are related to the object's state as a whole, instead of being related to a specific attribute. You can use this method when you want to say that the object is invalid, no matter the values of its attributes. Since <code>errors[:base]</code> is an array, you can simply add a string to it and it will be used as an error message.</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class Person &lt; ActiveRecord::Base
+  def a_method_used_for_validation_purposes
+    errors[:base] &lt;&lt; "This person is invalid because ..."
+  end
+end
+
+</pre>
+</div>
+<h4 id="errors-clear">7.5 <code>errors.clear</code>
+</h4>
+<p>The <code>clear</code> method is used when you intentionally want to clear all the messages in the <code>errors</code> collection. Of course, calling <code>errors.clear</code> upon an invalid object won't actually make it valid: the <code>errors</code> collection will now be empty, but the next time you call <code>valid?</code> or any method that tries to save this object to the database, the validations will run again. If any of the validations fail, the <code>errors</code> collection will be filled again.</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class Person &lt; ActiveRecord::Base
+  validates :name, presence: true, length: { minimum: 3 }
+end
+
+person = Person.new
+person.valid? # =&gt; false
+person.errors[:name]
+ # =&gt; ["can't be blank", "is too short (minimum is 3 characters)"]
+
+person.errors.clear
+person.errors.empty? # =&gt; true
+
+p.save # =&gt; false
+
+p.errors[:name]
+# =&gt; ["can't be blank", "is too short (minimum is 3 characters)"]
+
+</pre>
+</div>
+<h4 id="errors-size">7.6 <code>errors.size</code>
+</h4>
+<p>The <code>size</code> method returns the total number of error messages for the object.</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class Person &lt; ActiveRecord::Base
+  validates :name, presence: true, length: { minimum: 3 }
+end
+
+person = Person.new
+person.valid? # =&gt; false
+person.errors.size # =&gt; 2
+
+person = Person.new(name: "Andrea", email: "andrea@example.com")
+person.valid? # =&gt; true
+person.errors.size # =&gt; 0
+
+</pre>
+</div>
+</body>
+</html>

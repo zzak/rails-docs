@@ -1,0 +1,235 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>3 Server-Side Components</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v6.1.7.3/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="server-side-components"><a class="anchorlink" href="#server-side-components">3 Server-Side Components</a></h3>
+<h4 id="server-side-components-connections"><a class="anchorlink" href="#server-side-components-connections">3.1 Connections</a></h4>
+
+<p>For every WebSocket accepted by the server, a connection object is instantiated. This
+object becomes the parent of all the <em>channel subscriptions</em> that are created
+from there on. The connection itself does not deal with any specific application
+logic beyond authentication and authorization. The client of a WebSocket
+connection is called the connection <em>consumer</em>. An individual user will create
+one consumer-connection pair per browser tab, window, or device they have open.</p>
+
+<p>Connections are instances of <code>ApplicationCable::Connection</code>, which extends
+<a href="https://api.rubyonrails.org/v6.1.7.3/classes/ActionCable/Connection/Base.html"><code>ActionCable::Connection::Base</code></a>. In <code>ApplicationCable::Connection</code>, you
+authorize the incoming connection, and proceed to establish it if the user can
+be identified.</p>
+
+<h5 id="connection-setup"><a class="anchorlink" href="#connection-setup">3.1.1 Connection Setup</a></h5>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="c1"># app/channels/application_cable/connection.rb</span>
+<span class="k">module</span> <span class="nn">ApplicationCable</span>
+  <span class="k">class</span> <span class="nc">Connection</span> <span class="o">&lt;</span> <span class="no">ActionCable</span><span class="o">::</span><span class="no">Connection</span><span class="o">::</span><span class="no">Base</span>
+    <span class="n">identified_by</span> <span class="ss">:current_user</span>
+
+    <span class="k">def</span> <span class="nf">connect</span>
+      <span class="nb">self</span><span class="p">.</span><span class="nf">current_user</span> <span class="o">=</span> <span class="n">find_verified_user</span>
+    <span class="k">end</span>
+
+    <span class="kp">private</span>
+      <span class="k">def</span> <span class="nf">find_verified_user</span>
+        <span class="k">if</span> <span class="n">verified_user</span> <span class="o">=</span> <span class="no">User</span><span class="p">.</span><span class="nf">find_by</span><span class="p">(</span><span class="ss">id: </span><span class="n">cookies</span><span class="p">.</span><span class="nf">encrypted</span><span class="p">[</span><span class="ss">:user_id</span><span class="p">])</span>
+          <span class="n">verified_user</span>
+        <span class="k">else</span>
+          <span class="n">reject_unauthorized_connection</span>
+        <span class="k">end</span>
+      <span class="k">end</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-284ea9c43358d7a2abf1212db8123aec"># app/channels/application_cable/connection.rb
+module ApplicationCable
+  class Connection &lt; ActionCable::Connection::Base
+    identified_by :current_user
+
+    def connect
+      self.current_user = find_verified_user
+    end
+
+    private
+      def find_verified_user
+        if verified_user = User.find_by(id: cookies.encrypted[:user_id])
+          verified_user
+        else
+          reject_unauthorized_connection
+        end
+      end
+  end
+end
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-284ea9c43358d7a2abf1212db8123aec">Copy</button>
+</div>
+<p>Here <a href="https://api.rubyonrails.org/v6.1.7.3/classes/ActionCable/Connection/Identification/ClassMethods.html#method-i-identified_by"><code>identified_by</code></a> designates a connection identifier that can be used to find the
+specific connection later. Note that anything marked as an identifier will automatically
+create a delegate by the same name on any channel instances created off the connection.</p>
+
+<p>This example relies on the fact that you will already have handled authentication of the user
+somewhere else in your application, and that a successful authentication sets an encrypted
+cookie with the user ID.</p>
+
+<p>The cookie is then automatically sent to the connection instance when a new connection
+is attempted, and you use that to set the <code>current_user</code>. By identifying the connection
+by this same current user, you're also ensuring that you can later retrieve all open
+connections by a given user (and potentially disconnect them all if the user is deleted
+or unauthorized).</p>
+
+<p>If your authentication approach includes using a session, you use cookie store for the
+session, your session cookie is named <code>_session</code> and the user ID key is <code>user_id</code> you
+can use this approach:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">verified_user</span> <span class="o">=</span> <span class="no">User</span><span class="p">.</span><span class="nf">find_by</span><span class="p">(</span><span class="ss">id: </span><span class="n">cookies</span><span class="p">.</span><span class="nf">encrypted</span><span class="p">[</span><span class="s1">'_session'</span><span class="p">][</span><span class="s1">'user_id'</span><span class="p">])</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-3e5f542ac8c91aab552450f020962aa6">verified_user = User.find_by(id: cookies.encrypted['_session']['user_id'])
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-3e5f542ac8c91aab552450f020962aa6">Copy</button>
+</div>
+<h5 id="server-side-components-connections-exception-handling"><a class="anchorlink" href="#server-side-components-connections-exception-handling">3.1.2 Exception Handling</a></h5>
+
+<p>By default, unhandled exceptions are caught and logged to Rails' logger. If you would like to
+globally intercept these exceptions and report them to an external bug tracking service, for
+example, you can do so with <a href="https://api.rubyonrails.org/v6.1.7.3/classes/ActiveSupport/Rescuable/ClassMethods.html#method-i-rescue_from"><code>rescue_from</code></a>:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="c1"># app/channels/application_cable/connection.rb</span>
+<span class="k">module</span> <span class="nn">ApplicationCable</span>
+  <span class="k">class</span> <span class="nc">Connection</span> <span class="o">&lt;</span> <span class="no">ActionCable</span><span class="o">::</span><span class="no">Connection</span><span class="o">::</span><span class="no">Base</span>
+    <span class="n">rescue_from</span> <span class="no">StandardError</span><span class="p">,</span> <span class="ss">with: :report_error</span>
+
+    <span class="kp">private</span>
+
+    <span class="k">def</span> <span class="nf">report_error</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+      <span class="no">SomeExternalBugtrackingService</span><span class="p">.</span><span class="nf">notify</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-476eccf6506b19a9de86bfcd896b5d75"># app/channels/application_cable/connection.rb
+module ApplicationCable
+  class Connection &lt; ActionCable::Connection::Base
+    rescue_from StandardError, with: :report_error
+
+    private
+
+    def report_error(e)
+      SomeExternalBugtrackingService.notify(e)
+    end
+  end
+end
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-476eccf6506b19a9de86bfcd896b5d75">Copy</button>
+</div>
+<h4 id="server-side-components-channels"><a class="anchorlink" href="#server-side-components-channels">3.2 Channels</a></h4>
+
+<p>A <em>channel</em> encapsulates a logical unit of work, similar to what a controller does in a
+regular MVC setup. By default, Rails creates a parent <code>ApplicationCable::Channel</code> class
+(which extends <a href="https://api.rubyonrails.org/v6.1.7.3/classes/ActionCable/Channel/Base.html"><code>ActionCable::Channel::Base</code></a>) for encapsulating shared logic between your channels.</p>
+
+<h5 id="parent-channel-setup"><a class="anchorlink" href="#parent-channel-setup">3.2.1 Parent Channel Setup</a></h5>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="c1"># app/channels/application_cable/channel.rb</span>
+<span class="k">module</span> <span class="nn">ApplicationCable</span>
+  <span class="k">class</span> <span class="nc">Channel</span> <span class="o">&lt;</span> <span class="no">ActionCable</span><span class="o">::</span><span class="no">Channel</span><span class="o">::</span><span class="no">Base</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-65686d04ad64738c84bd44b5ffac1d85"># app/channels/application_cable/channel.rb
+module ApplicationCable
+  class Channel &lt; ActionCable::Channel::Base
+  end
+end
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-65686d04ad64738c84bd44b5ffac1d85">Copy</button>
+</div>
+<p>Then you would create your own channel classes. For example, you could have a
+<code>ChatChannel</code> and an <code>AppearanceChannel</code>:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="c1"># app/channels/chat_channel.rb</span>
+<span class="k">class</span> <span class="nc">ChatChannel</span> <span class="o">&lt;</span> <span class="no">ApplicationCable</span><span class="o">::</span><span class="no">Channel</span>
+<span class="k">end</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-6b0c3852f2cd833c197ceb7ca25f368e"># app/channels/chat_channel.rb
+class ChatChannel &lt; ApplicationCable::Channel
+end
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-6b0c3852f2cd833c197ceb7ca25f368e">Copy</button>
+</div>
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="c1"># app/channels/appearance_channel.rb</span>
+<span class="k">class</span> <span class="nc">AppearanceChannel</span> <span class="o">&lt;</span> <span class="no">ApplicationCable</span><span class="o">::</span><span class="no">Channel</span>
+<span class="k">end</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-3ee06f1fccaf58de20d4ead11faef062"># app/channels/appearance_channel.rb
+class AppearanceChannel &lt; ApplicationCable::Channel
+end
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-3ee06f1fccaf58de20d4ead11faef062">Copy</button>
+</div>
+<p>A consumer could then be subscribed to either or both of these channels.</p>
+
+<h5 id="server-side-components-channels-subscriptions"><a class="anchorlink" href="#server-side-components-channels-subscriptions">3.2.2 Subscriptions</a></h5>
+
+<p>Consumers subscribe to channels, acting as <em>subscribers</em>. Their connection is
+called a <em>subscription</em>. Produced messages are then routed to these channel
+subscriptions based on an identifier sent by the channel consumer.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="c1"># app/channels/chat_channel.rb</span>
+<span class="k">class</span> <span class="nc">ChatChannel</span> <span class="o">&lt;</span> <span class="no">ApplicationCable</span><span class="o">::</span><span class="no">Channel</span>
+  <span class="c1"># Called when the consumer has successfully</span>
+  <span class="c1"># become a subscriber to this channel.</span>
+  <span class="k">def</span> <span class="nf">subscribed</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-6d42560297c0a56cf19e3464bf73d9ee"># app/channels/chat_channel.rb
+class ChatChannel &lt; ApplicationCable::Channel
+  # Called when the consumer has successfully
+  # become a subscriber to this channel.
+  def subscribed
+  end
+end
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-6d42560297c0a56cf19e3464bf73d9ee">Copy</button>
+</div>
+<h5 id="server-side-components-channels-exception-handling"><a class="anchorlink" href="#server-side-components-channels-exception-handling">3.2.3 Exception Handling</a></h5>
+
+<p>As with <code>ApplicationCable::Connection</code>, you can also use <a href="https://api.rubyonrails.org/v6.1.7.3/classes/ActiveSupport/Rescuable/ClassMethods.html#method-i-rescue_from"><code>rescue_from</code></a> on a
+specific channel to handle raised exceptions:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="c1"># app/channels/chat_channel.rb</span>
+<span class="k">class</span> <span class="nc">ChatChannel</span> <span class="o">&lt;</span> <span class="no">ApplicationCable</span><span class="o">::</span><span class="no">Channel</span>
+  <span class="n">rescue_from</span> <span class="s1">'MyError'</span><span class="p">,</span> <span class="ss">with: :deliver_error_message</span>
+
+  <span class="kp">private</span>
+
+  <span class="k">def</span> <span class="nf">deliver_error_message</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+    <span class="n">broadcast_to</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-f9363ae8b47ca8816c7e66617de159e9"># app/channels/chat_channel.rb
+class ChatChannel &lt; ApplicationCable::Channel
+  rescue_from 'MyError', with: :deliver_error_message
+
+  private
+
+  def deliver_error_message(e)
+    broadcast_to(...)
+  end
+end
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-f9363ae8b47ca8816c7e66617de159e9">Copy</button>
+</div>
+</body>
+</html>

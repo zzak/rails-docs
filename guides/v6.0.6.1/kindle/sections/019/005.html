@@ -1,0 +1,34 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>6 Downloading Files</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v6.0.6.1/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="downloading-files"><a class="anchorlink" href="#downloading-files">6 Downloading Files</a></h3>
+<p>Sometimes you need to process a blob after it’s uploaded—for example, to convert
+it to a different format. Use <code>ActiveStorage::Blob#download</code> to read a blob’s
+binary data into memory:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+binary = user.avatar.download
+
+</pre>
+</div>
+<p>You might want to download a blob to a file on disk so an external program (e.g.
+a virus scanner or media transcoder) can operate on it. Use
+<code>ActiveStorage::Blob#open</code> to download a blob to a tempfile on disk:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+message.video.open do |file|
+  system '/path/to/virus/scanner', file.path
+  # ...
+end
+
+</pre>
+</div>
+</body>
+</html>

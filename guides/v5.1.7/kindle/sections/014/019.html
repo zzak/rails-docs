@@ -1,0 +1,34 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>20 Extensions to LoadError
+</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v5.1.7/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="extensions-to-loaderror">20 Extensions to <code>LoadError</code>
+</h3>
+<p>Active Support adds <code>is_missing?</code> to <code>LoadError</code>.</p>
+
+<p>Given a path name <code>is_missing?</code> tests whether the exception was raised due to that particular file (except perhaps for the ".rb" extension).</p>
+
+<p>For example, when an action of <code>ArticlesController</code> is called Rails tries to load <code>articles_helper.rb</code>, but that file may not exist. That's fine, the helper module is not mandatory so Rails silences a load error. But it could be the case that the helper module does exist and in turn requires another library that is missing. In that case Rails must reraise the exception. The method <code>is_missing?</code> provides a way to distinguish both cases:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+def default_helper_module!
+  module_name = name.sub(/Controller$/, '')
+  module_path = module_name.underscore
+  helper module_path
+rescue LoadError =&gt; e
+  raise e unless e.is_missing? "helpers/#{module_path}_helper"
+rescue NameError =&gt; e
+  raise e unless e.missing_name? "#{module_name}Helper"
+end
+
+</pre>
+</div>
+<div class="note"><p>Defined in <code><a href="https://github.com/rails/rails/tree/v5.1.7/activesupport/lib/active_support/core_ext/load_error.rb">active_support/core_ext/load_error.rb</a></code>.</p></div>
+</body>
+</html>

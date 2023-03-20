@@ -1,0 +1,444 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>15 Extensions to Date</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v7.0.4.2/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="extensions-to-date"><a class="anchorlink" href="#extensions-to-date">15 Extensions to <code>Date</code></a></h3>
+<h4 id="extensions-to-date-calculations"><a class="anchorlink" href="#extensions-to-date-calculations">15.1 Calculations</a></h4>
+
+<div class="info"><p>The following calculation methods have edge cases in October 1582, since days 5..14 just do not exist. This guide does not document their behavior around those days for brevity, but it is enough to say that they do what you would expect. That is, <code>Date.new(1582, 10, 4).tomorrow</code> returns <code>Date.new(1582, 10, 15)</code> and so on. Please check <code>test/core_ext/date_ext_test.rb</code> in the Active Support test suite for expected behavior.</p></div>
+
+<h5 id="date-current"><a class="anchorlink" href="#date-current">15.1.1 <code>Date.current</code></a></h5>
+
+<p>Active Support defines <a href="https://api.rubyonrails.org/v7.0.4.2/classes/Date.html#method-c-current"><code>Date.current</code></a> to be today in the current time zone. That's like <code>Date.today</code>, except that it honors the user time zone, if defined. It also defines <a href="https://api.rubyonrails.org/v7.0.4.2/classes/Date.html#method-c-yesterday"><code>Date.yesterday</code></a> and <a href="https://api.rubyonrails.org/v7.0.4.2/classes/Date.html#method-c-tomorrow"><code>Date.tomorrow</code></a>, and the instance predicates <a href="https://api.rubyonrails.org/v7.0.4.2/classes/DateAndTime/Calculations.html#method-i-past-3F"><code>past?</code></a>, <a href="https://api.rubyonrails.org/v7.0.4.2/classes/DateAndTime/Calculations.html#method-i-today-3F"><code>today?</code></a>, <a href="https://api.rubyonrails.org/v7.0.4.2/classes/DateAndTime/Calculations.html#method-i-tomorrow-3F"><code>tomorrow?</code></a>, <a href="https://api.rubyonrails.org/v7.0.4.2/classes/DateAndTime/Calculations.html#method-i-next_day-3F"><code>next_day?</code></a>, <a href="https://api.rubyonrails.org/v7.0.4.2/classes/DateAndTime/Calculations.html#method-i-yesterday-3F"><code>yesterday?</code></a>, <a href="https://api.rubyonrails.org/v7.0.4.2/classes/DateAndTime/Calculations.html#method-i-prev_day-3F"><code>prev_day?</code></a>, <a href="https://api.rubyonrails.org/v7.0.4.2/classes/DateAndTime/Calculations.html#method-i-future-3F"><code>future?</code></a>, <a href="https://api.rubyonrails.org/v7.0.4.2/classes/DateAndTime/Calculations.html#method-i-on_weekday-3F"><code>on_weekday?</code></a> and <a href="https://api.rubyonrails.org/v7.0.4.2/classes/DateAndTime/Calculations.html#method-i-on_weekend-3F"><code>on_weekend?</code></a>, all of them relative to <code>Date.current</code>.</p>
+
+<p>When making Date comparisons using methods which honor the user time zone, make sure to use <code>Date.current</code> and not <code>Date.today</code>. There are cases where the user time zone might be in the future compared to the system time zone, which <code>Date.today</code> uses by default. This means <code>Date.today</code> may equal <code>Date.yesterday</code>.</p>
+
+<div class="note"><p>Defined in <code><a href="https://github.com/rails/rails/tree/v7.0.4.2/activesupport/lib/active_support/core_ext/date/calculations.rb">active_support/core_ext/date/calculations.rb</a></code>.</p></div>
+
+<h5 id="named-dates"><a class="anchorlink" href="#named-dates">15.1.2 Named dates</a></h5>
+
+<h6 id="beginning-of-week-end-of-week"><a class="anchorlink" href="#beginning-of-week-end-of-week">15.1.2.1 <code>beginning_of_week</code>, <code>end_of_week</code></a></h6>
+
+<p>The methods <a href="https://api.rubyonrails.org/v7.0.4.2/classes/DateAndTime/Calculations.html#method-i-beginning_of_week"><code>beginning_of_week</code></a> and <a href="https://api.rubyonrails.org/v7.0.4.2/classes/DateAndTime/Calculations.html#method-i-end_of_week"><code>end_of_week</code></a> return the dates for the
+beginning and end of the week, respectively. Weeks are assumed to start on
+Monday, but that can be changed passing an argument, setting thread local
+<code>Date.beginning_of_week</code> or <a href="configuring.html#config-beginning-of-week"><code>config.beginning_of_week</code></a>.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">d</span> <span class="o">=</span> <span class="no">Date</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="mi">2010</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">8</span><span class="p">)</span>     <span class="c1"># =&gt; Sat, 08 May 2010</span>
+<span class="n">d</span><span class="p">.</span><span class="nf">beginning_of_week</span>          <span class="c1"># =&gt; Mon, 03 May 2010</span>
+<span class="n">d</span><span class="p">.</span><span class="nf">beginning_of_week</span><span class="p">(</span><span class="ss">:sunday</span><span class="p">)</span> <span class="c1"># =&gt; Sun, 02 May 2010</span>
+<span class="n">d</span><span class="p">.</span><span class="nf">end_of_week</span>                <span class="c1"># =&gt; Sun, 09 May 2010</span>
+<span class="n">d</span><span class="p">.</span><span class="nf">end_of_week</span><span class="p">(</span><span class="ss">:sunday</span><span class="p">)</span>       <span class="c1"># =&gt; Sat, 08 May 2010</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="d = Date.new(2010, 5, 8)     # =&gt; Sat, 08 May 2010
+d.beginning_of_week          # =&gt; Mon, 03 May 2010
+d.beginning_of_week(:sunday) # =&gt; Sun, 02 May 2010
+d.end_of_week                # =&gt; Sun, 09 May 2010
+d.end_of_week(:sunday)       # =&gt; Sat, 08 May 2010
+">Copy</button>
+</div>
+<p><code>beginning_of_week</code> is aliased to <a href="https://api.rubyonrails.org/v7.0.4.2/classes/DateAndTime/Calculations.html#method-i-at_beginning_of_week"><code>at_beginning_of_week</code></a> and <code>end_of_week</code> is aliased to <a href="https://api.rubyonrails.org/v7.0.4.2/classes/DateAndTime/Calculations.html#method-i-at_end_of_week"><code>at_end_of_week</code></a>.</p>
+
+<div class="note"><p>Defined in <code><a href="https://github.com/rails/rails/tree/v7.0.4.2/activesupport/lib/active_support/core_ext/date_and_time/calculations.rb">active_support/core_ext/date_and_time/calculations.rb</a></code>.</p></div>
+
+<h6 id="monday-sunday"><a class="anchorlink" href="#monday-sunday">15.1.2.2 <code>monday</code>, <code>sunday</code></a></h6>
+
+<p>The methods <a href="https://api.rubyonrails.org/v7.0.4.2/classes/DateAndTime/Calculations.html#method-i-monday"><code>monday</code></a> and <a href="https://api.rubyonrails.org/v7.0.4.2/classes/DateAndTime/Calculations.html#method-i-sunday"><code>sunday</code></a> return the dates for the previous Monday and
+next Sunday, respectively.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">d</span> <span class="o">=</span> <span class="no">Date</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="mi">2010</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">8</span><span class="p">)</span>     <span class="c1"># =&gt; Sat, 08 May 2010</span>
+<span class="n">d</span><span class="p">.</span><span class="nf">monday</span>                     <span class="c1"># =&gt; Mon, 03 May 2010</span>
+<span class="n">d</span><span class="p">.</span><span class="nf">sunday</span>                     <span class="c1"># =&gt; Sun, 09 May 2010</span>
+
+<span class="n">d</span> <span class="o">=</span> <span class="no">Date</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="mi">2012</span><span class="p">,</span> <span class="mi">9</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span>    <span class="c1"># =&gt; Mon, 10 Sep 2012</span>
+<span class="n">d</span><span class="p">.</span><span class="nf">monday</span>                     <span class="c1"># =&gt; Mon, 10 Sep 2012</span>
+
+<span class="n">d</span> <span class="o">=</span> <span class="no">Date</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="mi">2012</span><span class="p">,</span> <span class="mi">9</span><span class="p">,</span> <span class="mi">16</span><span class="p">)</span>    <span class="c1"># =&gt; Sun, 16 Sep 2012</span>
+<span class="n">d</span><span class="p">.</span><span class="nf">sunday</span>                     <span class="c1"># =&gt; Sun, 16 Sep 2012</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="d = Date.new(2010, 5, 8)     # =&gt; Sat, 08 May 2010
+d.monday                     # =&gt; Mon, 03 May 2010
+d.sunday                     # =&gt; Sun, 09 May 2010
+
+d = Date.new(2012, 9, 10)    # =&gt; Mon, 10 Sep 2012
+d.monday                     # =&gt; Mon, 10 Sep 2012
+
+d = Date.new(2012, 9, 16)    # =&gt; Sun, 16 Sep 2012
+d.sunday                     # =&gt; Sun, 16 Sep 2012
+">Copy</button>
+</div>
+<div class="note"><p>Defined in <code><a href="https://github.com/rails/rails/tree/v7.0.4.2/activesupport/lib/active_support/core_ext/date_and_time/calculations.rb">active_support/core_ext/date_and_time/calculations.rb</a></code>.</p></div>
+
+<h6 id="prev-week-next-week"><a class="anchorlink" href="#prev-week-next-week">15.1.2.3 <code>prev_week</code>, <code>next_week</code></a></h6>
+
+<p>The method <a href="https://api.rubyonrails.org/v7.0.4.2/classes/DateAndTime/Calculations.html#method-i-next_week"><code>next_week</code></a> receives a symbol with a day name in English (default is the thread local <a href="https://api.rubyonrails.org/v7.0.4.2/classes/Date.html#method-c-beginning_of_week"><code>Date.beginning_of_week</code></a>, or <a href="configuring.html#config-beginning-of-week"><code>config.beginning_of_week</code></a>, or <code>:monday</code>) and it returns the date corresponding to that day.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">d</span> <span class="o">=</span> <span class="no">Date</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="mi">2010</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">9</span><span class="p">)</span> <span class="c1"># =&gt; Sun, 09 May 2010</span>
+<span class="n">d</span><span class="p">.</span><span class="nf">next_week</span>              <span class="c1"># =&gt; Mon, 10 May 2010</span>
+<span class="n">d</span><span class="p">.</span><span class="nf">next_week</span><span class="p">(</span><span class="ss">:saturday</span><span class="p">)</span>   <span class="c1"># =&gt; Sat, 15 May 2010</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="d = Date.new(2010, 5, 9) # =&gt; Sun, 09 May 2010
+d.next_week              # =&gt; Mon, 10 May 2010
+d.next_week(:saturday)   # =&gt; Sat, 15 May 2010
+">Copy</button>
+</div>
+<p>The method <a href="https://api.rubyonrails.org/v7.0.4.2/classes/DateAndTime/Calculations.html#method-i-prev_week"><code>prev_week</code></a> is analogous:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">d</span><span class="p">.</span><span class="nf">prev_week</span>              <span class="c1"># =&gt; Mon, 26 Apr 2010</span>
+<span class="n">d</span><span class="p">.</span><span class="nf">prev_week</span><span class="p">(</span><span class="ss">:saturday</span><span class="p">)</span>   <span class="c1"># =&gt; Sat, 01 May 2010</span>
+<span class="n">d</span><span class="p">.</span><span class="nf">prev_week</span><span class="p">(</span><span class="ss">:friday</span><span class="p">)</span>     <span class="c1"># =&gt; Fri, 30 Apr 2010</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="d.prev_week              # =&gt; Mon, 26 Apr 2010
+d.prev_week(:saturday)   # =&gt; Sat, 01 May 2010
+d.prev_week(:friday)     # =&gt; Fri, 30 Apr 2010
+">Copy</button>
+</div>
+<p><code>prev_week</code> is aliased to <a href="https://api.rubyonrails.org/v7.0.4.2/classes/DateAndTime/Calculations.html#method-i-last_week"><code>last_week</code></a>.</p>
+
+<p>Both <code>next_week</code> and <code>prev_week</code> work as expected when <code>Date.beginning_of_week</code> or <code>config.beginning_of_week</code> are set.</p>
+
+<div class="note"><p>Defined in <code><a href="https://github.com/rails/rails/tree/v7.0.4.2/activesupport/lib/active_support/core_ext/date_and_time/calculations.rb">active_support/core_ext/date_and_time/calculations.rb</a></code>.</p></div>
+
+<h6 id="beginning-of-month-end-of-month"><a class="anchorlink" href="#beginning-of-month-end-of-month">15.1.2.4 <code>beginning_of_month</code>, <code>end_of_month</code></a></h6>
+
+<p>The methods <a href="https://api.rubyonrails.org/v7.0.4.2/classes/DateAndTime/Calculations.html#method-i-beginning_of_month"><code>beginning_of_month</code></a> and <a href="https://api.rubyonrails.org/v7.0.4.2/classes/DateAndTime/Calculations.html#method-i-end_of_month"><code>end_of_month</code></a> return the dates for the beginning and end of the month:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">d</span> <span class="o">=</span> <span class="no">Date</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="mi">2010</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">9</span><span class="p">)</span> <span class="c1"># =&gt; Sun, 09 May 2010</span>
+<span class="n">d</span><span class="p">.</span><span class="nf">beginning_of_month</span>     <span class="c1"># =&gt; Sat, 01 May 2010</span>
+<span class="n">d</span><span class="p">.</span><span class="nf">end_of_month</span>           <span class="c1"># =&gt; Mon, 31 May 2010</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="d = Date.new(2010, 5, 9) # =&gt; Sun, 09 May 2010
+d.beginning_of_month     # =&gt; Sat, 01 May 2010
+d.end_of_month           # =&gt; Mon, 31 May 2010
+">Copy</button>
+</div>
+<p><code>beginning_of_month</code> is aliased to <a href="https://api.rubyonrails.org/v7.0.4.2/classes/DateAndTime/Calculations.html#method-i-at_beginning_of_month"><code>at_beginning_of_month</code></a>, and <code>end_of_month</code> is aliased to <a href="https://api.rubyonrails.org/v7.0.4.2/classes/DateAndTime/Calculations.html#method-i-at_end_of_month"><code>at_end_of_month</code></a>.</p>
+
+<div class="note"><p>Defined in <code><a href="https://github.com/rails/rails/tree/v7.0.4.2/activesupport/lib/active_support/core_ext/date_and_time/calculations.rb">active_support/core_ext/date_and_time/calculations.rb</a></code>.</p></div>
+
+<h6 id="beginning-of-quarter-end-of-quarter"><a class="anchorlink" href="#beginning-of-quarter-end-of-quarter">15.1.2.5 <code>beginning_of_quarter</code>, <code>end_of_quarter</code></a></h6>
+
+<p>The methods <a href="https://api.rubyonrails.org/v7.0.4.2/classes/DateAndTime/Calculations.html#method-i-beginning_of_quarter"><code>beginning_of_quarter</code></a> and <a href="https://api.rubyonrails.org/v7.0.4.2/classes/DateAndTime/Calculations.html#method-i-end_of_quarter"><code>end_of_quarter</code></a> return the dates for the beginning and end of the quarter of the receiver's calendar year:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">d</span> <span class="o">=</span> <span class="no">Date</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="mi">2010</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">9</span><span class="p">)</span> <span class="c1"># =&gt; Sun, 09 May 2010</span>
+<span class="n">d</span><span class="p">.</span><span class="nf">beginning_of_quarter</span>   <span class="c1"># =&gt; Thu, 01 Apr 2010</span>
+<span class="n">d</span><span class="p">.</span><span class="nf">end_of_quarter</span>         <span class="c1"># =&gt; Wed, 30 Jun 2010</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="d = Date.new(2010, 5, 9) # =&gt; Sun, 09 May 2010
+d.beginning_of_quarter   # =&gt; Thu, 01 Apr 2010
+d.end_of_quarter         # =&gt; Wed, 30 Jun 2010
+">Copy</button>
+</div>
+<p><code>beginning_of_quarter</code> is aliased to <a href="https://api.rubyonrails.org/v7.0.4.2/classes/DateAndTime/Calculations.html#method-i-at_beginning_of_quarter"><code>at_beginning_of_quarter</code></a>, and <code>end_of_quarter</code> is aliased to <a href="https://api.rubyonrails.org/v7.0.4.2/classes/DateAndTime/Calculations.html#method-i-at_end_of_quarter"><code>at_end_of_quarter</code></a>.</p>
+
+<div class="note"><p>Defined in <code><a href="https://github.com/rails/rails/tree/v7.0.4.2/activesupport/lib/active_support/core_ext/date_and_time/calculations.rb">active_support/core_ext/date_and_time/calculations.rb</a></code>.</p></div>
+
+<h6 id="beginning-of-year-end-of-year"><a class="anchorlink" href="#beginning-of-year-end-of-year">15.1.2.6 <code>beginning_of_year</code>, <code>end_of_year</code></a></h6>
+
+<p>The methods <a href="https://api.rubyonrails.org/v7.0.4.2/classes/DateAndTime/Calculations.html#method-i-beginning_of_year"><code>beginning_of_year</code></a> and <a href="https://api.rubyonrails.org/v7.0.4.2/classes/DateAndTime/Calculations.html#method-i-end_of_year"><code>end_of_year</code></a> return the dates for the beginning and end of the year:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">d</span> <span class="o">=</span> <span class="no">Date</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="mi">2010</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">9</span><span class="p">)</span> <span class="c1"># =&gt; Sun, 09 May 2010</span>
+<span class="n">d</span><span class="p">.</span><span class="nf">beginning_of_year</span>      <span class="c1"># =&gt; Fri, 01 Jan 2010</span>
+<span class="n">d</span><span class="p">.</span><span class="nf">end_of_year</span>            <span class="c1"># =&gt; Fri, 31 Dec 2010</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="d = Date.new(2010, 5, 9) # =&gt; Sun, 09 May 2010
+d.beginning_of_year      # =&gt; Fri, 01 Jan 2010
+d.end_of_year            # =&gt; Fri, 31 Dec 2010
+">Copy</button>
+</div>
+<p><code>beginning_of_year</code> is aliased to <a href="https://api.rubyonrails.org/v7.0.4.2/classes/DateAndTime/Calculations.html#method-i-at_beginning_of_year"><code>at_beginning_of_year</code></a>, and <code>end_of_year</code> is aliased to <a href="https://api.rubyonrails.org/v7.0.4.2/classes/DateAndTime/Calculations.html#method-i-at_end_of_year"><code>at_end_of_year</code></a>.</p>
+
+<div class="note"><p>Defined in <code><a href="https://github.com/rails/rails/tree/v7.0.4.2/activesupport/lib/active_support/core_ext/date_and_time/calculations.rb">active_support/core_ext/date_and_time/calculations.rb</a></code>.</p></div>
+
+<h5 id="other-date-computations"><a class="anchorlink" href="#other-date-computations">15.1.3 Other Date Computations</a></h5>
+
+<h6 id="years-ago-years-since"><a class="anchorlink" href="#years-ago-years-since">15.1.3.1 <code>years_ago</code>, <code>years_since</code></a></h6>
+
+<p>The method <a href="https://api.rubyonrails.org/v7.0.4.2/classes/DateAndTime/Calculations.html#method-i-years_ago"><code>years_ago</code></a> receives a number of years and returns the same date those many years ago:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">date</span> <span class="o">=</span> <span class="no">Date</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="mi">2010</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">7</span><span class="p">)</span>
+<span class="n">date</span><span class="p">.</span><span class="nf">years_ago</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span> <span class="c1"># =&gt; Wed, 07 Jun 2000</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="date = Date.new(2010, 6, 7)
+date.years_ago(10) # =&gt; Wed, 07 Jun 2000
+">Copy</button>
+</div>
+<p><a href="https://api.rubyonrails.org/v7.0.4.2/classes/DateAndTime/Calculations.html#method-i-years_since"><code>years_since</code></a> moves forward in time:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">date</span> <span class="o">=</span> <span class="no">Date</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="mi">2010</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">7</span><span class="p">)</span>
+<span class="n">date</span><span class="p">.</span><span class="nf">years_since</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span> <span class="c1"># =&gt; Sun, 07 Jun 2020</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="date = Date.new(2010, 6, 7)
+date.years_since(10) # =&gt; Sun, 07 Jun 2020
+">Copy</button>
+</div>
+<p>If such a day does not exist, the last day of the corresponding month is returned:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="no">Date</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="mi">2012</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">29</span><span class="p">).</span><span class="nf">years_ago</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>     <span class="c1"># =&gt; Sat, 28 Feb 2009</span>
+<span class="no">Date</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="mi">2012</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">29</span><span class="p">).</span><span class="nf">years_since</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>   <span class="c1"># =&gt; Sat, 28 Feb 2015</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="Date.new(2012, 2, 29).years_ago(3)     # =&gt; Sat, 28 Feb 2009
+Date.new(2012, 2, 29).years_since(3)   # =&gt; Sat, 28 Feb 2015
+">Copy</button>
+</div>
+<p><a href="https://api.rubyonrails.org/v7.0.4.2/classes/DateAndTime/Calculations.html#method-i-last_year"><code>last_year</code></a> is short-hand for <code>#years_ago(1)</code>.</p>
+
+<div class="note"><p>Defined in <code><a href="https://github.com/rails/rails/tree/v7.0.4.2/activesupport/lib/active_support/core_ext/date_and_time/calculations.rb">active_support/core_ext/date_and_time/calculations.rb</a></code>.</p></div>
+
+<h6 id="months-ago-months-since"><a class="anchorlink" href="#months-ago-months-since">15.1.3.2 <code>months_ago</code>, <code>months_since</code></a></h6>
+
+<p>The methods <a href="https://api.rubyonrails.org/v7.0.4.2/classes/DateAndTime/Calculations.html#method-i-months_ago"><code>months_ago</code></a> and <a href="https://api.rubyonrails.org/v7.0.4.2/classes/DateAndTime/Calculations.html#method-i-months_since"><code>months_since</code></a> work analogously for months:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="no">Date</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="mi">2010</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">30</span><span class="p">).</span><span class="nf">months_ago</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>   <span class="c1"># =&gt; Sun, 28 Feb 2010</span>
+<span class="no">Date</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="mi">2010</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">30</span><span class="p">).</span><span class="nf">months_since</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span> <span class="c1"># =&gt; Wed, 30 Jun 2010</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="Date.new(2010, 4, 30).months_ago(2)   # =&gt; Sun, 28 Feb 2010
+Date.new(2010, 4, 30).months_since(2) # =&gt; Wed, 30 Jun 2010
+">Copy</button>
+</div>
+<p>If such a day does not exist, the last day of the corresponding month is returned:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="no">Date</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="mi">2010</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">30</span><span class="p">).</span><span class="nf">months_ago</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>    <span class="c1"># =&gt; Sun, 28 Feb 2010</span>
+<span class="no">Date</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="mi">2009</span><span class="p">,</span> <span class="mi">12</span><span class="p">,</span> <span class="mi">31</span><span class="p">).</span><span class="nf">months_since</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span> <span class="c1"># =&gt; Sun, 28 Feb 2010</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="Date.new(2010, 4, 30).months_ago(2)    # =&gt; Sun, 28 Feb 2010
+Date.new(2009, 12, 31).months_since(2) # =&gt; Sun, 28 Feb 2010
+">Copy</button>
+</div>
+<p><a href="https://api.rubyonrails.org/v7.0.4.2/classes/DateAndTime/Calculations.html#method-i-last_month"><code>last_month</code></a> is short-hand for <code>#months_ago(1)</code>.</p>
+
+<div class="note"><p>Defined in <code><a href="https://github.com/rails/rails/tree/v7.0.4.2/activesupport/lib/active_support/core_ext/date_and_time/calculations.rb">active_support/core_ext/date_and_time/calculations.rb</a></code>.</p></div>
+
+<h6 id="weeks-ago"><a class="anchorlink" href="#weeks-ago">15.1.3.3 <code>weeks_ago</code></a></h6>
+
+<p>The method <a href="https://api.rubyonrails.org/v7.0.4.2/classes/DateAndTime/Calculations.html#method-i-weeks_ago"><code>weeks_ago</code></a> works analogously for weeks:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="no">Date</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="mi">2010</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">24</span><span class="p">).</span><span class="nf">weeks_ago</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>    <span class="c1"># =&gt; Mon, 17 May 2010</span>
+<span class="no">Date</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="mi">2010</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">24</span><span class="p">).</span><span class="nf">weeks_ago</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>    <span class="c1"># =&gt; Mon, 10 May 2010</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="Date.new(2010, 5, 24).weeks_ago(1)    # =&gt; Mon, 17 May 2010
+Date.new(2010, 5, 24).weeks_ago(2)    # =&gt; Mon, 10 May 2010
+">Copy</button>
+</div>
+<div class="note"><p>Defined in <code><a href="https://github.com/rails/rails/tree/v7.0.4.2/activesupport/lib/active_support/core_ext/date_and_time/calculations.rb">active_support/core_ext/date_and_time/calculations.rb</a></code>.</p></div>
+
+<h6 id="other-date-computations-advance"><a class="anchorlink" href="#other-date-computations-advance">15.1.3.4 <code>advance</code></a></h6>
+
+<p>The most generic way to jump to other days is <a href="https://api.rubyonrails.org/v7.0.4.2/classes/Date.html#method-i-advance"><code>advance</code></a>. This method receives a hash with keys <code>:years</code>, <code>:months</code>, <code>:weeks</code>, <code>:days</code>, and returns a date advanced as much as the present keys indicate:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">date</span> <span class="o">=</span> <span class="no">Date</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="mi">2010</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">6</span><span class="p">)</span>
+<span class="n">date</span><span class="p">.</span><span class="nf">advance</span><span class="p">(</span><span class="ss">years: </span><span class="mi">1</span><span class="p">,</span> <span class="ss">weeks: </span><span class="mi">2</span><span class="p">)</span>  <span class="c1"># =&gt; Mon, 20 Jun 2011</span>
+<span class="n">date</span><span class="p">.</span><span class="nf">advance</span><span class="p">(</span><span class="ss">months: </span><span class="mi">2</span><span class="p">,</span> <span class="ss">days: </span><span class="o">-</span><span class="mi">2</span><span class="p">)</span> <span class="c1"># =&gt; Wed, 04 Aug 2010</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="date = Date.new(2010, 6, 6)
+date.advance(years: 1, weeks: 2)  # =&gt; Mon, 20 Jun 2011
+date.advance(months: 2, days: -2) # =&gt; Wed, 04 Aug 2010
+">Copy</button>
+</div>
+<p>Note in the previous example that increments may be negative.</p>
+
+<p>To perform the computation the method first increments years, then months, then weeks, and finally days. This order is important towards the end of months. Say for example we are at the end of February of 2010, and we want to move one month and one day forward.</p>
+
+<p>The method <code>advance</code> advances first one month, and then one day, the result is:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="no">Date</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="mi">2010</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">28</span><span class="p">).</span><span class="nf">advance</span><span class="p">(</span><span class="ss">months: </span><span class="mi">1</span><span class="p">,</span> <span class="ss">days: </span><span class="mi">1</span><span class="p">)</span>
+<span class="c1"># =&gt; Sun, 29 Mar 2010</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="Date.new(2010, 2, 28).advance(months: 1, days: 1)
+# =&gt; Sun, 29 Mar 2010
+">Copy</button>
+</div>
+<p>While if it did it the other way around the result would be different:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="no">Date</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="mi">2010</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">28</span><span class="p">).</span><span class="nf">advance</span><span class="p">(</span><span class="ss">days: </span><span class="mi">1</span><span class="p">).</span><span class="nf">advance</span><span class="p">(</span><span class="ss">months: </span><span class="mi">1</span><span class="p">)</span>
+<span class="c1"># =&gt; Thu, 01 Apr 2010</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="Date.new(2010, 2, 28).advance(days: 1).advance(months: 1)
+# =&gt; Thu, 01 Apr 2010
+">Copy</button>
+</div>
+<div class="note"><p>Defined in <code><a href="https://github.com/rails/rails/tree/v7.0.4.2/activesupport/lib/active_support/core_ext/date/calculations.rb">active_support/core_ext/date/calculations.rb</a></code>.</p></div>
+
+<h5 id="extensions-to-date-calculations-changing-components"><a class="anchorlink" href="#extensions-to-date-calculations-changing-components">15.1.4 Changing Components</a></h5>
+
+<p>The method <a href="https://api.rubyonrails.org/v7.0.4.2/classes/Date.html#method-i-change"><code>change</code></a> allows you to get a new date which is the same as the receiver except for the given year, month, or day:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="no">Date</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="mi">2010</span><span class="p">,</span> <span class="mi">12</span><span class="p">,</span> <span class="mi">23</span><span class="p">).</span><span class="nf">change</span><span class="p">(</span><span class="ss">year: </span><span class="mi">2011</span><span class="p">,</span> <span class="ss">month: </span><span class="mi">11</span><span class="p">)</span>
+<span class="c1"># =&gt; Wed, 23 Nov 2011</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="Date.new(2010, 12, 23).change(year: 2011, month: 11)
+# =&gt; Wed, 23 Nov 2011
+">Copy</button>
+</div>
+<p>This method is not tolerant to non-existing dates, if the change is invalid <code>ArgumentError</code> is raised:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="no">Date</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="mi">2010</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">31</span><span class="p">).</span><span class="nf">change</span><span class="p">(</span><span class="ss">month: </span><span class="mi">2</span><span class="p">)</span>
+<span class="c1"># =&gt; ArgumentError: invalid date</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="Date.new(2010, 1, 31).change(month: 2)
+# =&gt; ArgumentError: invalid date
+">Copy</button>
+</div>
+<div class="note"><p>Defined in <code><a href="https://github.com/rails/rails/tree/v7.0.4.2/activesupport/lib/active_support/core_ext/date/calculations.rb">active_support/core_ext/date/calculations.rb</a></code>.</p></div>
+
+<h5 id="extensions-to-date-calculations-durations"><a class="anchorlink" href="#extensions-to-date-calculations-durations">15.1.5 Durations</a></h5>
+
+<p><a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveSupport/Duration.html"><code>Duration</code></a> objects can be added to and subtracted from dates:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">d</span> <span class="o">=</span> <span class="no">Date</span><span class="p">.</span><span class="nf">current</span>
+<span class="c1"># =&gt; Mon, 09 Aug 2010</span>
+<span class="n">d</span> <span class="o">+</span> <span class="mi">1</span><span class="p">.</span><span class="nf">year</span>
+<span class="c1"># =&gt; Tue, 09 Aug 2011</span>
+<span class="n">d</span> <span class="o">-</span> <span class="mi">3</span><span class="p">.</span><span class="nf">hours</span>
+<span class="c1"># =&gt; Sun, 08 Aug 2010 21:00:00 UTC +00:00</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="d = Date.current
+# =&gt; Mon, 09 Aug 2010
+d + 1.year
+# =&gt; Tue, 09 Aug 2011
+d - 3.hours
+# =&gt; Sun, 08 Aug 2010 21:00:00 UTC +00:00
+">Copy</button>
+</div>
+<p>They translate to calls to <code>since</code> or <code>advance</code>. For example here we get the correct jump in the calendar reform:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="no">Date</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="mi">1582</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">.</span><span class="nf">day</span>
+<span class="c1"># =&gt; Fri, 15 Oct 1582</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="Date.new(1582, 10, 4) + 1.day
+# =&gt; Fri, 15 Oct 1582
+">Copy</button>
+</div>
+<h5 id="timestamps"><a class="anchorlink" href="#timestamps">15.1.6 Timestamps</a></h5>
+
+<div class="info"><p>The following methods return a <code>Time</code> object if possible, otherwise a <code>DateTime</code>. If set, they honor the user time zone.</p></div>
+
+<h6 id="beginning-of-day-end-of-day"><a class="anchorlink" href="#beginning-of-day-end-of-day">15.1.6.1 <code>beginning_of_day</code>, <code>end_of_day</code></a></h6>
+
+<p>The method <a href="https://api.rubyonrails.org/v7.0.4.2/classes/Date.html#method-i-beginning_of_day"><code>beginning_of_day</code></a> returns a timestamp at the beginning of the day (00:00:00):</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">date</span> <span class="o">=</span> <span class="no">Date</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="mi">2010</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">7</span><span class="p">)</span>
+<span class="n">date</span><span class="p">.</span><span class="nf">beginning_of_day</span> <span class="c1"># =&gt; Mon Jun 07 00:00:00 +0200 2010</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="date = Date.new(2010, 6, 7)
+date.beginning_of_day # =&gt; Mon Jun 07 00:00:00 +0200 2010
+">Copy</button>
+</div>
+<p>The method <a href="https://api.rubyonrails.org/v7.0.4.2/classes/Date.html#method-i-end_of_day"><code>end_of_day</code></a> returns a timestamp at the end of the day (23:59:59):</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">date</span> <span class="o">=</span> <span class="no">Date</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="mi">2010</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">7</span><span class="p">)</span>
+<span class="n">date</span><span class="p">.</span><span class="nf">end_of_day</span> <span class="c1"># =&gt; Mon Jun 07 23:59:59 +0200 2010</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="date = Date.new(2010, 6, 7)
+date.end_of_day # =&gt; Mon Jun 07 23:59:59 +0200 2010
+">Copy</button>
+</div>
+<p><code>beginning_of_day</code> is aliased to <a href="https://api.rubyonrails.org/v7.0.4.2/classes/Date.html#method-i-at_beginning_of_day"><code>at_beginning_of_day</code></a>, <a href="https://api.rubyonrails.org/v7.0.4.2/classes/Date.html#method-i-midnight"><code>midnight</code></a>, <a href="https://api.rubyonrails.org/v7.0.4.2/classes/Date.html#method-i-at_midnight"><code>at_midnight</code></a>.</p>
+
+<div class="note"><p>Defined in <code><a href="https://github.com/rails/rails/tree/v7.0.4.2/activesupport/lib/active_support/core_ext/date/calculations.rb">active_support/core_ext/date/calculations.rb</a></code>.</p></div>
+
+<h6 id="beginning-of-hour-end-of-hour"><a class="anchorlink" href="#beginning-of-hour-end-of-hour">15.1.6.2 <code>beginning_of_hour</code>, <code>end_of_hour</code></a></h6>
+
+<p>The method <a href="https://api.rubyonrails.org/v7.0.4.2/classes/DateTime.html#method-i-beginning_of_hour"><code>beginning_of_hour</code></a> returns a timestamp at the beginning of the hour (hh:00:00):</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">date</span> <span class="o">=</span> <span class="no">DateTime</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="mi">2010</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">19</span><span class="p">,</span> <span class="mi">55</span><span class="p">,</span> <span class="mi">25</span><span class="p">)</span>
+<span class="n">date</span><span class="p">.</span><span class="nf">beginning_of_hour</span> <span class="c1"># =&gt; Mon Jun 07 19:00:00 +0200 2010</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="date = DateTime.new(2010, 6, 7, 19, 55, 25)
+date.beginning_of_hour # =&gt; Mon Jun 07 19:00:00 +0200 2010
+">Copy</button>
+</div>
+<p>The method <a href="https://api.rubyonrails.org/v7.0.4.2/classes/DateTime.html#method-i-end_of_hour"><code>end_of_hour</code></a> returns a timestamp at the end of the hour (hh:59:59):</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">date</span> <span class="o">=</span> <span class="no">DateTime</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="mi">2010</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">19</span><span class="p">,</span> <span class="mi">55</span><span class="p">,</span> <span class="mi">25</span><span class="p">)</span>
+<span class="n">date</span><span class="p">.</span><span class="nf">end_of_hour</span> <span class="c1"># =&gt; Mon Jun 07 19:59:59 +0200 2010</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="date = DateTime.new(2010, 6, 7, 19, 55, 25)
+date.end_of_hour # =&gt; Mon Jun 07 19:59:59 +0200 2010
+">Copy</button>
+</div>
+<p><code>beginning_of_hour</code> is aliased to <a href="https://api.rubyonrails.org/v7.0.4.2/classes/DateTime.html#method-i-at_beginning_of_hour"><code>at_beginning_of_hour</code></a>.</p>
+
+<div class="note"><p>Defined in <code><a href="https://github.com/rails/rails/tree/v7.0.4.2/activesupport/lib/active_support/core_ext/date_time/calculations.rb">active_support/core_ext/date_time/calculations.rb</a></code>.</p></div>
+
+<h6 id="beginning-of-minute-end-of-minute"><a class="anchorlink" href="#beginning-of-minute-end-of-minute">15.1.6.3 <code>beginning_of_minute</code>, <code>end_of_minute</code></a></h6>
+
+<p>The method <a href="https://api.rubyonrails.org/v7.0.4.2/classes/DateTime.html#method-i-beginning_of_minute"><code>beginning_of_minute</code></a> returns a timestamp at the beginning of the minute (hh:mm:00):</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">date</span> <span class="o">=</span> <span class="no">DateTime</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="mi">2010</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">19</span><span class="p">,</span> <span class="mi">55</span><span class="p">,</span> <span class="mi">25</span><span class="p">)</span>
+<span class="n">date</span><span class="p">.</span><span class="nf">beginning_of_minute</span> <span class="c1"># =&gt; Mon Jun 07 19:55:00 +0200 2010</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="date = DateTime.new(2010, 6, 7, 19, 55, 25)
+date.beginning_of_minute # =&gt; Mon Jun 07 19:55:00 +0200 2010
+">Copy</button>
+</div>
+<p>The method <a href="https://api.rubyonrails.org/v7.0.4.2/classes/DateTime.html#method-i-end_of_minute"><code>end_of_minute</code></a> returns a timestamp at the end of the minute (hh:mm:59):</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">date</span> <span class="o">=</span> <span class="no">DateTime</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="mi">2010</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">19</span><span class="p">,</span> <span class="mi">55</span><span class="p">,</span> <span class="mi">25</span><span class="p">)</span>
+<span class="n">date</span><span class="p">.</span><span class="nf">end_of_minute</span> <span class="c1"># =&gt; Mon Jun 07 19:55:59 +0200 2010</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="date = DateTime.new(2010, 6, 7, 19, 55, 25)
+date.end_of_minute # =&gt; Mon Jun 07 19:55:59 +0200 2010
+">Copy</button>
+</div>
+<p><code>beginning_of_minute</code> is aliased to <a href="https://api.rubyonrails.org/v7.0.4.2/classes/DateTime.html#method-i-at_beginning_of_minute"><code>at_beginning_of_minute</code></a>.</p>
+
+<div class="info"><p><code>beginning_of_hour</code>, <code>end_of_hour</code>, <code>beginning_of_minute</code>, and <code>end_of_minute</code> are implemented for <code>Time</code> and <code>DateTime</code> but <strong>not</strong> <code>Date</code> as it does not make sense to request the beginning or end of an hour or minute on a <code>Date</code> instance.</p></div>
+
+<div class="note"><p>Defined in <code><a href="https://github.com/rails/rails/tree/v7.0.4.2/activesupport/lib/active_support/core_ext/date_time/calculations.rb">active_support/core_ext/date_time/calculations.rb</a></code>.</p></div>
+
+<h6 id="ago-since"><a class="anchorlink" href="#ago-since">15.1.6.4 <code>ago</code>, <code>since</code></a></h6>
+
+<p>The method <a href="https://api.rubyonrails.org/v7.0.4.2/classes/Date.html#method-i-ago"><code>ago</code></a> receives a number of seconds as argument and returns a timestamp those many seconds ago from midnight:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">date</span> <span class="o">=</span> <span class="no">Date</span><span class="p">.</span><span class="nf">current</span> <span class="c1"># =&gt; Fri, 11 Jun 2010</span>
+<span class="n">date</span><span class="p">.</span><span class="nf">ago</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>         <span class="c1"># =&gt; Thu, 10 Jun 2010 23:59:59 EDT -04:00</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="date = Date.current # =&gt; Fri, 11 Jun 2010
+date.ago(1)         # =&gt; Thu, 10 Jun 2010 23:59:59 EDT -04:00
+">Copy</button>
+</div>
+<p>Similarly, <a href="https://api.rubyonrails.org/v7.0.4.2/classes/Date.html#method-i-since"><code>since</code></a> moves forward:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">date</span> <span class="o">=</span> <span class="no">Date</span><span class="p">.</span><span class="nf">current</span> <span class="c1"># =&gt; Fri, 11 Jun 2010</span>
+<span class="n">date</span><span class="p">.</span><span class="nf">since</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>       <span class="c1"># =&gt; Fri, 11 Jun 2010 00:00:01 EDT -04:00</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="date = Date.current # =&gt; Fri, 11 Jun 2010
+date.since(1)       # =&gt; Fri, 11 Jun 2010 00:00:01 EDT -04:00
+">Copy</button>
+</div>
+<div class="note"><p>Defined in <code><a href="https://github.com/rails/rails/tree/v7.0.4.2/activesupport/lib/active_support/core_ext/date/calculations.rb">active_support/core_ext/date/calculations.rb</a></code>.</p></div>
+</body>
+</html>

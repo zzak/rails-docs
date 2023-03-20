@@ -1,0 +1,157 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>11 Active Support</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v7.0.4.2/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="active-support"><a class="anchorlink" href="#active-support">11 Active Support</a></h3>
+<p>Please refer to the <a href="https://github.com/rails/rails/blob/6-0-stable/activesupport/CHANGELOG.md">Changelog</a> for detailed changes.</p>
+
+<h4 id="active-support-removals"><a class="anchorlink" href="#active-support-removals">11.1 Removals</a></h4>
+<ul>
+<li>  Remove deprecated <code>#acronym_regex</code> method from <code>Inflections</code>.
+(<a href="https://github.com/rails/rails/commit/0ce67d3cd6d1b7b9576b07fecae3dd5b422a5689">Commit</a>)</li>
+<li>  Remove deprecated <code>Module#reachable?</code> method.
+(<a href="https://github.com/rails/rails/commit/6eb1d56a333fd2015610d31793ed6281acd66551">Commit</a>)</li>
+<li>  Remove <code>Kernel#`</code> without any replacement.
+(<a href="https://github.com/rails/rails/pull/31253">Pull Request</a>)</li>
+</ul>
+<h4 id="active-support-deprecations"><a class="anchorlink" href="#active-support-deprecations">11.2 Deprecations</a></h4>
+<ul>
+<li>  Deprecate using negative integer arguments for <code>String#first</code> and
+<code>String#last</code>.
+(<a href="https://github.com/rails/rails/pull/33058">Pull Request</a>)</li>
+<li>  Deprecate <code>ActiveSupport::Multibyte::Unicode#downcase/upcase/swapcase</code>
+in favor of <code>String#downcase/upcase/swapcase</code>.
+(<a href="https://github.com/rails/rails/pull/34123">Pull Request</a>)</li>
+<li>  Deprecate <code>ActiveSupport::Multibyte::Unicode#normalize</code>
+and <code>ActiveSupport::Multibyte::Chars#normalize</code> in favor of
+<code>String#unicode_normalize</code>.
+(<a href="https://github.com/rails/rails/pull/34202">Pull Request</a>)</li>
+<li>  Deprecate <code>ActiveSupport::Multibyte::Chars.consumes?</code> in favor of
+<code>String#is_utf8?</code>.
+(<a href="https://github.com/rails/rails/pull/34215">Pull Request</a>)</li>
+<li>  Deprecate <code>ActiveSupport::Multibyte::Unicode#pack_graphemes(array)</code>
+and <code>ActiveSupport::Multibyte::Unicode#unpack_graphemes(string)</code>
+in favor of <code>array.flatten.pack("U*")</code> and <code>string.scan(/\X/).map(&amp;:codepoints)</code>,
+respectively.
+(<a href="https://github.com/rails/rails/pull/34254">Pull Request</a>)</li>
+</ul>
+<h4 id="active-support-notable-changes"><a class="anchorlink" href="#active-support-notable-changes">11.3 Notable changes</a></h4>
+<ul>
+<li>  Add support for parallel testing.
+(<a href="https://github.com/rails/rails/pull/31900">Pull Request</a>)</li>
+<li>  Make sure that <code>String#strip_heredoc</code> preserves frozen-ness of strings.
+(<a href="https://github.com/rails/rails/pull/32037">Pull Request</a>)</li>
+<li>  Add <code>String#truncate_bytes</code> to truncate a string to a maximum bytesize
+without breaking multibyte characters or grapheme clusters.
+(<a href="https://github.com/rails/rails/pull/27319">Pull Request</a>)</li>
+<li>  Add <code>private</code> option to <code>delegate</code> method in order to delegate to
+private methods. This option accepts <code>true/false</code> as the value.
+(<a href="https://github.com/rails/rails/pull/31944">Pull Request</a>)</li>
+<li>  Add support for translations through I18n for <code>ActiveSupport::Inflector#ordinal</code>
+and <code>ActiveSupport::Inflector#ordinalize</code>.
+(<a href="https://github.com/rails/rails/pull/32168">Pull Request</a>)</li>
+<li>  Add <code>before?</code> and <code>after?</code> methods to <code>Date</code>, <code>DateTime</code>,
+<code>Time</code>, and <code>TimeWithZone</code>.
+(<a href="https://github.com/rails/rails/pull/32185">Pull Request</a>)</li>
+<li>  Fix bug where <code>URI.unescape</code> would fail with mixed Unicode/escaped character
+input.
+(<a href="https://github.com/rails/rails/pull/32183">Pull Request</a>)</li>
+<li>  Fix bug where <code>ActiveSupport::Cache</code> would massively inflate the storage
+size when compression was enabled.
+(<a href="https://github.com/rails/rails/pull/32539">Pull Request</a>)</li>
+<li>  Redis cache store: <code>delete_matched</code> no longer blocks the Redis server.
+(<a href="https://github.com/rails/rails/pull/32614">Pull Request</a>)</li>
+<li>  Fix bug where <code>ActiveSupport::TimeZone.all</code> would fail when tzinfo data for
+any timezone defined in <code>ActiveSupport::TimeZone::MAPPING</code> was missing.
+(<a href="https://github.com/rails/rails/pull/32613">Pull Request</a>)</li>
+<li>  Add <code>Enumerable#index_with</code> which allows creating a hash from an enumerable
+with the value from a passed block or a default argument.
+(<a href="https://github.com/rails/rails/pull/32523">Pull Request</a>)</li>
+<li>  Allow <code>Range#===</code> and <code>Range#cover?</code> methods to work with <code>Range</code> argument.
+(<a href="https://github.com/rails/rails/pull/32938">Pull Request</a>)</li>
+<li>  Support key expiry in <code>increment/decrement</code> operations of RedisCacheStore.
+(<a href="https://github.com/rails/rails/pull/33254">Pull Request</a>)</li>
+<li>  Add cpu time, idle time, and allocations features to log subscriber events.
+(<a href="https://github.com/rails/rails/pull/33449">Pull Request</a>)</li>
+<li>  Add support for event object to the Active Support notification system.
+(<a href="https://github.com/rails/rails/pull/33451">Pull Request</a>)</li>
+<li>  Add support for not caching <code>nil</code> entries by introducing new option <code>skip_nil</code>
+for <code>ActiveSupport::Cache#fetch</code>.
+(<a href="https://github.com/rails/rails/pull/25437">Pull Request</a>)</li>
+<li>  Add <code>Array#extract!</code> method which removes and returns the elements for which
+block returns a true value.
+(<a href="https://github.com/rails/rails/pull/33137">Pull Request</a>)</li>
+<li>  Keep an HTML-safe string HTML-safe after slicing.
+(<a href="https://github.com/rails/rails/pull/33808">Pull Request</a>)</li>
+<li>  Add support for tracing constant autoloads via logging.
+(<a href="https://github.com/rails/rails/commit/c03bba4f1f03bad7dc034af555b7f2b329cf76f5">Commit</a>)</li>
+<li>  Define <code>unfreeze_time</code> as an alias of <code>travel_back</code>.
+(<a href="https://github.com/rails/rails/pull/33813">Pull Request</a>)</li>
+<li>  Change <code>ActiveSupport::TaggedLogging.new</code> to return a new logger instance
+instead of mutating the one received as argument.
+(<a href="https://github.com/rails/rails/pull/27792">Pull Request</a>)</li>
+<li>  Treat <code>#delete_prefix</code>, <code>#delete_suffix</code> and <code>#unicode_normalize</code> methods
+as non HTML-safe methods.
+(<a href="https://github.com/rails/rails/pull/33990">Pull Request</a>)</li>
+<li>  Fix bug where <code>#without</code> for <code>ActiveSupport::HashWithIndifferentAccess</code>
+would fail with symbol arguments.
+(<a href="https://github.com/rails/rails/pull/34012">Pull Request</a>)</li>
+<li>  Rename <code>Module#parent</code>, <code>Module#parents</code>, and <code>Module#parent_name</code> to
+<code>module_parent</code>, <code>module_parents</code>, and <code>module_parent_name</code>.
+(<a href="https://github.com/rails/rails/pull/34051">Pull Request</a>)</li>
+<li>  Add <code>ActiveSupport::ParameterFilter</code>.
+(<a href="https://github.com/rails/rails/pull/34039">Pull Request</a>)</li>
+<li>  Fix issue where duration was being rounded to a full second when a float
+was added to the duration.
+(<a href="https://github.com/rails/rails/pull/34135">Pull Request</a>)</li>
+<li>  Make <code>#to_options</code> an alias for <code>#symbolize_keys</code> in
+<code>ActiveSupport::HashWithIndifferentAccess</code>.
+(<a href="https://github.com/rails/rails/pull/34360">Pull Request</a>)</li>
+<li>  Don't raise an exception anymore if the same block is included multiple times
+for a Concern.
+(<a href="https://github.com/rails/rails/pull/34553">Pull Request</a>)</li>
+<li>  Preserve key order passed to <code>ActiveSupport::CacheStore#fetch_multi</code>.
+(<a href="https://github.com/rails/rails/pull/34700">Pull Request</a>)</li>
+<li>  Fix <code>String#safe_constantize</code> to not throw a <code>LoadError</code> for incorrectly
+cased constant references.
+(<a href="https://github.com/rails/rails/pull/34892">Pull Request</a>)</li>
+<li>  Add <code>Hash#deep_transform_values</code> and <code>Hash#deep_transform_values!</code>.
+(<a href="https://github.com/rails/rails/commit/b8dc06b8fdc16874160f61dcf58743fcc10e57db">Commit</a>)</li>
+<li>  Add <code>ActiveSupport::HashWithIndifferentAccess#assoc</code>.
+(<a href="https://github.com/rails/rails/pull/35080">Pull Request</a>)</li>
+<li>  Add <code>before_reset</code> callback to <code>CurrentAttributes</code> and define
+<code>after_reset</code> as an alias of <code>resets</code> for symmetry.
+(<a href="https://github.com/rails/rails/pull/35063">Pull Request</a>)</li>
+<li>  Revise <code>ActiveSupport::Notifications.unsubscribe</code> to correctly
+handle Regex or other multiple-pattern subscribers.
+(<a href="https://github.com/rails/rails/pull/32861">Pull Request</a>)</li>
+<li>  Add new autoloading mechanism using Zeitwerk.
+(<a href="https://github.com/rails/rails/commit/e53430fa9af239e21e11548499d814f540d421e5">Commit</a>)</li>
+<li>  Add <code>Array#including</code> and <code>Enumerable#including</code> to conveniently enlarge
+a collection.
+(<a href="https://github.com/rails/rails/commit/bfaa3091c3c32b5980a614ef0f7b39cbf83f6db3">Commit</a>)</li>
+<li>  Rename <code>Array#without</code> and <code>Enumerable#without</code> to <code>Array#excluding</code>
+and <code>Enumerable#excluding</code>. Old method names are retained as aliases.
+(<a href="https://github.com/rails/rails/commit/bfaa3091c3c32b5980a614ef0f7b39cbf83f6db3">Commit</a>)</li>
+<li>  Add support for supplying <code>locale</code> to <code>transliterate</code> and <code>parameterize</code>.
+(<a href="https://github.com/rails/rails/pull/35571">Pull Request</a>)</li>
+<li>  Fix <code>Time#advance</code> to work with dates before 1001-03-07.
+(<a href="https://github.com/rails/rails/pull/35659">Pull Request</a>)</li>
+<li>  Update <code>ActiveSupport::Notifications::Instrumenter#instrument</code> to allow
+not passing block.
+(<a href="https://github.com/rails/rails/pull/35705">Pull Request</a>)</li>
+<li>  Use weak references in descendants tracker to allow anonymous subclasses to
+be garbage collected.
+(<a href="https://github.com/rails/rails/pull/31442">Pull Request</a>)</li>
+<li>  Calling test methods with <code>with_info_handler</code> method to allow minitest-hooks
+plugin to work.
+(<a href="https://github.com/rails/rails/commit/758ba117a008b6ea2d3b92c53b6a7a8d7ccbca69">Commit</a>)</li>
+<li>  Preserve <code>html_safe?</code> status on <code>ActiveSupport::SafeBuffer#*</code>.
+(<a href="https://github.com/rails/rails/pull/36012">Pull Request</a>)</li>
+</ul>
+</body>
+</html>

@@ -1,0 +1,177 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>8 Active Record</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v4.0.13/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="active-record">8 Active Record</h3>
+<ul>
+<li>Boolean columns with 'on' and 'ON' values are type cast to true.</li>
+<li>When the <code>timestamps</code> method creates the <code>created_at</code> and <code>updated_at</code> columns, it makes them non-nullable by default.</li>
+<li>Implemented <code>ActiveRecord::Relation#explain</code>.</li>
+<li>Implements <code>AR::Base.silence_auto_explain</code> which allows the user to selectively disable automatic EXPLAINs within a block.</li>
+<li>Implements automatic EXPLAIN logging for slow queries. A new configuration parameter <code>config.active_record.auto_explain_threshold_in_seconds</code> determines what's to be considered a slow query. Setting that to nil disables this feature. Defaults are 0.5 in development mode, and nil in test and production modes. Rails 3.2 supports this feature in SQLite, MySQL (mysql2 adapter), and PostgreSQL.</li>
+<li>
+Added <code>ActiveRecord::Base.store</code> for declaring simple single-column key/value stores.
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class User &lt; ActiveRecord::Base
+  store :settings, accessors: [ :color, :homepage ]
+end
+
+u = User.new(color: 'black', homepage: '37signals.com')
+u.color                          # Accessor stored attribute
+u.settings[:country] = 'Denmark' # Any attribute, even if not specified with an accessor
+
+</pre>
+</div>
+</li>
+<li>
+Added ability to run migrations only for a given scope, which allows to run migrations only from one engine (for example to revert changes from an engine that need to be removed).
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+rake db:migrate SCOPE=blog
+
+</pre>
+</div>
+</li>
+<li>Migrations copied from engines are now scoped with engine's name, for example <code>01_create_posts.blog.rb</code>.</li>
+<li>
+Implemented <code>ActiveRecord::Relation#pluck</code> method that returns an array of column values directly from the underlying table. This also works with serialized attributes.
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+Client.where(:active =&gt; true).pluck(:id)
+# SELECT id from clients where active = 1
+
+</pre>
+</div>
+</li>
+<li>Generated association methods are created within a separate module to allow overriding and composition. For a class named MyModel, the module is named <code>MyModel::GeneratedFeatureMethods</code>. It is included into the model class immediately after the <code>generated_attributes_methods</code> module defined in Active Model, so association methods override attribute methods of the same name.</li>
+<li>
+Add <code>ActiveRecord::Relation#uniq</code> for generating unique queries.
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+Client.select('DISTINCT name')
+
+</pre>
+</div>
+..can be written as:
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+Client.select(:name).uniq
+
+</pre>
+</div>
+This also allows you to revert the uniqueness in a relation:
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+Client.select(:name).uniq.uniq(false)
+
+</pre>
+</div>
+</li>
+<li>Support index sort order in SQLite, MySQL and PostgreSQL adapters.</li>
+<li>
+Allow the <code>:class_name</code> option for associations to take a symbol in addition to a string. This is to avoid confusing newbies, and to be consistent with the fact that other options like :foreign_key already allow a symbol or a string.
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+has_many :clients, :class_name =&gt; :Client # Note that the symbol need to be capitalized
+
+</pre>
+</div>
+</li>
+<li>In development mode, <code>db:drop</code> also drops the test database in order to be symmetric with <code>db:create</code>.</li>
+<li>Case-insensitive uniqueness validation avoids calling LOWER in MySQL when the column already uses a case-insensitive collation.</li>
+<li>Transactional fixtures enlist all active database connections. You can test models on different connections without disabling transactional fixtures.</li>
+<li>
+Add <code>first_or_create</code>, <code>first_or_create!</code>, <code>first_or_initialize</code> methods to Active Record. This is a better approach over the old <code>find_or_create_by</code> dynamic methods because it's clearer which arguments are used to find the record and which are used to create it.
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+User.where(:first_name =&gt; "Scarlett").first_or_create!(:last_name =&gt; "Johansson")
+
+</pre>
+</div>
+</li>
+<li>
+Added a <code>with_lock</code> method to Active Record objects, which starts a transaction, locks the object (pessimistically) and yields to the block. The method takes one (optional) parameter and passes it to <code>lock!</code>.
+This makes it possible to write the following:
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class Order &lt; ActiveRecord::Base
+  def cancel!
+    transaction do
+      lock!
+      # ... cancelling logic
+    end
+  end
+end
+
+</pre>
+</div>
+as:
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class Order &lt; ActiveRecord::Base
+  def cancel!
+    with_lock do
+      # ... cancelling logic
+    end
+  end
+end
+
+</pre>
+</div>
+</li>
+</ul>
+<h4 id="active-record-deprecations">8.1 Deprecations</h4>
+<ul>
+<li>
+Automatic closure of connections in threads is deprecated. For example the following code is deprecated:
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+Thread.new { Post.find(1) }.join
+
+</pre>
+</div>
+It should be changed to close the database connection at the end of the thread:
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+Thread.new {
+  Post.find(1)
+  Post.connection.close
+}.join
+
+</pre>
+</div>
+Only people who spawn threads in their application code need to worry about this change.
+</li>
+<li>
+The <code>set_table_name</code>, <code>set_inheritance_column</code>, <code>set_sequence_name</code>, <code>set_primary_key</code>, <code>set_locking_column</code> methods are deprecated. Use an assignment method instead. For example, instead of <code>set_table_name</code>, use <code>self.table_name=</code>.
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class Project &lt; ActiveRecord::Base
+  self.table_name = "project"
+end
+
+</pre>
+</div>
+Or define your own <code>self.table_name</code> method:
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class Post &lt; ActiveRecord::Base
+  def self.table_name
+    "special_" + super
+  end
+end
+
+Post.table_name # =&gt; "special_posts"
+
+
+</pre>
+</div>
+</li>
+</ul>
+</body>
+</html>

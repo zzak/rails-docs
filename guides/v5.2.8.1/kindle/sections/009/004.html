@@ -1,0 +1,43 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>5 View Paths</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v5.2.8.1/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="view-paths"><a class="anchorlink" href="#view-paths">5 View Paths</a></h3>
+<p>When rendering a response, the controller needs to resolve where the different
+views are located. By default it only looks inside the <code>app/views</code> directory.</p>
+
+<p>We can add other locations and give them a certain precedence when resolving
+paths using the <code>prepend_view_path</code> and <code>append_view_path</code> methods.</p>
+
+<h4 id="prepend-view-path"><a class="anchorlink" href="#prepend-view-path">5.1 Prepend view path</a></h4>
+
+<p>This can be helpful for example, when we want to put views inside a different
+directory for subdomains.</p>
+
+<p>We can do this by using:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+prepend_view_path "app/views/#{request.subdomain}"
+
+</pre>
+</div>
+<p>Then Action View will look first in this directory when resolving views.</p>
+
+<h4 id="append-view-path"><a class="anchorlink" href="#append-view-path">5.2 Append view path</a></h4>
+
+<p>Similarly, we can append paths:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+append_view_path "app/views/direct"
+
+</pre>
+</div>
+<p>This will add <code>app/views/direct</code> to the end of the lookup paths.</p>
+</body>
+</html>

@@ -1,0 +1,35 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>9 Adding Command Line Arguments</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v7.0.4.2/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="adding-command-line-arguments"><a class="anchorlink" href="#adding-command-line-arguments">9 Adding Command Line Arguments</a></h3>
+<p>Rails generators can be easily modified to accept custom command line arguments. This functionality comes from <a href="https://www.rubydoc.info/gems/thor/Thor/Base/ClassMethods#class_options-instance_method">Thor</a>:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">class_option</span> <span class="ss">:scope</span><span class="p">,</span> <span class="ss">type: :string</span><span class="p">,</span> <span class="ss">default: </span><span class="s1">'read_products'</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="class_option :scope, type: :string, default: 'read_products'
+">Copy</button>
+</div>
+<p>Now our generator can be invoked as follows:</p>
+
+<div class="code_container">
+<pre><code class="highlight console"><span class="gp">$</span><span class="w"> </span><span class="nb">bin/rails </span>generate initializer <span class="nt">--scope</span> write_products
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="bin/rails generate initializer --scope write_products
+">Copy</button>
+</div>
+<p>The command line arguments are accessed through the <code>options</code> method inside the generator class. e.g:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="vi">@scope</span> <span class="o">=</span> <span class="n">options</span><span class="p">[</span><span class="s1">'scope'</span><span class="p">]</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="@scope = options['scope']
+">Copy</button>
+</div>
+</body>
+</html>

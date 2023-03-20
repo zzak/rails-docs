@@ -1,0 +1,185 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>5 Queues</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v7.0.4.2/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="queues"><a class="anchorlink" href="#queues">5 Queues</a></h3>
+<p>Most of the adapters support multiple queues. With Active Job you can schedule
+the job to run on a specific queue using <a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveJob/QueueName/ClassMethods.html#method-i-queue_as"><code>queue_as</code></a>:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">GuestsCleanupJob</span> <span class="o">&lt;</span> <span class="no">ApplicationJob</span>
+  <span class="n">queue_as</span> <span class="ss">:low_priority</span>
+  <span class="c1"># ...</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="class GuestsCleanupJob &lt; ApplicationJob
+  queue_as :low_priority
+  # ...
+end
+">Copy</button>
+</div>
+<p>You can prefix the queue name for all your jobs using
+<a href="configuring.html#config-active-job-queue-name-prefix"><code>config.active_job.queue_name_prefix</code></a> in <code>application.rb</code>:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="c1"># config/application.rb</span>
+<span class="k">module</span> <span class="nn">YourApp</span>
+  <span class="k">class</span> <span class="nc">Application</span> <span class="o">&lt;</span> <span class="no">Rails</span><span class="o">::</span><span class="no">Application</span>
+    <span class="n">config</span><span class="p">.</span><span class="nf">active_job</span><span class="p">.</span><span class="nf">queue_name_prefix</span> <span class="o">=</span> <span class="no">Rails</span><span class="p">.</span><span class="nf">env</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="# config/application.rb
+module YourApp
+  class Application &lt; Rails::Application
+    config.active_job.queue_name_prefix = Rails.env
+  end
+end
+">Copy</button>
+</div>
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="c1"># app/jobs/guests_cleanup_job.rb</span>
+<span class="k">class</span> <span class="nc">GuestsCleanupJob</span> <span class="o">&lt;</span> <span class="no">ApplicationJob</span>
+  <span class="n">queue_as</span> <span class="ss">:low_priority</span>
+  <span class="c1"># ...</span>
+<span class="k">end</span>
+
+<span class="c1"># Now your job will run on queue production_low_priority on your</span>
+<span class="c1"># production environment and on staging_low_priority</span>
+<span class="c1"># on your staging environment</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="# app/jobs/guests_cleanup_job.rb
+class GuestsCleanupJob &lt; ApplicationJob
+  queue_as :low_priority
+  # ...
+end
+
+# Now your job will run on queue production_low_priority on your
+# production environment and on staging_low_priority
+# on your staging environment
+">Copy</button>
+</div>
+<p>You can also configure the prefix on a per job basis.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">GuestsCleanupJob</span> <span class="o">&lt;</span> <span class="no">ApplicationJob</span>
+  <span class="n">queue_as</span> <span class="ss">:low_priority</span>
+  <span class="nb">self</span><span class="p">.</span><span class="nf">queue_name_prefix</span> <span class="o">=</span> <span class="kp">nil</span>
+  <span class="c1"># ...</span>
+<span class="k">end</span>
+
+<span class="c1"># Now your job's queue won't be prefixed, overriding what</span>
+<span class="c1"># was configured in `config.active_job.queue_name_prefix`.</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="class GuestsCleanupJob &lt; ApplicationJob
+  queue_as :low_priority
+  self.queue_name_prefix = nil
+  # ...
+end
+
+# Now your job's queue won't be prefixed, overriding what
+# was configured in `config.active_job.queue_name_prefix`.
+">Copy</button>
+</div>
+<p>The default queue name prefix delimiter is '_'.  This can be changed by setting
+<a href="configuring.html#config-active-job-queue-name-delimiter"><code>config.active_job.queue_name_delimiter</code></a> in <code>application.rb</code>:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="c1"># config/application.rb</span>
+<span class="k">module</span> <span class="nn">YourApp</span>
+  <span class="k">class</span> <span class="nc">Application</span> <span class="o">&lt;</span> <span class="no">Rails</span><span class="o">::</span><span class="no">Application</span>
+    <span class="n">config</span><span class="p">.</span><span class="nf">active_job</span><span class="p">.</span><span class="nf">queue_name_prefix</span> <span class="o">=</span> <span class="no">Rails</span><span class="p">.</span><span class="nf">env</span>
+    <span class="n">config</span><span class="p">.</span><span class="nf">active_job</span><span class="p">.</span><span class="nf">queue_name_delimiter</span> <span class="o">=</span> <span class="s1">'.'</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="# config/application.rb
+module YourApp
+  class Application &lt; Rails::Application
+    config.active_job.queue_name_prefix = Rails.env
+    config.active_job.queue_name_delimiter = '.'
+  end
+end
+">Copy</button>
+</div>
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="c1"># app/jobs/guests_cleanup_job.rb</span>
+<span class="k">class</span> <span class="nc">GuestsCleanupJob</span> <span class="o">&lt;</span> <span class="no">ApplicationJob</span>
+  <span class="n">queue_as</span> <span class="ss">:low_priority</span>
+  <span class="c1"># ...</span>
+<span class="k">end</span>
+
+<span class="c1"># Now your job will run on queue production.low_priority on your</span>
+<span class="c1"># production environment and on staging.low_priority</span>
+<span class="c1"># on your staging environment</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="# app/jobs/guests_cleanup_job.rb
+class GuestsCleanupJob &lt; ApplicationJob
+  queue_as :low_priority
+  # ...
+end
+
+# Now your job will run on queue production.low_priority on your
+# production environment and on staging.low_priority
+# on your staging environment
+">Copy</button>
+</div>
+<p>If you want more control on what queue a job will be run you can pass a <code>:queue</code>
+option to <code>set</code>:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="no">MyJob</span><span class="p">.</span><span class="nf">set</span><span class="p">(</span><span class="ss">queue: :another_queue</span><span class="p">).</span><span class="nf">perform_later</span><span class="p">(</span><span class="n">record</span><span class="p">)</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="MyJob.set(queue: :another_queue).perform_later(record)
+">Copy</button>
+</div>
+<p>To control the queue from the job level you can pass a block to <code>queue_as</code>. The
+block will be executed in the job context (so it can access <code>self.arguments</code>),
+and it must return the queue name:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">ProcessVideoJob</span> <span class="o">&lt;</span> <span class="no">ApplicationJob</span>
+  <span class="n">queue_as</span> <span class="k">do</span>
+    <span class="n">video</span> <span class="o">=</span> <span class="nb">self</span><span class="p">.</span><span class="nf">arguments</span><span class="p">.</span><span class="nf">first</span>
+    <span class="k">if</span> <span class="n">video</span><span class="p">.</span><span class="nf">owner</span><span class="p">.</span><span class="nf">premium?</span>
+      <span class="ss">:premium_videojobs</span>
+    <span class="k">else</span>
+      <span class="ss">:videojobs</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+
+  <span class="k">def</span> <span class="nf">perform</span><span class="p">(</span><span class="n">video</span><span class="p">)</span>
+    <span class="c1"># Do process video</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="class ProcessVideoJob &lt; ApplicationJob
+  queue_as do
+    video = self.arguments.first
+    if video.owner.premium?
+      :premium_videojobs
+    else
+      :videojobs
+    end
+  end
+
+  def perform(video)
+    # Do process video
+  end
+end
+">Copy</button>
+</div>
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="no">ProcessVideoJob</span><span class="p">.</span><span class="nf">perform_later</span><span class="p">(</span><span class="no">Video</span><span class="p">.</span><span class="nf">last</span><span class="p">)</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="ProcessVideoJob.perform_later(Video.last)
+">Copy</button>
+</div>
+<div class="note"><p>Make sure your queuing backend "listens" on your queue name. For some
+backends you need to specify the queues to listen to.</p></div>
+</body>
+</html>

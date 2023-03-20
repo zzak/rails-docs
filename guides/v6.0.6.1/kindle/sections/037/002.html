@@ -1,0 +1,99 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>3 Extending Core Classes</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v6.0.6.1/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="extending-core-classes"><a class="anchorlink" href="#extending-core-classes">3 Extending Core Classes</a></h3>
+<p>This section will explain how to add a method to String that will be available anywhere in your Rails application.</p>
+
+<p>In this example you will add a method to String named <code>to_squawk</code>. To begin, create a new test file with a few assertions:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+# yaffle/test/core_ext_test.rb
+
+require "test_helper"
+
+class CoreExtTest &lt; ActiveSupport::TestCase
+  def test_to_squawk_prepends_the_word_squawk
+    assert_equal "squawk! Hello World", "Hello World".to_squawk
+  end
+end
+
+</pre>
+</div>
+<p>Run <code>bin/test</code> to run the test. This test should fail because we haven't implemented the <code>to_squawk</code> method:</p>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+E
+
+Error:
+CoreExtTest#test_to_squawk_prepends_the_word_squawk:
+NoMethodError: undefined method `to_squawk' for "Hello World":String
+
+
+bin/test /path/to/yaffle/test/core_ext_test.rb:4
+
+.
+
+Finished in 0.003358s, 595.6483 runs/s, 297.8242 assertions/s.
+
+2 runs, 1 assertions, 0 failures, 1 errors, 0 skips
+
+</pre>
+</div>
+<p>Great - now you are ready to start development.</p>
+
+<p>In <code>lib/yaffle.rb</code>, add <code>require "yaffle/core_ext"</code>:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+# yaffle/lib/yaffle.rb
+
+require "yaffle/railtie"
+require "yaffle/core_ext"
+
+module Yaffle
+  # Your code goes here...
+end
+
+</pre>
+</div>
+<p>Finally, create the <code>core_ext.rb</code> file and add the <code>to_squawk</code> method:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+# yaffle/lib/yaffle/core_ext.rb
+
+class String
+  def to_squawk
+    "squawk! #{self}".strip
+  end
+end
+
+</pre>
+</div>
+<p>To test that your method does what it says it does, run the unit tests with <code>bin/test</code> from your plugin directory.</p>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+  2 runs, 2 assertions, 0 failures, 0 errors, 0 skips
+
+</pre>
+</div>
+<p>To see this in action, change to the <code>test/dummy</code> directory, fire up a console, and start squawking:</p>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+$ rails console
+&gt;&gt; "Hello World".to_squawk
+=&gt; "squawk! Hello World"
+
+</pre>
+</div>
+</body>
+</html>

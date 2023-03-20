@@ -1,0 +1,159 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>8 Displaying Images, Videos, and PDFs</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v7.0.4.2/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="displaying-images-videos-and-pdfs"><a class="anchorlink" href="#displaying-images-videos-and-pdfs">8 Displaying Images, Videos, and PDFs</a></h3>
+<p>Active Storage supports representing a variety of files. You can call
+<a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveStorage/Blob/Representable.html#method-i-representation"><code>representation</code></a> on an attachment to display an image variant, or a
+preview of a video or PDF. Before calling <code>representation</code>, check if the
+attachment can be represented by calling <a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveStorage/Blob/Representable.html#method-i-representable-3F"><code>representable?</code></a>. Some file formats
+can't be previewed by Active Storage out of the box (e.g. Word documents); if
+<code>representable?</code> returns false you may want to <a href="#serving-files">link to</a>
+the file instead.</p>
+
+<div class="code_container">
+<pre><code class="highlight erb"><span class="nt">&lt;ul&gt;</span>
+  <span class="cp">&lt;%</span> <span class="vi">@message</span><span class="p">.</span><span class="nf">files</span><span class="p">.</span><span class="nf">each</span> <span class="k">do</span> <span class="o">|</span><span class="n">file</span><span class="o">|</span> <span class="cp">%&gt;</span>
+    <span class="nt">&lt;li&gt;</span>
+      <span class="cp">&lt;%</span> <span class="k">if</span> <span class="n">file</span><span class="p">.</span><span class="nf">representable?</span> <span class="cp">%&gt;</span>
+        <span class="cp">&lt;%=</span> <span class="n">image_tag</span> <span class="n">file</span><span class="p">.</span><span class="nf">representation</span><span class="p">(</span><span class="ss">resize_to_limit: </span><span class="p">[</span><span class="mi">100</span><span class="p">,</span> <span class="mi">100</span><span class="p">])</span> <span class="cp">%&gt;</span>
+      <span class="cp">&lt;%</span> <span class="k">else</span> <span class="cp">%&gt;</span>
+        <span class="cp">&lt;%=</span> <span class="n">link_to</span> <span class="n">rails_blob_path</span><span class="p">(</span><span class="n">file</span><span class="p">,</span> <span class="ss">disposition: </span><span class="s2">"attachment"</span><span class="p">)</span> <span class="k">do</span> <span class="cp">%&gt;</span>
+          <span class="cp">&lt;%=</span> <span class="n">image_tag</span> <span class="s2">"placeholder.png"</span><span class="p">,</span> <span class="ss">alt: </span><span class="s2">"Download file"</span> <span class="cp">%&gt;</span>
+        <span class="cp">&lt;%</span> <span class="k">end</span> <span class="cp">%&gt;</span>
+      <span class="cp">&lt;%</span> <span class="k">end</span> <span class="cp">%&gt;</span>
+    <span class="nt">&lt;/li&gt;</span>
+  <span class="cp">&lt;%</span> <span class="k">end</span> <span class="cp">%&gt;</span>
+<span class="nt">&lt;/ul&gt;</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='&lt;ul&gt;
+  &lt;% @message.files.each do |file| %&gt;
+    &lt;li&gt;
+      &lt;% if file.representable? %&gt;
+        &lt;%= image_tag file.representation(resize_to_limit: [100, 100]) %&gt;
+      &lt;% else %&gt;
+        &lt;%= link_to rails_blob_path(file, disposition: "attachment") do %&gt;
+          &lt;%= image_tag "placeholder.png", alt: "Download file" %&gt;
+        &lt;% end %&gt;
+      &lt;% end %&gt;
+    &lt;/li&gt;
+  &lt;% end %&gt;
+&lt;/ul&gt;
+'>Copy</button>
+</div>
+<p>Internally, <code>representation</code> calls <code>variant</code> for images, and <code>preview</code> for
+previewable files. You can also call these methods directly.</p>
+
+<h4 id="lazy-vs-immediate-loading"><a class="anchorlink" href="#lazy-vs-immediate-loading">8.1 Lazy vs Immediate Loading</a></h4>
+
+<p>By default, Active Storage will process representations lazily. This code:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">image_tag</span> <span class="n">file</span><span class="p">.</span><span class="nf">representation</span><span class="p">(</span><span class="ss">resize_to_limit: </span><span class="p">[</span><span class="mi">100</span><span class="p">,</span> <span class="mi">100</span><span class="p">])</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="image_tag file.representation(resize_to_limit: [100, 100])
+">Copy</button>
+</div>
+<p>Will generate an <code>&lt;img&gt;</code> tag with the <code>src</code> pointing to the
+<a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveStorage/Representations/RedirectController.html"><code>ActiveStorage::Representations::RedirectController</code></a>. The browser will
+make a request to that controller, which will return a <code>302</code> redirect to the
+file on the remote service (or in <a href="#proxy-mode">proxy mode</a>, return the file
+contents). Loading the file lazily allows features like
+<a href="#public-access">single use URLs</a> to work without slowing down your initial page loads.</p>
+
+<p>This works fine for most cases.</p>
+
+<p>If you want to generate URLs for images immediately, you can call <code>.processed.url</code>:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">image_tag</span> <span class="n">file</span><span class="p">.</span><span class="nf">representation</span><span class="p">(</span><span class="ss">resize_to_limit: </span><span class="p">[</span><span class="mi">100</span><span class="p">,</span> <span class="mi">100</span><span class="p">]).</span><span class="nf">processed</span><span class="p">.</span><span class="nf">url</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="image_tag file.representation(resize_to_limit: [100, 100]).processed.url
+">Copy</button>
+</div>
+<p>The Active Storage variant tracker improves performance of this, by storing a
+record in the database if the requested representation has been processed before.
+Thus, the above code will only make an API call to the remote service (e.g. S3)
+once, and once a variant is stored, will use that. The variant tracker runs
+automatically, but can be disabled through <a href="configuring.html#config-active-storage-track-variants"><code>config.active_storage.track_variants</code></a>.</p>
+
+<p>If you're rendering lots of images on a page, the above example could result
+in N+1 queries loading all the variant records. To avoid these N+1 queries,
+use the named scopes on <a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveStorage/Attachment.html"><code>ActiveStorage::Attachment</code></a>.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">message</span><span class="p">.</span><span class="nf">images</span><span class="p">.</span><span class="nf">with_all_variant_records</span><span class="p">.</span><span class="nf">each</span> <span class="k">do</span> <span class="o">|</span><span class="n">file</span><span class="o">|</span>
+  <span class="n">image_tag</span> <span class="n">file</span><span class="p">.</span><span class="nf">representation</span><span class="p">(</span><span class="ss">resize_to_limit: </span><span class="p">[</span><span class="mi">100</span><span class="p">,</span> <span class="mi">100</span><span class="p">]).</span><span class="nf">processed</span><span class="p">.</span><span class="nf">url</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="message.images.with_all_variant_records.each do |file|
+  image_tag file.representation(resize_to_limit: [100, 100]).processed.url
+end
+">Copy</button>
+</div>
+<h4 id="transforming-images"><a class="anchorlink" href="#transforming-images">8.2 Transforming Images</a></h4>
+
+<p>Transforming images allows you to display the image at your choice of dimensions.
+To create a variation of an image, call <a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveStorage/Blob/Representable.html#method-i-variant"><code>variant</code></a> on the attachment. You
+can pass any transformation supported by the variant processor to the method.
+When the browser hits the variant URL, Active Storage will lazily transform
+the original blob into the specified format and redirect to its new service
+location.</p>
+
+<div class="code_container">
+<pre><code class="highlight erb"><span class="cp">&lt;%=</span> <span class="n">image_tag</span> <span class="n">user</span><span class="p">.</span><span class="nf">avatar</span><span class="p">.</span><span class="nf">variant</span><span class="p">(</span><span class="ss">resize_to_limit: </span><span class="p">[</span><span class="mi">100</span><span class="p">,</span> <span class="mi">100</span><span class="p">])</span> <span class="cp">%&gt;</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="&lt;%= image_tag user.avatar.variant(resize_to_limit: [100, 100]) %&gt;
+">Copy</button>
+</div>
+<p>If a variant is requested, Active Storage will automatically apply
+transformations depending on the image's format:</p>
+<ol>
+<li>Content types that are variable (as dictated by <a href="configuring.html#config-active-storage-variable-content-types"><code>config.active_storage.variable_content_types</code></a>)
+and not considered web images (as dictated by <a href="configuring.html#config-active-storage-web-image-content-types"><code>config.active_storage.web_image_content_types</code></a>),
+will be converted to PNG.</li>
+<li>If <code>quality</code> is not specified, the variant processor's default quality for the format will be used.</li>
+</ol>
+<p>Active Storage can use either <a href="https://www.rubydoc.info/gems/ruby-vips/Vips/Image">Vips</a> or MiniMagick as the variant processor.
+The default depends on your <code>config.load_defaults</code> target version, and the
+processor can be changed by setting <a href="configuring.html#config-active-storage-variant-processor"><code>config.active_storage.variant_processor</code></a>.</p>
+
+<p>The two processors are not fully compatible, so when migrating an existing application
+between MiniMagick and Vips, some changes have to be made if using options that are format
+specific:</p>
+
+<div class="code_container">
+<pre><code class="highlight rhtml"><span class="c">&lt;!-- MiniMagick --&gt;</span>
+<span class="cp">&lt;%=</span> <span class="n">image_tag</span> <span class="n">user</span><span class="p">.</span><span class="nf">avatar</span><span class="p">.</span><span class="nf">variant</span><span class="p">(</span><span class="ss">resize_to_limit: </span><span class="p">[</span><span class="mi">100</span><span class="p">,</span> <span class="mi">100</span><span class="p">],</span> <span class="ss">format: :jpeg</span><span class="p">,</span> <span class="ss">sampling_factor: </span><span class="s2">"4:2:0"</span><span class="p">,</span> <span class="ss">strip: </span><span class="kp">true</span><span class="p">,</span> <span class="ss">interlace: </span><span class="s2">"JPEG"</span><span class="p">,</span> <span class="ss">colorspace: </span><span class="s2">"sRGB"</span><span class="p">,</span> <span class="ss">quality: </span><span class="mi">80</span><span class="p">)</span> <span class="cp">%&gt;</span>
+
+<span class="c">&lt;!-- Vips --&gt;</span>
+<span class="cp">&lt;%=</span> <span class="n">image_tag</span> <span class="n">user</span><span class="p">.</span><span class="nf">avatar</span><span class="p">.</span><span class="nf">variant</span><span class="p">(</span><span class="ss">resize_to_limit: </span><span class="p">[</span><span class="mi">100</span><span class="p">,</span> <span class="mi">100</span><span class="p">],</span> <span class="ss">format: :jpeg</span><span class="p">,</span> <span class="ss">saver: </span><span class="p">{</span> <span class="ss">subsample_mode: </span><span class="s2">"on"</span><span class="p">,</span> <span class="ss">strip: </span><span class="kp">true</span><span class="p">,</span> <span class="ss">interlace: </span><span class="kp">true</span><span class="p">,</span> <span class="ss">quality: </span><span class="mi">80</span> <span class="p">})</span> <span class="cp">%&gt;</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='&lt;!-- MiniMagick --&gt;
+&lt;%= image_tag user.avatar.variant(resize_to_limit: [100, 100], format: :jpeg, sampling_factor: "4:2:0", strip: true, interlace: "JPEG", colorspace: "sRGB", quality: 80) %&gt;
+
+&lt;!-- Vips --&gt;
+&lt;%= image_tag user.avatar.variant(resize_to_limit: [100, 100], format: :jpeg, saver: { subsample_mode: "on", strip: true, interlace: true, quality: 80 }) %&gt;
+'>Copy</button>
+</div>
+<h4 id="previewing-files"><a class="anchorlink" href="#previewing-files">8.3 Previewing Files</a></h4>
+
+<p>Some non-image files can be previewed: that is, they can be presented as images.
+For example, a video file can be previewed by extracting its first frame. Out of
+the box, Active Storage supports previewing videos and PDF documents. To create
+a link to a lazily-generated preview, use the attachment's <a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveStorage/Blob/Representable.html#method-i-preview"><code>preview</code></a> method:</p>
+
+<div class="code_container">
+<pre><code class="highlight erb"><span class="cp">&lt;%=</span> <span class="n">image_tag</span> <span class="n">message</span><span class="p">.</span><span class="nf">video</span><span class="p">.</span><span class="nf">preview</span><span class="p">(</span><span class="ss">resize_to_limit: </span><span class="p">[</span><span class="mi">100</span><span class="p">,</span> <span class="mi">100</span><span class="p">])</span> <span class="cp">%&gt;</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="&lt;%= image_tag message.video.preview(resize_to_limit: [100, 100]) %&gt;
+">Copy</button>
+</div>
+<p>To add support for another format, add your own previewer. See the
+<a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveStorage/Preview.html"><code>ActiveStorage::Preview</code></a> documentation for more information.</p>
+</body>
+</html>

@@ -1,0 +1,42 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>8 Intercepting Emails</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v4.2.11.3/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="intercepting-emails">8 Intercepting Emails</h3>
+<p>There are situations where you need to edit an email before it's
+delivered. Fortunately Action Mailer provides hooks to intercept every
+email. You can register an interceptor to make modifications to mail messages
+right before they are handed to the delivery agents.</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class SandboxEmailInterceptor
+  def self.delivering_email(message)
+    message.to = ['sandbox@example.com']
+  end
+end
+
+</pre>
+</div>
+<p>Before the interceptor can do its job you need to register it with the Action
+Mailer framework. You can do this in an initializer file
+<code>config/initializers/sandbox_email_interceptor.rb</code></p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+if Rails.env.staging?
+  ActionMailer::Base.register_interceptor(SandboxEmailInterceptor)
+end
+
+</pre>
+</div>
+<div class="note"><p>The example above uses a custom environment called "staging" for a
+production like server but for testing purposes. You can read
+<a href="configuring.html#creating-rails-environments">Creating Rails environments</a>
+for more information about custom Rails environments.</p></div>
+</body>
+</html>

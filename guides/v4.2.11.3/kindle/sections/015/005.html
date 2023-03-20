@@ -1,0 +1,94 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>6 Customize your I18n Setup</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v4.2.11.3/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="customize-your-i18n-setup">6 Customize your I18n Setup</h3>
+<h4 id="using-different-backends">6.1 Using Different Backends</h4>
+
+<p>For several reasons the Simple backend shipped with Active Support only does the "simplest thing that could possibly work" <em>for Ruby on Rails</em><sup class="footnote" id="footnote-3-ref"><a href="#footnote-3">3</a></sup> ... which means that it is only guaranteed to work for English and, as a side effect, languages that are very similar to English. Also, the simple backend is only capable of reading translations but cannot dynamically store them to any format.</p>
+
+<p>That does not mean you're stuck with these limitations, though. The Ruby I18n gem makes it very easy to exchange the Simple backend implementation with something else that fits better for your needs. E.g. you could exchange it with Globalize's Static backend:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+I18n.backend = Globalize::Backend::Static.new
+
+</pre>
+</div>
+<p>You can also use the Chain backend to chain multiple backends together. This is useful when you want to use standard translations with a Simple backend but store custom application translations in a database or other backends. For example, you could use the Active Record backend and fall back to the (default) Simple backend:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+I18n.backend = I18n::Backend::Chain.new(I18n::Backend::ActiveRecord.new, I18n.backend)
+
+</pre>
+</div>
+<h4 id="using-different-exception-handlers">6.2 Using Different Exception Handlers</h4>
+
+<p>The I18n API defines the following exceptions that will be raised by backends when the corresponding unexpected conditions occur:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+MissingTranslationData       # no translation was found for the requested key
+InvalidLocale                # the locale set to I18n.locale is invalid (e.g. nil)
+InvalidPluralizationData     # a count option was passed but the translation data is not suitable for pluralization
+MissingInterpolationArgument # the translation expects an interpolation argument that has not been passed
+ReservedInterpolationKey     # the translation contains a reserved interpolation variable name (i.e. one of: scope, default)
+UnknownFileType              # the backend does not know how to handle a file type that was added to I18n.load_path
+
+</pre>
+</div>
+<p>The I18n API will catch all of these exceptions when they are thrown in the backend and pass them to the default_exception_handler method. This method will re-raise all exceptions except for <code>MissingTranslationData</code> exceptions. When a <code>MissingTranslationData</code> exception has been caught, it will return the exception's error message string containing the missing key/scope.</p>
+
+<p>The reason for this is that during development you'd usually want your views to still render even though a translation is missing.</p>
+
+<p>In other contexts you might want to change this behavior, though. E.g. the default exception handling does not allow to catch missing translations during automated tests easily. For this purpose a different exception handler can be specified. The specified exception handler must be a method on the I18n module or a class with <code>#call</code> method:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+module I18n
+  class JustRaiseExceptionHandler &lt; ExceptionHandler
+    def call(exception, locale, key, options)
+      if exception.is_a?(MissingTranslation)
+        raise exception.to_exception
+      else
+        super
+      end
+    end
+  end
+end
+
+I18n.exception_handler = I18n::JustRaiseExceptionHandler.new
+
+</pre>
+</div>
+<p>This would re-raise only the <code>MissingTranslationData</code> exception, passing all other input to the default exception handler.</p>
+
+<p>However, if you are using <code>I18n::Backend::Pluralization</code> this handler will also raise <code>I18n::MissingTranslationData: translation missing: en.i18n.plural.rule</code> exception that should normally be ignored to fall back to the default pluralization rule for English locale. To avoid this you may use additional check for translation key:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+if exception.is_a?(MissingTranslation) &amp;&amp; key.to_s != 'i18n.plural.rule'
+  raise exception.to_exception
+else
+  super
+end
+
+</pre>
+</div>
+<p>Another example where the default behavior is less desirable is the Rails TranslationHelper which provides the method <code>#t</code> (as well as <code>#translate</code>). When a <code>MissingTranslationData</code> exception occurs in this context, the helper wraps the message into a span with the CSS class <code>translation_missing</code>.</p>
+
+<p>To do so, the helper forces <code>I18n#translate</code> to raise exceptions no matter what exception handler is defined by setting the <code>:raise</code> option:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+I18n.t :foo, raise: true # always re-raises exceptions from the backend
+
+</pre>
+</div>
+</body>
+</html>

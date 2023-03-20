@@ -1,0 +1,40 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>5 Limit and Offset</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v4.1.16/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="limit-and-offset">5 Limit and Offset</h3>
+<p>To apply <code>LIMIT</code> to the SQL fired by the <code>Model.find</code>, you can specify the <code>LIMIT</code> using <code>limit</code> and <code>offset</code> methods on the relation.</p>
+<p>You can use <code>limit</code> to specify the number of records to be retrieved, and use <code>offset</code> to specify the number of records to skip before starting to return the records. For example</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+Client.limit(5)
+
+</pre>
+</div>
+<p>will return a maximum of 5 clients and because it specifies no offset it will return the first 5 in the table. The SQL it executes looks like this:</p>
+<div class="code_container">
+<pre class="brush: sql; gutter: false; toolbar: false">
+SELECT * FROM clients LIMIT 5
+
+</pre>
+</div>
+<p>Adding <code>offset</code> to that</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+Client.limit(5).offset(30)
+
+</pre>
+</div>
+<p>will return instead a maximum of 5 clients beginning with the 31st. The SQL looks like:</p>
+<div class="code_container">
+<pre class="brush: sql; gutter: false; toolbar: false">
+SELECT * FROM clients LIMIT 5 OFFSET 30
+
+</pre>
+</div>
+</body>
+</html>

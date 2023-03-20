@@ -1,0 +1,76 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>8 Conditional Callbacks</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v6.0.6.1/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="conditional-callbacks"><a class="anchorlink" href="#conditional-callbacks">8 Conditional Callbacks</a></h3>
+<p>As with validations, we can also make the calling of a callback method conditional on the satisfaction of a given predicate. We can do this using the <code>:if</code> and <code>:unless</code> options, which can take a symbol, a <code>Proc</code> or an <code>Array</code>. You may use the <code>:if</code> option when you want to specify under which conditions the callback <strong>should</strong> be called. If you want to specify the conditions under which the callback <strong>should not</strong> be called, then you may use the <code>:unless</code> option.</p>
+
+<h4 id="using-if-and-unless-with-a-symbol"><a class="anchorlink" href="#using-if-and-unless-with-a-symbol">8.1 Using <code>:if</code> and <code>:unless</code> with a <code>Symbol</code></a></h4>
+
+<p>You can associate the <code>:if</code> and <code>:unless</code> options with a symbol corresponding to the name of a predicate method that will get called right before the callback. When using the <code>:if</code> option, the callback won't be executed if the predicate method returns false; when using the <code>:unless</code> option, the callback won't be executed if the predicate method returns true. This is the most common option. Using this form of registration it is also possible to register several different predicates that should be called to check if the callback should be executed.</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class Order &lt; ApplicationRecord
+  before_save :normalize_card_number, if: :paid_with_card?
+end
+
+</pre>
+</div>
+<h4 id="using-if-and-unless-with-a-proc"><a class="anchorlink" href="#using-if-and-unless-with-a-proc">8.2 Using <code>:if</code> and <code>:unless</code> with a <code>Proc</code></a></h4>
+
+<p>It is possible to associate <code>:if</code> and <code>:unless</code> with a <code>Proc</code> object. This option is best suited when writing short validation methods, usually one-liners:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class Order &lt; ApplicationRecord
+  before_save :normalize_card_number,
+    if: Proc.new { |order| order.paid_with_card? }
+end
+
+</pre>
+</div>
+<p>As the proc is evaluated in the context of the object, it is also possible to write this as:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class Order &lt; ApplicationRecord
+  before_save :normalize_card_number, if: Proc.new { paid_with_card? }
+end
+
+</pre>
+</div>
+<h4 id="multiple-conditions-for-callbacks"><a class="anchorlink" href="#multiple-conditions-for-callbacks">8.3 Multiple Conditions for Callbacks</a></h4>
+
+<p>When writing conditional callbacks, it is possible to mix both <code>:if</code> and <code>:unless</code> in the same callback declaration:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class Comment &lt; ApplicationRecord
+  after_create :send_email_to_author, if: :author_wants_emails?,
+    unless: Proc.new { |comment| comment.article.ignore_comments? }
+end
+
+</pre>
+</div>
+<h4 id="combining-callback-conditions"><a class="anchorlink" href="#combining-callback-conditions">8.4 Combining Callback Conditions</a></h4>
+
+<p>When multiple conditions define whether or not a callback should happen, an <code>Array</code> can be used. Moreover, you can apply both <code>:if</code> and <code>:unless</code> to the same callback.</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class Comment &lt; ApplicationRecord
+  after_create :send_email_to_author,
+    if: [Proc.new { |c| c.user.allow_send_email? }, :author_wants_emails?],
+    unless: Proc.new { |c| c.article.ignore_comments? }
+end
+
+</pre>
+</div>
+<p>The callback only runs when all the <code>:if</code> conditions and none of the <code>:unless</code> conditions are evaluated to <code>true</code>.</p>
+</body>
+</html>

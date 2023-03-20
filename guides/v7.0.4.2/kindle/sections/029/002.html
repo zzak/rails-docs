@@ -1,0 +1,82 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>3 In Development</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v7.0.4.2/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="in-development"><a class="anchorlink" href="#in-development">3 In Development</a></h3>
+<p>In development mode, assets are served as a concatenated file.</p>
+
+<p>This manifest <code>app/assets/javascripts/application.js</code>:</p>
+
+<div class="code_container">
+<pre><code class="highlight js"><span class="c1">//= require core</span>
+<span class="c1">//= require projects</span>
+<span class="c1">//= require tickets</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="//= require core
+//= require projects
+//= require tickets
+">Copy</button>
+</div>
+<p>would generate this HTML:</p>
+
+<div class="code_container">
+<pre><code class="highlight html"><span class="nt">&lt;script </span><span class="na">src=</span><span class="s">"/assets/application-728742f3b9daa182fe7c831f6a3b8fa87609b4007fdc2f87c134a07b19ad93fb.js"</span><span class="nt">&gt;&lt;/script&gt;</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='&lt;script src="/assets/application-728742f3b9daa182fe7c831f6a3b8fa87609b4007fdc2f87c134a07b19ad93fb.js"&gt;&lt;/script&gt;
+'>Copy</button>
+</div>
+<h4 id="raise-an-error-when-an-asset-is-not-found"><a class="anchorlink" href="#raise-an-error-when-an-asset-is-not-found">3.1 Raise an Error When an Asset is Not Found</a></h4>
+
+<p>If you are using sprockets-rails &gt;= 3.2.0 you can configure what happens
+when an asset lookup is performed and nothing is found. If you turn off "asset fallback"
+then an error will be raised when an asset cannot be found.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">config</span><span class="p">.</span><span class="nf">assets</span><span class="p">.</span><span class="nf">unknown_asset_fallback</span> <span class="o">=</span> <span class="kp">false</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="config.assets.unknown_asset_fallback = false
+">Copy</button>
+</div>
+<p>If "asset fallback" is enabled then when an asset cannot be found the path will be
+output instead and no error raised. The asset fallback behavior is disabled by default.</p>
+
+<h4 id="turning-digests-off"><a class="anchorlink" href="#turning-digests-off">3.2 Turning Digests Off</a></h4>
+
+<p>You can turn off digests by updating <code>config/environments/development.rb</code> to
+include:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">config</span><span class="p">.</span><span class="nf">assets</span><span class="p">.</span><span class="nf">digest</span> <span class="o">=</span> <span class="kp">false</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="config.assets.digest = false
+">Copy</button>
+</div>
+<p>When this option is true, digests will be generated for asset URLs.</p>
+
+<h4 id="turning-source-maps-on"><a class="anchorlink" href="#turning-source-maps-on">3.3 Turning Source Maps On</a></h4>
+
+<p>You can turn on source maps by updating <code>config/environments/development.rb</code> to
+include:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">config</span><span class="p">.</span><span class="nf">assets</span><span class="p">.</span><span class="nf">debug</span> <span class="o">=</span> <span class="kp">true</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="config.assets.debug = true
+">Copy</button>
+</div>
+<p>When debug mode is on, Sprockets will generate a Source Map for each asset. This
+allows you to debug each file individually in your browser's developer tools.</p>
+
+<p>Assets are compiled and cached on the first request after the server is started.
+Sprockets sets a <code>must-revalidate</code> Cache-Control HTTP header to reduce request
+overhead on subsequent requests - on these the browser gets a 304 (Not Modified)
+response.</p>
+
+<p>If any of the files in the manifest change between requests, the server
+responds with a new compiled file.</p>
+</body>
+</html>

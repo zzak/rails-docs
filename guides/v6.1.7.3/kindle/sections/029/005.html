@@ -1,0 +1,31 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>6 Cross-Site Request Forgery (CSRF) token in Ajax</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v6.1.7.3/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="cross-site-request-forgery-csrf-token-in-ajax"><a class="anchorlink" href="#cross-site-request-forgery-csrf-token-in-ajax">6 Cross-Site Request Forgery (CSRF) token in Ajax</a></h3>
+<p>When using another library to make Ajax calls, it is necessary to add
+the security token as a default header for Ajax calls in your library. To get
+the token:</p>
+
+<div class="code_container">
+<pre><code class="highlight js"><span class="kd">const</span> <span class="nx">token</span> <span class="o">=</span> <span class="nb">document</span><span class="p">.</span><span class="nx">getElementsByName</span><span class="p">(</span>
+  <span class="dl">"</span><span class="s2">csrf-token</span><span class="dl">"</span>
+<span class="p">)[</span><span class="mi">0</span><span class="p">].</span><span class="nx">content</span><span class="p">;</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-1095cdcd5b69c3bb7384200fa49fe297">const token = document.getElementsByName(
+  "csrf-token"
+)[0].content;
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-1095cdcd5b69c3bb7384200fa49fe297">Copy</button>
+</div>
+<p>You can then submit this token as a <code>X-CSRF-Token</code> header for your
+Ajax request. You do not need to add a CSRF token for GET requests,
+only non-GET ones.</p>
+
+<p>You can read more about about Cross-Site Request Forgery in the <a href="https://guides.rubyonrails.org/security.html#cross-site-request-forgery-csrf">Security guide</a>.</p>
+</body>
+</html>

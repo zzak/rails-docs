@@ -1,0 +1,509 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>2 Retrieving Objects from the Database</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v7.0.4.2/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="retrieving-objects-from-the-database"><a class="anchorlink" href="#retrieving-objects-from-the-database">2 Retrieving Objects from the Database</a></h3>
+<p>To retrieve objects from the database, Active Record provides several finder methods. Each finder method allows you to pass arguments into it to perform certain queries on your database without writing raw SQL.</p>
+
+<p>The methods are:</p>
+<ul>
+<li><a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveRecord/QueryMethods.html#method-i-annotate"><code>annotate</code></a></li>
+<li><a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveRecord/FinderMethods.html#method-i-find"><code>find</code></a></li>
+<li><a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveRecord/QueryMethods.html#method-i-create_with"><code>create_with</code></a></li>
+<li><a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveRecord/QueryMethods.html#method-i-distinct"><code>distinct</code></a></li>
+<li><a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveRecord/QueryMethods.html#method-i-eager_load"><code>eager_load</code></a></li>
+<li><a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveRecord/QueryMethods.html#method-i-extending"><code>extending</code></a></li>
+<li><a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveRecord/QueryMethods.html#method-i-extract_associated"><code>extract_associated</code></a></li>
+<li><a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveRecord/QueryMethods.html#method-i-from"><code>from</code></a></li>
+<li><a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveRecord/QueryMethods.html#method-i-group"><code>group</code></a></li>
+<li><a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveRecord/QueryMethods.html#method-i-having"><code>having</code></a></li>
+<li><a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveRecord/QueryMethods.html#method-i-includes"><code>includes</code></a></li>
+<li><a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveRecord/QueryMethods.html#method-i-joins"><code>joins</code></a></li>
+<li><a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveRecord/QueryMethods.html#method-i-left_outer_joins"><code>left_outer_joins</code></a></li>
+<li><a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveRecord/QueryMethods.html#method-i-limit"><code>limit</code></a></li>
+<li><a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveRecord/QueryMethods.html#method-i-lock"><code>lock</code></a></li>
+<li><a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveRecord/QueryMethods.html#method-i-none"><code>none</code></a></li>
+<li><a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveRecord/QueryMethods.html#method-i-offset"><code>offset</code></a></li>
+<li><a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveRecord/QueryMethods.html#method-i-optimizer_hints"><code>optimizer_hints</code></a></li>
+<li><a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveRecord/QueryMethods.html#method-i-order"><code>order</code></a></li>
+<li><a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveRecord/QueryMethods.html#method-i-preload"><code>preload</code></a></li>
+<li><a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveRecord/QueryMethods.html#method-i-readonly"><code>readonly</code></a></li>
+<li><a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveRecord/QueryMethods.html#method-i-references"><code>references</code></a></li>
+<li><a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveRecord/QueryMethods.html#method-i-reorder"><code>reorder</code></a></li>
+<li><a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveRecord/QueryMethods.html#method-i-reselect"><code>reselect</code></a></li>
+<li><a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveRecord/QueryMethods.html#method-i-reverse_order"><code>reverse_order</code></a></li>
+<li><a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveRecord/QueryMethods.html#method-i-select"><code>select</code></a></li>
+<li><a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveRecord/QueryMethods.html#method-i-where"><code>where</code></a></li>
+</ul>
+<p>Finder methods that return a collection, such as <code>where</code> and <code>group</code>, return an instance of <a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveRecord/Relation.html"><code>ActiveRecord::Relation</code></a>.  Methods that find a single entity, such as <code>find</code> and <code>first</code>, return a single instance of the model.</p>
+
+<p>The primary operation of <code>Model.find(options)</code> can be summarized as:</p>
+<ul>
+<li>Convert the supplied options to an equivalent SQL query.</li>
+<li>Fire the SQL query and retrieve the corresponding results from the database.</li>
+<li>Instantiate the equivalent Ruby object of the appropriate model for every resulting row.</li>
+<li>Run <code>after_find</code> and then <code>after_initialize</code> callbacks, if any.</li>
+</ul>
+<h4 id="retrieving-a-single-object"><a class="anchorlink" href="#retrieving-a-single-object">2.1 Retrieving a Single Object</a></h4>
+
+<p>Active Record provides several different ways of retrieving a single object.</p>
+
+<h5 id="find"><a class="anchorlink" href="#find">2.1.1 <code>find</code></a></h5>
+
+<p>Using the <a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveRecord/FinderMethods.html#method-i-find"><code>find</code></a> method, you can retrieve the object corresponding to the specified <em>primary key</em> that matches any supplied options. For example:</p>
+
+<div class="code_container">
+<pre><code class="highlight irb"><span class="c"># Find the customer with primary key (id) 10.
+</span><span class="gp">irb&gt;</span><span class="w"> </span><span class="n">customer</span> <span class="o">=</span> <span class="no">Customer</span><span class="p">.</span><span class="nf">find</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+<span class="p">=&gt;</span> <span class="kt">#&lt;</span><span class="no">Customer</span> <span class="ss">id: </span><span class="mi">10</span><span class="p">,</span> <span class="ss">first_name: </span><span class="s2">"Ryan"</span><span class="kt">&gt;</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="customer = Customer.find(10)
+">Copy</button>
+</div>
+<p>The SQL equivalent of the above is:</p>
+
+<div class="code_container">
+<pre><code class="highlight sql"><span class="k">SELECT</span> <span class="o">*</span> <span class="k">FROM</span> <span class="n">customers</span> <span class="k">WHERE</span> <span class="p">(</span><span class="n">customers</span><span class="p">.</span><span class="n">id</span> <span class="o">=</span> <span class="mi">10</span><span class="p">)</span> <span class="k">LIMIT</span> <span class="mi">1</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="SELECT * FROM customers WHERE (customers.id = 10) LIMIT 1
+">Copy</button>
+</div>
+<p>The <code>find</code> method will raise an <code>ActiveRecord::RecordNotFound</code> exception if no matching record is found.</p>
+
+<p>You can also use this method to query for multiple objects. Call the <code>find</code> method and pass in an array of primary keys. The return will be an array containing all of the matching records for the supplied <em>primary keys</em>. For example:</p>
+
+<div class="code_container">
+<pre><code class="highlight irb"><span class="c"># Find the customers with primary keys 1 and 10.
+</span><span class="gp">irb&gt;</span><span class="w"> </span><span class="n">customers</span> <span class="o">=</span> <span class="no">Customer</span><span class="p">.</span><span class="nf">find</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">10</span><span class="p">])</span> <span class="c1"># OR Customer.find(1, 10)</span>
+<span class="p">=&gt;</span> <span class="p">[</span><span class="kt">#&lt;</span><span class="no">Customer</span> <span class="ss">id: </span><span class="mi">1</span><span class="p">,</span> <span class="ss">first_name: </span><span class="s2">"Lifo"</span><span class="kt">&gt;</span><span class="p">,</span> <span class="kt">#&lt;</span><span class="no">Customer</span> <span class="ss">id: </span><span class="mi">10</span><span class="p">,</span> <span class="ss">first_name: </span><span class="s2">"Ryan"</span><span class="kt">&gt;</span><span class="p">]</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="customers = Customer.find([1, 10]) # OR Customer.find(1, 10)
+">Copy</button>
+</div>
+<p>The SQL equivalent of the above is:</p>
+
+<div class="code_container">
+<pre><code class="highlight sql"><span class="k">SELECT</span> <span class="o">*</span> <span class="k">FROM</span> <span class="n">customers</span> <span class="k">WHERE</span> <span class="p">(</span><span class="n">customers</span><span class="p">.</span><span class="n">id</span> <span class="k">IN</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">10</span><span class="p">))</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="SELECT * FROM customers WHERE (customers.id IN (1,10))
+">Copy</button>
+</div>
+<div class="warning"><p>The <code>find</code> method will raise an <code>ActiveRecord::RecordNotFound</code> exception unless a matching record is found for <strong>all</strong> of the supplied primary keys.</p></div>
+
+<h5 id="take"><a class="anchorlink" href="#take">2.1.2 <code>take</code></a></h5>
+
+<p>The <a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveRecord/FinderMethods.html#method-i-take"><code>take</code></a> method retrieves a record without any implicit ordering. For example:</p>
+
+<div class="code_container">
+<pre><code class="highlight irb"><span class="gp">irb&gt;</span><span class="w"> </span><span class="n">customer</span> <span class="o">=</span> <span class="no">Customer</span><span class="p">.</span><span class="nf">take</span>
+<span class="p">=&gt;</span> <span class="kt">#&lt;</span><span class="no">Customer</span> <span class="ss">id: </span><span class="mi">1</span><span class="p">,</span> <span class="ss">first_name: </span><span class="s2">"Lifo"</span><span class="kt">&gt;</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="customer = Customer.take
+">Copy</button>
+</div>
+<p>The SQL equivalent of the above is:</p>
+
+<div class="code_container">
+<pre><code class="highlight sql"><span class="k">SELECT</span> <span class="o">*</span> <span class="k">FROM</span> <span class="n">customers</span> <span class="k">LIMIT</span> <span class="mi">1</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="SELECT * FROM customers LIMIT 1
+">Copy</button>
+</div>
+<p>The <code>take</code> method returns <code>nil</code> if no record is found and no exception will be raised.</p>
+
+<p>You can pass in a numerical argument to the <code>take</code> method to return up to that number of results. For example</p>
+
+<div class="code_container">
+<pre><code class="highlight irb"><span class="gp">irb&gt;</span><span class="w"> </span><span class="n">customers</span> <span class="o">=</span> <span class="no">Customer</span><span class="p">.</span><span class="nf">take</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+<span class="p">=&gt;</span> <span class="p">[</span><span class="kt">#&lt;</span><span class="no">Customer</span> <span class="ss">id: </span><span class="mi">1</span><span class="p">,</span> <span class="ss">first_name: </span><span class="s2">"Lifo"</span><span class="kt">&gt;</span><span class="p">,</span> <span class="kt">#&lt;</span><span class="no">Customer</span> <span class="ss">id: </span><span class="mi">220</span><span class="p">,</span> <span class="ss">first_name: </span><span class="s2">"Sara"</span><span class="kt">&gt;</span><span class="p">]</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="customers = Customer.take(2)
+">Copy</button>
+</div>
+<p>The SQL equivalent of the above is:</p>
+
+<div class="code_container">
+<pre><code class="highlight sql"><span class="k">SELECT</span> <span class="o">*</span> <span class="k">FROM</span> <span class="n">customers</span> <span class="k">LIMIT</span> <span class="mi">2</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="SELECT * FROM customers LIMIT 2
+">Copy</button>
+</div>
+<p>The <a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveRecord/FinderMethods.html#method-i-take-21"><code>take!</code></a> method behaves exactly like <code>take</code>, except that it will raise <code>ActiveRecord::RecordNotFound</code> if no matching record is found.</p>
+
+<div class="info"><p>The retrieved record may vary depending on the database engine.</p></div>
+
+<h5 id="first"><a class="anchorlink" href="#first">2.1.3 <code>first</code></a></h5>
+
+<p>The <a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveRecord/FinderMethods.html#method-i-first"><code>first</code></a> method finds the first record ordered by primary key (default). For example:</p>
+
+<div class="code_container">
+<pre><code class="highlight irb"><span class="gp">irb&gt;</span><span class="w"> </span><span class="n">customer</span> <span class="o">=</span> <span class="no">Customer</span><span class="p">.</span><span class="nf">first</span>
+<span class="p">=&gt;</span> <span class="kt">#&lt;</span><span class="no">Customer</span> <span class="ss">id: </span><span class="mi">1</span><span class="p">,</span> <span class="ss">first_name: </span><span class="s2">"Lifo"</span><span class="kt">&gt;</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="customer = Customer.first
+">Copy</button>
+</div>
+<p>The SQL equivalent of the above is:</p>
+
+<div class="code_container">
+<pre><code class="highlight sql"><span class="k">SELECT</span> <span class="o">*</span> <span class="k">FROM</span> <span class="n">customers</span> <span class="k">ORDER</span> <span class="k">BY</span> <span class="n">customers</span><span class="p">.</span><span class="n">id</span> <span class="k">ASC</span> <span class="k">LIMIT</span> <span class="mi">1</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="SELECT * FROM customers ORDER BY customers.id ASC LIMIT 1
+">Copy</button>
+</div>
+<p>The <code>first</code> method returns <code>nil</code> if no matching record is found and no exception will be raised.</p>
+
+<p>If your <a href="active_record_querying.html#applying-a-default-scope">default scope</a> contains an order method, <code>first</code> will return the first record according to this ordering.</p>
+
+<p>You can pass in a numerical argument to the <code>first</code> method to return up to that number of results. For example</p>
+
+<div class="code_container">
+<pre><code class="highlight irb"><span class="gp">irb&gt;</span><span class="w"> </span><span class="n">customers</span> <span class="o">=</span> <span class="no">Customer</span><span class="p">.</span><span class="nf">first</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+<span class="p">=&gt;</span> <span class="p">[</span><span class="kt">#&lt;</span><span class="no">Customer</span> <span class="ss">id: </span><span class="mi">1</span><span class="p">,</span> <span class="ss">first_name: </span><span class="s2">"Lifo"</span><span class="kt">&gt;</span><span class="p">,</span> <span class="kt">#&lt;</span><span class="no">Customer</span> <span class="ss">id: </span><span class="mi">2</span><span class="p">,</span> <span class="ss">first_name: </span><span class="s2">"Fifo"</span><span class="kt">&gt;</span><span class="p">,</span> <span class="kt">#&lt;</span><span class="no">Customer</span> <span class="ss">id: </span><span class="mi">3</span><span class="p">,</span> <span class="ss">first_name: </span><span class="s2">"Filo"</span><span class="kt">&gt;</span><span class="p">]</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="customers = Customer.first(3)
+">Copy</button>
+</div>
+<p>The SQL equivalent of the above is:</p>
+
+<div class="code_container">
+<pre><code class="highlight sql"><span class="k">SELECT</span> <span class="o">*</span> <span class="k">FROM</span> <span class="n">customers</span> <span class="k">ORDER</span> <span class="k">BY</span> <span class="n">customers</span><span class="p">.</span><span class="n">id</span> <span class="k">ASC</span> <span class="k">LIMIT</span> <span class="mi">3</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="SELECT * FROM customers ORDER BY customers.id ASC LIMIT 3
+">Copy</button>
+</div>
+<p>On a collection that is ordered using <code>order</code>, <code>first</code> will return the first record ordered by the specified attribute for <code>order</code>.</p>
+
+<div class="code_container">
+<pre><code class="highlight irb"><span class="gp">irb&gt;</span><span class="w"> </span><span class="n">customer</span> <span class="o">=</span> <span class="no">Customer</span><span class="p">.</span><span class="nf">order</span><span class="p">(</span><span class="ss">:first_name</span><span class="p">).</span><span class="nf">first</span>
+<span class="p">=&gt;</span> <span class="kt">#&lt;</span><span class="no">Customer</span> <span class="ss">id: </span><span class="mi">2</span><span class="p">,</span> <span class="ss">first_name: </span><span class="s2">"Fifo"</span><span class="kt">&gt;</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="customer = Customer.order(:first_name).first
+">Copy</button>
+</div>
+<p>The SQL equivalent of the above is:</p>
+
+<div class="code_container">
+<pre><code class="highlight sql"><span class="k">SELECT</span> <span class="o">*</span> <span class="k">FROM</span> <span class="n">customers</span> <span class="k">ORDER</span> <span class="k">BY</span> <span class="n">customers</span><span class="p">.</span><span class="n">first_name</span> <span class="k">ASC</span> <span class="k">LIMIT</span> <span class="mi">1</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="SELECT * FROM customers ORDER BY customers.first_name ASC LIMIT 1
+">Copy</button>
+</div>
+<p>The <a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveRecord/FinderMethods.html#method-i-first-21"><code>first!</code></a> method behaves exactly like <code>first</code>, except that it will raise <code>ActiveRecord::RecordNotFound</code> if no matching record is found.</p>
+
+<h5 id="last"><a class="anchorlink" href="#last">2.1.4 <code>last</code></a></h5>
+
+<p>The <a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveRecord/FinderMethods.html#method-i-last"><code>last</code></a> method finds the last record ordered by primary key (default). For example:</p>
+
+<div class="code_container">
+<pre><code class="highlight irb"><span class="gp">irb&gt;</span><span class="w"> </span><span class="n">customer</span> <span class="o">=</span> <span class="no">Customer</span><span class="p">.</span><span class="nf">last</span>
+<span class="p">=&gt;</span> <span class="kt">#&lt;</span><span class="no">Customer</span> <span class="ss">id: </span><span class="mi">221</span><span class="p">,</span> <span class="ss">first_name: </span><span class="s2">"Russel"</span><span class="kt">&gt;</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="customer = Customer.last
+">Copy</button>
+</div>
+<p>The SQL equivalent of the above is:</p>
+
+<div class="code_container">
+<pre><code class="highlight sql"><span class="k">SELECT</span> <span class="o">*</span> <span class="k">FROM</span> <span class="n">customers</span> <span class="k">ORDER</span> <span class="k">BY</span> <span class="n">customers</span><span class="p">.</span><span class="n">id</span> <span class="k">DESC</span> <span class="k">LIMIT</span> <span class="mi">1</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="SELECT * FROM customers ORDER BY customers.id DESC LIMIT 1
+">Copy</button>
+</div>
+<p>The <code>last</code> method returns <code>nil</code> if no matching record is found and no exception will be raised.</p>
+
+<p>If your <a href="active_record_querying.html#applying-a-default-scope">default scope</a> contains an order method, <code>last</code> will return the last record according to this ordering.</p>
+
+<p>You can pass in a numerical argument to the <code>last</code> method to return up to that number of results. For example</p>
+
+<div class="code_container">
+<pre><code class="highlight irb"><span class="gp">irb&gt;</span><span class="w"> </span><span class="n">customers</span> <span class="o">=</span> <span class="no">Customer</span><span class="p">.</span><span class="nf">last</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+<span class="p">=&gt;</span> <span class="p">[</span><span class="kt">#&lt;</span><span class="no">Customer</span> <span class="ss">id: </span><span class="mi">219</span><span class="p">,</span> <span class="ss">first_name: </span><span class="s2">"James"</span><span class="kt">&gt;</span><span class="p">,</span> <span class="kt">#&lt;</span><span class="no">Customer</span> <span class="ss">id: </span><span class="mi">220</span><span class="p">,</span> <span class="ss">first_name: </span><span class="s2">"Sara"</span><span class="kt">&gt;</span><span class="p">,</span> <span class="kt">#&lt;</span><span class="no">Customer</span> <span class="ss">id: </span><span class="mi">221</span><span class="p">,</span> <span class="ss">first_name: </span><span class="s2">"Russel"</span><span class="kt">&gt;</span><span class="p">]</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="customers = Customer.last(3)
+">Copy</button>
+</div>
+<p>The SQL equivalent of the above is:</p>
+
+<div class="code_container">
+<pre><code class="highlight sql"><span class="k">SELECT</span> <span class="o">*</span> <span class="k">FROM</span> <span class="n">customers</span> <span class="k">ORDER</span> <span class="k">BY</span> <span class="n">customers</span><span class="p">.</span><span class="n">id</span> <span class="k">DESC</span> <span class="k">LIMIT</span> <span class="mi">3</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="SELECT * FROM customers ORDER BY customers.id DESC LIMIT 3
+">Copy</button>
+</div>
+<p>On a collection that is ordered using <code>order</code>, <code>last</code> will return the last record ordered by the specified attribute for <code>order</code>.</p>
+
+<div class="code_container">
+<pre><code class="highlight irb"><span class="gp">irb&gt;</span><span class="w"> </span><span class="n">customer</span> <span class="o">=</span> <span class="no">Customer</span><span class="p">.</span><span class="nf">order</span><span class="p">(</span><span class="ss">:first_name</span><span class="p">).</span><span class="nf">last</span>
+<span class="p">=&gt;</span> <span class="kt">#&lt;</span><span class="no">Customer</span> <span class="ss">id: </span><span class="mi">220</span><span class="p">,</span> <span class="ss">first_name: </span><span class="s2">"Sara"</span><span class="kt">&gt;</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="customer = Customer.order(:first_name).last
+">Copy</button>
+</div>
+<p>The SQL equivalent of the above is:</p>
+
+<div class="code_container">
+<pre><code class="highlight sql"><span class="k">SELECT</span> <span class="o">*</span> <span class="k">FROM</span> <span class="n">customers</span> <span class="k">ORDER</span> <span class="k">BY</span> <span class="n">customers</span><span class="p">.</span><span class="n">first_name</span> <span class="k">DESC</span> <span class="k">LIMIT</span> <span class="mi">1</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="SELECT * FROM customers ORDER BY customers.first_name DESC LIMIT 1
+">Copy</button>
+</div>
+<p>The <a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveRecord/FinderMethods.html#method-i-last-21"><code>last!</code></a> method behaves exactly like <code>last</code>, except that it will raise <code>ActiveRecord::RecordNotFound</code> if no matching record is found.</p>
+
+<h5 id="find-by"><a class="anchorlink" href="#find-by">2.1.5 <code>find_by</code></a></h5>
+
+<p>The <a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveRecord/FinderMethods.html#method-i-find_by"><code>find_by</code></a> method finds the first record matching some conditions. For example:</p>
+
+<div class="code_container">
+<pre><code class="highlight irb"><span class="gp">irb&gt;</span><span class="w"> </span><span class="no">Customer</span><span class="p">.</span><span class="nf">find_by</span> <span class="ss">first_name: </span><span class="s1">'Lifo'</span>
+<span class="p">=&gt;</span> <span class="kt">#&lt;</span><span class="no">Customer</span> <span class="ss">id: </span><span class="mi">1</span><span class="p">,</span> <span class="ss">first_name: </span><span class="s2">"Lifo"</span><span class="kt">&gt;</span>
+
+<span class="gp">irb&gt;</span><span class="w"> </span><span class="no">Customer</span><span class="p">.</span><span class="nf">find_by</span> <span class="ss">first_name: </span><span class="s1">'Jon'</span>
+<span class="p">=&gt;</span> <span class="kp">nil</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="Customer.find_by first_name: 'Lifo'
+Customer.find_by first_name: 'Jon'
+">Copy</button>
+</div>
+<p>It is equivalent to writing:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="no">Customer</span><span class="p">.</span><span class="nf">where</span><span class="p">(</span><span class="ss">first_name: </span><span class="s1">'Lifo'</span><span class="p">).</span><span class="nf">take</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="Customer.where(first_name: 'Lifo').take
+">Copy</button>
+</div>
+<p>The SQL equivalent of the above is:</p>
+
+<div class="code_container">
+<pre><code class="highlight sql"><span class="k">SELECT</span> <span class="o">*</span> <span class="k">FROM</span> <span class="n">customers</span> <span class="k">WHERE</span> <span class="p">(</span><span class="n">customers</span><span class="p">.</span><span class="n">first_name</span> <span class="o">=</span> <span class="s1">'Lifo'</span><span class="p">)</span> <span class="k">LIMIT</span> <span class="mi">1</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="SELECT * FROM customers WHERE (customers.first_name = 'Lifo') LIMIT 1
+">Copy</button>
+</div>
+<p>Note that there is no <code>ORDER BY</code> in the above SQL.  If your <code>find_by</code> conditions can match multiple records, you should <a href="#ordering">apply an order</a> to guarantee a deterministic result.</p>
+
+<p>The <a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveRecord/FinderMethods.html#method-i-find_by-21"><code>find_by!</code></a> method behaves exactly like <code>find_by</code>, except that it will raise <code>ActiveRecord::RecordNotFound</code> if no matching record is found. For example:</p>
+
+<div class="code_container">
+<pre><code class="highlight irb"><span class="gp">irb&gt;</span><span class="w"> </span><span class="no">Customer</span><span class="p">.</span><span class="nf">find_by!</span> <span class="ss">first_name: </span><span class="s1">'does not exist'</span>
+<span class="go">ActiveRecord::RecordNotFound
+</span></code></pre>
+<button class="clipboard-button" data-clipboard-text="Customer.find_by! first_name: 'does not exist'
+">Copy</button>
+</div>
+<p>This is equivalent to writing:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="no">Customer</span><span class="p">.</span><span class="nf">where</span><span class="p">(</span><span class="ss">first_name: </span><span class="s1">'does not exist'</span><span class="p">).</span><span class="nf">take!</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="Customer.where(first_name: 'does not exist').take!
+">Copy</button>
+</div>
+<h4 id="retrieving-multiple-objects-in-batches"><a class="anchorlink" href="#retrieving-multiple-objects-in-batches">2.2 Retrieving Multiple Objects in Batches</a></h4>
+
+<p>We often need to iterate over a large set of records, as when we send a newsletter to a large set of customers, or when we export data.</p>
+
+<p>This may appear straightforward:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="c1"># This may consume too much memory if the table is big.</span>
+<span class="no">Customer</span><span class="p">.</span><span class="nf">all</span><span class="p">.</span><span class="nf">each</span> <span class="k">do</span> <span class="o">|</span><span class="n">customer</span><span class="o">|</span>
+  <span class="no">NewsMailer</span><span class="p">.</span><span class="nf">weekly</span><span class="p">(</span><span class="n">customer</span><span class="p">).</span><span class="nf">deliver_now</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="# This may consume too much memory if the table is big.
+Customer.all.each do |customer|
+  NewsMailer.weekly(customer).deliver_now
+end
+">Copy</button>
+</div>
+<p>But this approach becomes increasingly impractical as the table size increases, since <code>Customer.all.each</code> instructs Active Record to fetch <em>the entire table</em> in a single pass, build a model object per row, and then keep the entire array of model objects in memory. Indeed, if we have a large number of records, the entire collection may exceed the amount of memory available.</p>
+
+<p>Rails provides two methods that address this problem by dividing records into memory-friendly batches for processing. The first method, <code>find_each</code>, retrieves a batch of records and then yields <em>each</em> record to the block individually as a model. The second method, <code>find_in_batches</code>, retrieves a batch of records and then yields <em>the entire batch</em> to the block as an array of models.</p>
+
+<div class="info"><p>The <code>find_each</code> and <code>find_in_batches</code> methods are intended for use in the batch processing of a large number of records that wouldn't fit in memory all at once. If you just need to loop over a thousand records the regular find methods are the preferred option.</p></div>
+
+<h5 id="find-each"><a class="anchorlink" href="#find-each">2.2.1 <code>find_each</code></a></h5>
+
+<p>The <a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveRecord/Batches.html#method-i-find_each"><code>find_each</code></a> method retrieves records in batches and then yields <em>each</em> one to the block. In the following example, <code>find_each</code> retrieves customers in batches of 1000 and yields them to the block one by one:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="no">Customer</span><span class="p">.</span><span class="nf">find_each</span> <span class="k">do</span> <span class="o">|</span><span class="n">customer</span><span class="o">|</span>
+  <span class="no">NewsMailer</span><span class="p">.</span><span class="nf">weekly</span><span class="p">(</span><span class="n">customer</span><span class="p">).</span><span class="nf">deliver_now</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="Customer.find_each do |customer|
+  NewsMailer.weekly(customer).deliver_now
+end
+">Copy</button>
+</div>
+<p>This process is repeated, fetching more batches as needed, until all of the records have been processed.</p>
+
+<p><code>find_each</code> works on model classes, as seen above, and also on relations:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="no">Customer</span><span class="p">.</span><span class="nf">where</span><span class="p">(</span><span class="ss">weekly_subscriber: </span><span class="kp">true</span><span class="p">).</span><span class="nf">find_each</span> <span class="k">do</span> <span class="o">|</span><span class="n">customer</span><span class="o">|</span>
+  <span class="no">NewsMailer</span><span class="p">.</span><span class="nf">weekly</span><span class="p">(</span><span class="n">customer</span><span class="p">).</span><span class="nf">deliver_now</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="Customer.where(weekly_subscriber: true).find_each do |customer|
+  NewsMailer.weekly(customer).deliver_now
+end
+">Copy</button>
+</div>
+<p>as long as they have no ordering, since the method needs to force an order
+internally to iterate.</p>
+
+<p>If an order is present in the receiver the behaviour depends on the flag
+<a href="configuring.html#config-active-record-error-on-ignored-order"><code>config.active_record.error_on_ignored_order</code></a>. If true, <code>ArgumentError</code> is
+raised, otherwise the order is ignored and a warning issued, which is the
+default. This can be overridden with the option <code>:error_on_ignore</code>, explained
+below.</p>
+
+<h6 id="options-for-find-each"><a class="anchorlink" href="#options-for-find-each">2.2.1.1 Options for <code>find_each</code></a></h6>
+
+<p><strong><code>:batch_size</code></strong></p>
+
+<p>The <code>:batch_size</code> option allows you to specify the number of records to be retrieved in each batch, before being passed individually to the block. For example, to retrieve records in batches of 5000:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="no">Customer</span><span class="p">.</span><span class="nf">find_each</span><span class="p">(</span><span class="ss">batch_size: </span><span class="mi">5000</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">customer</span><span class="o">|</span>
+  <span class="no">NewsMailer</span><span class="p">.</span><span class="nf">weekly</span><span class="p">(</span><span class="n">customer</span><span class="p">).</span><span class="nf">deliver_now</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="Customer.find_each(batch_size: 5000) do |customer|
+  NewsMailer.weekly(customer).deliver_now
+end
+">Copy</button>
+</div>
+<p><strong><code>:start</code></strong></p>
+
+<p>By default, records are fetched in ascending order of the primary key. The <code>:start</code> option allows you to configure the first ID of the sequence whenever the lowest ID is not the one you need. This would be useful, for example, if you wanted to resume an interrupted batch process, provided you saved the last processed ID as a checkpoint.</p>
+
+<p>For example, to send newsletters only to customers with the primary key starting from 2000:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="no">Customer</span><span class="p">.</span><span class="nf">find_each</span><span class="p">(</span><span class="ss">start: </span><span class="mi">2000</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">customer</span><span class="o">|</span>
+  <span class="no">NewsMailer</span><span class="p">.</span><span class="nf">weekly</span><span class="p">(</span><span class="n">customer</span><span class="p">).</span><span class="nf">deliver_now</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="Customer.find_each(start: 2000) do |customer|
+  NewsMailer.weekly(customer).deliver_now
+end
+">Copy</button>
+</div>
+<p><strong><code>:finish</code></strong></p>
+
+<p>Similar to the <code>:start</code> option, <code>:finish</code> allows you to configure the last ID of the sequence whenever the highest ID is not the one you need.
+This would be useful, for example, if you wanted to run a batch process using a subset of records based on <code>:start</code> and <code>:finish</code>.</p>
+
+<p>For example, to send newsletters only to customers with the primary key starting from 2000 up to 10000:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="no">Customer</span><span class="p">.</span><span class="nf">find_each</span><span class="p">(</span><span class="ss">start: </span><span class="mi">2000</span><span class="p">,</span> <span class="ss">finish: </span><span class="mi">10000</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">customer</span><span class="o">|</span>
+  <span class="no">NewsMailer</span><span class="p">.</span><span class="nf">weekly</span><span class="p">(</span><span class="n">customer</span><span class="p">).</span><span class="nf">deliver_now</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="Customer.find_each(start: 2000, finish: 10000) do |customer|
+  NewsMailer.weekly(customer).deliver_now
+end
+">Copy</button>
+</div>
+<p>Another example would be if you wanted multiple workers handling the same
+processing queue. You could have each worker handle 10000 records by setting the
+appropriate <code>:start</code> and <code>:finish</code> options on each worker.</p>
+
+<p><strong><code>:error_on_ignore</code></strong></p>
+
+<p>Overrides the application config to specify if an error should be raised when an
+order is present in the relation.</p>
+
+<h5 id="find-in-batches"><a class="anchorlink" href="#find-in-batches">2.2.2 <code>find_in_batches</code></a></h5>
+
+<p>The <a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveRecord/Batches.html#method-i-find_in_batches"><code>find_in_batches</code></a> method is similar to <code>find_each</code>, since both retrieve batches of records. The difference is that <code>find_in_batches</code> yields <em>batches</em> to the block as an array of models, instead of individually. The following example will yield to the supplied block an array of up to 1000 customers at a time, with the final block containing any remaining customers:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="c1"># Give add_customers an array of 1000 customers at a time.</span>
+<span class="no">Customer</span><span class="p">.</span><span class="nf">find_in_batches</span> <span class="k">do</span> <span class="o">|</span><span class="n">customers</span><span class="o">|</span>
+  <span class="n">export</span><span class="p">.</span><span class="nf">add_customers</span><span class="p">(</span><span class="n">customers</span><span class="p">)</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="# Give add_customers an array of 1000 customers at a time.
+Customer.find_in_batches do |customers|
+  export.add_customers(customers)
+end
+">Copy</button>
+</div>
+<p><code>find_in_batches</code> works on model classes, as seen above, and also on relations:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="c1"># Give add_customers an array of 1000 recently active customers at a time.</span>
+<span class="no">Customer</span><span class="p">.</span><span class="nf">recently_active</span><span class="p">.</span><span class="nf">find_in_batches</span> <span class="k">do</span> <span class="o">|</span><span class="n">customers</span><span class="o">|</span>
+  <span class="n">export</span><span class="p">.</span><span class="nf">add_customers</span><span class="p">(</span><span class="n">customers</span><span class="p">)</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="# Give add_customers an array of 1000 recently active customers at a time.
+Customer.recently_active.find_in_batches do |customers|
+  export.add_customers(customers)
+end
+">Copy</button>
+</div>
+<p>as long as they have no ordering, since the method needs to force an order
+internally to iterate.</p>
+
+<h6 id="options-for-find-in-batches"><a class="anchorlink" href="#options-for-find-in-batches">2.2.2.1 Options for <code>find_in_batches</code></a></h6>
+
+<p>The <code>find_in_batches</code> method accepts the same options as <code>find_each</code>:</p>
+
+<p><strong><code>:batch_size</code></strong></p>
+
+<p>Just like for <code>find_each</code>, <code>batch_size</code> establishes how many records will be retrieved in each group. For example, retrieving batches of 2500 records can be specified as:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="no">Customer</span><span class="p">.</span><span class="nf">find_in_batches</span><span class="p">(</span><span class="ss">batch_size: </span><span class="mi">2500</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">customers</span><span class="o">|</span>
+  <span class="n">export</span><span class="p">.</span><span class="nf">add_customers</span><span class="p">(</span><span class="n">customers</span><span class="p">)</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="Customer.find_in_batches(batch_size: 2500) do |customers|
+  export.add_customers(customers)
+end
+">Copy</button>
+</div>
+<p><strong><code>:start</code></strong></p>
+
+<p>The <code>start</code> option allows specifying the beginning ID from where records will be selected. As mentioned before, by default records are fetched in ascending order of the primary key. For example, to retrieve customers starting on ID: 5000 in batches of 2500 records, the following code can be used:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="no">Customer</span><span class="p">.</span><span class="nf">find_in_batches</span><span class="p">(</span><span class="ss">batch_size: </span><span class="mi">2500</span><span class="p">,</span> <span class="ss">start: </span><span class="mi">5000</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">customers</span><span class="o">|</span>
+  <span class="n">export</span><span class="p">.</span><span class="nf">add_customers</span><span class="p">(</span><span class="n">customers</span><span class="p">)</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="Customer.find_in_batches(batch_size: 2500, start: 5000) do |customers|
+  export.add_customers(customers)
+end
+">Copy</button>
+</div>
+<p><strong><code>:finish</code></strong></p>
+
+<p>The <code>finish</code> option allows specifying the ending ID of the records to be retrieved. The code below shows the case of retrieving customers in batches, up to the customer with ID: 7000:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="no">Customer</span><span class="p">.</span><span class="nf">find_in_batches</span><span class="p">(</span><span class="ss">finish: </span><span class="mi">7000</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">customers</span><span class="o">|</span>
+  <span class="n">export</span><span class="p">.</span><span class="nf">add_customers</span><span class="p">(</span><span class="n">customers</span><span class="p">)</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="Customer.find_in_batches(finish: 7000) do |customers|
+  export.add_customers(customers)
+end
+">Copy</button>
+</div>
+<p><strong><code>:error_on_ignore</code></strong></p>
+
+<p>The <code>error_on_ignore</code> option overrides the application config to specify if an error should be raised when a specific order is present in the relation.</p>
+</body>
+</html>

@@ -1,0 +1,150 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>9 Granular Database Connection Switching</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v7.0.4.2/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="granular-database-connection-switching"><a class="anchorlink" href="#granular-database-connection-switching">9 Granular Database Connection Switching</a></h3>
+<p>In Rails 6.1 it's possible to switch connections for one database instead of
+all databases globally. To use this feature you must first set
+<a href="configuring.html#config-active-record-legacy-connection-handling"><code>config.active_record.legacy_connection_handling</code></a> to <code>false</code> in your application
+configuration. The majority of applications should not need to make any other
+changes since the public APIs have the same behavior. See the above section for
+how to enable and migrate away from <code>legacy_connection_handling</code>.</p>
+
+<p>With <code>legacy_connection_handling</code> set to <code>false</code>, any abstract connection class
+will be able to switch connections without affecting other connections. This
+is useful for switching your <code>AnimalsRecord</code> queries to read from the replica
+while ensuring your <code>ApplicationRecord</code> queries go to the primary.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="no">AnimalsRecord</span><span class="p">.</span><span class="nf">connected_to</span><span class="p">(</span><span class="ss">role: :reading</span><span class="p">)</span> <span class="k">do</span>
+  <span class="no">Dog</span><span class="p">.</span><span class="nf">first</span> <span class="c1"># Reads from animals_replica</span>
+  <span class="no">Person</span><span class="p">.</span><span class="nf">first</span>  <span class="c1"># Reads from primary</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="AnimalsRecord.connected_to(role: :reading) do
+  Dog.first # Reads from animals_replica
+  Person.first  # Reads from primary
+end
+">Copy</button>
+</div>
+<p>It's also possible to swap connections granularly for shards.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="no">AnimalsRecord</span><span class="p">.</span><span class="nf">connected_to</span><span class="p">(</span><span class="ss">role: :reading</span><span class="p">,</span> <span class="ss">shard: :shard_one</span><span class="p">)</span> <span class="k">do</span>
+  <span class="no">Dog</span><span class="p">.</span><span class="nf">first</span> <span class="c1"># Will read from shard_one_replica. If no connection exists for shard_one_replica,</span>
+  <span class="c1"># a ConnectionNotEstablished error will be raised</span>
+  <span class="no">Person</span><span class="p">.</span><span class="nf">first</span> <span class="c1"># Will read from primary writer</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="AnimalsRecord.connected_to(role: :reading, shard: :shard_one) do
+  Dog.first # Will read from shard_one_replica. If no connection exists for shard_one_replica,
+  # a ConnectionNotEstablished error will be raised
+  Person.first # Will read from primary writer
+end
+">Copy</button>
+</div>
+<p>To switch only the primary database cluster use <code>ApplicationRecord</code>:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="no">ApplicationRecord</span><span class="p">.</span><span class="nf">connected_to</span><span class="p">(</span><span class="ss">role: :reading</span><span class="p">,</span> <span class="ss">shard: :shard_one</span><span class="p">)</span> <span class="k">do</span>
+  <span class="no">Person</span><span class="p">.</span><span class="nf">first</span> <span class="c1"># Reads from primary_shard_one_replica</span>
+  <span class="no">Dog</span><span class="p">.</span><span class="nf">first</span> <span class="c1"># Reads from animals_primary</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="ApplicationRecord.connected_to(role: :reading, shard: :shard_one) do
+  Person.first # Reads from primary_shard_one_replica
+  Dog.first # Reads from animals_primary
+end
+">Copy</button>
+</div>
+<p><code>ActiveRecord::Base.connected_to</code> maintains the ability to switch
+connections globally.</p>
+
+<h4 id="handling-associations-with-joins-across-databases"><a class="anchorlink" href="#handling-associations-with-joins-across-databases">9.1 Handling associations with joins across databases</a></h4>
+
+<p>As of Rails 7.0+, Active Record has an option for handling associations that would perform
+a join across multiple databases. If you have a has many through or a has one through association
+that you want to disable joining and perform 2 or more queries, pass the <code>disable_joins: true</code> option.</p>
+
+<p>For example:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">Dog</span> <span class="o">&lt;</span> <span class="no">AnimalsRecord</span>
+  <span class="n">has_many</span> <span class="ss">:treats</span><span class="p">,</span> <span class="ss">through: :humans</span><span class="p">,</span> <span class="ss">disable_joins: </span><span class="kp">true</span>
+  <span class="n">has_many</span> <span class="ss">:humans</span>
+
+  <span class="n">has_one</span> <span class="ss">:home</span>
+  <span class="n">has_one</span> <span class="ss">:yard</span><span class="p">,</span> <span class="ss">through: :home</span><span class="p">,</span> <span class="ss">disable_joins: </span><span class="kp">true</span>
+<span class="k">end</span>
+
+<span class="k">class</span> <span class="nc">Home</span>
+  <span class="n">belongs_to</span> <span class="ss">:dog</span>
+  <span class="n">has_one</span> <span class="ss">:yard</span>
+<span class="k">end</span>
+
+<span class="k">class</span> <span class="nc">Yard</span>
+  <span class="n">belongs_to</span> <span class="ss">:home</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="class Dog &lt; AnimalsRecord
+  has_many :treats, through: :humans, disable_joins: true
+  has_many :humans
+
+  has_one :home
+  has_one :yard, through: :home, disable_joins: true
+end
+
+class Home
+  belongs_to :dog
+  has_one :yard
+end
+
+class Yard
+  belongs_to :home
+end
+">Copy</button>
+</div>
+<p>Previously calling <code>@dog.treats</code> without <code>disable_joins</code> or <code>@dog.yard</code> without <code>disable_joins</code>
+would raise an error because databases are unable to handle joins across clusters. With the
+<code>disable_joins</code> option, Rails will generate multiple select queries
+to avoid attempting joining across clusters. For the above association, <code>@dog.treats</code> would generate the
+following SQL:</p>
+
+<div class="code_container">
+<pre><code class="highlight sql"><span class="k">SELECT</span> <span class="nv">"humans"</span><span class="p">.</span><span class="nv">"id"</span> <span class="k">FROM</span> <span class="nv">"humans"</span> <span class="k">WHERE</span> <span class="nv">"humans"</span><span class="p">.</span><span class="nv">"dog_id"</span> <span class="o">=</span> <span class="o">?</span>  <span class="p">[[</span><span class="nv">"dog_id"</span><span class="p">,</span> <span class="mi">1</span><span class="p">]]</span>
+<span class="k">SELECT</span> <span class="nv">"treats"</span><span class="p">.</span><span class="o">*</span> <span class="k">FROM</span> <span class="nv">"treats"</span> <span class="k">WHERE</span> <span class="nv">"treats"</span><span class="p">.</span><span class="nv">"human_id"</span> <span class="k">IN</span> <span class="p">(</span><span class="o">?</span><span class="p">,</span> <span class="o">?</span><span class="p">,</span> <span class="o">?</span><span class="p">)</span>  <span class="p">[[</span><span class="nv">"human_id"</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="nv">"human_id"</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="p">[</span><span class="nv">"human_id"</span><span class="p">,</span> <span class="mi">3</span><span class="p">]]</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='SELECT "humans"."id" FROM "humans" WHERE "humans"."dog_id" = ?  [["dog_id", 1]]
+SELECT "treats".* FROM "treats" WHERE "treats"."human_id" IN (?, ?, ?)  [["human_id", 1], ["human_id", 2], ["human_id", 3]]
+'>Copy</button>
+</div>
+<p>While <code>@dog.yard</code> would generate the following SQL:</p>
+
+<div class="code_container">
+<pre><code class="highlight sql"><span class="k">SELECT</span> <span class="nv">"home"</span><span class="p">.</span><span class="nv">"id"</span> <span class="k">FROM</span> <span class="nv">"homes"</span> <span class="k">WHERE</span> <span class="nv">"homes"</span><span class="p">.</span><span class="nv">"dog_id"</span> <span class="o">=</span> <span class="o">?</span> <span class="p">[[</span><span class="nv">"dog_id"</span><span class="p">,</span> <span class="mi">1</span><span class="p">]]</span>
+<span class="k">SELECT</span> <span class="nv">"yards"</span><span class="p">.</span><span class="o">*</span> <span class="k">FROM</span> <span class="nv">"yards"</span> <span class="k">WHERE</span> <span class="nv">"yards"</span><span class="p">.</span><span class="nv">"home_id"</span> <span class="o">=</span> <span class="o">?</span> <span class="p">[[</span><span class="nv">"home_id"</span><span class="p">,</span> <span class="mi">1</span><span class="p">]]</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='SELECT "home"."id" FROM "homes" WHERE "homes"."dog_id" = ? [["dog_id", 1]]
+SELECT "yards".* FROM "yards" WHERE "yards"."home_id" = ? [["home_id", 1]]
+'>Copy</button>
+</div>
+<p>There are some important things to be aware of with this option:</p>
+
+<p>1) There may be performance implications since now two or more queries will be performed (depending
+on the association) rather than a join. If the select for <code>humans</code> returned a high number of IDs
+the select for <code>treats</code> may send too many IDs.
+2) Since we are no longer performing joins, a query with an order or limit is now sorted in-memory since
+order from one table cannot be applied to another table.
+3) This setting must be added to all associations where you want joining to be disabled.
+Rails can't guess this for you because association loading is lazy, to load <code>treats</code> in <code>@dog.treats</code>
+Rails already needs to know what SQL should be generated.</p>
+
+<h4 id="schema-caching"><a class="anchorlink" href="#schema-caching">9.2 Schema Caching</a></h4>
+
+<p>If you want to load a schema cache for each database you must set a <code>schema_cache_path</code> in each database configuration and set <code>config.active_record.lazily_load_schema_cache = true</code> in your application configuration. Note that this will lazily load the cache when the database connections are established.</p>
+</body>
+</html>

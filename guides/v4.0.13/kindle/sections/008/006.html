@@ -1,0 +1,27 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>7 Localized Views</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v4.0.13/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="localized-views">7 Localized Views</h3>
+<p>Action View has the ability render different templates depending on the current locale.</p>
+<p>For example, suppose you have a Posts controller with a show action. By default, calling this action will render <code>app/views/posts/show.html.erb</code>. But if you set <code>I18n.locale = :de</code>, then <code>app/views/posts/show.de.html.erb</code> will be rendered instead. If the localized template isn't present, the undecorated version will be used. This means you're not required to provide localized views for all cases, but they will be preferred and used if available.</p>
+<p>You can use the same technique to localize the rescue files in your public directory. For example, setting <code>I18n.locale = :de</code> and creating <code>public/500.de.html</code> and <code>public/404.de.html</code> would allow you to have localized rescue pages.</p>
+<p>Since Rails doesn't restrict the symbols that you use to set I18n.locale, you can leverage this system to display different content depending on anything you like. For example, suppose you have some "expert" users that should see different pages from "normal" users. You could add the following to <code>app/controllers/application.rb</code>:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+before_action :set_expert_locale
+
+def set_expert_locale
+  I18n.locale = :expert if current_user.expert?
+end
+
+</pre>
+</div>
+<p>Then you could create special views like <code>app/views/posts/show.expert.html.erb</code> that would only be displayed to expert users.</p>
+<p>You can read more about the Rails Internationalization (I18n) API <a href="i18n.html">here</a>.</p>
+</body>
+</html>

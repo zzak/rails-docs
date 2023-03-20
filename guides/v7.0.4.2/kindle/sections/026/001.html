@@ -1,0 +1,272 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>2 The Logger</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v7.0.4.2/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="the-logger"><a class="anchorlink" href="#the-logger">2 The Logger</a></h3>
+<p>It can also be useful to save information to log files at runtime. Rails maintains a separate log file for each runtime environment.</p>
+
+<h4 id="what-is-the-logger-questionmark"><a class="anchorlink" href="#what-is-the-logger-questionmark">2.1 What is the Logger?</a></h4>
+
+<p>Rails makes use of the <code>ActiveSupport::Logger</code> class to write log information. Other loggers, such as <code>Log4r</code>, may also be substituted.</p>
+
+<p>You can specify an alternative logger in <code>config/application.rb</code> or any other environment file, for example:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">config</span><span class="p">.</span><span class="nf">logger</span> <span class="o">=</span> <span class="no">Logger</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="no">STDOUT</span><span class="p">)</span>
+<span class="n">config</span><span class="p">.</span><span class="nf">logger</span> <span class="o">=</span> <span class="no">Log4r</span><span class="o">::</span><span class="no">Logger</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="s2">"Application Log"</span><span class="p">)</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='config.logger = Logger.new(STDOUT)
+config.logger = Log4r::Logger.new("Application Log")
+'>Copy</button>
+</div>
+<p>Or in the <code>Initializer</code> section, add <em>any</em> of the following</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="no">Rails</span><span class="p">.</span><span class="nf">logger</span> <span class="o">=</span> <span class="no">Logger</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="no">STDOUT</span><span class="p">)</span>
+<span class="no">Rails</span><span class="p">.</span><span class="nf">logger</span> <span class="o">=</span> <span class="no">Log4r</span><span class="o">::</span><span class="no">Logger</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="s2">"Application Log"</span><span class="p">)</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='Rails.logger = Logger.new(STDOUT)
+Rails.logger = Log4r::Logger.new("Application Log")
+'>Copy</button>
+</div>
+<div class="info"><p>By default, each log is created under <code>Rails.root/log/</code> and the log file is named after the environment in which the application is running.</p></div>
+
+<h4 id="log-levels"><a class="anchorlink" href="#log-levels">2.2 Log Levels</a></h4>
+
+<p>When something is logged, it's printed into the corresponding log if the log
+level of the message is equal to or higher than the configured log level. If you
+want to know the current log level, you can call the <code>Rails.logger.level</code>
+method.</p>
+
+<p>The available log levels are: <code>:debug</code>, <code>:info</code>, <code>:warn</code>, <code>:error</code>, <code>:fatal</code>,
+and <code>:unknown</code>, corresponding to the log level numbers from 0 up to 5,
+respectively. To change the default log level, use</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">config</span><span class="p">.</span><span class="nf">log_level</span> <span class="o">=</span> <span class="ss">:warn</span> <span class="c1"># In any environment initializer, or</span>
+<span class="no">Rails</span><span class="p">.</span><span class="nf">logger</span><span class="p">.</span><span class="nf">level</span> <span class="o">=</span> <span class="mi">0</span> <span class="c1"># at any time</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="config.log_level = :warn # In any environment initializer, or
+Rails.logger.level = 0 # at any time
+">Copy</button>
+</div>
+<p>This is useful when you want to log under development or staging without flooding your production log with unnecessary information.</p>
+
+<div class="info"><p>The default Rails log level is <code>debug</code> in all environments.</p></div>
+
+<h4 id="sending-messages"><a class="anchorlink" href="#sending-messages">2.3 Sending Messages</a></h4>
+
+<p>To write in the current log use the <code>logger.(debug|info|warn|error|fatal|unknown)</code> method from within a controller, model, or mailer:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">logger</span><span class="p">.</span><span class="nf">debug</span> <span class="s2">"Person attributes hash: </span><span class="si">#{</span><span class="vi">@person</span><span class="p">.</span><span class="nf">attributes</span><span class="p">.</span><span class="nf">inspect</span><span class="si">}</span><span class="s2">"</span>
+<span class="n">logger</span><span class="p">.</span><span class="nf">info</span> <span class="s2">"Processing the request..."</span>
+<span class="n">logger</span><span class="p">.</span><span class="nf">fatal</span> <span class="s2">"Terminating application, raised unrecoverable error!!!"</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='logger.debug "Person attributes hash: #{@person.attributes.inspect}"
+logger.info "Processing the request..."
+logger.fatal "Terminating application, raised unrecoverable error!!!"
+'>Copy</button>
+</div>
+<p>Here's an example of a method instrumented with extra logging:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">ArticlesController</span> <span class="o">&lt;</span> <span class="no">ApplicationController</span>
+  <span class="c1"># ...</span>
+
+  <span class="k">def</span> <span class="nf">create</span>
+    <span class="vi">@article</span> <span class="o">=</span> <span class="no">Article</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="n">article_params</span><span class="p">)</span>
+    <span class="n">logger</span><span class="p">.</span><span class="nf">debug</span> <span class="s2">"New article: </span><span class="si">#{</span><span class="vi">@article</span><span class="p">.</span><span class="nf">attributes</span><span class="p">.</span><span class="nf">inspect</span><span class="si">}</span><span class="s2">"</span>
+    <span class="n">logger</span><span class="p">.</span><span class="nf">debug</span> <span class="s2">"Article should be valid: </span><span class="si">#{</span><span class="vi">@article</span><span class="p">.</span><span class="nf">valid?</span><span class="si">}</span><span class="s2">"</span>
+
+    <span class="k">if</span> <span class="vi">@article</span><span class="p">.</span><span class="nf">save</span>
+      <span class="n">logger</span><span class="p">.</span><span class="nf">debug</span> <span class="s2">"The article was saved and now the user is going to be redirected..."</span>
+      <span class="n">redirect_to</span> <span class="vi">@article</span><span class="p">,</span> <span class="ss">notice: </span><span class="s1">'Article was successfully created.'</span>
+    <span class="k">else</span>
+      <span class="n">render</span> <span class="ss">:new</span><span class="p">,</span> <span class="ss">status: :unprocessable_entity</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+
+  <span class="c1"># ...</span>
+
+  <span class="kp">private</span>
+    <span class="k">def</span> <span class="nf">article_params</span>
+      <span class="n">params</span><span class="p">.</span><span class="nf">require</span><span class="p">(</span><span class="ss">:article</span><span class="p">).</span><span class="nf">permit</span><span class="p">(</span><span class="ss">:title</span><span class="p">,</span> <span class="ss">:body</span><span class="p">,</span> <span class="ss">:published</span><span class="p">)</span>
+    <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="class ArticlesController &lt; ApplicationController
+  # ...
+
+  def create
+    @article = Article.new(article_params)
+    logger.debug &quot;New article: #{@article.attributes.inspect}&quot;
+    logger.debug &quot;Article should be valid: #{@article.valid?}&quot;
+
+    if @article.save
+      logger.debug &quot;The article was saved and now the user is going to be redirected...&quot;
+      redirect_to @article, notice: 'Article was successfully created.'
+    else
+      render :new, status: :unprocessable_entity
+    end
+  end
+
+  # ...
+
+  private
+    def article_params
+      params.require(:article).permit(:title, :body, :published)
+    end
+end
+">Copy</button>
+</div>
+<p>Here's an example of the log generated when this controller action is executed:</p>
+
+<div class="code_container">
+<pre><code class="highlight plaintext">Started POST "/articles" for 127.0.0.1 at 2018-10-18 20:09:23 -0400
+Processing by ArticlesController#create as HTML
+  Parameters: {"utf8"=&gt;"✓", "authenticity_token"=&gt;"XLveDrKzF1SwaiNRPTaMtkrsTzedtebPPkmxEFIU0ordLjICSnXsSNfrdMa4ccyBjuGwnnEiQhEoMN6H1Gtz3A==", "article"=&gt;{"title"=&gt;"Debugging Rails", "body"=&gt;"I'm learning how to print in logs.", "published"=&gt;"0"}, "commit"=&gt;"Create Article"}
+New article: {"id"=&gt;nil, "title"=&gt;"Debugging Rails", "body"=&gt;"I'm learning how to print in logs.", "published"=&gt;false, "created_at"=&gt;nil, "updated_at"=&gt;nil}
+Article should be valid: true
+   (0.0ms)  begin transaction
+  ↳ app/controllers/articles_controller.rb:31
+  Article Create (0.5ms)  INSERT INTO "articles" ("title", "body", "published", "created_at", "updated_at") VALUES (?, ?, ?, ?, ?)  [["title", "Debugging Rails"], ["body", "I'm learning how to print in logs."], ["published", 0], ["created_at", "2018-10-19 00:09:23.216549"], ["updated_at", "2018-10-19 00:09:23.216549"]]
+  ↳ app/controllers/articles_controller.rb:31
+   (2.3ms)  commit transaction
+  ↳ app/controllers/articles_controller.rb:31
+The article was saved and now the user is going to be redirected...
+Redirected to http://localhost:3000/articles/1
+Completed 302 Found in 4ms (ActiveRecord: 0.8ms)
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="Started POST &quot;/articles&quot; for 127.0.0.1 at 2018-10-18 20:09:23 -0400
+Processing by ArticlesController#create as HTML
+  Parameters: {&quot;utf8&quot;=&gt;&quot;✓&quot;, &quot;authenticity_token&quot;=&gt;&quot;XLveDrKzF1SwaiNRPTaMtkrsTzedtebPPkmxEFIU0ordLjICSnXsSNfrdMa4ccyBjuGwnnEiQhEoMN6H1Gtz3A==&quot;, &quot;article&quot;=&gt;{&quot;title&quot;=&gt;&quot;Debugging Rails&quot;, &quot;body&quot;=&gt;&quot;I'm learning how to print in logs.&quot;, &quot;published&quot;=&gt;&quot;0&quot;}, &quot;commit&quot;=&gt;&quot;Create Article&quot;}
+New article: {&quot;id&quot;=&gt;nil, &quot;title&quot;=&gt;&quot;Debugging Rails&quot;, &quot;body&quot;=&gt;&quot;I'm learning how to print in logs.&quot;, &quot;published&quot;=&gt;false, &quot;created_at&quot;=&gt;nil, &quot;updated_at&quot;=&gt;nil}
+Article should be valid: true
+   (0.0ms)  begin transaction
+  ↳ app/controllers/articles_controller.rb:31
+  Article Create (0.5ms)  INSERT INTO &quot;articles&quot; (&quot;title&quot;, &quot;body&quot;, &quot;published&quot;, &quot;created_at&quot;, &quot;updated_at&quot;) VALUES (?, ?, ?, ?, ?)  [[&quot;title&quot;, &quot;Debugging Rails&quot;], [&quot;body&quot;, &quot;I'm learning how to print in logs.&quot;], [&quot;published&quot;, 0], [&quot;created_at&quot;, &quot;2018-10-19 00:09:23.216549&quot;], [&quot;updated_at&quot;, &quot;2018-10-19 00:09:23.216549&quot;]]
+  ↳ app/controllers/articles_controller.rb:31
+   (2.3ms)  commit transaction
+  ↳ app/controllers/articles_controller.rb:31
+The article was saved and now the user is going to be redirected...
+Redirected to http://localhost:3000/articles/1
+Completed 302 Found in 4ms (ActiveRecord: 0.8ms)
+">Copy</button>
+</div>
+<p>Adding extra logging like this makes it easy to search for unexpected or unusual behavior in your logs. If you add extra logging, be sure to make sensible use of log levels to avoid filling your production logs with useless trivia.</p>
+
+<h4 id="verbose-query-logs"><a class="anchorlink" href="#verbose-query-logs">2.4 Verbose Query Logs</a></h4>
+
+<p>When looking at database query output in logs, it may not be immediately clear why multiple database queries are triggered when a single method is called:</p>
+
+<div class="code_container">
+<pre><code class="highlight plaintext">irb(main):001:0&gt; Article.pamplemousse
+  Article Load (0.4ms)  SELECT "articles".* FROM "articles"
+  Comment Load (0.2ms)  SELECT "comments".* FROM "comments" WHERE "comments"."article_id" = ?  [["article_id", 1]]
+  Comment Load (0.1ms)  SELECT "comments".* FROM "comments" WHERE "comments"."article_id" = ?  [["article_id", 2]]
+  Comment Load (0.1ms)  SELECT "comments".* FROM "comments" WHERE "comments"."article_id" = ?  [["article_id", 3]]
+=&gt; #&lt;Comment id: 2, author: "1", body: "Well, actually...", article_id: 1, created_at: "2018-10-19 00:56:10", updated_at: "2018-10-19 00:56:10"&gt;
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='irb(main):001:0&gt; Article.pamplemousse
+  Article Load (0.4ms)  SELECT "articles".* FROM "articles"
+  Comment Load (0.2ms)  SELECT "comments".* FROM "comments" WHERE "comments"."article_id" = ?  [["article_id", 1]]
+  Comment Load (0.1ms)  SELECT "comments".* FROM "comments" WHERE "comments"."article_id" = ?  [["article_id", 2]]
+  Comment Load (0.1ms)  SELECT "comments".* FROM "comments" WHERE "comments"."article_id" = ?  [["article_id", 3]]
+=&gt; #&lt;Comment id: 2, author: "1", body: "Well, actually...", article_id: 1, created_at: "2018-10-19 00:56:10", updated_at: "2018-10-19 00:56:10"&gt;
+'>Copy</button>
+</div>
+<p>After running <code>ActiveRecord::Base.verbose_query_logs = true</code> in the <code>bin/rails console</code> session to enable verbose query logs and running the method again, it becomes obvious what single line of code is generating all these discrete database calls:</p>
+
+<div class="code_container">
+<pre><code class="highlight plaintext">irb(main):003:0&gt; Article.pamplemousse
+  Article Load (0.2ms)  SELECT "articles".* FROM "articles"
+  ↳ app/models/article.rb:5
+  Comment Load (0.1ms)  SELECT "comments".* FROM "comments" WHERE "comments"."article_id" = ?  [["article_id", 1]]
+  ↳ app/models/article.rb:6
+  Comment Load (0.1ms)  SELECT "comments".* FROM "comments" WHERE "comments"."article_id" = ?  [["article_id", 2]]
+  ↳ app/models/article.rb:6
+  Comment Load (0.1ms)  SELECT "comments".* FROM "comments" WHERE "comments"."article_id" = ?  [["article_id", 3]]
+  ↳ app/models/article.rb:6
+=&gt; #&lt;Comment id: 2, author: "1", body: "Well, actually...", article_id: 1, created_at: "2018-10-19 00:56:10", updated_at: "2018-10-19 00:56:10"&gt;
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='irb(main):003:0&gt; Article.pamplemousse
+  Article Load (0.2ms)  SELECT "articles".* FROM "articles"
+  ↳ app/models/article.rb:5
+  Comment Load (0.1ms)  SELECT "comments".* FROM "comments" WHERE "comments"."article_id" = ?  [["article_id", 1]]
+  ↳ app/models/article.rb:6
+  Comment Load (0.1ms)  SELECT "comments".* FROM "comments" WHERE "comments"."article_id" = ?  [["article_id", 2]]
+  ↳ app/models/article.rb:6
+  Comment Load (0.1ms)  SELECT "comments".* FROM "comments" WHERE "comments"."article_id" = ?  [["article_id", 3]]
+  ↳ app/models/article.rb:6
+=&gt; #&lt;Comment id: 2, author: "1", body: "Well, actually...", article_id: 1, created_at: "2018-10-19 00:56:10", updated_at: "2018-10-19 00:56:10"&gt;
+'>Copy</button>
+</div>
+<p>Below each database statement you can see arrows pointing to the specific source filename (and line number) of the method that resulted in a database call. This can help you identify and address performance problems caused by N+1 queries: single database queries that generates multiple additional queries.</p>
+
+<p>Verbose query logs are enabled by default in the development environment logs after Rails 5.2.</p>
+
+<div class="warning"><p>We recommend against using this setting in production environments. It relies on Ruby's <code>Kernel#caller</code> method which tends to allocate a lot of memory in order to generate stacktraces of method calls.</p></div>
+
+<h4 id="tagged-logging"><a class="anchorlink" href="#tagged-logging">2.5 Tagged Logging</a></h4>
+
+<p>When running multi-user, multi-account applications, it's often useful
+to be able to filter the logs using some custom rules. <code>TaggedLogging</code>
+in Active Support helps you do exactly that by stamping log lines with subdomains, request ids, and anything else to aid debugging such applications.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">logger</span> <span class="o">=</span> <span class="no">ActiveSupport</span><span class="o">::</span><span class="no">TaggedLogging</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="no">Logger</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="no">STDOUT</span><span class="p">))</span>
+<span class="n">logger</span><span class="p">.</span><span class="nf">tagged</span><span class="p">(</span><span class="s2">"BCX"</span><span class="p">)</span> <span class="p">{</span> <span class="n">logger</span><span class="p">.</span><span class="nf">info</span> <span class="s2">"Stuff"</span> <span class="p">}</span>                            <span class="c1"># Logs "[BCX] Stuff"</span>
+<span class="n">logger</span><span class="p">.</span><span class="nf">tagged</span><span class="p">(</span><span class="s2">"BCX"</span><span class="p">,</span> <span class="s2">"Jason"</span><span class="p">)</span> <span class="p">{</span> <span class="n">logger</span><span class="p">.</span><span class="nf">info</span> <span class="s2">"Stuff"</span> <span class="p">}</span>                   <span class="c1"># Logs "[BCX] [Jason] Stuff"</span>
+<span class="n">logger</span><span class="p">.</span><span class="nf">tagged</span><span class="p">(</span><span class="s2">"BCX"</span><span class="p">)</span> <span class="p">{</span> <span class="n">logger</span><span class="p">.</span><span class="nf">tagged</span><span class="p">(</span><span class="s2">"Jason"</span><span class="p">)</span> <span class="p">{</span> <span class="n">logger</span><span class="p">.</span><span class="nf">info</span> <span class="s2">"Stuff"</span> <span class="p">}</span> <span class="p">}</span> <span class="c1"># Logs "[BCX] [Jason] Stuff"</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='logger = ActiveSupport::TaggedLogging.new(Logger.new(STDOUT))
+logger.tagged("BCX") { logger.info "Stuff" }                            # Logs "[BCX] Stuff"
+logger.tagged("BCX", "Jason") { logger.info "Stuff" }                   # Logs "[BCX] [Jason] Stuff"
+logger.tagged("BCX") { logger.tagged("Jason") { logger.info "Stuff" } } # Logs "[BCX] [Jason] Stuff"
+'>Copy</button>
+</div>
+<h4 id="impact-of-logs-on-performance"><a class="anchorlink" href="#impact-of-logs-on-performance">2.6 Impact of Logs on Performance</a></h4>
+
+<p>Logging will always have a small impact on the performance of your Rails app,
+particularly when logging to disk. Additionally, there are a few subtleties:</p>
+
+<p>Using the <code>:debug</code> level will have a greater performance penalty than <code>:fatal</code>,
+as a far greater number of strings are being evaluated and written to the
+log output (e.g. disk).</p>
+
+<p>Another potential pitfall is too many calls to <code>Logger</code> in your code:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">logger</span><span class="p">.</span><span class="nf">debug</span> <span class="s2">"Person attributes hash: </span><span class="si">#{</span><span class="vi">@person</span><span class="p">.</span><span class="nf">attributes</span><span class="p">.</span><span class="nf">inspect</span><span class="si">}</span><span class="s2">"</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='logger.debug "Person attributes hash: #{@person.attributes.inspect}"
+'>Copy</button>
+</div>
+<p>In the above example, there will be a performance impact even if the allowed
+output level doesn't include debug. The reason is that Ruby has to evaluate
+these strings, which includes instantiating the somewhat heavy <code>String</code> object
+and interpolating the variables.</p>
+
+<p>Therefore, it's recommended to pass blocks to the logger methods, as these are
+only evaluated if the output level is the same as — or included in — the allowed level
+(i.e. lazy loading). The same code rewritten would be:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">logger</span><span class="p">.</span><span class="nf">debug</span> <span class="p">{</span><span class="s2">"Person attributes hash: </span><span class="si">#{</span><span class="vi">@person</span><span class="p">.</span><span class="nf">attributes</span><span class="p">.</span><span class="nf">inspect</span><span class="si">}</span><span class="s2">"</span><span class="p">}</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='logger.debug {"Person attributes hash: #{@person.attributes.inspect}"}
+'>Copy</button>
+</div>
+<p>The contents of the block, and therefore the string interpolation, are only
+evaluated if debug is enabled. This performance savings are only really
+noticeable with large amounts of logging, but it's a good practice to employ.</p>
+
+<div class="info"><p>This section was written by <a href="https://stackoverflow.com/questions/16546730/logging-in-rails-is-there-any-performance-hit/16546935#16546935">Jon Cairns at a StackOverflow answer</a>
+and it is licensed under <a href="https://creativecommons.org/licenses/by-sa/4.0/">cc by-sa 4.0</a>.</p></div>
+</body>
+</html>

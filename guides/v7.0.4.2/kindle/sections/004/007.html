@@ -1,0 +1,83 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>8 Displaying Validation Errors in Views</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v7.0.4.2/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="displaying-validation-errors-in-views"><a class="anchorlink" href="#displaying-validation-errors-in-views">8 Displaying Validation Errors in Views</a></h3>
+<p>Once you've created a model and added validations, if that model is created via
+a web form, you probably want to display an error message when one of the
+validations fails.</p>
+
+<p>Because every application handles this kind of thing differently, Rails does
+not include any view helpers to help you generate these messages directly.
+However, due to the rich number of methods Rails gives you to interact with
+validations in general, you can build your own. In addition, when
+generating a scaffold, Rails will put some ERB into the <code>_form.html.erb</code> that
+it generates that displays the full list of errors on that model.</p>
+
+<p>Assuming we have a model that's been saved in an instance variable named
+<code>@article</code>, it looks like this:</p>
+
+<div class="code_container">
+<pre><code class="highlight erb"><span class="cp">&lt;%</span> <span class="k">if</span> <span class="vi">@article</span><span class="p">.</span><span class="nf">errors</span><span class="p">.</span><span class="nf">any?</span> <span class="cp">%&gt;</span>
+  <span class="nt">&lt;div</span> <span class="na">id=</span><span class="s">"error_explanation"</span><span class="nt">&gt;</span>
+    <span class="nt">&lt;h2&gt;</span><span class="cp">&lt;%=</span> <span class="n">pluralize</span><span class="p">(</span><span class="vi">@article</span><span class="p">.</span><span class="nf">errors</span><span class="p">.</span><span class="nf">count</span><span class="p">,</span> <span class="s2">"error"</span><span class="p">)</span> <span class="cp">%&gt;</span> prohibited this article from being saved:<span class="nt">&lt;/h2&gt;</span>
+
+    <span class="nt">&lt;ul&gt;</span>
+      <span class="cp">&lt;%</span> <span class="vi">@article</span><span class="p">.</span><span class="nf">errors</span><span class="p">.</span><span class="nf">each</span> <span class="k">do</span> <span class="o">|</span><span class="n">error</span><span class="o">|</span> <span class="cp">%&gt;</span>
+        <span class="nt">&lt;li&gt;</span><span class="cp">&lt;%=</span> <span class="n">error</span><span class="p">.</span><span class="nf">full_message</span> <span class="cp">%&gt;</span><span class="nt">&lt;/li&gt;</span>
+      <span class="cp">&lt;%</span> <span class="k">end</span> <span class="cp">%&gt;</span>
+    <span class="nt">&lt;/ul&gt;</span>
+  <span class="nt">&lt;/div&gt;</span>
+<span class="cp">&lt;%</span> <span class="k">end</span> <span class="cp">%&gt;</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='&lt;% if @article.errors.any? %&gt;
+  &lt;div id="error_explanation"&gt;
+    &lt;h2&gt;&lt;%= pluralize(@article.errors.count, "error") %&gt; prohibited this article from being saved:&lt;/h2&gt;
+
+    &lt;ul&gt;
+      &lt;% @article.errors.each do |error| %&gt;
+        &lt;li&gt;&lt;%= error.full_message %&gt;&lt;/li&gt;
+      &lt;% end %&gt;
+    &lt;/ul&gt;
+  &lt;/div&gt;
+&lt;% end %&gt;
+'>Copy</button>
+</div>
+<p>Furthermore, if you use the Rails form helpers to generate your forms, when
+a validation error occurs on a field, it will generate an extra <code>&lt;div&gt;</code> around
+the entry.</p>
+
+<div class="code_container">
+<pre><code class="highlight html"><span class="nt">&lt;div</span> <span class="na">class=</span><span class="s">"field_with_errors"</span><span class="nt">&gt;</span>
+  <span class="nt">&lt;input</span> <span class="na">id=</span><span class="s">"article_title"</span> <span class="na">name=</span><span class="s">"article[title]"</span> <span class="na">size=</span><span class="s">"30"</span> <span class="na">type=</span><span class="s">"text"</span> <span class="na">value=</span><span class="s">""</span><span class="nt">&gt;</span>
+<span class="nt">&lt;/div&gt;</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='&lt;div class="field_with_errors"&gt;
+  &lt;input id="article_title" name="article[title]" size="30" type="text" value=""&gt;
+&lt;/div&gt;
+'>Copy</button>
+</div>
+<p>You can then style this div however you'd like. The default scaffold that
+Rails generates, for example, adds this CSS rule:</p>
+
+<div class="code_container">
+<pre><code class="highlight css"><span class="nc">.field_with_errors</span> <span class="p">{</span>
+  <span class="nl">padding</span><span class="p">:</span> <span class="m">2px</span><span class="p">;</span>
+  <span class="nl">background-color</span><span class="p">:</span> <span class="no">red</span><span class="p">;</span>
+  <span class="nl">display</span><span class="p">:</span> <span class="n">table</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text=".field_with_errors {
+  padding: 2px;
+  background-color: red;
+  display: table;
+}
+">Copy</button>
+</div>
+<p>This means that any field with an error ends up with a 2 pixel red border.</p>
+</body>
+</html>

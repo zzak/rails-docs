@@ -1,0 +1,82 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>3 The Rails Advanced Command Line</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v5.1.7/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="the-rails-advanced-command-line">3 The Rails Advanced Command Line</h3>
+<p>More advanced use of the command line is focused around finding useful (even surprising at times) options in the utilities, and fitting those to your needs and specific work flow. Listed here are some tricks up Rails' sleeve.</p>
+
+<h4 id="rails-with-databases-and-scm">3.1 Rails with Databases and SCM</h4>
+
+<p>When creating a new Rails application, you have the option to specify what kind of database and what kind of source code management system your application is going to use. This will save you a few minutes, and certainly many keystrokes.</p>
+
+<p>Let's see what a <code>--git</code> option and a <code>--database=postgresql</code> option will do for us:</p>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+$ mkdir gitapp
+$ cd gitapp
+$ git init
+Initialized empty Git repository in .git/
+$ rails new . --git --database=postgresql
+      exists
+      create  app/controllers
+      create  app/helpers
+...
+...
+      create  tmp/cache
+      create  tmp/pids
+      create  Rakefile
+add 'Rakefile'
+      create  README.md
+add 'README.md'
+      create  app/controllers/application_controller.rb
+add 'app/controllers/application_controller.rb'
+      create  app/helpers/application_helper.rb
+...
+      create  log/test.log
+add 'log/test.log'
+
+</pre>
+</div>
+<p>We had to create the <strong>gitapp</strong> directory and initialize an empty git repository before Rails would add files it created to our repository. Let's see what it put in our database configuration:</p>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+$ cat config/database.yml
+# PostgreSQL. Versions 9.1 and up are supported.
+#
+# Install the pg driver:
+#   gem install pg
+# On OS X with Homebrew:
+#   gem install pg -- --with-pg-config=/usr/local/bin/pg_config
+# On OS X with MacPorts:
+#   gem install pg -- --with-pg-config=/opt/local/lib/postgresql84/bin/pg_config
+# On Windows:
+#   gem install pg
+#       Choose the win32 build.
+#       Install PostgreSQL and put its /bin directory on your path.
+#
+# Configure Using Gemfile
+# gem 'pg'
+#
+development:
+  adapter: postgresql
+  encoding: unicode
+  database: gitapp_development
+  pool: 5
+  username: gitapp
+  password:
+...
+...
+
+</pre>
+</div>
+<p>It also generated some lines in our database.yml configuration corresponding to our choice of PostgreSQL for database.</p>
+
+<div class="note"><p>The only catch with using the SCM options is that you have to make your application's directory first, then initialize your SCM, then you can run the <code>rails new</code> command to generate the basis of your app.</p></div>
+</body>
+</html>

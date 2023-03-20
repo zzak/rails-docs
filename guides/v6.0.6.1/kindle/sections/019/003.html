@@ -1,0 +1,25 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>4 Removing Files</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v6.0.6.1/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="removing-files"><a class="anchorlink" href="#removing-files">4 Removing Files</a></h3>
+<p>To remove an attachment from a model, call <code>purge</code> on the attachment. Removal
+can be done in the background if your application is setup to use Active Job.
+Purging deletes the blob and the file from the storage service.</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+# Synchronously destroy the avatar and actual resource files.
+user.avatar.purge
+
+# Destroy the associated models and actual resource files async, via Active Job.
+user.avatar.purge_later
+
+</pre>
+</div>
+</body>
+</html>

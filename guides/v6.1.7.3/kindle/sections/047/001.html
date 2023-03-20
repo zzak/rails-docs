@@ -1,0 +1,194 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>2 Upgrading from Rails 6.0 to Rails 6.1</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v6.1.7.3/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="upgrading-from-rails-6-0-to-rails-6-1"><a class="anchorlink" href="#upgrading-from-rails-6-0-to-rails-6-1">2 Upgrading from Rails 6.0 to Rails 6.1</a></h3>
+<p>For more information on changes made to Rails 6.1 please see the <a href="6_1_release_notes.html">release notes</a>.</p>
+
+<h4 id="rails-application-config-for-return-value-no-longer-supports-access-with-string-keys"><a class="anchorlink" href="#rails-application-config-for-return-value-no-longer-supports-access-with-string-keys">2.1 <code>Rails.application.config_for</code> return value no longer supports access with String keys.</a></h4>
+
+<p>Given a configuration file like this:</p>
+
+<div class="code_container">
+<pre><code class="highlight yaml"><span class="c1"># config/example.yml</span>
+<span class="na">development</span><span class="pi">:</span>
+  <span class="na">options</span><span class="pi">:</span>
+    <span class="na">key</span><span class="pi">:</span> <span class="s">value</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-e7071592edf9a650761b73439683b994"># config/example.yml
+development:
+  options:
+    key: value
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-e7071592edf9a650761b73439683b994">Copy</button>
+</div>
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="no">Rails</span><span class="p">.</span><span class="nf">application</span><span class="p">.</span><span class="nf">config_for</span><span class="p">(</span><span class="ss">:example</span><span class="p">).</span><span class="nf">options</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-44170c4df3904b3d201d267b61332866">Rails.application.config_for(:example).options
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-44170c4df3904b3d201d267b61332866">Copy</button>
+</div>
+<p>This used to return a hash on which you could access values with String keys. That was deprecated in 6.0, and now doesn't work anymore.</p>
+
+<p>You can call <code>with_indifferent_access</code> on the return value of <code>config_for</code> if you still want to access values with String keys, e.g.:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="no">Rails</span><span class="p">.</span><span class="nf">application</span><span class="p">.</span><span class="nf">config_for</span><span class="p">(</span><span class="ss">:example</span><span class="p">).</span><span class="nf">with_indifferent_access</span><span class="p">.</span><span class="nf">dig</span><span class="p">(</span><span class="s1">'options'</span><span class="p">,</span> <span class="s1">'key'</span><span class="p">)</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-c038183272619e9bf04d770842ee03da">Rails.application.config_for(:example).with_indifferent_access.dig('options', 'key')
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-c038183272619e9bf04d770842ee03da">Copy</button>
+</div>
+<h4 id="response-s-content-type-when-using-respond-to-any"><a class="anchorlink" href="#response-s-content-type-when-using-respond-to-any">2.2 Response's Content-Type when using <code>respond_to#any</code></a></h4>
+
+<p>The Content-Type header returned in the response can differ from what Rails 6.0 returned,
+more specifically if your application uses <code>respond_to { |format| format.any }</code>.
+The Content-Type will now be based on the given block rather than the request's format.</p>
+
+<p>Example:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">def</span> <span class="nf">my_action</span>
+  <span class="n">respond_to</span> <span class="k">do</span> <span class="o">|</span><span class="nb">format</span><span class="o">|</span>
+    <span class="nb">format</span><span class="p">.</span><span class="nf">any</span> <span class="p">{</span> <span class="n">render</span><span class="p">(</span><span class="ss">json: </span><span class="p">{</span> <span class="ss">foo: </span><span class="s1">'bar'</span> <span class="p">})</span> <span class="p">}</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-44e27a8bd3654db33a2d17d2a3fc122c">def my_action
+  respond_to do |format|
+    format.any { render(json: { foo: 'bar' }) }
+  end
+end
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-44e27a8bd3654db33a2d17d2a3fc122c">Copy</button>
+</div>
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">get</span><span class="p">(</span><span class="s1">'my_action.csv'</span><span class="p">)</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-a0f1c7b17b2e5aac79c7e05ebfa37b3e">get('my_action.csv')
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-a0f1c7b17b2e5aac79c7e05ebfa37b3e">Copy</button>
+</div>
+<p>Previous behaviour was returning a <code>text/csv</code> response's Content-Type which is inaccurate since a JSON response is being rendered.
+Current behaviour correctly returns a <code>application/json</code> response's Content-Type.</p>
+
+<p>If your application relies on the previous incorrect behaviour, you are encouraged to specify
+which formats your action accepts, i.e.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="nb">format</span><span class="p">.</span><span class="nf">any</span><span class="p">(</span><span class="ss">:xml</span><span class="p">,</span> <span class="ss">:json</span><span class="p">)</span> <span class="p">{</span> <span class="n">render</span> <span class="n">request</span><span class="p">.</span><span class="nf">format</span><span class="p">.</span><span class="nf">to_sym</span> <span class="o">=&gt;</span> <span class="vi">@people</span> <span class="p">}</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-beb85a4c3cef7807e114caca263b5a1a">format.any(:xml, :json) { render request.format.to_sym =&gt; @people }
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-beb85a4c3cef7807e114caca263b5a1a">Copy</button>
+</div>
+<h4 id="activesupport-callbacks-halted-callback-hook-now-receive-a-second-argument"><a class="anchorlink" href="#activesupport-callbacks-halted-callback-hook-now-receive-a-second-argument">2.3 <code>ActiveSupport::Callbacks#halted_callback_hook</code> now receive a second argument</a></h4>
+
+<p>Active Support allows you to override the <code>halted_callback_hook</code> whenever a callback
+halts the chain. This method now receive a second argument which is the name of the callback being halted.
+If you have classes that override this method, make sure it accepts two arguments. Note that this is a breaking
+change without a prior deprecation cycle (for performance reasons).</p>
+
+<p>Example:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">Book</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="n">before_save</span> <span class="p">{</span> <span class="kp">throw</span><span class="p">(</span><span class="ss">:abort</span><span class="p">)</span> <span class="p">}</span>
+  <span class="n">before_create</span> <span class="p">{</span> <span class="kp">throw</span><span class="p">(</span><span class="ss">:abort</span><span class="p">)</span> <span class="p">}</span>
+
+  <span class="k">def</span> <span class="nf">halted_callback_hook</span><span class="p">(</span><span class="n">filter</span><span class="p">,</span> <span class="n">callback_name</span><span class="p">)</span> <span class="c1"># =&gt; This method now accepts 2 arguments instead of 1</span>
+    <span class="no">Rails</span><span class="p">.</span><span class="nf">logger</span><span class="p">.</span><span class="nf">info</span><span class="p">(</span><span class="s2">"Book couldn't be </span><span class="si">#{</span><span class="n">callback_name</span><span class="si">}</span><span class="s2">d"</span><span class="p">)</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-9b85b946af7ee70132e99c8dc7db0521">class Book &lt; ApplicationRecord
+  before_save { throw(:abort) }
+  before_create { throw(:abort) }
+
+  def halted_callback_hook(filter, callback_name) # =&gt; This method now accepts 2 arguments instead of 1
+    Rails.logger.info("Book couldn't be #{callback_name}d")
+  end
+end
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-9b85b946af7ee70132e99c8dc7db0521">Copy</button>
+</div>
+<h4 id="the-helper-class-method-in-controllers-uses-string-constantize"><a class="anchorlink" href="#the-helper-class-method-in-controllers-uses-string-constantize">2.4 The <code>helper</code> class method in controllers uses <code>String#constantize</code></a></h4>
+
+<p>Conceptually, before Rails 6.1</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">helper</span> <span class="s2">"foo/bar"</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-969e95c6f312e3ac493cbbdbc9d3e693">helper "foo/bar"
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-969e95c6f312e3ac493cbbdbc9d3e693">Copy</button>
+</div>
+<p>resulted in</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">require_dependency</span> <span class="s2">"foo/bar_helper"</span>
+<span class="n">module_name</span> <span class="o">=</span> <span class="s2">"foo/bar_helper"</span><span class="p">.</span><span class="nf">camelize</span>
+<span class="n">module_name</span><span class="p">.</span><span class="nf">constantize</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-896450f685e080ef5b6a11431ec13987">require_dependency "foo/bar_helper"
+module_name = "foo/bar_helper".camelize
+module_name.constantize
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-896450f685e080ef5b6a11431ec13987">Copy</button>
+</div>
+<p>Now it does this instead:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">prefix</span> <span class="o">=</span> <span class="s2">"foo/bar"</span><span class="p">.</span><span class="nf">camelize</span>
+<span class="s2">"</span><span class="si">#{</span><span class="n">prefix</span><span class="si">}</span><span class="s2">Helper"</span><span class="p">.</span><span class="nf">constantize</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-29b64b82e2d62b1a5dfed4af3356ef60">prefix = "foo/bar".camelize
+"#{prefix}Helper".constantize
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-29b64b82e2d62b1a5dfed4af3356ef60">Copy</button>
+</div>
+<p>This change is backwards compatible for the majority of applications, in which case you do not need to do anything.</p>
+
+<p>Technically, however, controllers could configure <code>helpers_path</code> to point to a directory in <code>$LOAD_PATH</code> that was not in the autoload paths. That use case is no longer supported out of the box. If the helper module is not autoloadable, the application is responsible for loading it before calling <code>helper</code>.</p>
+
+<h4 id="redirection-to-https-from-http-will-now-use-the-308-http-status-code"><a class="anchorlink" href="#redirection-to-https-from-http-will-now-use-the-308-http-status-code">2.5 Redirection to HTTPS from HTTP will now use the 308 HTTP status code</a></h4>
+
+<p>The default HTTP status code used in <code>ActionDispatch::SSL</code> when redirecting non-GET/HEAD requests from HTTP to HTTPS has been changed to <code>308</code> as defined in <a href="https://tools.ietf.org/html/rfc7538">https://tools.ietf.org/html/rfc7538</a>.</p>
+
+<h4 id="active-storage-now-requires-image-processing"><a class="anchorlink" href="#active-storage-now-requires-image-processing">2.6 Active Storage now requires Image Processing</a></h4>
+
+<p>When processing variants in Active Storage, it's now required to have the <a href="https://github.com/janko/image_processing">image_processing gem</a> bundled instead of directly using <code>mini_magick</code>. Image Processing is configured by default to use <code>mini_magick</code> behind the scenes, so the easiest way to upgrade is by replacing the <code>mini_magick</code> gem for the <code>image_processing</code> gem and making sure to remove the explicit usage of <code>combine_options</code> since it's no longer needed.</p>
+
+<p>For readability, you may wish to change raw <code>resize</code> calls to <code>image_processing</code> macros. For example, instead of:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">video</span><span class="p">.</span><span class="nf">preview</span><span class="p">(</span><span class="ss">resize: </span><span class="s2">"100x100"</span><span class="p">)</span>
+<span class="n">video</span><span class="p">.</span><span class="nf">preview</span><span class="p">(</span><span class="ss">resize: </span><span class="s2">"100x100&gt;"</span><span class="p">)</span>
+<span class="n">video</span><span class="p">.</span><span class="nf">preview</span><span class="p">(</span><span class="ss">resize: </span><span class="s2">"100x100^"</span><span class="p">)</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-75d0296f8ac084da48b6b4cc430b836f">video.preview(resize: "100x100")
+video.preview(resize: "100x100&gt;")
+video.preview(resize: "100x100^")
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-75d0296f8ac084da48b6b4cc430b836f">Copy</button>
+</div>
+<p>you can respectively do:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">video</span><span class="p">.</span><span class="nf">preview</span><span class="p">(</span><span class="ss">resize_to_fit: </span><span class="p">[</span><span class="mi">100</span><span class="p">,</span> <span class="mi">100</span><span class="p">])</span>
+<span class="n">video</span><span class="p">.</span><span class="nf">preview</span><span class="p">(</span><span class="ss">resize_to_limit: </span><span class="p">[</span><span class="mi">100</span><span class="p">,</span> <span class="mi">100</span><span class="p">])</span>
+<span class="n">video</span><span class="p">.</span><span class="nf">preview</span><span class="p">(</span><span class="ss">resize_to_fill: </span><span class="p">[</span><span class="mi">100</span><span class="p">,</span> <span class="mi">100</span><span class="p">])</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-60a33e54fbaea90bacc722b855e5ae83">video.preview(resize_to_fit: [100, 100])
+video.preview(resize_to_limit: [100, 100])
+video.preview(resize_to_fill: [100, 100])
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-60a33e54fbaea90bacc722b855e5ae83">Copy</button>
+</div>
+</body>
+</html>

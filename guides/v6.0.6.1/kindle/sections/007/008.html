@@ -1,0 +1,37 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>9 Null Relation</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v6.0.6.1/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="null-relation"><a class="anchorlink" href="#null-relation">9 Null Relation</a></h3>
+<p>The <code>none</code> method returns a chainable relation with no records. Any subsequent conditions chained to the returned relation will continue generating empty relations. This is useful in scenarios where you need a chainable response to a method or a scope that could return zero results.</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+Article.none # returns an empty Relation and fires no queries.
+
+</pre>
+</div>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+# The visible_articles method below is expected to return a Relation.
+@articles = current_user.visible_articles.where(name: params[:name])
+
+def visible_articles
+  case role
+  when 'Country Manager'
+    Article.where(country: country)
+  when 'Reviewer'
+    Article.published
+  when 'Bad User'
+    Article.none # =&gt; returning [] or nil breaks the caller code in this case
+  end
+end
+
+</pre>
+</div>
+</body>
+</html>

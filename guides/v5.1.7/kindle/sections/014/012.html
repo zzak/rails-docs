@@ -1,0 +1,75 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>13 Extensions to Range
+</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v5.1.7/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="extensions-to-range">13 Extensions to <code>Range</code>
+</h3>
+<h4 id="extensions-to-range-to-s">13.1 <code>to_s</code>
+</h4>
+
+<p>Active Support extends the method <code>Range#to_s</code> so that it understands an optional format argument. As of this writing the only supported non-default format is <code>:db</code>:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+(Date.today..Date.tomorrow).to_s
+# =&gt; "2009-10-25..2009-10-26"
+
+(Date.today..Date.tomorrow).to_s(:db)
+# =&gt; "BETWEEN '2009-10-25' AND '2009-10-26'"
+
+</pre>
+</div>
+<p>As the example depicts, the <code>:db</code> format generates a <code>BETWEEN</code> SQL clause. That is used by Active Record in its support for range values in conditions.</p>
+
+<div class="note"><p>Defined in <code><a href="https://github.com/rails/rails/tree/v5.1.7/activesupport/lib/active_support/core_ext/range/conversions.rb">active_support/core_ext/range/conversions.rb</a></code>.</p></div>
+
+<h4 id="include-questionmark">13.2 <code>include?</code>
+</h4>
+
+<p>The methods <code>Range#include?</code> and <code>Range#===</code> say whether some value falls between the ends of a given instance:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+(2..3).include?(Math::E) # =&gt; true
+
+</pre>
+</div>
+<p>Active Support extends these methods so that the argument may be another range in turn. In that case we test whether the ends of the argument range belong to the receiver themselves:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+(1..10).include?(3..7)  # =&gt; true
+(1..10).include?(0..7)  # =&gt; false
+(1..10).include?(3..11) # =&gt; false
+(1...9).include?(3..9)  # =&gt; false
+
+(1..10) === (3..7)  # =&gt; true
+(1..10) === (0..7)  # =&gt; false
+(1..10) === (3..11) # =&gt; false
+(1...9) === (3..9)  # =&gt; false
+
+</pre>
+</div>
+<div class="note"><p>Defined in <code><a href="https://github.com/rails/rails/tree/v5.1.7/activesupport/lib/active_support/core_ext/range/include_range.rb">active_support/core_ext/range/include_range.rb</a></code>.</p></div>
+
+<h4 id="overlaps-questionmark">13.3 <code>overlaps?</code>
+</h4>
+
+<p>The method <code>Range#overlaps?</code> says whether any two given ranges have non-void intersection:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+(1..10).overlaps?(7..11)  # =&gt; true
+(1..10).overlaps?(0..7)   # =&gt; true
+(1..10).overlaps?(11..27) # =&gt; false
+
+</pre>
+</div>
+<div class="note"><p>Defined in <code><a href="https://github.com/rails/rails/tree/v5.1.7/activesupport/lib/active_support/core_ext/range/overlaps.rb">active_support/core_ext/range/overlaps.rb</a></code>.</p></div>
+</body>
+</html>

@@ -1,0 +1,176 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>2 Major Features</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v7.0.4.2/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="major-features"><a class="anchorlink" href="#major-features">2 Major Features</a></h3>
+<h4 id="active-job"><a class="anchorlink" href="#active-job">2.1 Active Job</a></h4>
+
+<p>Active Job is a new framework in Rails 4.2. It is a common interface on top of
+queuing systems like <a href="https://github.com/resque/resque">Resque</a>, <a href="https://github.com/collectiveidea/delayed_job">Delayed
+Job</a>,
+<a href="https://github.com/mperham/sidekiq">Sidekiq</a>, and more.</p>
+
+<p>Jobs written with the Active Job API run on any of the supported queues thanks
+to their respective adapters. Active Job comes pre-configured with an inline
+runner that executes jobs right away.</p>
+
+<p>Jobs often need to take Active Record objects as arguments. Active Job passes
+object references as URIs (uniform resource identifiers) instead of marshalling
+the object itself. The new <a href="https://github.com/rails/globalid">Global ID</a>
+library builds URIs and looks up the objects they reference. Passing Active
+Record objects as job arguments just works by using Global ID internally.</p>
+
+<p>For example, if <code>trashable</code> is an Active Record object, then this job runs
+just fine with no serialization involved:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">TrashableCleanupJob</span> <span class="o">&lt;</span> <span class="no">ActiveJob</span><span class="o">::</span><span class="no">Base</span>
+  <span class="k">def</span> <span class="nf">perform</span><span class="p">(</span><span class="n">trashable</span><span class="p">,</span> <span class="n">depth</span><span class="p">)</span>
+    <span class="n">trashable</span><span class="p">.</span><span class="nf">cleanup</span><span class="p">(</span><span class="n">depth</span><span class="p">)</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="class TrashableCleanupJob &lt; ActiveJob::Base
+  def perform(trashable, depth)
+    trashable.cleanup(depth)
+  end
+end
+">Copy</button>
+</div>
+<p>See the <a href="active_job_basics.html">Active Job Basics</a> guide for more
+information.</p>
+
+<h4 id="asynchronous-mails"><a class="anchorlink" href="#asynchronous-mails">2.2 Asynchronous Mails</a></h4>
+
+<p>Building on top of Active Job, Action Mailer now comes with a <code>deliver_later</code>
+method that sends emails via the queue, so it doesn't block the controller or
+model if the queue is asynchronous (the default inline queue blocks).</p>
+
+<p>Sending emails right away is still possible with <code>deliver_now</code>.</p>
+
+<h4 id="adequate-record"><a class="anchorlink" href="#adequate-record">2.3 Adequate Record</a></h4>
+
+<p>Adequate Record is a set of performance improvements in Active Record that makes
+common <code>find</code> and <code>find_by</code> calls and some association queries up to 2x faster.</p>
+
+<p>It works by caching common SQL queries as prepared statements and reusing them
+on similar calls, skipping most of the query-generation work on subsequent
+calls. For more details, please refer to <a href="http://tenderlovemaking.com/2014/02/19/adequaterecord-pro-like-activerecord.html">Aaron Patterson's blog
+post</a>.</p>
+
+<p>Active Record will automatically take advantage of this feature on
+supported operations without any user involvement or code changes. Here are
+some examples of supported operations:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="no">Post</span><span class="p">.</span><span class="nf">find</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>  <span class="c1"># First call generates and cache the prepared statement</span>
+<span class="no">Post</span><span class="p">.</span><span class="nf">find</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>  <span class="c1"># Subsequent calls reuse the cached prepared statement</span>
+
+<span class="no">Post</span><span class="p">.</span><span class="nf">find_by_title</span><span class="p">(</span><span class="s1">'first post'</span><span class="p">)</span>
+<span class="no">Post</span><span class="p">.</span><span class="nf">find_by_title</span><span class="p">(</span><span class="s1">'second post'</span><span class="p">)</span>
+
+<span class="no">Post</span><span class="p">.</span><span class="nf">find_by</span><span class="p">(</span><span class="ss">title: </span><span class="s1">'first post'</span><span class="p">)</span>
+<span class="no">Post</span><span class="p">.</span><span class="nf">find_by</span><span class="p">(</span><span class="ss">title: </span><span class="s1">'second post'</span><span class="p">)</span>
+
+<span class="n">post</span><span class="p">.</span><span class="nf">comments</span>
+<span class="n">post</span><span class="p">.</span><span class="nf">comments</span><span class="p">(</span><span class="kp">true</span><span class="p">)</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="Post.find(1)  # First call generates and cache the prepared statement
+Post.find(2)  # Subsequent calls reuse the cached prepared statement
+
+Post.find_by_title('first post')
+Post.find_by_title('second post')
+
+Post.find_by(title: 'first post')
+Post.find_by(title: 'second post')
+
+post.comments
+post.comments(true)
+">Copy</button>
+</div>
+<p>It's important to highlight that, as the examples above suggest, the prepared
+statements do not cache the values passed in the method calls; rather, they
+have placeholders for them.</p>
+
+<p>Caching is not used in the following scenarios:</p>
+<ul>
+<li>The model has a default scope</li>
+<li>The model uses single table inheritance</li>
+<li>
+<code>find</code> with a list of ids, e.g.:
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="c1"># not cached</span>
+<span class="no">Post</span><span class="p">.</span><span class="nf">find</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+<span class="no">Post</span><span class="p">.</span><span class="nf">find</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">])</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="# not cached
+Post.find(1, 2, 3)
+Post.find([1,2])
+">Copy</button>
+</div>
+</li>
+<li>
+<code>find_by</code> with SQL fragments:
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="no">Post</span><span class="p">.</span><span class="nf">find_by</span><span class="p">(</span><span class="s1">'published_at &lt; ?'</span><span class="p">,</span> <span class="mi">2</span><span class="p">.</span><span class="nf">weeks</span><span class="p">.</span><span class="nf">ago</span><span class="p">)</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="Post.find_by('published_at &lt; ?', 2.weeks.ago)
+">Copy</button>
+</div>
+</li>
+</ul>
+<h4 id="web-console"><a class="anchorlink" href="#web-console">2.4 Web Console</a></h4>
+
+<p>New applications generated with Rails 4.2 now come with the <a href="https://github.com/rails/web-console">Web
+Console</a> gem by default. Web Console adds
+an interactive Ruby console on every error page and provides a <code>console</code> view
+and controller helpers.</p>
+
+<p>The interactive console on error pages lets you execute code in the context of
+the place where the exception originated. The <code>console</code> helper, if called
+anywhere in a view or controller, launches an interactive console with the final
+context, once rendering has completed.</p>
+
+<h4 id="foreign-key-support"><a class="anchorlink" href="#foreign-key-support">2.5 Foreign Key Support</a></h4>
+
+<p>The migration DSL now supports adding and removing foreign keys. They are dumped
+to <code>schema.rb</code> as well. At this time, only the <code>mysql</code>, <code>mysql2</code> and <code>postgresql</code>
+adapters support foreign keys.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="c1"># add a foreign key to `articles.author_id` referencing `authors.id`</span>
+<span class="n">add_foreign_key</span> <span class="ss">:articles</span><span class="p">,</span> <span class="ss">:authors</span>
+
+<span class="c1"># add a foreign key to `articles.author_id` referencing `users.lng_id`</span>
+<span class="n">add_foreign_key</span> <span class="ss">:articles</span><span class="p">,</span> <span class="ss">:users</span><span class="p">,</span> <span class="ss">column: :author_id</span><span class="p">,</span> <span class="ss">primary_key: </span><span class="s2">"lng_id"</span>
+
+<span class="c1"># remove the foreign key on `accounts.branch_id`</span>
+<span class="n">remove_foreign_key</span> <span class="ss">:accounts</span><span class="p">,</span> <span class="ss">:branches</span>
+
+<span class="c1"># remove the foreign key on `accounts.owner_id`</span>
+<span class="n">remove_foreign_key</span> <span class="ss">:accounts</span><span class="p">,</span> <span class="ss">column: :owner_id</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='# add a foreign key to `articles.author_id` referencing `authors.id`
+add_foreign_key :articles, :authors
+
+# add a foreign key to `articles.author_id` referencing `users.lng_id`
+add_foreign_key :articles, :users, column: :author_id, primary_key: "lng_id"
+
+# remove the foreign key on `accounts.branch_id`
+remove_foreign_key :accounts, :branches
+
+# remove the foreign key on `accounts.owner_id`
+remove_foreign_key :accounts, column: :owner_id
+'>Copy</button>
+</div>
+<p>See the API documentation on
+<a href="https://api.rubyonrails.org/v4.2.0/classes/ActiveRecord/ConnectionAdapters/SchemaStatements.html#method-i-add_foreign_key">add_foreign_key</a>
+and
+<a href="https://api.rubyonrails.org/v4.2.0/classes/ActiveRecord/ConnectionAdapters/SchemaStatements.html#method-i-remove_foreign_key">remove_foreign_key</a>
+for a full description.</p>
+</body>
+</html>

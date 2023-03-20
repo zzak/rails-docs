@@ -1,0 +1,68 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>5 Turbolinks</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v6.1.7.3/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="turbolinks"><a class="anchorlink" href="#turbolinks">5 Turbolinks</a></h3>
+<p>Rails ships with the <a href="https://github.com/turbolinks/turbolinks">Turbolinks library</a>,
+which uses Ajax to speed up page rendering in most applications.</p>
+
+<h4 id="how-turbolinks-works"><a class="anchorlink" href="#how-turbolinks-works">5.1 How Turbolinks Works</a></h4>
+
+<p>Turbolinks attaches a click handler to all <code>&lt;a&gt;</code> tags on the page. If your browser
+supports
+<a href="https://developer.mozilla.org/en-US/docs/Web/Guide/API/DOM/Manipulating_the_browser_history#The_pushState%28%29_method">PushState</a>,
+Turbolinks will make an Ajax request for the page, parse the response, and
+replace the entire <code>&lt;body&gt;</code> of the page with the <code>&lt;body&gt;</code> of the response. It
+will then use PushState to change the URL to the correct one, preserving
+refresh semantics and giving you pretty URLs.</p>
+
+<p>If you want to disable Turbolinks for certain links, add a <code>data-turbolinks="false"</code>
+attribute to the tag:</p>
+
+<div class="code_container">
+<pre><code class="highlight html"><span class="nt">&lt;a</span> <span class="na">href=</span><span class="s">"..."</span> <span class="na">data-turbolinks=</span><span class="s">"false"</span><span class="nt">&gt;</span>No turbolinks here<span class="nt">&lt;/a&gt;</span>.
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-90e620476d26a8c34e88dd48529ef79c">&lt;a href="..." data-turbolinks="false"&gt;No turbolinks here&lt;/a&gt;.
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-90e620476d26a8c34e88dd48529ef79c">Copy</button>
+</div>
+<h4 id="page-change-events"><a class="anchorlink" href="#page-change-events">5.2 Page Change Events</a></h4>
+
+<p>You'll often want to do some sort of processing upon
+page load. Using the DOM, you'd write something like this:</p>
+
+<div class="code_container">
+<pre><code class="highlight js"><span class="nb">window</span><span class="p">.</span><span class="nx">addEventListener</span><span class="p">(</span><span class="dl">"</span><span class="s2">load</span><span class="dl">"</span><span class="p">,</span> <span class="p">()</span> <span class="o">=&gt;</span> <span class="p">{</span>
+  <span class="nx">alert</span><span class="p">(</span><span class="dl">"</span><span class="s2">page has loaded!</span><span class="dl">"</span><span class="p">);</span>
+<span class="p">});</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-ad3f7ce5763f03e97494174a29f3202f">window.addEventListener("load", () =&gt; {
+  alert("page has loaded!");
+});
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-ad3f7ce5763f03e97494174a29f3202f">Copy</button>
+</div>
+<p>However, because Turbolinks overrides the normal page loading process, the
+event that this relies upon will not be fired. If you have code that looks like
+this, you must change your code to do this instead:</p>
+
+<div class="code_container">
+<pre><code class="highlight js"><span class="nb">document</span><span class="p">.</span><span class="nx">addEventListener</span><span class="p">(</span><span class="dl">"</span><span class="s2">turbolinks:load</span><span class="dl">"</span><span class="p">,</span> <span class="p">()</span> <span class="o">=&gt;</span> <span class="p">{</span>
+  <span class="nx">alert</span><span class="p">(</span><span class="dl">"</span><span class="s2">page has loaded!</span><span class="dl">"</span><span class="p">);</span>
+<span class="p">});</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-b75df9ad0fed0e1232f881f9267bd518">document.addEventListener("turbolinks:load", () =&gt; {
+  alert("page has loaded!");
+});
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-b75df9ad0fed0e1232f881f9267bd518">Copy</button>
+</div>
+<p>For more details, including other events you can bind to, check out <a href="https://github.com/turbolinks/turbolinks/blob/master/README.md">the
+Turbolinks
+README</a>.</p>
+</body>
+</html>

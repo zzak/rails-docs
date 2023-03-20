@@ -1,0 +1,593 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>2 Extensions to All Objects</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v7.0.4.2/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="extensions-to-all-objects"><a class="anchorlink" href="#extensions-to-all-objects">2 Extensions to All Objects</a></h3>
+<h4 id="blank-questionmark-and-present-questionmark"><a class="anchorlink" href="#blank-questionmark-and-present-questionmark">2.1 <code>blank?</code> and <code>present?</code></a></h4>
+
+<p>The following values are considered to be blank in a Rails application:</p>
+<ul>
+<li>
+<code>nil</code> and <code>false</code>,</li>
+<li>strings composed only of whitespace (see note below),</li>
+<li>empty arrays and hashes, and</li>
+<li>any other object that responds to <code>empty?</code> and is empty.</li>
+</ul>
+<div class="info"><p>The predicate for strings uses the Unicode-aware character class <code>[:space:]</code>, so for example U+2029 (paragraph separator) is considered to be whitespace.</p></div>
+
+<div class="warning"><p>Note that numbers are not mentioned. In particular, 0 and 0.0 are <strong>not</strong> blank.</p></div>
+
+<p>For example, this method from <code>ActionController::HttpAuthentication::Token::ControllerMethods</code> uses <a href="https://api.rubyonrails.org/v7.0.4.2/classes/Object.html#method-i-blank-3F"><code>blank?</code></a> for checking whether a token is present:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">def</span> <span class="nf">authenticate</span><span class="p">(</span><span class="n">controller</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">login_procedure</span><span class="p">)</span>
+  <span class="n">token</span><span class="p">,</span> <span class="n">options</span> <span class="o">=</span> <span class="n">token_and_options</span><span class="p">(</span><span class="n">controller</span><span class="p">.</span><span class="nf">request</span><span class="p">)</span>
+  <span class="k">unless</span> <span class="n">token</span><span class="p">.</span><span class="nf">blank?</span>
+    <span class="n">login_procedure</span><span class="p">.</span><span class="nf">call</span><span class="p">(</span><span class="n">token</span><span class="p">,</span> <span class="n">options</span><span class="p">)</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="def authenticate(controller, &amp;login_procedure)
+  token, options = token_and_options(controller.request)
+  unless token.blank?
+    login_procedure.call(token, options)
+  end
+end
+">Copy</button>
+</div>
+<p>The method <a href="https://api.rubyonrails.org/v7.0.4.2/classes/Object.html#method-i-present-3F"><code>present?</code></a> is equivalent to <code>!blank?</code>. This example is taken from <code>ActionDispatch::Http::Cache::Response</code>:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">def</span> <span class="nf">set_conditional_cache_control!</span>
+  <span class="k">return</span> <span class="k">if</span> <span class="nb">self</span><span class="p">[</span><span class="s2">"Cache-Control"</span><span class="p">].</span><span class="nf">present?</span>
+  <span class="c1"># ...</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='def set_conditional_cache_control!
+  return if self["Cache-Control"].present?
+  # ...
+end
+'>Copy</button>
+</div>
+<div class="note"><p>Defined in <code><a href="https://github.com/rails/rails/tree/v7.0.4.2/activesupport/lib/active_support/core_ext/object/blank.rb">active_support/core_ext/object/blank.rb</a></code>.</p></div>
+
+<h4 id="presence"><a class="anchorlink" href="#presence">2.2 <code>presence</code></a></h4>
+
+<p>The <a href="https://api.rubyonrails.org/v7.0.4.2/classes/Object.html#method-i-presence"><code>presence</code></a> method returns its receiver if <code>present?</code>, and <code>nil</code> otherwise. It is useful for idioms like this:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">host</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="ss">:host</span><span class="p">].</span><span class="nf">presence</span> <span class="o">||</span> <span class="s1">'localhost'</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="host = config[:host].presence || 'localhost'
+">Copy</button>
+</div>
+<div class="note"><p>Defined in <code><a href="https://github.com/rails/rails/tree/v7.0.4.2/activesupport/lib/active_support/core_ext/object/blank.rb">active_support/core_ext/object/blank.rb</a></code>.</p></div>
+
+<h4 id="duplicable-questionmark"><a class="anchorlink" href="#duplicable-questionmark">2.3 <code>duplicable?</code></a></h4>
+
+<p>As of Ruby 2.5, most objects can be duplicated via <code>dup</code> or <code>clone</code>:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="s2">"foo"</span><span class="p">.</span><span class="nf">dup</span>           <span class="c1"># =&gt; "foo"</span>
+<span class="s2">""</span><span class="p">.</span><span class="nf">dup</span>              <span class="c1"># =&gt; ""</span>
+<span class="no">Rational</span><span class="p">(</span><span class="mi">1</span><span class="p">).</span><span class="nf">dup</span>     <span class="c1"># =&gt; (1/1)</span>
+<span class="no">Complex</span><span class="p">(</span><span class="mi">0</span><span class="p">).</span><span class="nf">dup</span>      <span class="c1"># =&gt; (0+0i)</span>
+<span class="mi">1</span><span class="p">.</span><span class="nf">method</span><span class="p">(:</span><span class="o">+</span><span class="p">).</span><span class="nf">dup</span>    <span class="c1"># =&gt; TypeError (allocator undefined for Method)</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='"foo".dup           # =&gt; "foo"
+"".dup              # =&gt; ""
+Rational(1).dup     # =&gt; (1/1)
+Complex(0).dup      # =&gt; (0+0i)
+1.method(:+).dup    # =&gt; TypeError (allocator undefined for Method)
+'>Copy</button>
+</div>
+<p>Active Support provides <a href="https://api.rubyonrails.org/v7.0.4.2/classes/Object.html#method-i-duplicable-3F"><code>duplicable?</code></a> to query an object about this:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="s2">"foo"</span><span class="p">.</span><span class="nf">duplicable?</span>           <span class="c1"># =&gt; true</span>
+<span class="s2">""</span><span class="p">.</span><span class="nf">duplicable?</span>              <span class="c1"># =&gt; true</span>
+<span class="no">Rational</span><span class="p">(</span><span class="mi">1</span><span class="p">).</span><span class="nf">duplicable?</span>     <span class="c1"># =&gt; true</span>
+<span class="no">Complex</span><span class="p">(</span><span class="mi">1</span><span class="p">).</span><span class="nf">duplicable?</span>      <span class="c1"># =&gt; true</span>
+<span class="mi">1</span><span class="p">.</span><span class="nf">method</span><span class="p">(:</span><span class="o">+</span><span class="p">).</span><span class="nf">duplicable?</span>    <span class="c1"># =&gt; false</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='"foo".duplicable?           # =&gt; true
+"".duplicable?              # =&gt; true
+Rational(1).duplicable?     # =&gt; true
+Complex(1).duplicable?      # =&gt; true
+1.method(:+).duplicable?    # =&gt; false
+'>Copy</button>
+</div>
+<div class="warning"><p>Any class can disallow duplication by removing <code>dup</code> and <code>clone</code> or raising exceptions from them. Thus only <code>rescue</code> can tell whether a given arbitrary object is duplicable. <code>duplicable?</code> depends on the hard-coded list above, but it is much faster than <code>rescue</code>. Use it only if you know the hard-coded list is enough in your use case.</p></div>
+
+<div class="note"><p>Defined in <code><a href="https://github.com/rails/rails/tree/v7.0.4.2/activesupport/lib/active_support/core_ext/object/duplicable.rb">active_support/core_ext/object/duplicable.rb</a></code>.</p></div>
+
+<h4 id="deep-dup"><a class="anchorlink" href="#deep-dup">2.4 <code>deep_dup</code></a></h4>
+
+<p>The <a href="https://api.rubyonrails.org/v7.0.4.2/classes/Object.html#method-i-deep_dup"><code>deep_dup</code></a> method returns a deep copy of a given object. Normally, when you <code>dup</code> an object that contains other objects, Ruby does not <code>dup</code> them, so it creates a shallow copy of the object. If you have an array with a string, for example, it will look like this:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">array</span>     <span class="o">=</span> <span class="p">[</span><span class="s1">'string'</span><span class="p">]</span>
+<span class="n">duplicate</span> <span class="o">=</span> <span class="n">array</span><span class="p">.</span><span class="nf">dup</span>
+
+<span class="n">duplicate</span><span class="p">.</span><span class="nf">push</span> <span class="s1">'another-string'</span>
+
+<span class="c1"># the object was duplicated, so the element was added only to the duplicate</span>
+<span class="n">array</span>     <span class="c1"># =&gt; ['string']</span>
+<span class="n">duplicate</span> <span class="c1"># =&gt; ['string', 'another-string']</span>
+
+<span class="n">duplicate</span><span class="p">.</span><span class="nf">first</span><span class="p">.</span><span class="nf">gsub!</span><span class="p">(</span><span class="s1">'string'</span><span class="p">,</span> <span class="s1">'foo'</span><span class="p">)</span>
+
+<span class="c1"># first element was not duplicated, it will be changed in both arrays</span>
+<span class="n">array</span>     <span class="c1"># =&gt; ['foo']</span>
+<span class="n">duplicate</span> <span class="c1"># =&gt; ['foo', 'another-string']</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="array     = ['string']
+duplicate = array.dup
+
+duplicate.push 'another-string'
+
+# the object was duplicated, so the element was added only to the duplicate
+array     # =&gt; ['string']
+duplicate # =&gt; ['string', 'another-string']
+
+duplicate.first.gsub!('string', 'foo')
+
+# first element was not duplicated, it will be changed in both arrays
+array     # =&gt; ['foo']
+duplicate # =&gt; ['foo', 'another-string']
+">Copy</button>
+</div>
+<p>As you can see, after duplicating the <code>Array</code> instance, we got another object, therefore we can modify it and the original object will stay unchanged. This is not true for array's elements, however. Since <code>dup</code> does not make a deep copy, the string inside the array is still the same object.</p>
+
+<p>If you need a deep copy of an object, you should use <code>deep_dup</code>. Here is an example:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">array</span>     <span class="o">=</span> <span class="p">[</span><span class="s1">'string'</span><span class="p">]</span>
+<span class="n">duplicate</span> <span class="o">=</span> <span class="n">array</span><span class="p">.</span><span class="nf">deep_dup</span>
+
+<span class="n">duplicate</span><span class="p">.</span><span class="nf">first</span><span class="p">.</span><span class="nf">gsub!</span><span class="p">(</span><span class="s1">'string'</span><span class="p">,</span> <span class="s1">'foo'</span><span class="p">)</span>
+
+<span class="n">array</span>     <span class="c1"># =&gt; ['string']</span>
+<span class="n">duplicate</span> <span class="c1"># =&gt; ['foo']</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="array     = ['string']
+duplicate = array.deep_dup
+
+duplicate.first.gsub!('string', 'foo')
+
+array     # =&gt; ['string']
+duplicate # =&gt; ['foo']
+">Copy</button>
+</div>
+<p>If the object is not duplicable, <code>deep_dup</code> will just return it:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">number</span> <span class="o">=</span> <span class="mi">1</span>
+<span class="n">duplicate</span> <span class="o">=</span> <span class="n">number</span><span class="p">.</span><span class="nf">deep_dup</span>
+<span class="n">number</span><span class="p">.</span><span class="nf">object_id</span> <span class="o">==</span> <span class="n">duplicate</span><span class="p">.</span><span class="nf">object_id</span>   <span class="c1"># =&gt; true</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="number = 1
+duplicate = number.deep_dup
+number.object_id == duplicate.object_id   # =&gt; true
+">Copy</button>
+</div>
+<div class="note"><p>Defined in <code><a href="https://github.com/rails/rails/tree/v7.0.4.2/activesupport/lib/active_support/core_ext/object/deep_dup.rb">active_support/core_ext/object/deep_dup.rb</a></code>.</p></div>
+
+<h4 id="try"><a class="anchorlink" href="#try">2.5 <code>try</code></a></h4>
+
+<p>When you want to call a method on an object only if it is not <code>nil</code>, the simplest way to achieve it is with conditional statements, adding unnecessary clutter. The alternative is to use <a href="https://api.rubyonrails.org/v7.0.4.2/classes/Object.html#method-i-try"><code>try</code></a>. <code>try</code> is like <code>Object#public_send</code> except that it returns <code>nil</code> if sent to <code>nil</code>.</p>
+
+<p>Here is an example:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="c1"># without try</span>
+<span class="k">unless</span> <span class="vi">@number</span><span class="p">.</span><span class="nf">nil?</span>
+  <span class="vi">@number</span><span class="p">.</span><span class="nf">next</span>
+<span class="k">end</span>
+
+<span class="c1"># with try</span>
+<span class="vi">@number</span><span class="p">.</span><span class="nf">try</span><span class="p">(</span><span class="ss">:next</span><span class="p">)</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="# without try
+unless @number.nil?
+  @number.next
+end
+
+# with try
+@number.try(:next)
+">Copy</button>
+</div>
+<p>Another example is this code from <code>ActiveRecord::ConnectionAdapters::AbstractAdapter</code> where <code>@logger</code> could be <code>nil</code>. You can see that the code uses <code>try</code> and avoids an unnecessary check.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">def</span> <span class="nf">log_info</span><span class="p">(</span><span class="n">sql</span><span class="p">,</span> <span class="nb">name</span><span class="p">,</span> <span class="n">ms</span><span class="p">)</span>
+  <span class="k">if</span> <span class="vi">@logger</span><span class="p">.</span><span class="nf">try</span><span class="p">(</span><span class="ss">:debug?</span><span class="p">)</span>
+    <span class="nb">name</span> <span class="o">=</span> <span class="s1">'%s (%.1fms)'</span> <span class="o">%</span> <span class="p">[</span><span class="nb">name</span> <span class="o">||</span> <span class="s1">'SQL'</span><span class="p">,</span> <span class="n">ms</span><span class="p">]</span>
+    <span class="vi">@logger</span><span class="p">.</span><span class="nf">debug</span><span class="p">(</span><span class="n">format_log_entry</span><span class="p">(</span><span class="nb">name</span><span class="p">,</span> <span class="n">sql</span><span class="p">.</span><span class="nf">squeeze</span><span class="p">(</span><span class="s1">' '</span><span class="p">)))</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="def log_info(sql, name, ms)
+  if @logger.try(:debug?)
+    name = '%s (%.1fms)' % [name || 'SQL', ms]
+    @logger.debug(format_log_entry(name, sql.squeeze(' ')))
+  end
+end
+">Copy</button>
+</div>
+<p><code>try</code> can also be called without arguments but a block, which will only be executed if the object is not nil:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="vi">@person</span><span class="p">.</span><span class="nf">try</span> <span class="p">{</span> <span class="o">|</span><span class="nb">p</span><span class="o">|</span> <span class="s2">"</span><span class="si">#{</span><span class="nb">p</span><span class="p">.</span><span class="nf">first_name</span><span class="si">}</span><span class="s2"> </span><span class="si">#{</span><span class="nb">p</span><span class="p">.</span><span class="nf">last_name</span><span class="si">}</span><span class="s2">"</span> <span class="p">}</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='@person.try { |p| "#{p.first_name} #{p.last_name}" }
+'>Copy</button>
+</div>
+<p>Note that <code>try</code> will swallow no-method errors, returning nil instead. If you want to protect against typos, use <a href="https://api.rubyonrails.org/v7.0.4.2/classes/Object.html#method-i-try-21"><code>try!</code></a> instead:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="vi">@number</span><span class="p">.</span><span class="nf">try</span><span class="p">(</span><span class="ss">:nest</span><span class="p">)</span>  <span class="c1"># =&gt; nil</span>
+<span class="vi">@number</span><span class="p">.</span><span class="nf">try!</span><span class="p">(</span><span class="ss">:nest</span><span class="p">)</span> <span class="c1"># NoMethodError: undefined method `nest' for 1:Integer</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="@number.try(:nest)  # =&gt; nil
+@number.try!(:nest) # NoMethodError: undefined method `nest' for 1:Integer
+">Copy</button>
+</div>
+<div class="note"><p>Defined in <code><a href="https://github.com/rails/rails/tree/v7.0.4.2/activesupport/lib/active_support/core_ext/object/try.rb">active_support/core_ext/object/try.rb</a></code>.</p></div>
+
+<h4 id="class-eval-args-block"><a class="anchorlink" href="#class-eval-args-block">2.6 <code>class_eval(*args, &amp;block)</code></a></h4>
+
+<p>You can evaluate code in the context of any object's singleton class using <a href="https://api.rubyonrails.org/v7.0.4.2/classes/Kernel.html#method-i-class_eval"><code>class_eval</code></a>:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">Proc</span>
+  <span class="k">def</span> <span class="nf">bind</span><span class="p">(</span><span class="n">object</span><span class="p">)</span>
+    <span class="n">block</span><span class="p">,</span> <span class="n">time</span> <span class="o">=</span> <span class="nb">self</span><span class="p">,</span> <span class="no">Time</span><span class="p">.</span><span class="nf">current</span>
+    <span class="n">object</span><span class="p">.</span><span class="nf">class_eval</span> <span class="k">do</span>
+      <span class="n">method_name</span> <span class="o">=</span> <span class="s2">"__bind_</span><span class="si">#{</span><span class="n">time</span><span class="p">.</span><span class="nf">to_i</span><span class="si">}</span><span class="s2">_</span><span class="si">#{</span><span class="n">time</span><span class="p">.</span><span class="nf">usec</span><span class="si">}</span><span class="s2">"</span>
+      <span class="n">define_method</span><span class="p">(</span><span class="n">method_name</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">block</span><span class="p">)</span>
+      <span class="nb">method</span> <span class="o">=</span> <span class="nb">instance_method</span><span class="p">(</span><span class="n">method_name</span><span class="p">)</span>
+      <span class="n">remove_method</span><span class="p">(</span><span class="n">method_name</span><span class="p">)</span>
+      <span class="nb">method</span>
+    <span class="k">end</span><span class="p">.</span><span class="nf">bind</span><span class="p">(</span><span class="n">object</span><span class="p">)</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='class Proc
+  def bind(object)
+    block, time = self, Time.current
+    object.class_eval do
+      method_name = "__bind_#{time.to_i}_#{time.usec}"
+      define_method(method_name, &amp;block)
+      method = instance_method(method_name)
+      remove_method(method_name)
+      method
+    end.bind(object)
+  end
+end
+'>Copy</button>
+</div>
+<div class="note"><p>Defined in <code><a href="https://github.com/rails/rails/tree/v7.0.4.2/activesupport/lib/active_support/core_ext/kernel/singleton_class.rb">active_support/core_ext/kernel/singleton_class.rb</a></code>.</p></div>
+
+<h4 id="acts-like-questionmark-duck"><a class="anchorlink" href="#acts-like-questionmark-duck">2.7 <code>acts_like?(duck)</code></a></h4>
+
+<p>The method <a href="https://api.rubyonrails.org/v7.0.4.2/classes/Object.html#method-i-acts_like-3F"><code>acts_like?</code></a> provides a way to check whether some class acts like some other class based on a simple convention: a class that provides the same interface as <code>String</code> defines</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">def</span> <span class="nf">acts_like_string?</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="def acts_like_string?
+end
+">Copy</button>
+</div>
+<p>which is only a marker, its body or return value are irrelevant. Then, client code can query for duck-type-safeness this way:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">some_klass</span><span class="p">.</span><span class="nf">acts_like?</span><span class="p">(</span><span class="ss">:string</span><span class="p">)</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="some_klass.acts_like?(:string)
+">Copy</button>
+</div>
+<p>Rails has classes that act like <code>Date</code> or <code>Time</code> and follow this contract.</p>
+
+<div class="note"><p>Defined in <code><a href="https://github.com/rails/rails/tree/v7.0.4.2/activesupport/lib/active_support/core_ext/object/acts_like.rb">active_support/core_ext/object/acts_like.rb</a></code>.</p></div>
+
+<h4 id="to-param"><a class="anchorlink" href="#to-param">2.8 <code>to_param</code></a></h4>
+
+<p>All objects in Rails respond to the method <a href="https://api.rubyonrails.org/v7.0.4.2/classes/Object.html#method-i-to_param"><code>to_param</code></a>, which is meant to return something that represents them as values in a query string, or as URL fragments.</p>
+
+<p>By default <code>to_param</code> just calls <code>to_s</code>:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="mi">7</span><span class="p">.</span><span class="nf">to_param</span> <span class="c1"># =&gt; "7"</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='7.to_param # =&gt; "7"
+'>Copy</button>
+</div>
+<p>The return value of <code>to_param</code> should <strong>not</strong> be escaped:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="s2">"Tom &amp; Jerry"</span><span class="p">.</span><span class="nf">to_param</span> <span class="c1"># =&gt; "Tom &amp; Jerry"</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='"Tom &amp; Jerry".to_param # =&gt; "Tom &amp; Jerry"
+'>Copy</button>
+</div>
+<p>Several classes in Rails overwrite this method.</p>
+
+<p>For example <code>nil</code>, <code>true</code>, and <code>false</code> return themselves. <a href="https://api.rubyonrails.org/v7.0.4.2/classes/Array.html#method-i-to_param"><code>Array#to_param</code></a> calls <code>to_param</code> on the elements and joins the result with "/":</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="kp">true</span><span class="p">,</span> <span class="no">String</span><span class="p">].</span><span class="nf">to_param</span> <span class="c1"># =&gt; "0/true/String"</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='[0, true, String].to_param # =&gt; "0/true/String"
+'>Copy</button>
+</div>
+<p>Notably, the Rails routing system calls <code>to_param</code> on models to get a value for the <code>:id</code> placeholder. <code>ActiveRecord::Base#to_param</code> returns the <code>id</code> of a model, but you can redefine that method in your models. For example, given</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">User</span>
+  <span class="k">def</span> <span class="nf">to_param</span>
+    <span class="s2">"</span><span class="si">#{</span><span class="nb">id</span><span class="si">}</span><span class="s2">-</span><span class="si">#{</span><span class="nb">name</span><span class="p">.</span><span class="nf">parameterize</span><span class="si">}</span><span class="s2">"</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='class User
+  def to_param
+    "#{id}-#{name.parameterize}"
+  end
+end
+'>Copy</button>
+</div>
+<p>we get:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">user_path</span><span class="p">(</span><span class="vi">@user</span><span class="p">)</span> <span class="c1"># =&gt; "/users/357-john-smith"</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='user_path(@user) # =&gt; "/users/357-john-smith"
+'>Copy</button>
+</div>
+<div class="warning"><p>Controllers need to be aware of any redefinition of <code>to_param</code> because when a request like that comes in "357-john-smith" is the value of <code>params[:id]</code>.</p></div>
+
+<div class="note"><p>Defined in <code><a href="https://github.com/rails/rails/tree/v7.0.4.2/activesupport/lib/active_support/core_ext/object/to_param.rb">active_support/core_ext/object/to_param.rb</a></code>.</p></div>
+
+<h4 id="to-query"><a class="anchorlink" href="#to-query">2.9 <code>to_query</code></a></h4>
+
+<p>The <a href="https://api.rubyonrails.org/v7.0.4.2/classes/Object.html#method-i-to_query"><code>to_query</code></a> method constructs a query string that associates a given <code>key</code> with the return value of <code>to_param</code>. For example, with the following <code>to_param</code> definition:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">User</span>
+  <span class="k">def</span> <span class="nf">to_param</span>
+    <span class="s2">"</span><span class="si">#{</span><span class="nb">id</span><span class="si">}</span><span class="s2">-</span><span class="si">#{</span><span class="nb">name</span><span class="p">.</span><span class="nf">parameterize</span><span class="si">}</span><span class="s2">"</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='class User
+  def to_param
+    "#{id}-#{name.parameterize}"
+  end
+end
+'>Copy</button>
+</div>
+<p>we get:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">current_user</span><span class="p">.</span><span class="nf">to_query</span><span class="p">(</span><span class="s1">'user'</span><span class="p">)</span> <span class="c1"># =&gt; "user=357-john-smith"</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="current_user.to_query('user') # =&gt; &quot;user=357-john-smith&quot;
+">Copy</button>
+</div>
+<p>This method escapes whatever is needed, both for the key and the value:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">account</span><span class="p">.</span><span class="nf">to_query</span><span class="p">(</span><span class="s1">'company[name]'</span><span class="p">)</span>
+<span class="c1"># =&gt; "company%5Bname%5D=Johnson+%26+Johnson"</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="account.to_query('company[name]')
+# =&gt; &quot;company%5Bname%5D=Johnson+%26+Johnson&quot;
+">Copy</button>
+</div>
+<p>so its output is ready to be used in a query string.</p>
+
+<p>Arrays return the result of applying <code>to_query</code> to each element with <code>key[]</code> as key, and join the result with "&amp;":</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="p">[</span><span class="mf">3.4</span><span class="p">,</span> <span class="o">-</span><span class="mf">45.6</span><span class="p">].</span><span class="nf">to_query</span><span class="p">(</span><span class="s1">'sample'</span><span class="p">)</span>
+<span class="c1"># =&gt; "sample%5B%5D=3.4&amp;sample%5B%5D=-45.6"</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="[3.4, -45.6].to_query('sample')
+# =&gt; &quot;sample%5B%5D=3.4&amp;sample%5B%5D=-45.6&quot;
+">Copy</button>
+</div>
+<p>Hashes also respond to <code>to_query</code> but with a different signature. If no argument is passed a call generates a sorted series of key/value assignments calling <code>to_query(key)</code> on its values. Then it joins the result with "&amp;":</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="p">{</span><span class="ss">c: </span><span class="mi">3</span><span class="p">,</span> <span class="ss">b: </span><span class="mi">2</span><span class="p">,</span> <span class="ss">a: </span><span class="mi">1</span><span class="p">}.</span><span class="nf">to_query</span> <span class="c1"># =&gt; "a=1&amp;b=2&amp;c=3"</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='{c: 3, b: 2, a: 1}.to_query # =&gt; "a=1&amp;b=2&amp;c=3"
+'>Copy</button>
+</div>
+<p>The method <a href="https://api.rubyonrails.org/v7.0.4.2/classes/Hash.html#method-i-to_query"><code>Hash#to_query</code></a> accepts an optional namespace for the keys:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="p">{</span><span class="ss">id: </span><span class="mi">89</span><span class="p">,</span> <span class="ss">name: </span><span class="s2">"John Smith"</span><span class="p">}.</span><span class="nf">to_query</span><span class="p">(</span><span class="s1">'user'</span><span class="p">)</span>
+<span class="c1"># =&gt; "user%5Bid%5D=89&amp;user%5Bname%5D=John+Smith"</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="{id: 89, name: &quot;John Smith&quot;}.to_query('user')
+# =&gt; &quot;user%5Bid%5D=89&amp;user%5Bname%5D=John+Smith&quot;
+">Copy</button>
+</div>
+<div class="note"><p>Defined in <code><a href="https://github.com/rails/rails/tree/v7.0.4.2/activesupport/lib/active_support/core_ext/object/to_query.rb">active_support/core_ext/object/to_query.rb</a></code>.</p></div>
+
+<h4 id="with-options"><a class="anchorlink" href="#with-options">2.10 <code>with_options</code></a></h4>
+
+<p>The method <a href="https://api.rubyonrails.org/v7.0.4.2/classes/Object.html#method-i-with_options"><code>with_options</code></a> provides a way to factor out common options in a series of method calls.</p>
+
+<p>Given a default options hash, <code>with_options</code> yields a proxy object to a block. Within the block, methods called on the proxy are forwarded to the receiver with their options merged. For example, you get rid of the duplication in:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">Account</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="n">has_many</span> <span class="ss">:customers</span><span class="p">,</span> <span class="ss">dependent: :destroy</span>
+  <span class="n">has_many</span> <span class="ss">:products</span><span class="p">,</span>  <span class="ss">dependent: :destroy</span>
+  <span class="n">has_many</span> <span class="ss">:invoices</span><span class="p">,</span>  <span class="ss">dependent: :destroy</span>
+  <span class="n">has_many</span> <span class="ss">:expenses</span><span class="p">,</span>  <span class="ss">dependent: :destroy</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="class Account &lt; ApplicationRecord
+  has_many :customers, dependent: :destroy
+  has_many :products,  dependent: :destroy
+  has_many :invoices,  dependent: :destroy
+  has_many :expenses,  dependent: :destroy
+end
+">Copy</button>
+</div>
+<p>this way:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">Account</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="n">with_options</span> <span class="ss">dependent: :destroy</span> <span class="k">do</span> <span class="o">|</span><span class="n">assoc</span><span class="o">|</span>
+    <span class="n">assoc</span><span class="p">.</span><span class="nf">has_many</span> <span class="ss">:customers</span>
+    <span class="n">assoc</span><span class="p">.</span><span class="nf">has_many</span> <span class="ss">:products</span>
+    <span class="n">assoc</span><span class="p">.</span><span class="nf">has_many</span> <span class="ss">:invoices</span>
+    <span class="n">assoc</span><span class="p">.</span><span class="nf">has_many</span> <span class="ss">:expenses</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="class Account &lt; ApplicationRecord
+  with_options dependent: :destroy do |assoc|
+    assoc.has_many :customers
+    assoc.has_many :products
+    assoc.has_many :invoices
+    assoc.has_many :expenses
+  end
+end
+">Copy</button>
+</div>
+<p>That idiom may convey <em>grouping</em> to the reader as well. For example, say you want to send a newsletter whose language depends on the user. Somewhere in the mailer you could group locale-dependent bits like this:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="no">I18n</span><span class="p">.</span><span class="nf">with_options</span> <span class="ss">locale: </span><span class="n">user</span><span class="p">.</span><span class="nf">locale</span><span class="p">,</span> <span class="ss">scope: </span><span class="s2">"newsletter"</span> <span class="k">do</span> <span class="o">|</span><span class="n">i18n</span><span class="o">|</span>
+  <span class="n">subject</span> <span class="n">i18n</span><span class="p">.</span><span class="nf">t</span> <span class="ss">:subject</span>
+  <span class="n">body</span>    <span class="n">i18n</span><span class="p">.</span><span class="nf">t</span> <span class="ss">:body</span><span class="p">,</span> <span class="ss">user_name: </span><span class="n">user</span><span class="p">.</span><span class="nf">name</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='I18n.with_options locale: user.locale, scope: "newsletter" do |i18n|
+  subject i18n.t :subject
+  body    i18n.t :body, user_name: user.name
+end
+'>Copy</button>
+</div>
+<div class="info"><p>Since <code>with_options</code> forwards calls to its receiver they can be nested. Each nesting level will merge inherited defaults in addition to their own.</p></div>
+
+<div class="note"><p>Defined in <code><a href="https://github.com/rails/rails/tree/v7.0.4.2/activesupport/lib/active_support/core_ext/object/with_options.rb">active_support/core_ext/object/with_options.rb</a></code>.</p></div>
+
+<h4 id="json-support"><a class="anchorlink" href="#json-support">2.11 JSON support</a></h4>
+
+<p>Active Support provides a better implementation of <code>to_json</code> than the <code>json</code> gem ordinarily provides for Ruby objects. This is because some classes, like <code>Hash</code> and <code>Process::Status</code> need special handling in order to provide a proper JSON representation.</p>
+
+<div class="note"><p>Defined in <code><a href="https://github.com/rails/rails/tree/v7.0.4.2/activesupport/lib/active_support/core_ext/object/json.rb">active_support/core_ext/object/json.rb</a></code>.</p></div>
+
+<h4 id="instance-variables"><a class="anchorlink" href="#instance-variables">2.12 Instance Variables</a></h4>
+
+<p>Active Support provides several methods to ease access to instance variables.</p>
+
+<h5 id="instance-values"><a class="anchorlink" href="#instance-values">2.12.1 <code>instance_values</code></a></h5>
+
+<p>The method <a href="https://api.rubyonrails.org/v7.0.4.2/classes/Object.html#method-i-instance_values"><code>instance_values</code></a> returns a hash that maps instance variable names without "@" to their
+corresponding values. Keys are strings:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">C</span>
+  <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+    <span class="vi">@x</span><span class="p">,</span> <span class="vi">@y</span> <span class="o">=</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+
+<span class="no">C</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">).</span><span class="nf">instance_values</span> <span class="c1"># =&gt; {"x" =&gt; 0, "y" =&gt; 1}</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='class C
+  def initialize(x, y)
+    @x, @y = x, y
+  end
+end
+
+C.new(0, 1).instance_values # =&gt; {"x" =&gt; 0, "y" =&gt; 1}
+'>Copy</button>
+</div>
+<div class="note"><p>Defined in <code><a href="https://github.com/rails/rails/tree/v7.0.4.2/activesupport/lib/active_support/core_ext/object/instance_variables.rb">active_support/core_ext/object/instance_variables.rb</a></code>.</p></div>
+
+<h5 id="instance-variable-names"><a class="anchorlink" href="#instance-variable-names">2.12.2 <code>instance_variable_names</code></a></h5>
+
+<p>The method <a href="https://api.rubyonrails.org/v7.0.4.2/classes/Object.html#method-i-instance_variable_names"><code>instance_variable_names</code></a> returns an array. Each name includes the "@" sign.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">C</span>
+  <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+    <span class="vi">@x</span><span class="p">,</span> <span class="vi">@y</span> <span class="o">=</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+
+<span class="no">C</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">).</span><span class="nf">instance_variable_names</span> <span class="c1"># =&gt; ["@x", "@y"]</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='class C
+  def initialize(x, y)
+    @x, @y = x, y
+  end
+end
+
+C.new(0, 1).instance_variable_names # =&gt; ["@x", "@y"]
+'>Copy</button>
+</div>
+<div class="note"><p>Defined in <code><a href="https://github.com/rails/rails/tree/v7.0.4.2/activesupport/lib/active_support/core_ext/object/instance_variables.rb">active_support/core_ext/object/instance_variables.rb</a></code>.</p></div>
+
+<h4 id="silencing-warnings-and-exceptions"><a class="anchorlink" href="#silencing-warnings-and-exceptions">2.13 Silencing Warnings and Exceptions</a></h4>
+
+<p>The methods <a href="https://api.rubyonrails.org/v7.0.4.2/classes/Kernel.html#method-i-silence_warnings"><code>silence_warnings</code></a> and <a href="https://api.rubyonrails.org/v7.0.4.2/classes/Kernel.html#method-i-enable_warnings"><code>enable_warnings</code></a> change the value of <code>$VERBOSE</code> accordingly for the duration of their block, and reset it afterwards:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">silence_warnings</span> <span class="p">{</span> <span class="no">Object</span><span class="p">.</span><span class="nf">const_set</span> <span class="s2">"RAILS_DEFAULT_LOGGER"</span><span class="p">,</span> <span class="n">logger</span> <span class="p">}</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='silence_warnings { Object.const_set "RAILS_DEFAULT_LOGGER", logger }
+'>Copy</button>
+</div>
+<p>Silencing exceptions is also possible with <a href="https://api.rubyonrails.org/v7.0.4.2/classes/Kernel.html#method-i-suppress"><code>suppress</code></a>. This method receives an arbitrary number of exception classes. If an exception is raised during the execution of the block and is <code>kind_of?</code> any of the arguments, <code>suppress</code> captures it and returns silently. Otherwise the exception is not captured:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="c1"># If the user is locked, the increment is lost, no big deal.</span>
+<span class="n">suppress</span><span class="p">(</span><span class="no">ActiveRecord</span><span class="o">::</span><span class="no">StaleObjectError</span><span class="p">)</span> <span class="k">do</span>
+  <span class="n">current_user</span><span class="p">.</span><span class="nf">increment!</span> <span class="ss">:visits</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="# If the user is locked, the increment is lost, no big deal.
+suppress(ActiveRecord::StaleObjectError) do
+  current_user.increment! :visits
+end
+">Copy</button>
+</div>
+<div class="note"><p>Defined in <code><a href="https://github.com/rails/rails/tree/v7.0.4.2/activesupport/lib/active_support/core_ext/kernel/reporting.rb">active_support/core_ext/kernel/reporting.rb</a></code>.</p></div>
+
+<h4 id="in-questionmark"><a class="anchorlink" href="#in-questionmark">2.14 <code>in?</code></a></h4>
+
+<p>The predicate <a href="https://api.rubyonrails.org/v7.0.4.2/classes/Object.html#method-i-in-3F"><code>in?</code></a> tests if an object is included in another object. An <code>ArgumentError</code> exception will be raised if the argument passed does not respond to <code>include?</code>.</p>
+
+<p>Examples of <code>in?</code>:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="mi">1</span><span class="p">.</span><span class="nf">in?</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">])</span>        <span class="c1"># =&gt; true</span>
+<span class="s2">"lo"</span><span class="p">.</span><span class="nf">in?</span><span class="p">(</span><span class="s2">"hello"</span><span class="p">)</span>   <span class="c1"># =&gt; true</span>
+<span class="mi">25</span><span class="p">.</span><span class="nf">in?</span><span class="p">(</span><span class="mi">30</span><span class="o">..</span><span class="mi">50</span><span class="p">)</span>      <span class="c1"># =&gt; false</span>
+<span class="mi">1</span><span class="p">.</span><span class="nf">in?</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>            <span class="c1"># =&gt; ArgumentError</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='1.in?([1,2])        # =&gt; true
+"lo".in?("hello")   # =&gt; true
+25.in?(30..50)      # =&gt; false
+1.in?(1)            # =&gt; ArgumentError
+'>Copy</button>
+</div>
+<div class="note"><p>Defined in <code><a href="https://github.com/rails/rails/tree/v7.0.4.2/activesupport/lib/active_support/core_ext/object/inclusion.rb">active_support/core_ext/object/inclusion.rb</a></code>.</p></div>
+</body>
+</html>

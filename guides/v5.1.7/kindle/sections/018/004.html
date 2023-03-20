@@ -1,0 +1,201 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>5 System Testing</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v5.1.7/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="system-testing">5 System Testing</h3>
+<p>System tests allows test user interactions with your application, running tests
+in either a real or a headless browser. System tests uses Capybara as base.</p>
+
+<p>For creating Rails system tests, you use the <code>test/system</code> directory in your
+application. Rails provides a generator to create a system test skeleton for you.</p>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+$ bin/rails generate system_test users
+      invoke test_unit
+      create test/system/users_test.rb
+
+</pre>
+</div>
+<p>Here's what a freshly-generated system test looks like:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+require "application_system_test_case"
+
+class UsersTest &lt; ApplicationSystemTestCase
+  # test "visiting the index" do
+  #   visit users_url
+  #
+  #   assert_selector "h1", text: "Users"
+  # end
+end
+
+</pre>
+</div>
+<p>By default, system tests are run with the Selenium driver, using the Chrome
+browser, and a screen size of 1400x1400. The next section explains how to
+change the default settings.</p>
+
+<h4 id="changing-the-default-settings">5.1 Changing the default settings</h4>
+
+<p>Rails makes changing the default settings for system tests very simple. All
+the setup is abstracted away so you can focus on writing your tests.</p>
+
+<p>When you generate a new application or scaffold, an <code>application_system_test_case.rb</code> file
+is created in the test directory. This is where all the configuration for your
+system tests should live.</p>
+
+<p>If you want to change the default settings you can simply change what the system
+tests are "driven by". Say you want to change the driver from Selenium to
+Poltergeist. First add the Poltergeist gem to your Gemfile. Then in your
+<code>application_system_test_case.rb</code> file do the following:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+require "test_helper"
+require "capybara/poltergeist"
+
+class ApplicationSystemTestCase &lt; ActionDispatch::SystemTestCase
+  driven_by :poltergeist
+end
+
+</pre>
+</div>
+<p>The driver name is a required argument for <code>driven_by</code>. The optional arguments
+that can be passed to <code>driven_by</code> are <code>:using</code> for the browser (this will only
+be used by Selenium), <code>:screen_size</code> to change the size of the screen for
+screenshots, and <code>:options</code> which can be used to set options supported by the
+driver.</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+require "test_helper"
+
+class ApplicationSystemTestCase &lt; ActionDispatch::SystemTestCase
+  driven_by :selenium, using: :firefox
+end
+
+</pre>
+</div>
+<p>If your Capybara configuration requires more setup than provided by Rails, this
+additional configuration could be added into <code>application_system_test_case.rb</code>
+file.</p>
+
+<p>Please see <a href="https://github.com/teamcapybara/capybara#setup">Capybara's documentation</a>
+for additional settings.</p>
+
+<h4 id="screenshot-helper">5.2 Screenshot Helper</h4>
+
+<p>The <code>ScreenshotHelper</code> is a helper designed to capture screenshots of your tests.
+This can be helpful for viewing the browser at the point a test failed, or
+to view screenshots later for debugging.</p>
+
+<p>Two methods are provided: <code>take_screenshot</code> and <code>take_failed_screenshot</code>.
+<code>take_failed_screenshot</code> is automatically included in <code>after_teardown</code> inside
+Rails.</p>
+
+<p>The <code>take_screenshot</code> helper method can be included anywhere in your tests to
+take a screenshot of the browser.</p>
+
+<h4 id="implementing-a-system-test">5.3 Implementing a system test</h4>
+
+<p>Now we're going to add a system test to our blog application. We'll demonstrate
+writing a system test by visiting the index page and creating a new blog article.</p>
+
+<p>If you used the scaffold generator, a system test skeleton was automatically
+created for you. If you didn't use the scaffold generator, start by creating a
+system test skeleton.</p>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+$ bin/rails generate system_test articles
+
+</pre>
+</div>
+<p>It should have created a test file placeholder for us. With the output of the
+previous command you should see:</p>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+      invoke  test_unit
+      create    test/system/articles_test.rb
+
+</pre>
+</div>
+<p>Now let's open that file and write our first assertion:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+require "application_system_test_case"
+
+class ArticlesTest &lt; ApplicationSystemTestCase
+  test "viewing the index" do
+    visit articles_path
+    assert_selector "h1", text: "Articles"
+  end
+end
+
+</pre>
+</div>
+<p>The test should see that there is an h1 on the articles index and pass.</p>
+
+<p>Run the system tests.</p>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+bin/rails test:system
+
+</pre>
+</div>
+<div class="note"><p>By default, running <code>bin/rails test</code> won't run your system tests.
+Make sure to run <code>bin/rails test:system</code> to actually run them.</p></div>
+
+<h5 id="creating-articles-system-test">5.3.1 Creating articles system test</h5>
+
+<p>Now let's test the flow for creating a new article in our blog.</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+test "creating an article" do
+  visit articles_path
+
+  click_on "New Article"
+
+  fill_in "Title", with: "Creating an Article"
+  fill_in "Body", with: "Created this article successfully!"
+
+  click_on "Create Article"
+
+  assert_text "Creating an Article"
+end
+
+</pre>
+</div>
+<p>The first step is to call <code>visit articles_path</code>. This will take the test to the
+articles index page.</p>
+
+<p>Then the <code>click_on "New Article"</code> will find the "New Article" button on the
+index page. This will redirect the browser to <code>/articles/new</code>.</p>
+
+<p>Then the test will fill in the title and body of the article with the specified
+text. Once the fields are filled in, "Create Article" is clicked on which will
+send a POST request to create the new article in the database.</p>
+
+<p>We will be redirected back to the the articles index page and there we assert
+that the text from the article title is on the articles index page.</p>
+
+<h5 id="implementing-a-system-test-taking-it-further">5.3.2 Taking it further</h5>
+
+<p>The beauty of system testing is that it is similar to integration testing in
+that it tests the user's interaction with your controller, model, and view, but
+system testing is much more robust and actually tests your application as if
+a real user were using it. Going forward, you can test anything that the user
+themselves would do in your application such as commenting, deleting articles,
+publishing draft articles, etc.</p>
+</body>
+</html>

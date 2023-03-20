@@ -1,0 +1,31 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>4 Removing Files</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v6.1.7.3/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="removing-files"><a class="anchorlink" href="#removing-files">4 Removing Files</a></h3>
+<p>To remove an attachment from a model, call <a href="https://api.rubyonrails.org/v6.1.7.3/classes/ActiveStorage/Attached/One.html#method-i-purge"><code>purge</code></a> on the
+attachment. If your application is set up to use Active Job, removal can be done
+in the background instead by calling <a href="https://api.rubyonrails.org/v6.1.7.3/classes/ActiveStorage/Attached/One.html#method-i-purge_later"><code>purge_later</code></a>.
+Purging deletes the blob and the file from the storage service.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="c1"># Synchronously destroy the avatar and actual resource files.</span>
+<span class="n">user</span><span class="p">.</span><span class="nf">avatar</span><span class="p">.</span><span class="nf">purge</span>
+
+<span class="c1"># Destroy the associated models and actual resource files async, via Active Job.</span>
+<span class="n">user</span><span class="p">.</span><span class="nf">avatar</span><span class="p">.</span><span class="nf">purge_later</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-ef0adff0e3af40497d1f9ad3364e3466"># Synchronously destroy the avatar and actual resource files.
+user.avatar.purge
+
+# Destroy the associated models and actual resource files async, via Active Job.
+user.avatar.purge_later
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-ef0adff0e3af40497d1f9ad3364e3466">Copy</button>
+</div>
+</body>
+</html>

@@ -1,0 +1,49 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>10 Troubleshooting</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v6.1.7.3/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="troubleshooting"><a class="anchorlink" href="#troubleshooting">10 Troubleshooting</a></h3>
+<h4 id="tracing-autoloads"><a class="anchorlink" href="#tracing-autoloads">10.1 Tracing Autoloads</a></h4>
+
+<p>Active Support is able to report constants as they are autoloaded. To enable these traces in a Rails application, put the following two lines in some initializer:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="no">ActiveSupport</span><span class="o">::</span><span class="no">Dependencies</span><span class="p">.</span><span class="nf">logger</span> <span class="o">=</span> <span class="no">Rails</span><span class="p">.</span><span class="nf">logger</span>
+<span class="no">ActiveSupport</span><span class="o">::</span><span class="no">Dependencies</span><span class="p">.</span><span class="nf">verbose</span> <span class="o">=</span> <span class="kp">true</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-a9eb77f10ce634e4aa72a22c4758dfb3">ActiveSupport::Dependencies.logger = Rails.logger
+ActiveSupport::Dependencies.verbose = true
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-a9eb77f10ce634e4aa72a22c4758dfb3">Copy</button>
+</div>
+<h4 id="where-is-a-given-autoload-triggered-questionmark"><a class="anchorlink" href="#where-is-a-given-autoload-triggered-questionmark">10.2 Where is a Given Autoload Triggered?</a></h4>
+
+<p>If constant <code>Foo</code> is being autoloaded, and you'd like to know where is that autoload coming from, just throw</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="nb">puts</span> <span class="nb">caller</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-8f012565fc6d4ca484e67c75d35f6f96">puts caller
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-8f012565fc6d4ca484e67c75d35f6f96">Copy</button>
+</div>
+<p>at the top of <code>foo.rb</code> and inspect the printed stack trace.</p>
+
+<h4 id="which-constants-have-been-autoloaded-questionmark"><a class="anchorlink" href="#which-constants-have-been-autoloaded-questionmark">10.3 Which Constants Have Been Autoloaded?</a></h4>
+
+<p>At any given time,</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="no">ActiveSupport</span><span class="o">::</span><span class="no">Dependencies</span><span class="p">.</span><span class="nf">autoloaded_constants</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-348d2fa554e1a155619479e67498c601">ActiveSupport::Dependencies.autoloaded_constants
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-348d2fa554e1a155619479e67498c601">Copy</button>
+</div>
+<p>has the collection of constants that have been autoloaded so far.</p>
+</body>
+</html>

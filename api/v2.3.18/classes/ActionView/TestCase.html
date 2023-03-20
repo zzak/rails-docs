@@ -1,0 +1,277 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html 
+     PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+  <head>
+    <title>Class: ActionView::TestCase</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <link rel="stylesheet" href="../.././rdoc-style.css" type="text/css" media="screen" />
+
+    <script language="JavaScript" type="text/javascript">
+    // <![CDATA[
+
+        function toggleSource( id )
+        {
+          var elem
+          var link
+
+          if( document.getElementById )
+          {
+            elem = document.getElementById( id )
+            link = document.getElementById( "l_" + id )
+          }
+          else if ( document.all )
+          {
+            elem = eval( "document.all." + id )
+            link = eval( "document.all.l_" + id )
+          }
+          else
+            return false;
+
+          if( elem.style.display == "block" )
+          {
+            elem.style.display = "none"
+            link.innerHTML = "show source"
+          }
+          else
+          {
+            elem.style.display = "block"
+            link.innerHTML = "hide source"
+          }
+        }
+
+        function openCode( url )
+        {
+          window.open( url, "SOURCE_CODE", "resizable=yes,scrollbars=yes,toolbar=no,status=no,height=480,width=750" ).focus();
+        }
+      // ]]>
+    </script>
+  </head>
+
+  <body>
+  <table width="100%" border='0' cellpadding='0' cellspacing='0' class='banner'><tr>
+  <td class="file-title"><span class="file-title-prefix">Class</span><br />ActionView::TestCase</td>
+  <td align="right">
+    <table cellspacing="0" cellpadding="2">
+      <tr valign="top">
+        <td>In:</td>
+        <td>
+<a href="../../files/actionpack/lib/action_view/test_case_rb.html">actionpack/lib/action_view/test_case.rb</a>
+        </td>
+      </tr>
+    <tr>
+      <td>Parent:</td>
+      <td>
+        <a href="../ActiveSupport/TestCase.html">
+ActiveSupport::TestCase
+         </a>
+     </td>
+   </tr>
+         </table>
+        </td>
+        </tr>
+      </table>
+ <!-- banner header -->
+
+  <div id="bodyContent">
+      <div id="content">
+
+
+
+
+  <div class="sectiontitle">Methods</div>
+  <ul>
+  <li><a href="#M000350">determine_default_helper_class</a></li>
+  <li><a href="#M000349">helper_class</a></li>
+  <li><a href="#M000351">helper_method</a></li>
+  <li><a href="#M000347">protect_against_forgery?</a></li>
+  <li><a href="#M000346">render</a></li>
+  <li><a href="#M000345">setup_with_controller</a></li>
+  <li><a href="#M000348">tests</a></li>
+  </ul>
+
+<div class="sectiontitle">Included Modules</div>
+<ul>
+  <li><a href="../ActionController/TestCase/Assertions.html">ActionController::TestCase::Assertions</a></li>
+  <li><a href="../ActionController/TestProcess.html">ActionController::TestProcess</a></li>
+  <li><a href="../ActionController/PolymorphicRoutes.html">ActionController::PolymorphicRoutes</a></li>
+  <li><a href="../ActionController/RecordIdentifier.html">ActionController::RecordIdentifier</a></li>
+  <li>ActionView::Helpers</li>
+  <li>ActionController::Helpers</li>
+</ul>
+
+
+  <div class="sectiontitle">Classes and Modules</div>
+  Class <a href="TestCase/TestController.html" class="link">ActionView::TestCase::TestController</a><br />
+
+
+  <div class="sectiontitle">Constants</div>
+  <table border='0' cellpadding='5'>
+  <tr valign='top'>
+    <td class="attr-name">EXCLUDE_IVARS</td>
+    <td>=</td>
+    <td class="attr-value">%w{         @output_buffer         @fixture_cache         @method_name         @_result         @loaded_fixtures         @test_passed         @view       }</td>
+  </tr>
+  </table>
+
+  <div class="sectiontitle">Attributes</div>
+  <table border='0' cellpadding='5'>
+  <tr valign='top'>
+    <td class='attr-rw'>
+[RW]
+    </td>
+    <td class='attr-name'>controller</td>
+    <td class='attr-desc'></td>
+  </tr>
+  <tr valign='top'>
+    <td class='attr-rw'>
+[RW]
+    </td>
+    <td class='attr-name'>output_buffer</td>
+    <td class='attr-desc'></td>
+  </tr>
+  <tr valign='top'>
+    <td class='attr-rw'>
+[RW]
+    </td>
+    <td class='attr-name'>rendered</td>
+    <td class='attr-desc'></td>
+  </tr>
+  </table>
+
+<div class="sectiontitle">Public Class methods</div>
+<div class="method">
+  <div class="title">
+    <a name="M000350"></a><b>determine_default_helper_class</b>(name)
+  </div>
+<div class="sourcecode">
+  <p class="source-link">[ <a href="javascript:toggleSource('M000350_source')" id="l_M000350_source">show source</a> ]</p>
+  <div id="M000350_source" class="dyn-source">
+<pre>
+    <span class="ruby-comment cmt"># File actionpack/lib/action_view/test_case.rb, line 85</span>
+85:       <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">determine_default_helper_class</span>(<span class="ruby-identifier">name</span>)
+86:         <span class="ruby-identifier">name</span>.<span class="ruby-identifier">sub</span>(<span class="ruby-regexp re">/Test$/</span>, <span class="ruby-value str">''</span>).<span class="ruby-identifier">constantize</span>
+87:       <span class="ruby-keyword kw">rescue</span> <span class="ruby-constant">NameError</span>
+88:         <span class="ruby-keyword kw">nil</span>
+89:       <span class="ruby-keyword kw">end</span>
+</pre>
+  </div>
+</div>
+</div>
+<div class="method">
+  <div class="title">
+    <a name="M000349"></a><b>helper_class</b>()
+  </div>
+<div class="sourcecode">
+  <p class="source-link">[ <a href="javascript:toggleSource('M000349_source')" id="l_M000349_source">show source</a> ]</p>
+  <div id="M000349_source" class="dyn-source">
+<pre>
+    <span class="ruby-comment cmt"># File actionpack/lib/action_view/test_case.rb, line 77</span>
+77:       <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">helper_class</span>
+78:         <span class="ruby-keyword kw">if</span> <span class="ruby-identifier">current_helper_class</span> = <span class="ruby-identifier">read_inheritable_attribute</span>(<span class="ruby-identifier">:helper_class</span>)
+79:           <span class="ruby-identifier">current_helper_class</span>
+80:         <span class="ruby-keyword kw">else</span>
+81:           <span class="ruby-keyword kw">self</span>.<span class="ruby-identifier">helper_class</span> = <span class="ruby-identifier">determine_default_helper_class</span>(<span class="ruby-identifier">name</span>)
+82:         <span class="ruby-keyword kw">end</span>
+83:       <span class="ruby-keyword kw">end</span>
+</pre>
+  </div>
+</div>
+</div>
+<div class="method">
+  <div class="title">
+    <a name="M000351"></a><b>helper_method</b>(*methods)
+  </div>
+<div class="sourcecode">
+  <p class="source-link">[ <a href="javascript:toggleSource('M000351_source')" id="l_M000351_source">show source</a> ]</p>
+  <div id="M000351_source" class="dyn-source">
+<pre>
+    <span class="ruby-comment cmt"># File actionpack/lib/action_view/test_case.rb, line 91</span>
+91:       <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">helper_method</span>(<span class="ruby-operator">*</span><span class="ruby-identifier">methods</span>)
+92:         <span class="ruby-comment cmt"># Almost a duplicate from ActionController::Helpers</span>
+93:         <span class="ruby-identifier">methods</span>.<span class="ruby-identifier">flatten</span>.<span class="ruby-identifier">each</span> <span class="ruby-keyword kw">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">method</span><span class="ruby-operator">|</span>
+94:           <span class="ruby-identifier">master_helper_module</span>.<span class="ruby-identifier">module_eval</span> <span class="ruby-value str">&quot;def \#{method}(*args, &amp;block)                    # def current_user(*args, &amp;block)\n_test_case.send(%(\#{method}), *args, &amp;block)  #   test_case.send(%(current_user), *args, &amp;block)\nend                                             # end\n&quot;</span>
+95:         <span class="ruby-keyword kw">end</span>
+96:       <span class="ruby-keyword kw">end</span>
+</pre>
+  </div>
+</div>
+</div>
+<div class="method">
+  <div class="title">
+    <a name="M000348"></a><b>tests</b>(helper_class)
+  </div>
+<div class="sourcecode">
+  <p class="source-link">[ <a href="javascript:toggleSource('M000348_source')" id="l_M000348_source">show source</a> ]</p>
+  <div id="M000348_source" class="dyn-source">
+<pre>
+    <span class="ruby-comment cmt"># File actionpack/lib/action_view/test_case.rb, line 73</span>
+73:       <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">tests</span>(<span class="ruby-identifier">helper_class</span>)
+74:         <span class="ruby-keyword kw">self</span>.<span class="ruby-identifier">helper_class</span> = <span class="ruby-identifier">helper_class</span>
+75:       <span class="ruby-keyword kw">end</span>
+</pre>
+  </div>
+</div>
+</div>
+<div class="sectiontitle">Public Instance methods</div>
+<div class="method">
+  <div class="title">
+    <a name="M000347"></a><b>protect_against_forgery?</b>()
+  </div>
+<div class="sourcecode">
+  <p class="source-link">[ <a href="javascript:toggleSource('M000347_source')" id="l_M000347_source">show source</a> ]</p>
+  <div id="M000347_source" class="dyn-source">
+<pre>
+    <span class="ruby-comment cmt"># File actionpack/lib/action_view/test_case.rb, line 68</span>
+68:     <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">protect_against_forgery?</span>
+69:       <span class="ruby-keyword kw">false</span>
+70:     <span class="ruby-keyword kw">end</span>
+</pre>
+  </div>
+</div>
+</div>
+<div class="method">
+  <div class="title">
+    <a name="M000346"></a><b>render</b>(options = {}, local_assigns = {}, &amp;block)
+  </div>
+<div class="sourcecode">
+  <p class="source-link">[ <a href="javascript:toggleSource('M000346_source')" id="l_M000346_source">show source</a> ]</p>
+  <div id="M000346_source" class="dyn-source">
+<pre>
+    <span class="ruby-comment cmt"># File actionpack/lib/action_view/test_case.rb, line 63</span>
+63:     <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">render</span>(<span class="ruby-identifier">options</span> = {}, <span class="ruby-identifier">local_assigns</span> = {}, <span class="ruby-operator">&amp;</span><span class="ruby-identifier">block</span>)
+64:       <span class="ruby-ivar">@rendered</span> <span class="ruby-operator">&lt;&lt;</span> <span class="ruby-identifier">output</span> = <span class="ruby-identifier">_view</span>.<span class="ruby-identifier">render</span>(<span class="ruby-identifier">options</span>, <span class="ruby-identifier">local_assigns</span>, <span class="ruby-operator">&amp;</span><span class="ruby-identifier">block</span>)
+65:       <span class="ruby-identifier">output</span>
+66:     <span class="ruby-keyword kw">end</span>
+</pre>
+  </div>
+</div>
+</div>
+<div class="method">
+  <div class="title">
+    <a name="M000345"></a><b>setup_with_controller</b>()
+  </div>
+<div class="sourcecode">
+  <p class="source-link">[ <a href="javascript:toggleSource('M000345_source')" id="l_M000345_source">show source</a> ]</p>
+  <div id="M000345_source" class="dyn-source">
+<pre>
+    <span class="ruby-comment cmt"># File actionpack/lib/action_view/test_case.rb, line 54</span>
+54:     <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">setup_with_controller</span>
+55:       <span class="ruby-ivar">@controller</span> = <span class="ruby-constant">TestController</span>.<span class="ruby-identifier">new</span>
+56:       <span class="ruby-ivar">@output_buffer</span> = <span class="ruby-value str">''</span>
+57:       <span class="ruby-ivar">@rendered</span> = <span class="ruby-value str">''</span>
+58: 
+59:       <span class="ruby-keyword kw">self</span>.<span class="ruby-identifier">class</span>.<span class="ruby-identifier">send</span>(<span class="ruby-identifier">:include_helper_modules!</span>)
+60:       <span class="ruby-identifier">make_test_case_available_to_view!</span>
+61:     <span class="ruby-keyword kw">end</span>
+</pre>
+  </div>
+</div>
+</div>
+</div>
+
+  </div>
+
+    </body>
+</html>

@@ -1,0 +1,59 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>2 Creating Your First Generator</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v4.2.11.3/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="creating-your-first-generator">2 Creating Your First Generator</h3>
+<p>Since Rails 3.0, generators are built on top of <a href="https://github.com/erikhuda/thor">Thor</a>. Thor provides powerful options for parsing and a great API for manipulating files. For instance, let's build a generator that creates an initializer file named <code>initializer.rb</code> inside <code>config/initializers</code>.</p>
+
+<p>The first step is to create a file at <code>lib/generators/initializer_generator.rb</code> with the following content:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class InitializerGenerator &lt; Rails::Generators::Base
+  def create_initializer_file
+    create_file "config/initializers/initializer.rb", "# Add initialization content here"
+  end
+end
+
+</pre>
+</div>
+<div class="note"><p><code>create_file</code> is a method provided by <code>Thor::Actions</code>. Documentation for <code>create_file</code> and other Thor methods can be found in <a href="http://rdoc.info/github/erikhuda/thor/master/Thor/Actions.html">Thor's documentation</a></p></div>
+
+<p>Our new generator is quite simple: it inherits from <code>Rails::Generators::Base</code> and has one method definition. When a generator is invoked, each public method in the generator is executed sequentially in the order that it is defined. Finally, we invoke the <code>create_file</code> method that will create a file at the given destination with the given content. If you are familiar with the Rails Application Templates API, you'll feel right at home with the new generators API.</p>
+
+<p>To invoke our new generator, we just need to do:</p>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+$ bin/rails generate initializer
+
+</pre>
+</div>
+<p>Before we go on, let's see our brand new generator description:</p>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+$ bin/rails generate initializer --help
+
+</pre>
+</div>
+<p>Rails is usually able to generate good descriptions if a generator is namespaced, as <code>ActiveRecord::Generators::ModelGenerator</code>, but not in this particular case. We can solve this problem in two ways. The first one is calling <code>desc</code> inside our generator:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class InitializerGenerator &lt; Rails::Generators::Base
+  desc "This generator creates an initializer file at config/initializers"
+  def create_initializer_file
+    create_file "config/initializers/initializer.rb", "# Add initialization content here"
+  end
+end
+
+</pre>
+</div>
+<p>Now we can see the new description by invoking <code>--help</code> on the new generator. The second way to add a description is by creating a file named <code>USAGE</code> in the same directory as our generator. We are going to do that in the next step.</p>
+</body>
+</html>

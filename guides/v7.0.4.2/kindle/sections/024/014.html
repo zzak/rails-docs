@@ -1,0 +1,75 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>15 Testing Eager Loading</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v7.0.4.2/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="testing-eager-loading"><a class="anchorlink" href="#testing-eager-loading">15 Testing Eager Loading</a></h3>
+<p>Normally, applications do not eager load in the <code>development</code> or <code>test</code> environments to speed things up. But they do in the <code>production</code> environment.</p>
+
+<p>If some file in the project cannot be loaded for whatever reason, you better detect it before deploying to production, right?</p>
+
+<h4 id="continuous-integration"><a class="anchorlink" href="#continuous-integration">15.1 Continuous Integration</a></h4>
+
+<p>If your project has CI in place, eager loading in CI is an easy way to ensure the application eager loads.</p>
+
+<p>CIs typically set some environment variable to indicate the test suite is running there. For example, it could be <code>CI</code>:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="c1"># config/environments/test.rb</span>
+<span class="n">config</span><span class="p">.</span><span class="nf">eager_load</span> <span class="o">=</span> <span class="no">ENV</span><span class="p">[</span><span class="s2">"CI"</span><span class="p">].</span><span class="nf">present?</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='# config/environments/test.rb
+config.eager_load = ENV["CI"].present?
+'>Copy</button>
+</div>
+<p>Starting with Rails 7, newly generated applications are configured that way by default.</p>
+
+<h4 id="bare-test-suites"><a class="anchorlink" href="#bare-test-suites">15.2 Bare Test Suites</a></h4>
+
+<p>If your project does not have continuous integration, you can still eager load in the test suite by calling <code>Rails.application.eager_load!</code>:</p>
+
+<h5 id="minitest"><a class="anchorlink" href="#minitest">15.2.1 minitest</a></h5>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="nb">require</span> <span class="s2">"test_helper"</span>
+
+<span class="k">class</span> <span class="nc">ZeitwerkComplianceTest</span> <span class="o">&lt;</span> <span class="no">ActiveSupport</span><span class="o">::</span><span class="no">TestCase</span>
+  <span class="nb">test</span> <span class="s2">"eager loads all files without errors"</span> <span class="k">do</span>
+    <span class="n">assert_nothing_raised</span> <span class="p">{</span> <span class="no">Rails</span><span class="p">.</span><span class="nf">application</span><span class="p">.</span><span class="nf">eager_load!</span> <span class="p">}</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='require "test_helper"
+
+class ZeitwerkComplianceTest &lt; ActiveSupport::TestCase
+  test "eager loads all files without errors" do
+    assert_nothing_raised { Rails.application.eager_load! }
+  end
+end
+'>Copy</button>
+</div>
+<h5 id="rspec"><a class="anchorlink" href="#rspec">15.2.2 RSpec</a></h5>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="nb">require</span> <span class="s2">"rails_helper"</span>
+
+<span class="no">RSpec</span><span class="p">.</span><span class="nf">describe</span> <span class="s2">"Zeitwerk compliance"</span> <span class="k">do</span>
+  <span class="n">it</span> <span class="s2">"eager loads all files without errors"</span> <span class="k">do</span>
+    <span class="n">expect</span> <span class="p">{</span> <span class="no">Rails</span><span class="p">.</span><span class="nf">application</span><span class="p">.</span><span class="nf">eager_load!</span> <span class="p">}.</span><span class="nf">not_to</span> <span class="n">raise_error</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='require "rails_helper"
+
+RSpec.describe "Zeitwerk compliance" do
+  it "eager loads all files without errors" do
+    expect { Rails.application.eager_load! }.not_to raise_error
+  end
+end
+'>Copy</button>
+</div>
+</body>
+</html>

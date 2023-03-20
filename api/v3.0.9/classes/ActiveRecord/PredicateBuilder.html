@@ -1,0 +1,196 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html 
+     PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+  <head>
+    <title>Class: ActiveRecord::PredicateBuilder</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <link rel="stylesheet" href="../../rdoc-style.css" type="text/css" media="screen" />
+
+    <script language="JavaScript" type="text/javascript">
+    // <![CDATA[
+
+        function toggleSource( id )
+        {
+          var elem
+          var link
+
+          if( document.getElementById )
+          {
+            elem = document.getElementById( id )
+            link = document.getElementById( "l_" + id )
+          }
+          else if ( document.all )
+          {
+            elem = eval( "document.all." + id )
+            link = eval( "document.all.l_" + id )
+          }
+          else
+            return false;
+
+          if( elem.style.display == "block" )
+          {
+            elem.style.display = "none"
+            link.innerHTML = "show source"
+          }
+          else
+          {
+            elem.style.display = "block"
+            link.innerHTML = "hide source"
+          }
+        }
+
+        function openCode( url )
+        {
+          window.open( url, "SOURCE_CODE", "resizable=yes,scrollbars=yes,toolbar=no,status=no,height=480,width=750" ).focus();
+        }
+      // ]]>
+    </script>
+  </head>
+
+  <body>
+    <table width="100%" border='0' cellpadding='0' cellspacing='0' class='banner'>
+    <tr><td>Ruby on Rails v3.0.9</td></tr>
+    <tr>
+  <td class="file-title"><span class="file-title-prefix">Class</span><br />ActiveRecord::PredicateBuilder</td>
+  <td align="right">
+    <table cellspacing="0" cellpadding="2">
+      <tr valign="top">
+        <td>In:</td>
+        <td>
+<a href="../../files/activerecord/lib/active_record/relation/predicate_builder_rb.html">activerecord/lib/active_record/relation/predicate_builder.rb</a>:
+        </td>
+      </tr>
+      <tr>
+        <td>Parent:</td>
+        <td>
+
+      <a href="../Object.html">Object</a>         </td>
+     </tr>
+         </table>
+        </td>
+        </tr>
+      </table>
+  <div id="bodyContent">
+  <div id="content">
+
+  <div class="description"></div>
+
+
+  <div class="sectiontitle">Methods</div>
+  <ul>
+                <li><a href="#method-i-build_from_hash">build_from_hash</a></li>
+                <li><a href="#method-c-new">new</a></li>
+      </ul>
+
+
+
+
+        
+    <div class="sectiontitle">
+      Public      Class      methods
+    </div>
+
+          
+      <div class="method">
+        <div class="title">
+                      <a name="method-c-new"></a>
+            <b>new</b>(engine)          
+        </div>
+
+                  <div class="description">
+                      </div>
+        
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('new_source')"
+                 id="l_method-c-new_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="new_source">
+<pre>
+  <span class="ruby-comment"># File activerecord/lib/active_record/relation/predicate_builder.rb, line 4</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">initialize</span>(<span class="ruby-identifier">engine</span>)
+  <span class="ruby-ivar">@engine</span> = <span class="ruby-identifier">engine</span>
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+                      
+    <div class="sectiontitle">
+      Public      Instance      methods
+    </div>
+
+          
+      <div class="method">
+        <div class="title">
+                      <a name="method-i-build_from_hash"></a>
+            <b>build_from_hash</b>(attributes, default_table)          
+        </div>
+
+                  <div class="description">
+                      </div>
+        
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('build_from_hash_source')"
+                 id="l_method-i-build_from_hash_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="build_from_hash_source">
+<pre>
+  <span class="ruby-comment"># File activerecord/lib/active_record/relation/predicate_builder.rb, line 8</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">build_from_hash</span>(<span class="ruby-identifier">attributes</span>, <span class="ruby-identifier">default_table</span>)
+  <span class="ruby-identifier">predicates</span> = <span class="ruby-identifier">attributes</span>.<span class="ruby-identifier">map</span> <span class="ruby-keyword">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">column</span>, <span class="ruby-identifier">value</span><span class="ruby-operator">|</span>
+    <span class="ruby-identifier">table</span> = <span class="ruby-identifier">default_table</span>
+
+    <span class="ruby-keyword">if</span> <span class="ruby-identifier">value</span>.<span class="ruby-identifier">is_a?</span>(<span class="ruby-constant">Hash</span>)
+      <span class="ruby-identifier">table</span> = <span class="ruby-constant">Arel</span><span class="ruby-operator">::</span><span class="ruby-constant">Table</span>.<span class="ruby-identifier">new</span>(<span class="ruby-identifier">column</span>, <span class="ruby-value">:engine</span> =<span class="ruby-operator">&gt;</span> <span class="ruby-ivar">@engine</span>)
+      <span class="ruby-identifier">build_from_hash</span>(<span class="ruby-identifier">value</span>, <span class="ruby-identifier">table</span>)
+    <span class="ruby-keyword">else</span>
+      <span class="ruby-identifier">column</span> = <span class="ruby-identifier">column</span>.<span class="ruby-identifier">to_s</span>
+
+      <span class="ruby-keyword">if</span> <span class="ruby-identifier">column</span>.<span class="ruby-identifier">include?</span>(<span class="ruby-string">'.'</span>)
+        <span class="ruby-identifier">table_name</span>, <span class="ruby-identifier">column</span> = <span class="ruby-identifier">column</span>.<span class="ruby-identifier">split</span>(<span class="ruby-string">'.'</span>, <span class="ruby-value">2</span>)
+        <span class="ruby-identifier">table</span> = <span class="ruby-constant">Arel</span><span class="ruby-operator">::</span><span class="ruby-constant">Table</span>.<span class="ruby-identifier">new</span>(<span class="ruby-identifier">table_name</span>, <span class="ruby-value">:engine</span> =<span class="ruby-operator">&gt;</span> <span class="ruby-ivar">@engine</span>)
+      <span class="ruby-keyword">end</span>
+
+      <span class="ruby-identifier">attribute</span> = <span class="ruby-identifier">table</span>[<span class="ruby-identifier">column</span>] <span class="ruby-operator">||</span> <span class="ruby-constant">Arel</span><span class="ruby-operator">::</span><span class="ruby-constant">Attribute</span>.<span class="ruby-identifier">new</span>(<span class="ruby-identifier">table</span>, <span class="ruby-identifier">column</span>)
+
+      <span class="ruby-keyword">case</span> <span class="ruby-identifier">value</span>
+      <span class="ruby-keyword">when</span> <span class="ruby-constant">Array</span>, <span class="ruby-constant">ActiveRecord</span><span class="ruby-operator">::</span><span class="ruby-constant">Associations</span><span class="ruby-operator">::</span><span class="ruby-constant">AssociationCollection</span>, <span class="ruby-constant">ActiveRecord</span><span class="ruby-operator">::</span><span class="ruby-constant">Relation</span>
+        <span class="ruby-identifier">values</span> = <span class="ruby-identifier">value</span>.<span class="ruby-identifier">to_a</span>.<span class="ruby-identifier">map</span> { <span class="ruby-operator">|</span><span class="ruby-identifier">x</span><span class="ruby-operator">|</span>
+          <span class="ruby-identifier">x</span>.<span class="ruby-identifier">is_a?</span>(<span class="ruby-constant">ActiveRecord</span><span class="ruby-operator">::</span><span class="ruby-constant">Base</span>) <span class="ruby-operator">?</span> <span class="ruby-identifier">x</span>.<span class="ruby-identifier">id</span> <span class="ruby-operator">:</span> <span class="ruby-identifier">x</span>
+        }
+        <span class="ruby-identifier">attribute</span>.<span class="ruby-identifier">in</span>(<span class="ruby-identifier">values</span>)
+      <span class="ruby-keyword">when</span> <span class="ruby-constant">Range</span>, <span class="ruby-constant">Arel</span><span class="ruby-operator">::</span><span class="ruby-constant">Relation</span>
+        <span class="ruby-identifier">attribute</span>.<span class="ruby-identifier">in</span>(<span class="ruby-identifier">value</span>)
+      <span class="ruby-keyword">when</span> <span class="ruby-constant">ActiveRecord</span><span class="ruby-operator">::</span><span class="ruby-constant">Base</span>
+        <span class="ruby-identifier">attribute</span>.<span class="ruby-identifier">eq</span>(<span class="ruby-identifier">value</span>.<span class="ruby-identifier">id</span>)
+      <span class="ruby-keyword">when</span> <span class="ruby-constant">Class</span>
+        <span class="ruby-comment"># FIXME: I think we need to deprecate this behavior</span>
+        <span class="ruby-identifier">attribute</span>.<span class="ruby-identifier">eq</span>(<span class="ruby-identifier">value</span>.<span class="ruby-identifier">name</span>)
+      <span class="ruby-keyword">else</span>
+        <span class="ruby-identifier">attribute</span>.<span class="ruby-identifier">eq</span>(<span class="ruby-identifier">value</span>)
+      <span class="ruby-keyword">end</span>
+    <span class="ruby-keyword">end</span>
+  <span class="ruby-keyword">end</span>
+
+  <span class="ruby-identifier">predicates</span>.<span class="ruby-identifier">flatten</span>
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+              </div>
+  </div>
+  </body>
+</html>

@@ -1,0 +1,25 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>11 Readonly Objects</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v6.1.7.3/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="readonly-objects"><a class="anchorlink" href="#readonly-objects">11 Readonly Objects</a></h3>
+<p>Active Record provides the <a href="https://api.rubyonrails.org/v6.1.7.3/classes/ActiveRecord/QueryMethods.html#method-i-readonly"><code>readonly</code></a> method on a relation to explicitly disallow modification of any of the returned objects. Any attempt to alter a readonly record will not succeed, raising an <code>ActiveRecord::ReadOnlyRecord</code> exception.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">customer</span> <span class="o">=</span> <span class="no">Customer</span><span class="p">.</span><span class="nf">readonly</span><span class="p">.</span><span class="nf">first</span>
+<span class="n">customer</span><span class="p">.</span><span class="nf">visits</span> <span class="o">+=</span> <span class="mi">1</span>
+<span class="n">customer</span><span class="p">.</span><span class="nf">save</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-ff9e693d37a077ce9434b4654615bbbf">customer = Customer.readonly.first
+customer.visits += 1
+customer.save
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-ff9e693d37a077ce9434b4654615bbbf">Copy</button>
+</div>
+<p>As <code>customer</code> is explicitly set to be a readonly object, the above code will raise an <code>ActiveRecord::ReadOnlyRecord</code> exception when calling <code>customer.save</code> with an updated value of <em>visits</em>.</p>
+</body>
+</html>

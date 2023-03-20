@@ -1,0 +1,61 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>10 Modifying code to use on_load hooks</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v5.1.7/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="modifying-code-to-use-on-load-hooks">10 Modifying code to use <code>on_load</code> hooks</h3>
+<p>Modifying code is generally straightforward. If you have a line of code that refers to a Rails framework such as <code>ActiveRecord::Base</code> you can wrap that code in an <code>on_load</code> hook.</p>
+
+<h4 id="example-1">10.1 Example 1</h4>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+ActiveRecord::Base.include(MyActiveRecordHelper)
+
+</pre>
+</div>
+<p>becomes</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+ActiveSupport.on_load(:active_record) { include MyActiveRecordHelper } # self refers to ActiveRecord::Base here, so we can simply #include
+
+</pre>
+</div>
+<h4 id="example-2">10.2 Example 2</h4>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+ActionController::Base.prepend(MyActionControllerHelper)
+
+</pre>
+</div>
+<p>becomes</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+ActiveSupport.on_load(:action_controller_base) { prepend MyActionControllerHelper } # self refers to ActionController::Base here, so we can simply #prepend
+
+</pre>
+</div>
+<h4 id="example-3">10.3 Example 3</h4>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+ActiveRecord::Base.include_root_in_json = true
+
+</pre>
+</div>
+<p>becomes</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+ActiveSupport.on_load(:active_record) { self.include_root_in_json = true } # self refers to ActiveRecord::Base here
+
+</pre>
+</div>
+</body>
+</html>

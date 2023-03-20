@@ -1,0 +1,140 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>10 Active Support</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v6.0.6.1/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="active-support"><a class="anchorlink" href="#active-support">10 Active Support</a></h3>
+<p>Please refer to the <a href="https://github.com/rails/rails/blob/5-2-stable/activesupport/CHANGELOG.md">Changelog</a> for detailed changes.</p>
+
+<h4 id="removals"><a class="anchorlink" href="#removals">10.1 Removals</a></h4>
+<ul>
+<li>  Remove deprecated <code>:if</code> and <code>:unless</code> string filter for callbacks.
+(<a href="https://github.com/rails/rails/commit/c792354adcbf8c966f274915c605c6713b840548">Commit</a>)</li>
+<li>  Remove deprecated <code>halt_callback_chains_on_return_false</code> option.
+(<a href="https://github.com/rails/rails/commit/19fbbebb1665e482d76cae30166b46e74ceafe29">Commit</a>)</li>
+</ul>
+<h4 id="deprecations"><a class="anchorlink" href="#deprecations">10.2 Deprecations</a></h4>
+<ul>
+<li>  Deprecate <code>Module#reachable?</code> method.
+(<a href="https://github.com/rails/rails/pull/30624">Pull Request</a>)</li>
+<li>  Deprecate <code>secrets.secret_token</code>.
+(<a href="https://github.com/rails/rails/commit/fbcc4bfe9a211e219da5d0bb01d894fcdaef0a0e">Commit</a>)</li>
+</ul>
+<h4 id="active-support-notable-changes"><a class="anchorlink" href="#active-support-notable-changes">10.3 Notable changes</a></h4>
+<ul>
+<li>  Add <code>fetch_values</code> for <code>HashWithIndifferentAccess</code>.
+(<a href="https://github.com/rails/rails/pull/28316">Pull Request</a>)</li>
+<li>  Add support for <code>:offset</code> to <code>Time#change</code>.
+(<a href="https://github.com/rails/rails/commit/851b7f866e13518d900407c78dcd6eb477afad06">Commit</a>)</li>
+<li>  Add support for <code>:offset</code> and <code>:zone</code>
+to <code>ActiveSupport::TimeWithZone#change</code>.
+(<a href="https://github.com/rails/rails/commit/851b7f866e13518d900407c78dcd6eb477afad06">Commit</a>)</li>
+<li>  Pass gem name and deprecation horizon to deprecation notifications.
+(<a href="https://github.com/rails/rails/pull/28800">Pull Request</a>)</li>
+<li>  Add support for versioned cache entries. This enables the cache stores to
+recycle cache keys, greatly saving on storage in cases with frequent churn.
+Works together with the separation of <code>#cache_key</code> and <code>#cache_version</code>
+in Active Record and its use in Action Pack's fragment caching.
+(<a href="https://github.com/rails/rails/pull/29092">Pull Request</a>)</li>
+<li>  Add <code>ActiveSupport::CurrentAttributes</code> to provide a thread-isolated
+attributes singleton. Primary use case is keeping all the per-request
+attributes easily available to the whole system.
+(<a href="https://github.com/rails/rails/pull/29180">Pull Request</a>)</li>
+<li>  <code>#singularize</code> and <code>#pluralize</code> now respect uncountables for
+the specified locale.
+(<a href="https://github.com/rails/rails/commit/352865d0f835c24daa9a2e9863dcc9dde9e5371a">Commit</a>)</li>
+<li>  Add default option to <code>class_attribute</code>.
+(<a href="https://github.com/rails/rails/pull/29270">Pull Request</a>)</li>
+<li>  Add <code>Date#prev_occurring</code> and <code>Date#next_occurring</code> to return
+specified next/previous occurring day of week.
+(<a href="https://github.com/rails/rails/pull/26600">Pull Request</a>)</li>
+<li>  Add default option to module and class attribute accessors.
+(<a href="https://github.com/rails/rails/pull/29294">Pull Request</a>)</li>
+<li>  Cache: <code>write_multi</code>.
+(<a href="https://github.com/rails/rails/pull/29366">Pull Request</a>)</li>
+<li>  Default <code>ActiveSupport::MessageEncryptor</code> to use AES 256 GCM encryption.
+(<a href="https://github.com/rails/rails/pull/29263">Pull Request</a>)</li>
+<li>  Add <code>freeze_time</code> helper which freezes time to <code>Time.now</code> in tests.
+(<a href="https://github.com/rails/rails/pull/29681">Pull Request</a>)</li>
+<li>  Make the order of <code>Hash#reverse_merge!</code> consistent
+with <code>HashWithIndifferentAccess</code>.
+(<a href="https://github.com/rails/rails/pull/28077">Pull Request</a>)</li>
+<li>  Add purpose and expiry support to <code>ActiveSupport::MessageVerifier</code> and
+<code>ActiveSupport::MessageEncryptor</code>.
+(<a href="https://github.com/rails/rails/pull/29892">Pull Request</a>)</li>
+<li>  Update <code>String#camelize</code> to provide feedback when wrong option is passed.
+(<a href="https://github.com/rails/rails/pull/30039">Pull Request</a>)</li>
+<li>  <code>Module#delegate_missing_to</code> now raises <code>DelegationError</code> if target is nil,
+similar to <code>Module#delegate</code>.
+(<a href="https://github.com/rails/rails/pull/30191">Pull Request</a>)</li>
+<li>  Add <code>ActiveSupport::EncryptedFile</code> and
+<code>ActiveSupport::EncryptedConfiguration</code>.
+(<a href="https://github.com/rails/rails/pull/30067">Pull Request</a>)</li>
+<li>  Add <code>config/credentials.yml.enc</code> to store production app secrets.
+(<a href="https://github.com/rails/rails/pull/30067">Pull Request</a>)</li>
+<li>  Add key rotation support to <code>MessageEncryptor</code> and <code>MessageVerifier</code>.
+(<a href="https://github.com/rails/rails/pull/29716">Pull Request</a>)</li>
+<li>  Return an instance of <code>HashWithIndifferentAccess</code> from
+<code>HashWithIndifferentAccess#transform_keys</code>.
+(<a href="https://github.com/rails/rails/pull/30728">Pull Request</a>)</li>
+<li>  <code>Hash#slice</code> now falls back to Ruby 2.5+'s built-in definition if defined.
+(<a href="https://github.com/rails/rails/commit/01ae39660243bc5f0a986e20f9c9bff312b1b5f8">Commit</a>)</li>
+<li>  <code>IO#to_json</code> now returns the <code>to_s</code> representation, rather than
+attempting to convert to an array. This fixes a bug where <code>IO#to_json</code>
+would raise an <code>IOError</code> when called on an unreadable object.
+(<a href="https://github.com/rails/rails/pull/30953">Pull Request</a>)</li>
+<li>  Add same method signature for <code>Time#prev_day</code> and <code>Time#next_day</code>
+in accordance with <code>Date#prev_day</code>, <code>Date#next_day</code>.
+Allows pass argument for <code>Time#prev_day</code> and <code>Time#next_day</code>.
+(<a href="https://github.com/rails/rails/commit/61ac2167eff741bffb44aec231f4ea13d004134e">Commit</a>)</li>
+<li>  Add same method signature for <code>Time#prev_month</code> and <code>Time#next_month</code>
+in accordance with <code>Date#prev_month</code>, <code>Date#next_month</code>.
+Allows pass argument for <code>Time#prev_month</code> and <code>Time#next_month</code>.
+(<a href="https://github.com/rails/rails/commit/f2c1e3a793570584d9708aaee387214bc3543530">Commit</a>)</li>
+<li>  Add same method signature for <code>Time#prev_year</code> and <code>Time#next_year</code>
+in accordance with <code>Date#prev_year</code>, <code>Date#next_year</code>.
+Allows pass argument for <code>Time#prev_year</code> and <code>Time#next_year</code>.
+(<a href="https://github.com/rails/rails/commit/ee9d81837b5eba9d5ec869ae7601d7ffce763e3e">Commit</a>)</li>
+<li>  Fix acronym support in <code>humanize</code>.
+(<a href="https://github.com/rails/rails/commit/0ddde0a8fca6a0ca3158e3329713959acd65605d">Commit</a>)</li>
+<li>  Allow <code>Range#include?</code> on TWZ ranges.
+(<a href="https://github.com/rails/rails/pull/31081">Pull Request</a>)</li>
+<li>  Cache: Enable compression by default for values &gt; 1kB.
+(<a href="https://github.com/rails/rails/pull/31147">Pull Request</a>)</li>
+<li>  Redis cache store.
+(<a href="https://github.com/rails/rails/pull/31134">Pull Request</a>,
+<a href="https://github.com/rails/rails/pull/31866">Pull Request</a>)</li>
+<li>  Handle <code>TZInfo::AmbiguousTime</code> errors.
+(<a href="https://github.com/rails/rails/pull/31128">Pull Request</a>)</li>
+<li>  MemCacheStore: Support expiring counters.
+(<a href="https://github.com/rails/rails/commit/b22ee64b5b30c6d5039c292235e10b24b1057f6d">Commit</a>)</li>
+<li>  Make <code>ActiveSupport::TimeZone.all</code> return only time zones that are in
+<code>ActiveSupport::TimeZone::MAPPING</code>.
+(<a href="https://github.com/rails/rails/pull/31176">Pull Request</a>)</li>
+<li>  Changed default behaviour of <code>ActiveSupport::SecurityUtils.secure_compare</code>,
+to make it not leak length information even for variable length string.
+Renamed old <code>ActiveSupport::SecurityUtils.secure_compare</code> to
+<code>fixed_length_secure_compare</code>, and started raising <code>ArgumentError</code> in
+case of length mismatch of passed strings.
+(<a href="https://github.com/rails/rails/pull/24510">Pull Request</a>)</li>
+<li>  Use SHA-1 to generate non-sensitive digests, such as the ETag header.
+(<a href="https://github.com/rails/rails/pull/31289">Pull Request</a>,
+<a href="https://github.com/rails/rails/pull/31651">Pull Request</a>)</li>
+<li>  <code>assert_changes</code> will always assert that the expression changes,
+regardless of <code>from:</code> and <code>to:</code> argument combinations.
+(<a href="https://github.com/rails/rails/pull/31011">Pull Request</a>)</li>
+<li>  Add missing instrumentation for <code>read_multi</code>
+in <code>ActiveSupport::Cache::Store</code>.
+(<a href="https://github.com/rails/rails/pull/30268">Pull Request</a>)</li>
+<li>  Support hash as first argument in <code>assert_difference</code>.
+This allows to specify multiple numeric differences in the same assertion.
+(<a href="https://github.com/rails/rails/pull/31600">Pull Request</a>)</li>
+<li>  Caching: MemCache and Redis <code>read_multi</code> and <code>fetch_multi</code> speedup.
+Read from the local in-memory cache before consulting the backend.
+(<a href="https://github.com/rails/rails/commit/a2b97e4ffef971607a1be8fc7909f099b6840f36">Commit</a>)</li>
+</ul>
+</body>
+</html>

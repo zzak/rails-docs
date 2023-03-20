@@ -1,0 +1,85 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>2 Generators and Migrations</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v6.1.7.3/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="generators-and-migrations"><a class="anchorlink" href="#generators-and-migrations">2 Generators and Migrations</a></h3>
+<p>Migrations for multiple databases should live in their own folders prefixed with the
+name of the database key in the configuration.</p>
+
+<p>You also need to set the <code>migrations_paths</code> in the database configurations to tell Rails
+where to find the migrations.</p>
+
+<p>For example the <code>animals</code> database would look for migrations in the <code>db/animals_migrate</code> directory and
+<code>primary</code> would look in <code>db/migrate</code>. Rails generators now take a <code>--database</code> option
+so that the file is generated in the correct directory. The command can be run like so:</p>
+
+<div class="code_container">
+<pre><code class="highlight console"><span class="gp">$</span><span class="w"> </span><span class="nb">bin/rails </span>generate migration CreateDogs name:string <span class="nt">--database</span> animals
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-f2d970a5b8854d23b736b8c87dbc792c">bin/rails generate migration CreateDogs name:string --database animals
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-f2d970a5b8854d23b736b8c87dbc792c">Copy</button>
+</div>
+<p>If you are using Rails generators, the scaffold and model generators will create the abstract
+class for you. Simply pass the database key to the command line</p>
+
+<div class="code_container">
+<pre><code class="highlight console"><span class="gp">$</span><span class="w"> </span><span class="nb">bin/rails </span>generate scaffold Dog name:string <span class="nt">--database</span> animals
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-7bb7e970fba7a4e1e7e1df81928cc4be">bin/rails generate scaffold Dog name:string --database animals
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-7bb7e970fba7a4e1e7e1df81928cc4be">Copy</button>
+</div>
+<p>A class with the database name and <code>Record</code> will be created. In this example
+the database is <code>Animals</code> so we end up with <code>AnimalsRecord</code>:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">AnimalsRecord</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="nb">self</span><span class="p">.</span><span class="nf">abstract_class</span> <span class="o">=</span> <span class="kp">true</span>
+
+  <span class="n">connects_to</span> <span class="ss">database: </span><span class="p">{</span> <span class="ss">writing: :animals</span> <span class="p">}</span>
+<span class="k">end</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-0ec1f219199be77e6a7fb89b7ea6e33d">class AnimalsRecord &lt; ApplicationRecord
+  self.abstract_class = true
+
+  connects_to database: { writing: :animals }
+end
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-0ec1f219199be77e6a7fb89b7ea6e33d">Copy</button>
+</div>
+<p>The generated model will automatically inherit from <code>AnimalsRecord</code>.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">Dog</span> <span class="o">&lt;</span> <span class="no">AnimalsRecord</span>
+<span class="k">end</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-2b65071004c5e40f05ff2cd0bdb24a89">class Dog &lt; AnimalsRecord
+end
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-2b65071004c5e40f05ff2cd0bdb24a89">Copy</button>
+</div>
+<p>Note: Since Rails doesn't know which database is the replica for your writer you will need to
+add this to the abstract class after you're done.</p>
+
+<p>Rails will only generate the new class once. It will not be overwritten by new scaffolds
+or deleted if the scaffold is deleted.</p>
+
+<p>If you already have an abstract class and its name differs from <code>AnimalsRecord</code> you can pass
+the <code>--parent</code> option to indicate you want a different abstract class:</p>
+
+<div class="code_container">
+<pre><code class="highlight console"><span class="gp">$</span><span class="w"> </span><span class="nb">bin/rails </span>generate scaffold Dog name:string <span class="nt">--database</span> animals <span class="nt">--parent</span> Animals::Record
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-3ea0fd508eecfba7ab6b4726ea0cd0c4">bin/rails generate scaffold Dog name:string --database animals --parent Animals::Record
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-3ea0fd508eecfba7ab6b4726ea0cd0c4">Copy</button>
+</div>
+<p>This will skip generating <code>AnimalsRecord</code> since you've indicated to Rails that you want to
+use a different parent class.</p>
+</body>
+</html>

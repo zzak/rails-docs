@@ -1,0 +1,179 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>4 The Test Database</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v6.1.7.3/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="the-test-database"><a class="anchorlink" href="#the-test-database">4 The Test Database</a></h3>
+<p>Just about every Rails application interacts heavily with a database and, as a result, your tests will need a database to interact with as well. To write efficient tests, you'll need to understand how to set up this database and populate it with sample data.</p>
+
+<p>By default, every Rails application has three environments: development, test, and production. The database for each one of them is configured in <code>config/database.yml</code>.</p>
+
+<p>A dedicated test database allows you to set up and interact with test data in isolation. This way your tests can mangle test data with confidence, without worrying about the data in the development or production databases.</p>
+
+<h4 id="maintaining-the-test-database-schema"><a class="anchorlink" href="#maintaining-the-test-database-schema">4.1 Maintaining the test database schema</a></h4>
+
+<p>In order to run your tests, your test database will need to have the current
+structure. The test helper checks whether your test database has any pending
+migrations. It will try to load your <code>db/schema.rb</code> or <code>db/structure.sql</code>
+into the test database. If migrations are still pending, an error will be
+raised. Usually this indicates that your schema is not fully migrated. Running
+the migrations against the development database (<code>bin/rails db:migrate</code>) will
+bring the schema up to date.</p>
+
+<div class="note"><p>If there were modifications to existing migrations, the test database needs to
+be rebuilt. This can be done by executing <code>bin/rails db:test:prepare</code>.</p></div>
+
+<h4 id="the-low-down-on-fixtures"><a class="anchorlink" href="#the-low-down-on-fixtures">4.2 The Low-Down on Fixtures</a></h4>
+
+<p>For good tests, you'll need to give some thought to setting up test data.
+In Rails, you can handle this by defining and customizing fixtures.
+You can find comprehensive documentation in the <a href="https://api.rubyonrails.org/v6.1.7.3/classes/ActiveRecord/FixtureSet.html">Fixtures API documentation</a>.</p>
+
+<h5 id="what-are-fixtures-questionmark"><a class="anchorlink" href="#what-are-fixtures-questionmark">4.2.1 What are Fixtures?</a></h5>
+
+<p><em>Fixtures</em> is a fancy word for sample data. Fixtures allow you to populate your testing database with predefined data before your tests run. Fixtures are database independent and written in YAML. There is one file per model.</p>
+
+<div class="note"><p>Fixtures are not designed to create every object that your tests need, and are best managed when only used for default data that can be applied to the common case.</p></div>
+
+<p>You'll find fixtures under your <code>test/fixtures</code> directory. When you run <code>bin/rails generate model</code> to create a new model, Rails automatically creates fixture stubs in this directory.</p>
+
+<h5 id="yaml"><a class="anchorlink" href="#yaml">4.2.2 YAML</a></h5>
+
+<p>YAML-formatted fixtures are a human-friendly way to describe your sample data. These types of fixtures have the <strong>.yml</strong> file extension (as in <code>users.yml</code>).</p>
+
+<p>Here's a sample YAML fixture file:</p>
+
+<div class="code_container">
+<pre><code class="highlight yaml"><span class="c1"># lo &amp; behold! I am a YAML comment!</span>
+<span class="na">david</span><span class="pi">:</span>
+  <span class="na">name</span><span class="pi">:</span> <span class="s">David Heinemeier Hansson</span>
+  <span class="na">birthday</span><span class="pi">:</span> <span class="s">1979-10-15</span>
+  <span class="na">profession</span><span class="pi">:</span> <span class="s">Systems development</span>
+
+<span class="na">steve</span><span class="pi">:</span>
+  <span class="na">name</span><span class="pi">:</span> <span class="s">Steve Ross Kellock</span>
+  <span class="na">birthday</span><span class="pi">:</span> <span class="s">1974-09-27</span>
+  <span class="na">profession</span><span class="pi">:</span> <span class="s">guy with keyboard</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-de0fb3703525cc43e282ea83ed3670b6"># lo &amp; behold! I am a YAML comment!
+david:
+  name: David Heinemeier Hansson
+  birthday: 1979-10-15
+  profession: Systems development
+
+steve:
+  name: Steve Ross Kellock
+  birthday: 1974-09-27
+  profession: guy with keyboard
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-de0fb3703525cc43e282ea83ed3670b6">Copy</button>
+</div>
+<p>Each fixture is given a name followed by an indented list of colon-separated key/value pairs. Records are typically separated by a blank line. You can place comments in a fixture file by using the # character in the first column.</p>
+
+<p>If you are working with <a href="/association_basics.html">associations</a>, you can
+define a reference node between two different fixtures. Here's an example with
+a <code>belongs_to</code>/<code>has_many</code> association:</p>
+
+<div class="code_container">
+<pre><code class="highlight yaml"><span class="c1"># fixtures/categories.yml</span>
+<span class="na">about</span><span class="pi">:</span>
+  <span class="na">name</span><span class="pi">:</span> <span class="s">About</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-44fcbba77f1156b875cacd9cad41e26d"># fixtures/categories.yml
+about:
+  name: About
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-44fcbba77f1156b875cacd9cad41e26d">Copy</button>
+</div>
+<div class="code_container">
+<pre><code class="highlight yaml"><span class="c1"># fixtures/articles.yml</span>
+<span class="na">first</span><span class="pi">:</span>
+  <span class="na">title</span><span class="pi">:</span> <span class="s">Welcome to Rails!</span>
+  <span class="na">body</span><span class="pi">:</span> <span class="s">Hello world!</span>
+  <span class="na">category</span><span class="pi">:</span> <span class="s">about</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-3142cdbbe527891372d568c93c13a49c"># fixtures/articles.yml
+first:
+  title: Welcome to Rails!
+  body: Hello world!
+  category: about
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-3142cdbbe527891372d568c93c13a49c">Copy</button>
+</div>
+<p>Notice the <code>category</code> key of the <code>first</code> article found in <code>fixtures/articles.yml</code> has a value of <code>about</code>. This tells Rails to load the category <code>about</code> found in <code>fixtures/categories.yml</code>.</p>
+
+<div class="note"><p>For associations to reference one another by name, you can use the fixture name instead of specifying the <code>id:</code> attribute on the associated fixtures. Rails will auto assign a primary key to be consistent between runs. For more information on this association behavior please read the <a href="https://api.rubyonrails.org/v6.1.7.3/classes/ActiveRecord/FixtureSet.html">Fixtures API documentation</a>.</p></div>
+
+<h5 id="erb-in-it-up"><a class="anchorlink" href="#erb-in-it-up">4.2.3 ERB'in It Up</a></h5>
+
+<p>ERB allows you to embed Ruby code within templates. The YAML fixture format is pre-processed with ERB when Rails loads fixtures. This allows you to use Ruby to help you generate some sample data. For example, the following code generates a thousand users:</p>
+
+<div class="code_container">
+<pre><code class="highlight erb"><span class="cp">&lt;%</span> <span class="mi">1000</span><span class="p">.</span><span class="nf">times</span> <span class="k">do</span> <span class="o">|</span><span class="n">n</span><span class="o">|</span> <span class="cp">%&gt;</span>
+user_<span class="cp">&lt;%=</span> <span class="n">n</span> <span class="cp">%&gt;</span>:
+  username: <span class="cp">&lt;%=</span> <span class="s2">"user</span><span class="si">#{</span><span class="n">n</span><span class="si">}</span><span class="s2">"</span> <span class="cp">%&gt;</span>
+  email: <span class="cp">&lt;%=</span> <span class="s2">"user</span><span class="si">#{</span><span class="n">n</span><span class="si">}</span><span class="s2">@example.com"</span> <span class="cp">%&gt;</span>
+<span class="cp">&lt;%</span> <span class="k">end</span> <span class="cp">%&gt;</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-6865e73efe421cc6c0c42b29fcf521aa">&lt;% 1000.times do |n| %&gt;
+user_&lt;%= n %&gt;:
+  username: &lt;%= "user#{n}" %&gt;
+  email: &lt;%= "user#{n}@example.com" %&gt;
+&lt;% end %&gt;
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-6865e73efe421cc6c0c42b29fcf521aa">Copy</button>
+</div>
+<h5 id="fixtures-in-action"><a class="anchorlink" href="#fixtures-in-action">4.2.4 Fixtures in Action</a></h5>
+
+<p>Rails automatically loads all fixtures from the <code>test/fixtures</code> directory by
+default. Loading involves three steps:</p>
+<ol>
+<li>Remove any existing data from the table corresponding to the fixture</li>
+<li>Load the fixture data into the table</li>
+<li>Dump the fixture data into a method in case you want to access it directly</li>
+</ol>
+<div class="info"><p>In order to remove existing data from the database, Rails tries to disable referential integrity triggers (like foreign keys and check constraints). If you are getting annoying permission errors on running tests, make sure the database user has privilege to disable these triggers in testing environment. (In PostgreSQL, only superusers can disable all triggers. Read more about PostgreSQL permissions <a href="http://blog.endpoint.com/2012/10/postgres-system-triggers-error.html">here</a>).</p></div>
+
+<h5 id="fixtures-are-active-record-objects"><a class="anchorlink" href="#fixtures-are-active-record-objects">4.2.5 Fixtures are Active Record objects</a></h5>
+
+<p>Fixtures are instances of Active Record. As mentioned in point #3 above, you can access the object directly because it is automatically available as a method whose scope is local of the test case. For example:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="c1"># this will return the User object for the fixture named david</span>
+<span class="n">users</span><span class="p">(</span><span class="ss">:david</span><span class="p">)</span>
+
+<span class="c1"># this will return the property for david called id</span>
+<span class="n">users</span><span class="p">(</span><span class="ss">:david</span><span class="p">).</span><span class="nf">id</span>
+
+<span class="c1"># one can also access methods available on the User class</span>
+<span class="n">david</span> <span class="o">=</span> <span class="n">users</span><span class="p">(</span><span class="ss">:david</span><span class="p">)</span>
+<span class="n">david</span><span class="p">.</span><span class="nf">call</span><span class="p">(</span><span class="n">david</span><span class="p">.</span><span class="nf">partner</span><span class="p">)</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-eff0b70f855f7d61fa7eb6a2aca61444"># this will return the User object for the fixture named david
+users(:david)
+
+# this will return the property for david called id
+users(:david).id
+
+# one can also access methods available on the User class
+david = users(:david)
+david.call(david.partner)
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-eff0b70f855f7d61fa7eb6a2aca61444">Copy</button>
+</div>
+<p>To get multiple fixtures at once, you can pass in a list of fixture names. For example:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="c1"># this will return an array containing the fixtures david and steve</span>
+<span class="n">users</span><span class="p">(</span><span class="ss">:david</span><span class="p">,</span> <span class="ss">:steve</span><span class="p">)</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-cea9be641b7d0dcab061aabddf83c801"># this will return an array containing the fixtures david and steve
+users(:david, :steve)
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-cea9be641b7d0dcab061aabddf83c801">Copy</button>
+</div>
+</body>
+</html>

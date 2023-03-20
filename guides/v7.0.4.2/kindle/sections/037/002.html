@@ -1,0 +1,43 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>3 Generated Columns</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v7.0.4.2/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="generated-columns"><a class="anchorlink" href="#generated-columns">3 Generated Columns</a></h3>
+<div class="note"><p>Generated columns are supported since version 12.0 of PostgreSQL.</p></div>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="c1"># db/migrate/20131220144913_create_users.rb</span>
+<span class="n">create_table</span> <span class="ss">:users</span> <span class="k">do</span> <span class="o">|</span><span class="n">t</span><span class="o">|</span>
+  <span class="n">t</span><span class="p">.</span><span class="nf">string</span> <span class="ss">:name</span>
+  <span class="n">t</span><span class="p">.</span><span class="nf">virtual</span> <span class="ss">:name_upcased</span><span class="p">,</span> <span class="ss">type: :string</span><span class="p">,</span> <span class="ss">as: </span><span class="s1">'upper(name)'</span><span class="p">,</span> <span class="ss">stored: </span><span class="kp">true</span>
+<span class="k">end</span>
+
+<span class="c1"># app/models/user.rb</span>
+<span class="k">class</span> <span class="nc">User</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+<span class="k">end</span>
+
+<span class="c1"># Usage</span>
+<span class="n">user</span> <span class="o">=</span> <span class="no">User</span><span class="p">.</span><span class="nf">create</span><span class="p">(</span><span class="ss">name: </span><span class="s1">'John'</span><span class="p">)</span>
+<span class="no">User</span><span class="p">.</span><span class="nf">last</span><span class="p">.</span><span class="nf">name_upcased</span> <span class="c1"># =&gt; "JOHN"</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="# db/migrate/20131220144913_create_users.rb
+create_table :users do |t|
+  t.string :name
+  t.virtual :name_upcased, type: :string, as: 'upper(name)', stored: true
+end
+
+# app/models/user.rb
+class User &lt; ApplicationRecord
+end
+
+# Usage
+user = User.create(name: 'John')
+User.last.name_upcased # =&gt; &quot;JOHN&quot;
+">Copy</button>
+</div>
+</body>
+</html>

@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html 
+     PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+  <head>
+    <title>Class: ActionDispatch::Session::CookieStore</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <link rel="stylesheet" href="../../../rdoc-style.css" type="text/css" media="screen" />
+
+    <script language="JavaScript" type="text/javascript">
+    // <![CDATA[
+
+        function toggleSource( id )
+        {
+          var elem
+          var link
+
+          if( document.getElementById )
+          {
+            elem = document.getElementById( id )
+            link = document.getElementById( "l_" + id )
+          }
+          else if ( document.all )
+          {
+            elem = eval( "document.all." + id )
+            link = eval( "document.all.l_" + id )
+          }
+          else
+            return false;
+
+          if( elem.style.display == "block" )
+          {
+            elem.style.display = "none"
+            link.innerHTML = "show source"
+          }
+          else
+          {
+            elem.style.display = "block"
+            link.innerHTML = "hide source"
+          }
+        }
+
+        function openCode( url )
+        {
+          window.open( url, "SOURCE_CODE", "resizable=yes,scrollbars=yes,toolbar=no,status=no,height=480,width=750" ).focus();
+        }
+      // ]]>
+    </script>
+  </head>
+
+  <body>
+    <table width="100%" border='0' cellpadding='0' cellspacing='0' class='banner'>
+    <tr><td>Ruby on Rails v3.0.9</td></tr>
+    <tr>
+  <td class="file-title"><span class="file-title-prefix">Class</span><br />ActionDispatch::Session::CookieStore</td>
+  <td align="right">
+    <table cellspacing="0" cellpadding="2">
+      <tr valign="top">
+        <td>In:</td>
+        <td>
+<a href="../../../files/actionpack/lib/action_dispatch/middleware/session/cookie_store_rb.html">actionpack/lib/action_dispatch/middleware/session/cookie_store.rb</a>:
+        </td>
+      </tr>
+      <tr>
+        <td>Parent:</td>
+        <td>
+
+      AbstractStore         </td>
+     </tr>
+         </table>
+        </td>
+        </tr>
+      </table>
+  <div id="bodyContent">
+  <div id="content">
+
+  <div class="description">
+<p>This cookie-based session store is the <a href="../../Rails.html">Rails</a>
+default. Sessions typically contain at most a user_id and flash message;
+both fit within the 4K cookie size limit. Cookie-based sessions are
+dramatically faster than the alternatives.</p>
+
+<p>If you have more than 4K of session data or don’t want your data to be
+visible to the user, pick another session store.</p>
+
+<p>CookieOverflow is raised if you attempt to store more than 4K of data.</p>
+
+<p>A message digest is included with the cookie to ensure data integrity: a
+user cannot alter his <tt>user_id</tt> without knowing the secret key
+included in the hash. New apps are generated with a pregenerated secret in
+config/environment.rb. Set your own for old apps you’re upgrading.</p>
+
+<p><a href="../Session.html">Session</a> options:</p>
+<ul><li>
+<p><tt>:secret</tt>: An application-wide key string or block returning a
+string called per generated digest. The block is called with the
+CGI::Session instance as an argument. It’s important that the secret is
+not vulnerable to a dictionary attack. Therefore, you should choose a
+secret consisting of random numbers and letters and more than 30
+characters. Examples:</p>
+
+<pre>:secret =&gt; '449fe2e7daee471bffae2fd8dc02313d'
+:secret =&gt; Proc.new { User.current_user.secret_key }</pre>
+</li><li>
+<p><tt>:digest</tt>: The message digest algorithm used to verify session
+integrity defaults to ‘SHA1’ but may be any digest provided by OpenSSL,
+such as ‘MD5’, ‘RIPEMD160’, ‘SHA256’, etc.</p>
+</li></ul>
+
+<p>To generate a secret key for an existing application, run “rake secret”
+and set the key in config/initializers/secret_token.rb.</p>
+
+<p>Note that changing digest or secret invalidates all existing sessions!</p>
+</div>
+
+
+  <div class="sectiontitle">Methods</div>
+  <ul>
+                <li><a href="#method-c-new">new</a></li>
+      </ul>
+
+
+
+
+        
+    <div class="sectiontitle">
+      Public      Class      methods
+    </div>
+
+          
+      <div class="method">
+        <div class="title">
+                      <a name="method-c-new"></a>
+            <b>new</b>(app, options = {})          
+        </div>
+
+                  <div class="description">
+                      </div>
+        
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('new_source')"
+                 id="l_method-c-new_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="new_source">
+<pre>
+  <span class="ruby-comment"># File actionpack/lib/action_dispatch/middleware/session/cookie_store.rb, line 43</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">initialize</span>(<span class="ruby-identifier">app</span>, <span class="ruby-identifier">options</span> = {})
+  <span class="ruby-keyword">super</span>(<span class="ruby-identifier">app</span>, <span class="ruby-identifier">options</span>.<span class="ruby-identifier">merge!</span>(<span class="ruby-value">:cookie_only</span> =<span class="ruby-operator">&gt;</span> <span class="ruby-keyword">true</span>))
+  <span class="ruby-identifier">freeze</span>
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+                              </div>
+  </div>
+  </body>
+</html>

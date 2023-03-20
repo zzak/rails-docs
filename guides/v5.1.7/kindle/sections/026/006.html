@@ -1,0 +1,28 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>7 require_dependency</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v5.1.7/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="require-dependency">7 require_dependency</h3>
+<p>Constant autoloading is triggered on demand and therefore code that uses a
+certain constant may have it already defined or may trigger an autoload. That
+depends on the execution path and it may vary between runs.</p>
+
+<p>There are times, however, in which you want to make sure a certain constant is
+known when the execution reaches some code. <code>require_dependency</code> provides a way
+to load a file using the current <a href="#loading-mechanism">loading mechanism</a>, and
+keeping track of constants defined in that file as if they were autoloaded to
+have them reloaded as needed.</p>
+
+<p><code>require_dependency</code> is rarely needed, but see a couple of use-cases in
+<a href="#autoloading-and-sti">Autoloading and STI</a> and <a href="#when-constants-aren-t-missed">When Constants aren't
+Triggered</a>.</p>
+
+<div class="warning"><p>Unlike autoloading, <code>require_dependency</code> does not expect the file to
+define any particular constant. Exploiting this behavior would be a bad practice
+though, file and constant paths should match.</p></div>
+</body>
+</html>

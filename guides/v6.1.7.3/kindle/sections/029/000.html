@@ -1,0 +1,53 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>1 An Introduction to Ajax</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v6.1.7.3/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="an-introduction-to-ajax"><a class="anchorlink" href="#an-introduction-to-ajax">1 An Introduction to Ajax</a></h3>
+<p>In order to understand Ajax, you must first understand what a web browser does
+normally.</p>
+
+<p>When you type <code>http://localhost:3000</code> into your browser's address bar and hit
+'Go', the browser (your 'client') makes a request to the server. It parses the
+response, then fetches all associated assets, like JavaScript files,
+stylesheets and images. It then assembles the page. If you click a link, it
+does the same process: fetch the page, fetch the assets, put it all together,
+show you the results. This is called the 'request response cycle'.</p>
+
+<p>JavaScript can also make requests to the server, and parse the response. It
+also has the ability to update information on the page. Combining these two
+powers, a JavaScript writer can make a web page that can update just parts of
+itself, without needing to get the full page data from the server. This is a
+powerful technique that we call Ajax.</p>
+
+<p>As an example, here's some JavaScript code that makes an Ajax request:</p>
+
+<div class="code_container">
+<pre><code class="highlight js"><span class="nx">fetch</span><span class="p">(</span><span class="dl">"</span><span class="s2">/test</span><span class="dl">"</span><span class="p">)</span>
+  <span class="p">.</span><span class="nx">then</span><span class="p">((</span><span class="nx">data</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="nx">data</span><span class="p">.</span><span class="nx">text</span><span class="p">())</span>
+  <span class="p">.</span><span class="nx">then</span><span class="p">((</span><span class="nx">html</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span>
+    <span class="kd">const</span> <span class="nx">results</span> <span class="o">=</span> <span class="nb">document</span><span class="p">.</span><span class="nx">querySelector</span><span class="p">(</span><span class="dl">"</span><span class="s2">#results</span><span class="dl">"</span><span class="p">);</span>
+    <span class="nx">results</span><span class="p">.</span><span class="nx">insertAdjacentHTML</span><span class="p">(</span><span class="dl">"</span><span class="s2">beforeend</span><span class="dl">"</span><span class="p">,</span> <span class="nx">data</span><span class="p">);</span>
+  <span class="p">});</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-629b8d0f53918f1b2f5f2df29a57a465">fetch("/test")
+  .then((data) =&gt; data.text())
+  .then((html) =&gt; {
+    const results = document.querySelector("#results");
+    results.insertAdjacentHTML("beforeend", data);
+  });
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-629b8d0f53918f1b2f5f2df29a57a465">Copy</button>
+</div>
+<p>This code fetches data from "/test", and then appends the result to the element
+with an id of <code>results</code>.</p>
+
+<p>Rails provides quite a bit of built-in support for building web pages with this
+technique. You rarely have to write this code yourself. The rest of this guide
+will show you how Rails can help you write websites in this way, but it's
+all built on top of this fairly simple technique.</p>
+</body>
+</html>

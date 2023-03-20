@@ -1,0 +1,94 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>21 Existence of Objects</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v6.1.7.3/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="existence-of-objects"><a class="anchorlink" href="#existence-of-objects">21 Existence of Objects</a></h3>
+<p>If you simply want to check for the existence of the object there's a method called <a href="https://api.rubyonrails.org/v6.1.7.3/classes/ActiveRecord/FinderMethods.html#method-i-exists-3F"><code>exists?</code></a>.
+This method will query the database using the same query as <code>find</code>, but instead of returning an
+object or collection of objects it will return either <code>true</code> or <code>false</code>.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="no">Customer</span><span class="p">.</span><span class="nf">exists?</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-0930bffc51d450a43423ab4bb19fbc07">Customer.exists?(1)
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-0930bffc51d450a43423ab4bb19fbc07">Copy</button>
+</div>
+<p>The <code>exists?</code> method also takes multiple values, but the catch is that it will return <code>true</code> if any
+one of those records exists.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="no">Customer</span><span class="p">.</span><span class="nf">exists?</span><span class="p">(</span><span class="ss">id: </span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">])</span>
+<span class="c1"># or</span>
+<span class="no">Customer</span><span class="p">.</span><span class="nf">exists?</span><span class="p">(</span><span class="ss">name: </span><span class="p">[</span><span class="s1">'Jane'</span><span class="p">,</span> <span class="s1">'Sergei'</span><span class="p">])</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-e48df1b4de1f8c844267f393b7d8083d">Customer.exists?(id: [1,2,3])
+# or
+Customer.exists?(name: ['Jane', 'Sergei'])
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-e48df1b4de1f8c844267f393b7d8083d">Copy</button>
+</div>
+<p>It's even possible to use <code>exists?</code> without any arguments on a model or a relation.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="no">Customer</span><span class="p">.</span><span class="nf">where</span><span class="p">(</span><span class="ss">first_name: </span><span class="s1">'Ryan'</span><span class="p">).</span><span class="nf">exists?</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-ca4391fbec3dba605bda54f3a36ec361">Customer.where(first_name: 'Ryan').exists?
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-ca4391fbec3dba605bda54f3a36ec361">Copy</button>
+</div>
+<p>The above returns <code>true</code> if there is at least one customer with the <code>first_name</code> 'Ryan' and <code>false</code>
+otherwise.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="no">Customer</span><span class="p">.</span><span class="nf">exists?</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-0d13bd17c06c63f5c194f0ad20c28593">Customer.exists?
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-0d13bd17c06c63f5c194f0ad20c28593">Copy</button>
+</div>
+<p>The above returns <code>false</code> if the <code>customers</code> table is empty and <code>true</code> otherwise.</p>
+
+<p>You can also use <code>any?</code> and <code>many?</code> to check for existence on a model or relation.  <code>many?</code> will use SQL <code>count</code> to determine if the item exists.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="c1"># via a model</span>
+<span class="no">Order</span><span class="p">.</span><span class="nf">any?</span>   <span class="c1"># =&gt; SELECT 1 AS one FROM orders</span>
+<span class="no">Order</span><span class="p">.</span><span class="nf">many?</span>  <span class="c1"># =&gt; SELECT COUNT(*) FROM orders</span>
+
+<span class="c1"># via a named scope</span>
+<span class="no">Order</span><span class="p">.</span><span class="nf">shipped</span><span class="p">.</span><span class="nf">any?</span>   <span class="c1"># =&gt; SELECT 1 AS one FROM orders WHERE orders.status = 0</span>
+<span class="no">Order</span><span class="p">.</span><span class="nf">shipped</span><span class="p">.</span><span class="nf">many?</span>  <span class="c1"># =&gt; SELECT COUNT(*) FROM orders WHERE orders.status = 0</span>
+
+<span class="c1"># via a relation</span>
+<span class="no">Book</span><span class="p">.</span><span class="nf">where</span><span class="p">(</span><span class="ss">out_of_print: </span><span class="kp">true</span><span class="p">).</span><span class="nf">any?</span>
+<span class="no">Book</span><span class="p">.</span><span class="nf">where</span><span class="p">(</span><span class="ss">out_of_print: </span><span class="kp">true</span><span class="p">).</span><span class="nf">many?</span>
+
+<span class="c1"># via an association</span>
+<span class="no">Customer</span><span class="p">.</span><span class="nf">first</span><span class="p">.</span><span class="nf">orders</span><span class="p">.</span><span class="nf">any?</span>
+<span class="no">Customer</span><span class="p">.</span><span class="nf">first</span><span class="p">.</span><span class="nf">orders</span><span class="p">.</span><span class="nf">many?</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-d6ef66b0daf9de7233843ad95a9a4125"># via a model
+Order.any?   # =&gt; SELECT 1 AS one FROM orders
+Order.many?  # =&gt; SELECT COUNT(*) FROM orders
+
+# via a named scope
+Order.shipped.any?   # =&gt; SELECT 1 AS one FROM orders WHERE orders.status = 0
+Order.shipped.many?  # =&gt; SELECT COUNT(*) FROM orders WHERE orders.status = 0
+
+# via a relation
+Book.where(out_of_print: true).any?
+Book.where(out_of_print: true).many?
+
+# via an association
+Customer.first.orders.any?
+Customer.first.orders.many?
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-d6ef66b0daf9de7233843ad95a9a4125">Copy</button>
+</div>
+</body>
+</html>

@@ -1,0 +1,39 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>7 Testing mailboxes</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v6.0.6.1/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="testing-mailboxes"><a class="anchorlink" href="#testing-mailboxes">7 Testing mailboxes</a></h3>
+<p>Example:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class ForwardsMailboxTest &lt; ActionMailbox::TestCase
+  test "directly recording a client forward for a forwarder and forwardee corresponding to one project" do
+    assert_difference -&gt; { people(:david).buckets.first.recordings.count } do
+      receive_inbound_email_from_mail \
+        to: 'save@example.com',
+        from: people(:david).email_address,
+        subject: "Fwd: Status update?",
+        body: &lt;&lt;~BODY
+          --- Begin forwarded message ---
+          From: Frank Holland &lt;frank@microsoft.com&gt;
+
+          What's the status?
+        BODY
+    end
+
+    recording = people(:david).buckets.first.recordings.last
+    assert_equal people(:david), recording.creator
+    assert_equal "Status update?", recording.forward.subject
+    assert_match "What's the status?", recording.forward.content.to_s
+  end
+end
+
+</pre>
+</div>
+</body>
+</html>

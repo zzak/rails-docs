@@ -1,0 +1,107 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>7 Configuration</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v5.1.7/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="configuration">7 Configuration</h3>
+<p>Action Cable has two required configurations: a subscription adapter and allowed request origins.</p>
+
+<h4 id="subscription-adapter">7.1 Subscription Adapter</h4>
+
+<p>By default, Action Cable looks for a configuration file in <code>config/cable.yml</code>.
+The file must specify an adapter for each Rails environment. See the
+<a href="#dependencies">Dependencies</a> section for additional information on adapters.</p>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+development:
+  adapter: async
+
+test:
+  adapter: async
+
+production:
+  adapter: redis
+  url: redis://10.10.3.153:6381
+  channel_prefix: appname_production
+
+</pre>
+</div>
+<h5 id="adapter-configuration">7.1.1 Adapter Configuration</h5>
+
+<p>Below is a list of the subscription adapters available for end users.</p>
+
+<h6 id="async-adapter">7.1.1.1 Async Adapter</h6>
+
+<p>The async adapter is intended for development/testing and should not be used in production.</p>
+
+<h6 id="redis-adapter">7.1.1.2 Redis Adapter</h6>
+
+<p>Action Cable contains two Redis adapters: "normal" Redis and Evented Redis. Both
+of the adapters require users to provide a URL pointing to the Redis server.
+Additionally, a channel_prefix may be provided to avoid channel name collisions
+when using the same Redis server for multiple applications. See the <a href="https://redis.io/topics/pubsub#database-amp-scoping">Redis PubSub documentation</a> for more details.</p>
+
+<h6 id="postgresql-adapter">7.1.1.3 PostgreSQL Adapter</h6>
+
+<p>The PostgreSQL adapter uses Active Record's connection pool, and thus the
+application's <code>config/database.yml</code> database configuration, for its connection.
+This may change in the future. <a href="https://github.com/rails/rails/issues/27214">#27214</a></p>
+
+<h4 id="allowed-request-origins">7.2 Allowed Request Origins</h4>
+
+<p>Action Cable will only accept requests from specified origins, which are
+passed to the server config as an array. The origins can be instances of
+strings or regular expressions, against which a check for match will be performed.</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+config.action_cable.allowed_request_origins = ['http://rubyonrails.com', %r{http://ruby.*}]
+
+</pre>
+</div>
+<p>To disable and allow requests from any origin:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+config.action_cable.disable_request_forgery_protection = true
+
+</pre>
+</div>
+<p>By default, Action Cable allows all requests from localhost:3000 when running
+in the development environment.</p>
+
+<h4 id="consumer-configuration">7.3 Consumer Configuration</h4>
+
+<p>To configure the URL, add a call to <code>action_cable_meta_tag</code> in your HTML layout
+HEAD. This uses a URL or path typically set via <code>config.action_cable.url</code> in the
+environment configuration files.</p>
+
+<h4 id="other-configurations">7.4 Other Configurations</h4>
+
+<p>The other common option to configure, is the log tags applied to the
+per-connection logger. Here's an example that uses
+the user account id if available, else "no-account" while tagging:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+config.action_cable.log_tags = [
+  -&gt; request { request.env['user_account_id'] || "no-account" },
+  :action_cable,
+  -&gt; request { request.uuid }
+]
+
+</pre>
+</div>
+<p>For a full list of all configuration options, see the
+<code>ActionCable::Server::Configuration</code> class.</p>
+
+<p>Also note that your server must provide at least the same number of database
+connections as you have workers. The default worker pool size is set to 4, so
+that means you have to make at least that available. You can change that in
+<code>config/database.yml</code> through the <code>pool</code> attribute.</p>
+</body>
+</html>

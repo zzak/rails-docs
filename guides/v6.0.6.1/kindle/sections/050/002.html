@@ -1,0 +1,83 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>3 Railties</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v6.0.6.1/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="railties"><a class="anchorlink" href="#railties">3 Railties</a></h3>
+<p>Please refer to the <a href="https://github.com/rails/rails/blob/5-0-stable/railties/CHANGELOG.md">Changelog</a> for detailed changes.</p>
+
+<h4 id="railties-removals"><a class="anchorlink" href="#railties-removals">3.1 Removals</a></h4>
+<ul>
+<li>  Removed debugger support, use byebug instead. <code>debugger</code> is not supported by
+Ruby
+2.2. (<a href="https://github.com/rails/rails/commit/93559da4826546d07014f8cfa399b64b4a143127">commit</a>)</li>
+<li>  Removed deprecated <code>test:all</code> and <code>test:all:db</code> tasks.
+(<a href="https://github.com/rails/rails/commit/f663132eef0e5d96bf2a58cec9f7c856db20be7c">commit</a>)</li>
+<li>  Removed deprecated <code>Rails::Rack::LogTailer</code>.
+(<a href="https://github.com/rails/rails/commit/c564dcb75c191ab3d21cc6f920998b0d6fbca623">commit</a>)</li>
+<li>  Removed deprecated <code>RAILS_CACHE</code> constant.
+(<a href="https://github.com/rails/rails/commit/b7f856ce488ef8f6bf4c12bb549f462cb7671c08">commit</a>)</li>
+<li>  Removed deprecated <code>serve_static_assets</code> configuration.
+(<a href="https://github.com/rails/rails/commit/463b5d7581ee16bfaddf34ca349b7d1b5878097c">commit</a>)</li>
+<li>  Removed the documentation tasks <code>doc:app</code>, <code>doc:rails</code>, and <code>doc:guides</code>.
+(<a href="https://github.com/rails/rails/commit/cd7cc5254b090ccbb84dcee4408a5acede25ef2a">commit</a>)</li>
+<li>  Removed <code>Rack::ContentLength</code> middleware from the default
+stack. (<a href="https://github.com/rails/rails/commit/56903585a099ab67a7acfaaef0a02db8fe80c450">Commit</a>)</li>
+</ul>
+<h4 id="railties-deprecations"><a class="anchorlink" href="#railties-deprecations">3.2 Deprecations</a></h4>
+<ul>
+<li>  Deprecated <code>config.static_cache_control</code> in favor of
+<code>config.public_file_server.headers</code>.
+(<a href="https://github.com/rails/rails/pull/19135">Pull Request</a>)</li>
+<li>  Deprecated <code>config.serve_static_files</code> in favor of <code>config.public_file_server.enabled</code>.
+(<a href="https://github.com/rails/rails/pull/22173">Pull Request</a>)</li>
+<li>  Deprecated the tasks in the <code>rails</code> task namespace in favor of the <code>app</code> namespace.
+(e.g. <code>rails:update</code> and <code>rails:template</code> tasks are renamed to <code>app:update</code> and <code>app:template</code>.)
+(<a href="https://github.com/rails/rails/pull/23439">Pull Request</a>)</li>
+</ul>
+<h4 id="railties-notable-changes"><a class="anchorlink" href="#railties-notable-changes">3.3 Notable changes</a></h4>
+<ul>
+<li>  Added Rails test runner <code>bin/rails test</code>.
+(<a href="https://github.com/rails/rails/pull/19216">Pull Request</a>)</li>
+<li>  Newly generated applications and plugins get a <code>README.md</code> in Markdown.
+(<a href="https://github.com/rails/rails/commit/89a12c931b1f00b90e74afffcdc2fc21f14ca663">commit</a>,
+ <a href="https://github.com/rails/rails/pull/22068">Pull Request</a>)</li>
+<li>  Added <code>bin/rails restart</code> task to restart your Rails app by touching <code>tmp/restart.txt</code>.
+(<a href="https://github.com/rails/rails/pull/18965">Pull Request</a>)</li>
+<li>  Added <code>bin/rails initializers</code> task to print out all defined initializers in
+the order they are invoked by Rails.
+(<a href="https://github.com/rails/rails/pull/19323">Pull Request</a>)</li>
+<li>  Added <code>bin/rails dev:cache</code> to enable or disable caching in development mode.
+(<a href="https://github.com/rails/rails/pull/20961">Pull Request</a>)</li>
+<li>  Added <code>bin/update</code> script to update the development environment automatically.
+(<a href="https://github.com/rails/rails/pull/20972">Pull Request</a>)</li>
+<li>  Proxy Rake tasks through <code>bin/rails</code>.
+(<a href="https://github.com/rails/rails/pull/22457">Pull Request</a>,
+ <a href="https://github.com/rails/rails/pull/22288">Pull Request</a>)</li>
+<li>  New applications are generated with the evented file system monitor enabled
+on Linux and macOS. The feature can be opted out by passing
+<code>--skip-listen</code> to the generator.
+(<a href="https://github.com/rails/rails/commit/de6ad5665d2679944a9ee9407826ba88395a1003">commit</a>,
+<a href="https://github.com/rails/rails/commit/94dbc48887bf39c241ee2ce1741ee680d773f202">commit</a>)</li>
+<li>  Generate applications with an option to log to STDOUT in production
+using the environment variable <code>RAILS_LOG_TO_STDOUT</code>.
+(<a href="https://github.com/rails/rails/pull/23734">Pull Request</a>)</li>
+<li>  Enable HSTS with IncludeSudomains header for new applications.
+(<a href="https://github.com/rails/rails/pull/23852">Pull Request</a>)</li>
+<li>  The application generator writes a new file <code>config/spring.rb</code>, which tells
+Spring to watch additional common files.
+(<a href="https://github.com/rails/rails/commit/b04d07337fd7bc17e88500e9d6bcd361885a45f8">commit</a>)</li>
+<li>  Added <code>--skip-action-mailer</code> to skip Action Mailer while generating new app.
+(<a href="https://github.com/rails/rails/pull/18288">Pull Request</a>)</li>
+<li>  Removed <code>tmp/sessions</code> directory and the clear rake task associated with it.
+(<a href="https://github.com/rails/rails/pull/18314">Pull Request</a>)</li>
+<li>  Changed <code>_form.html.erb</code> generated by scaffold generator to use local variables.
+(<a href="https://github.com/rails/rails/pull/13434">Pull Request</a>)</li>
+<li>  Disabled autoloading of classes in production environment.
+(<a href="https://github.com/rails/rails/commit/a71350cae0082193ad8c66d65ab62e8bb0b7853b">commit</a>)</li>
+</ul>
+</body>
+</html>

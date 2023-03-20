@@ -1,0 +1,69 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>6 Upgrading from Rails 5.0 to Rails 5.1</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v7.0.4.2/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="upgrading-from-rails-5-0-to-rails-5-1"><a class="anchorlink" href="#upgrading-from-rails-5-0-to-rails-5-1">6 Upgrading from Rails 5.0 to Rails 5.1</a></h3>
+<p>For more information on changes made to Rails 5.1 please see the <a href="5_1_release_notes.html">release notes</a>.</p>
+
+<h4 id="top-level-hashwithindifferentaccess-is-soft-deprecated"><a class="anchorlink" href="#top-level-hashwithindifferentaccess-is-soft-deprecated">6.1 Top-level <code>HashWithIndifferentAccess</code> is soft-deprecated</a></h4>
+
+<p>If your application uses the top-level <code>HashWithIndifferentAccess</code> class, you
+should slowly move your code to instead use <code>ActiveSupport::HashWithIndifferentAccess</code>.</p>
+
+<p>It is only soft-deprecated, which means that your code will not break at the
+moment and no deprecation warning will be displayed, but this constant will be
+removed in the future.</p>
+
+<p>Also, if you have pretty old YAML documents containing dumps of such objects,
+you may need to load and dump them again to make sure that they reference
+the right constant, and that loading them won't break in the future.</p>
+
+<h4 id="application-secrets-now-loaded-with-all-keys-as-symbols"><a class="anchorlink" href="#application-secrets-now-loaded-with-all-keys-as-symbols">6.2 <code>application.secrets</code> now loaded with all keys as symbols</a></h4>
+
+<p>If your application stores nested configuration in <code>config/secrets.yml</code>, all keys
+are now loaded as symbols, so access using strings should be changed.</p>
+
+<p>From:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="no">Rails</span><span class="p">.</span><span class="nf">application</span><span class="p">.</span><span class="nf">secrets</span><span class="p">[</span><span class="ss">:smtp_settings</span><span class="p">][</span><span class="s2">"address"</span><span class="p">]</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='Rails.application.secrets[:smtp_settings]["address"]
+'>Copy</button>
+</div>
+<p>To:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="no">Rails</span><span class="p">.</span><span class="nf">application</span><span class="p">.</span><span class="nf">secrets</span><span class="p">[</span><span class="ss">:smtp_settings</span><span class="p">][</span><span class="ss">:address</span><span class="p">]</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="Rails.application.secrets[:smtp_settings][:address]
+">Copy</button>
+</div>
+<h4 id="removed-deprecated-support-to-text-and-nothing-in-render"><a class="anchorlink" href="#removed-deprecated-support-to-text-and-nothing-in-render">6.3 Removed deprecated support to <code>:text</code> and <code>:nothing</code> in <code>render</code></a></h4>
+
+<p>If your controllers are using <code>render :text</code>, they will no longer work. The new method
+of rendering text with MIME type of <code>text/plain</code> is to use <code>render :plain</code>.</p>
+
+<p>Similarly, <code>render :nothing</code> is also removed and you should use the <code>head</code> method
+to send responses that contain only headers. For example, <code>head :ok</code> sends a
+200 response with no body to render.</p>
+
+<h4 id="removed-deprecated-support-of-redirect-to-back"><a class="anchorlink" href="#removed-deprecated-support-of-redirect-to-back">6.4 Removed deprecated support of <code>redirect_to :back</code></a></h4>
+
+<p>In Rails 5.0, <code>redirect_to :back</code> was deprecated. In Rails 5.1, it was removed completely.</p>
+
+<p>As an alternative, use <code>redirect_back</code>. It's important to note that <code>redirect_back</code> also takes
+a <code>fallback_location</code> option which will be used in case the <code>HTTP_REFERER</code> is missing.</p>
+
+<div class="code_container">
+<pre><code class="highlight plaintext">redirect_back(fallback_location: root_path)
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="redirect_back(fallback_location: root_path)
+">Copy</button>
+</div>
+</body>
+</html>

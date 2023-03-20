@@ -1,0 +1,30 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>5 Debugging Memory Leaks</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v5.1.7/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="debugging-memory-leaks">5 Debugging Memory Leaks</h3>
+<p>A Ruby application (on Rails or not), can leak memory — either in the Ruby code
+or at the C code level.</p>
+
+<p>In this section, you will learn how to find and fix such leaks by using tool
+such as Valgrind.</p>
+
+<h4 id="valgrind">5.1 Valgrind</h4>
+
+<p><a href="http://valgrind.org/">Valgrind</a> is an application for detecting C-based memory
+leaks and race conditions.</p>
+
+<p>There are Valgrind tools that can automatically detect many memory management
+and threading bugs, and profile your programs in detail. For example, if a C
+extension in the interpreter calls <code>malloc()</code> but doesn't properly call
+<code>free()</code>, this memory won't be available until the app terminates.</p>
+
+<p>For further information on how to install Valgrind and use with Ruby, refer to
+<a href="http://blog.evanweaver.com/articles/2008/02/05/valgrind-and-ruby/">Valgrind and Ruby</a>
+by Evan Weaver.</p>
+</body>
+</html>

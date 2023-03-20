@@ -1,0 +1,33 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>8 Migrate to the new connection handling</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v7.0.4.2/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="migrate-to-the-new-connection-handling"><a class="anchorlink" href="#migrate-to-the-new-connection-handling">8 Migrate to the new connection handling</a></h3>
+<p>In Rails 6.1+, Active Record provides a new internal API for connection management.
+In most cases applications will not need to make any changes except to opt-in to the
+new behavior (if upgrading from 6.0 and below) by setting
+<a href="configuring.html#config-active-record-legacy-connection-handling"><code>config.active_record.legacy_connection_handling</code></a> to <code>false</code>. If you have a single database
+application, no other changes will be required. If you have a multiple database application
+the following changes are required if your application is using these methods:</p>
+<ul>
+<li>
+<code>connection_handlers</code> and <code>connection_handlers=</code> no longer works in the new connection
+handling. If you were calling a method on one of the connection handlers, for example,
+<code>connection_handlers[:reading].retrieve_connection_pool("ActiveRecord::Base")</code>
+you will now need to update that call to be
+<code>connection_handlers.retrieve_connection_pool("ActiveRecord::Base", role: :reading)</code>.</li>
+<li>Calls to <code>ActiveRecord::Base.connection_handler.prevent_writes</code> will need to be updated
+to <code>ActiveRecord::Base.connection.preventing_writes?</code>.</li>
+<li>If you need all the pools, including writing and reading, a new method has been provided on
+the handler. Call <code>connection_handler.all_connection_pools</code> to use this. In most cases though
+you'll want writing or reading pools with <code>connection_handler.connection_pool_list(:writing)</code> or
+<code>connection_handler.connection_pool_list(:reading)</code>.</li>
+<li>If you turn off <code>legacy_connection_handling</code> in your application, any method that's unsupported
+will raise an error (i.e. <code>connection_handlers=</code>).</li>
+</ul>
+</body>
+</html>

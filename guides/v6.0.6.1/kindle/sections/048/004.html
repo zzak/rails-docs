@@ -1,0 +1,81 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>5 Action Pack</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v6.0.6.1/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="action-pack"><a class="anchorlink" href="#action-pack">5 Action Pack</a></h3>
+<p>Please refer to the <a href="https://github.com/rails/rails/blob/5-2-stable/actionpack/CHANGELOG.md">Changelog</a> for detailed changes.</p>
+
+<h4 id="action-pack-removals"><a class="anchorlink" href="#action-pack-removals">5.1 Removals</a></h4>
+<ul>
+<li>  Remove deprecated <code>ActionController::ParamsParser::ParseError</code>.
+(<a href="https://github.com/rails/rails/commit/e16c765ac6dcff068ff2e5554d69ff345c003de1">Commit</a>)</li>
+</ul>
+<h4 id="action-pack-deprecations"><a class="anchorlink" href="#action-pack-deprecations">5.2 Deprecations</a></h4>
+<ul>
+<li>  Deprecate <code>#success?</code>, <code>#missing?</code> and <code>#error?</code> aliases of
+<code>ActionDispatch::TestResponse</code>.
+(<a href="https://github.com/rails/rails/pull/30104">Pull Request</a>)</li>
+</ul>
+<h4 id="action-pack-notable-changes"><a class="anchorlink" href="#action-pack-notable-changes">5.3 Notable changes</a></h4>
+<ul>
+<li>  Add support for recyclable cache keys with fragment caching.
+(<a href="https://github.com/rails/rails/pull/29092">Pull Request</a>)</li>
+<li>  Change the cache key format for fragments to make it easier to debug key
+churn.
+(<a href="https://github.com/rails/rails/pull/29092">Pull Request</a>)</li>
+<li>  AEAD encrypted cookies and sessions with GCM.
+(<a href="https://github.com/rails/rails/pull/28132">Pull Request</a>)</li>
+<li>  Protect from forgery by default.
+(<a href="https://github.com/rails/rails/pull/29742">Pull Request</a>)</li>
+<li>  Enforce signed/encrypted cookie expiry server side.
+(<a href="https://github.com/rails/rails/pull/30121">Pull Request</a>)</li>
+<li>  Cookies <code>:expires</code> option supports <code>ActiveSupport::Duration</code> object.
+(<a href="https://github.com/rails/rails/pull/30121">Pull Request</a>)</li>
+<li>  Use Capybara registered <code>:puma</code> server config.
+(<a href="https://github.com/rails/rails/pull/30638">Pull Request</a>)</li>
+<li>  Simplify cookies middleware with key rotation support.
+(<a href="https://github.com/rails/rails/pull/29716">Pull Request</a>)</li>
+<li>  Add ability to enable Early Hints for HTTP/2.
+(<a href="https://github.com/rails/rails/pull/30744">Pull Request</a>)</li>
+<li>  Add headless chrome support to System Tests.
+(<a href="https://github.com/rails/rails/pull/30876">Pull Request</a>)</li>
+<li>  Add <code>:allow_other_host</code> option to <code>redirect_back</code> method.
+(<a href="https://github.com/rails/rails/pull/30850">Pull Request</a>)</li>
+<li>  Make <code>assert_recognizes</code> to traverse mounted engines.
+(<a href="https://github.com/rails/rails/pull/22435">Pull Request</a>)</li>
+<li>  Add DSL for configuring Content-Security-Policy header.
+(<a href="https://github.com/rails/rails/pull/31162">Pull Request</a>,
+<a href="https://github.com/rails/rails/commit/619b1b6353a65e1635d10b8f8c6630723a5a6f1a">Commit</a>,
+<a href="https://github.com/rails/rails/commit/4ec8bf68ff92f35e79232fbd605012ce1f4e1e6e">Commit</a>)</li>
+<li>  Register most popular audio/video/font mime types supported by modern
+browsers.
+(<a href="https://github.com/rails/rails/pull/31251">Pull Request</a>)</li>
+<li>  Changed the default system test screenshot output from <code>inline</code> to <code>simple</code>.
+(<a href="https://github.com/rails/rails/commit/9d6e288ee96d6241f864dbf90211c37b14a57632">Commit</a>)</li>
+<li>  Add headless firefox support to System Tests.
+(<a href="https://github.com/rails/rails/pull/31365">Pull Request</a>)</li>
+<li>  Add secure <code>X-Download-Options</code> and <code>X-Permitted-Cross-Domain-Policies</code> to
+default headers set.
+(<a href="https://github.com/rails/rails/commit/5d7b70f4336d42eabfc403e9f6efceb88b3eff44">Commit</a>)</li>
+<li>  Changed the system tests to set Puma as default server only when the
+user haven't specified manually another server.
+(<a href="https://github.com/rails/rails/pull/31384">Pull Request</a>)</li>
+<li>  Add <code>Referrer-Policy</code> header to default headers set.
+(<a href="https://github.com/rails/rails/commit/428939be9f954d39b0c41bc53d85d0d106b9d1a1">Commit</a>)</li>
+<li>  Matches behavior of <code>Hash#each</code> in <code>ActionController::Parameters#each</code>.
+(<a href="https://github.com/rails/rails/pull/27790">Pull Request</a>)</li>
+<li>  Add support for automatic nonce generation for Rails UJS.
+(<a href="https://github.com/rails/rails/commit/b2f0a8945956cd92dec71ec4e44715d764990a49">Commit</a>)</li>
+<li>  Update the default HSTS max-age value to 31536000 seconds (1 year)
+to meet the minimum max-age requirement for <a href="https://hstspreload.org/">https://hstspreload.org/</a>.
+(<a href="https://github.com/rails/rails/commit/30b5f469a1d30c60d1fb0605e84c50568ff7ed37">Commit</a>)</li>
+<li>  Add alias method <code>to_hash</code> to <code>to_h</code> for <code>cookies</code>.
+Add alias method <code>to_h</code> to <code>to_hash</code> for <code>session</code>.
+(<a href="https://github.com/rails/rails/commit/50a62499e41dfffc2903d468e8b47acebaf9b500">Commit</a>)</li>
+</ul>
+</body>
+</html>

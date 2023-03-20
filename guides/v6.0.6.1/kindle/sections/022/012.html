@@ -1,0 +1,87 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>13 Testing Jobs</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v6.0.6.1/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="testing-jobs"><a class="anchorlink" href="#testing-jobs">13 Testing Jobs</a></h3>
+<p>Since your custom jobs can be queued at different levels inside your application,
+you'll need to test both the jobs themselves (their behavior when they get enqueued)
+and that other entities correctly enqueue them.</p>
+
+<h4 id="a-basic-test-case"><a class="anchorlink" href="#a-basic-test-case">13.1 A Basic Test Case</a></h4>
+
+<p>By default, when you generate a job, an associated test will be generated as well
+under the <code>test/jobs</code> directory. Here's an example test with a billing job:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+require 'test_helper'
+
+class BillingJobTest &lt; ActiveJob::TestCase
+  test 'that account is charged' do
+    BillingJob.perform_now(account, product)
+    assert account.reload.charged_for?(product)
+  end
+end
+
+</pre>
+</div>
+<p>This test is pretty simple and only asserts that the job got the work done
+as expected.</p>
+
+<p>By default, <code>ActiveJob::TestCase</code> will set the queue adapter to <code>:test</code> so that
+your jobs are performed inline. It will also ensure that all previously performed
+and enqueued jobs are cleared before any test run so you can safely assume that
+no jobs have already been executed in the scope of each test.</p>
+
+<h4 id="custom-assertions-and-testing-jobs-inside-other-components"><a class="anchorlink" href="#custom-assertions-and-testing-jobs-inside-other-components">13.2 Custom Assertions And Testing Jobs Inside Other Components</a></h4>
+
+<p>Active Job ships with a bunch of custom assertions that can be used to lessen the verbosity of tests. For a full list of available assertions, see the API documentation for <a href="https://api.rubyonrails.org/v6.0.6.1/classes/ActiveJob/TestHelper.html"><code>ActiveJob::TestHelper</code></a>.</p>
+
+<p>It's a good practice to ensure that your jobs correctly get enqueued or performed
+wherever you invoke them (e.g. inside your controllers). This is precisely where
+the custom assertions provided by Active Job are pretty useful. For instance,
+within a model:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+require 'test_helper'
+
+class ProductTest &lt; ActiveSupport::TestCase
+  include ActiveJob::TestHelper
+
+  test 'billing job scheduling' do
+    assert_enqueued_with(job: BillingJob) do
+      product.charge(account)
+    end
+  end
+end
+
+</pre>
+</div>
+<h4 id="asserting-time-arguments-in-jobs"><a class="anchorlink" href="#asserting-time-arguments-in-jobs">13.3 Asserting Time Arguments in Jobs</a></h4>
+
+<p>When serializing job arguments, <code>Time</code>, <code>DateTime</code>, and <code>ActiveSupport::TimeWithZone</code> lose microsecond precision. This means comparing deserialized time with actual time doesn't always work. To compensate for the loss of precision, <code>assert_enqueued_with</code> and <code>assert_performed_with</code> will remove microseconds from time objects in argument assertions.</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+require 'test_helper'
+
+class ProductTest &lt; ActiveSupport::TestCase
+  include ActiveJob::TestHelper
+
+  test 'that product is reserved at a given time' do
+    now = Time.now
+    assert_performed_with(job: ReservationJob, args: [product, now]) do
+      product.reserve(now)
+    end
+  end
+end
+
+</pre>
+</div>
+</body>
+</html>

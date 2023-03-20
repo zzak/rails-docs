@@ -1,0 +1,53 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>10 Null Relation</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v7.0.4.2/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="null-relation"><a class="anchorlink" href="#null-relation">10 Null Relation</a></h3>
+<p>The <a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveRecord/QueryMethods.html#method-i-none"><code>none</code></a> method returns a chainable relation with no records. Any subsequent conditions chained to the returned relation will continue generating empty relations. This is useful in scenarios where you need a chainable response to a method or a scope that could return zero results.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="no">Book</span><span class="p">.</span><span class="nf">none</span> <span class="c1"># returns an empty Relation and fires no queries.</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="Book.none # returns an empty Relation and fires no queries.
+">Copy</button>
+</div>
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="c1"># The highlighted_reviews method below is expected to always return a Relation.</span>
+<span class="no">Book</span><span class="p">.</span><span class="nf">first</span><span class="p">.</span><span class="nf">highlighted_reviews</span><span class="p">.</span><span class="nf">average</span><span class="p">(</span><span class="ss">:rating</span><span class="p">)</span>
+<span class="c1"># =&gt; Returns average rating of a book</span>
+
+<span class="k">class</span> <span class="nc">Book</span>
+  <span class="c1"># Returns reviews if there are at least 5,</span>
+  <span class="c1"># else consider this as non-reviewed book</span>
+  <span class="k">def</span> <span class="nf">highlighted_reviews</span>
+    <span class="k">if</span> <span class="n">reviews</span><span class="p">.</span><span class="nf">count</span> <span class="o">&gt;</span> <span class="mi">5</span>
+      <span class="n">reviews</span>
+    <span class="k">else</span>
+      <span class="no">Review</span><span class="p">.</span><span class="nf">none</span> <span class="c1"># Does not meet minimum threshold yet</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="# The highlighted_reviews method below is expected to always return a Relation.
+Book.first.highlighted_reviews.average(:rating)
+# =&gt; Returns average rating of a book
+
+class Book
+  # Returns reviews if there are at least 5,
+  # else consider this as non-reviewed book
+  def highlighted_reviews
+    if reviews.count &gt; 5
+      reviews
+    else
+      Review.none # Does not meet minimum threshold yet
+    end
+  end
+end
+">Copy</button>
+</div>
+</body>
+</html>

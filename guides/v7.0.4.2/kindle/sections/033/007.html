@@ -1,0 +1,26 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>8 Delete any require calls</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v7.0.4.2/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="delete-any-require-calls"><a class="anchorlink" href="#delete-any-require-calls">8 Delete any <code>require</code> calls</a></h3>
+<p>In my experience, projects generally do not do this. But I've seen a couple, and have heard of a few others.</p>
+
+<p>In Rails application you use <code>require</code> exclusively to load code from <code>lib</code> or from 3rd party like gem dependencies or the standard library. <strong>Never load autoloadable application code with <code>require</code></strong>. See why this was a bad idea already in <code>classic</code> <a href="https://guides.rubyonrails.org/v6.1/autoloading_and_reloading_constants_classic_mode.html#autoloading-and-require">here</a>.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="nb">require</span> <span class="s2">"nokogiri"</span> <span class="c1"># GOOD</span>
+<span class="nb">require</span> <span class="s2">"net/http"</span> <span class="c1"># GOOD</span>
+<span class="nb">require</span> <span class="s2">"user"</span>     <span class="c1"># BAD, DELETE THIS (assuming app/models/user.rb)</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='require "nokogiri" # GOOD
+require "net/http" # GOOD
+require "user"     # BAD, DELETE THIS (assuming app/models/user.rb)
+'>Copy</button>
+</div>
+<p>Please delete any <code>require</code> calls of that type.</p>
+</body>
+</html>

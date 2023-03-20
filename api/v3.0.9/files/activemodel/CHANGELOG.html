@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html 
+     PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+  <head>
+    <title>File: CHANGELOG</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <link rel="stylesheet" href="../../rdoc-style.css" type="text/css" media="screen" />
+
+    <script language="JavaScript" type="text/javascript">
+    // <![CDATA[
+
+        function toggleSource( id )
+        {
+          var elem
+          var link
+
+          if( document.getElementById )
+          {
+            elem = document.getElementById( id )
+            link = document.getElementById( "l_" + id )
+          }
+          else if ( document.all )
+          {
+            elem = eval( "document.all." + id )
+            link = eval( "document.all.l_" + id )
+          }
+          else
+            return false;
+
+          if( elem.style.display == "block" )
+          {
+            elem.style.display = "none"
+            link.innerHTML = "show source"
+          }
+          else
+          {
+            elem.style.display = "block"
+            link.innerHTML = "hide source"
+          }
+        }
+
+        function openCode( url )
+        {
+          window.open( url, "SOURCE_CODE", "resizable=yes,scrollbars=yes,toolbar=no,status=no,height=480,width=750" ).focus();
+        }
+      // ]]>
+    </script>
+  </head>
+
+  <body>
+    <table border='0' cellpadding='0' cellspacing='0' width="100%" class='banner'>
+    <tr><td>Ruby on Rails v3.0.9</td></tr>
+    <tr><td>
+    <table width="100%" border='0' cellpadding='0' cellspacing='0'><tr>
+      <td class="file-title" colspan="2"><span class="file-title-prefix">File</span><br />CHANGELOG</td>
+      <td align="right">
+        <table border='0' cellspacing="0" cellpadding="2">
+          <tr>
+            <td>Path:</td>
+            <td>activemodel/CHANGELOG            </td>
+          </tr>
+          <tr>
+            <td>Modified:</td>
+            <td>Thu Jun 16 10:42:31 +0000 2011</td>
+          </tr>
+        </table>
+      </td></tr>
+    </table>
+  </td></tr>
+</table><br />
+  <div id="bodyContent">
+  <div id="content">
+  <div class="description">
+<p>*<a href="../../classes/Rails.html">Rails</a> 3.0.7 (April 18, 2011)*</p>
+
+<p>*No changes.</p>
+
+<p>*<a href="../../classes/Rails.html">Rails</a> 3.0.6 (April 5, 2011)</p>
+<ul><li>
+<p>Fix when database column name has some symbolic characters (e.g. Oracle
+CASE# VARCHAR2(20)) #5818 #6850 [Robert Pankowecki, Santiago Pastorino]</p>
+</li><li>
+<p>Fix length validation for fixnums #6556 [Andriy Tyurnikov]</p>
+</li><li>
+<p>Fix i18n key collision with namespaced models #6448 [yves.senn]</p>
+</li></ul>
+
+<p>*<a href="../../classes/Rails.html">Rails</a> 3.0.5 (February 26, 2011)*</p>
+<ul><li>
+<p>No changes.</p>
+</li></ul>
+
+<p>*<a href="../../classes/Rails.html">Rails</a> 3.0.4 (February 8, 2011)*</p>
+<ul><li>
+<p>No changes.</p>
+</li></ul>
+
+<p>*<a href="../../classes/Rails.html">Rails</a> 3.0.3 (November 16, 2010)*</p>
+<ul><li>
+<p>No changes.</p>
+</li></ul>
+
+<p>*<a href="../../classes/Rails.html">Rails</a> 3.0.2 (November 15, 2010)*</p>
+<ul><li>
+<p>No changes.</p>
+</li></ul>
+
+<p>*<a href="../../classes/Rails.html">Rails</a> 3.0.1 (October 15, 2010)*</p>
+<ul><li>
+<p>No changes.</p>
+</li></ul>
+
+<p>*<a href="../../classes/Rails.html">Rails</a> 3.0.0 (August 29, 2010)*</p>
+<ul><li>
+<p>Added <a
+href="../../classes/ActiveModel/MassAssignmentSecurity.html">ActiveModel::MassAssignmentSecurity</a>
+[Eric Chapweske, Josh Kalderimis]</p>
+</li><li>
+<p>JSON supports a custom root option: to_json(:root =&gt; ‘custom’) 
+#4515 [Jatinder Singh]</p>
+</li><li>
+<p>#new_record? and #destroyed? were removed from <a
+href="../../classes/ActiveModel/Lint.html">ActiveModel::Lint</a>. Use
+persisted? instead. A model is persisted if it’s not a new_record? and it
+was not destroyed? [MG]</p>
+</li><li>
+<p>Added validations reflection in <a
+href="../../classes/ActiveModel/Validations.html">ActiveModel::Validations</a>
+[JV]</p>
+
+<pre>Model.validators
+Model.validators_on(:field)</pre>
+</li><li>
+<p>#to_key was added to <a
+href="../../classes/ActiveModel/Lint.html">ActiveModel::Lint</a> so we can
+generate DOM IDs for AMo objects with composite keys [MG]</p>
+</li><li>
+<p>ActiveModel::Observer#add_observer!</p>
+
+<p>It has a custom hook to define after_find that should really be in a <a
+href="../../classes/ActiveRecord/Observer.html">ActiveRecord::Observer</a>
+subclass:</p>
+
+<pre>def add_observer!(klass)
+  klass.add_observer(self)
+  klass.class_eval 'def after_find() end' unless
+                      klass.respond_to?(:after_find)
+end</pre>
+</li><li>
+<p>Change the ActiveModel::Base.include_root_in_json default to true for <a
+href="../../classes/Rails.html">Rails</a> 3 [DHH]</p>
+</li><li>
+<p>Add validates_format_of :without =&gt; /regexp/ option. #430 [Elliot
+Winkler, Peer Allan]</p>
+
+<p>Example :</p>
+
+<pre>validates_format_of :subdomain, :without =&gt; /www|admin|mail/</pre>
+</li><li>
+<p>Introduce validates_with to encapsulate attribute validations in a class. 
+#2630 [Jeff Dean]</p>
+</li><li>
+<p>Extracted from Active Record and Active Resource.</p>
+</li></ul>
+</div>
+  </div>
+</div>
+  </body>
+</html>

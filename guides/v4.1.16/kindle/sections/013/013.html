@@ -1,0 +1,381 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>14 Extensions to Date
+</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v4.1.16/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="extensions-to-date">14 Extensions to <code>Date</code>
+</h3>
+<h4 id="extensions-to-date-calculations">14.1 Calculations</h4>
+<div class="note"><p>All the following methods are defined in <code>active_support/core_ext/date/calculations.rb</code>.</p></div>
+<div class="info"><p>The following calculation methods have edge cases in October 1582, since days 5..14 just do not exist. This guide does not document their behavior around those days for brevity, but it is enough to say that they do what you would expect. That is, <code>Date.new(1582, 10, 4).tomorrow</code> returns <code>Date.new(1582, 10, 15)</code> and so on. Please check <code>test/core_ext/date_ext_test.rb</code> in the Active Support test suite for expected behavior.</p></div>
+<h5 id="date-current">14.1.1 <code>Date.current</code>
+</h5>
+<p>Active Support defines <code>Date.current</code> to be today in the current time zone. That's like <code>Date.today</code>, except that it honors the user time zone, if defined. It also defines <code>Date.yesterday</code> and <code>Date.tomorrow</code>, and the instance predicates <code>past?</code>, <code>today?</code>, and <code>future?</code>, all of them relative to <code>Date.current</code>.</p>
+<p>When making Date comparisons using methods which honor the user time zone, make sure to use <code>Date.current</code> and not <code>Date.today</code>. There are cases where the user time zone might be in the future compared to the system time zone, which <code>Date.today</code> uses by default. This means <code>Date.today</code> may equal <code>Date.yesterday</code>.</p>
+<h5 id="named-dates">14.1.2 Named dates</h5>
+<h6 id="prev-year-next-year">14.1.2.1 <code>prev_year</code>, <code>next_year</code>
+</h6>
+<p>In Ruby 1.9 <code>prev_year</code> and <code>next_year</code> return a date with the same day/month in the last or next year:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+d = Date.new(2010, 5, 8) # =&gt; Sat, 08 May 2010
+d.prev_year              # =&gt; Fri, 08 May 2009
+d.next_year              # =&gt; Sun, 08 May 2011
+
+</pre>
+</div>
+<p>If date is the 29th of February of a leap year, you obtain the 28th:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+d = Date.new(2000, 2, 29) # =&gt; Tue, 29 Feb 2000
+d.prev_year               # =&gt; Sun, 28 Feb 1999
+d.next_year               # =&gt; Wed, 28 Feb 2001
+
+</pre>
+</div>
+<p><code>prev_year</code> is aliased to <code>last_year</code>.</p>
+<h6 id="prev-month-next-month">14.1.2.2 <code>prev_month</code>, <code>next_month</code>
+</h6>
+<p>In Ruby 1.9 <code>prev_month</code> and <code>next_month</code> return the date with the same day in the last or next month:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+d = Date.new(2010, 5, 8) # =&gt; Sat, 08 May 2010
+d.prev_month             # =&gt; Thu, 08 Apr 2010
+d.next_month             # =&gt; Tue, 08 Jun 2010
+
+</pre>
+</div>
+<p>If such a day does not exist, the last day of the corresponding month is returned:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+Date.new(2000, 5, 31).prev_month # =&gt; Sun, 30 Apr 2000
+Date.new(2000, 3, 31).prev_month # =&gt; Tue, 29 Feb 2000
+Date.new(2000, 5, 31).next_month # =&gt; Fri, 30 Jun 2000
+Date.new(2000, 1, 31).next_month # =&gt; Tue, 29 Feb 2000
+
+</pre>
+</div>
+<p><code>prev_month</code> is aliased to <code>last_month</code>.</p>
+<h6 id="prev-quarter-next-quarter">14.1.2.3 <code>prev_quarter</code>, <code>next_quarter</code>
+</h6>
+<p>Same as <code>prev_month</code> and <code>next_month</code>. It returns the date with the same day in the previous or next quarter:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+t = Time.local(2010, 5, 8) # =&gt; Sat, 08 May 2010
+t.prev_quarter             # =&gt; Mon, 08 Feb 2010
+t.next_quarter             # =&gt; Sun, 08 Aug 2010
+
+</pre>
+</div>
+<p>If such a day does not exist, the last day of the corresponding month is returned:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+Time.local(2000, 7, 31).prev_quarter  # =&gt; Sun, 30 Apr 2000
+Time.local(2000, 5, 31).prev_quarter  # =&gt; Tue, 29 Feb 2000
+Time.local(2000, 10, 31).prev_quarter # =&gt; Mon, 30 Oct 2000
+Time.local(2000, 11, 31).next_quarter # =&gt; Wed, 28 Feb 2001
+
+</pre>
+</div>
+<p><code>prev_quarter</code> is aliased to <code>last_quarter</code>.</p>
+<h6 id="beginning-of-week-end-of-week">14.1.2.4 <code>beginning_of_week</code>, <code>end_of_week</code>
+</h6>
+<p>The methods <code>beginning_of_week</code> and <code>end_of_week</code> return the dates for the
+beginning and end of the week, respectively. Weeks are assumed to start on
+Monday, but that can be changed passing an argument, setting thread local
+<code>Date.beginning_of_week</code> or <code>config.beginning_of_week</code>.</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+d = Date.new(2010, 5, 8)     # =&gt; Sat, 08 May 2010
+d.beginning_of_week          # =&gt; Mon, 03 May 2010
+d.beginning_of_week(:sunday) # =&gt; Sun, 02 May 2010
+d.end_of_week                # =&gt; Sun, 09 May 2010
+d.end_of_week(:sunday)       # =&gt; Sat, 08 May 2010
+
+</pre>
+</div>
+<p><code>beginning_of_week</code> is aliased to <code>at_beginning_of_week</code> and <code>end_of_week</code> is aliased to <code>at_end_of_week</code>.</p>
+<h6 id="monday-sunday">14.1.2.5 <code>monday</code>, <code>sunday</code>
+</h6>
+<p>The methods <code>monday</code> and <code>sunday</code> return the dates for the previous Monday and
+next Sunday, respectively.</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+d = Date.new(2010, 5, 8)     # =&gt; Sat, 08 May 2010
+d.monday                     # =&gt; Mon, 03 May 2010
+d.sunday                     # =&gt; Sun, 09 May 2010
+
+d = Date.new(2012, 9, 10)    # =&gt; Mon, 10 Sep 2012
+d.monday                     # =&gt; Mon, 10 Sep 2012
+
+d = Date.new(2012, 9, 16)    # =&gt; Sun, 16 Sep 2012
+d.sunday                     # =&gt; Sun, 16 Sep 2012
+
+</pre>
+</div>
+<h6 id="prev-week-next-week">14.1.2.6 <code>prev_week</code>, <code>next_week</code>
+</h6>
+<p>The method <code>next_week</code> receives a symbol with a day name in English (default is the thread local <code>Date.beginning_of_week</code>, or <code>config.beginning_of_week</code>, or <code>:monday</code>) and it returns the date corresponding to that day.</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+d = Date.new(2010, 5, 9) # =&gt; Sun, 09 May 2010
+d.next_week              # =&gt; Mon, 10 May 2010
+d.next_week(:saturday)   # =&gt; Sat, 15 May 2010
+
+</pre>
+</div>
+<p>The method <code>prev_week</code> is analogous:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+d.prev_week              # =&gt; Mon, 26 Apr 2010
+d.prev_week(:saturday)   # =&gt; Sat, 01 May 2010
+d.prev_week(:friday)     # =&gt; Fri, 30 Apr 2010
+
+</pre>
+</div>
+<p><code>prev_week</code> is aliased to <code>last_week</code>.</p>
+<p>Both <code>next_week</code> and <code>prev_week</code> work as expected when <code>Date.beginning_of_week</code> or <code>config.beginning_of_week</code> are set.</p>
+<h6 id="beginning-of-month-end-of-month">14.1.2.7 <code>beginning_of_month</code>, <code>end_of_month</code>
+</h6>
+<p>The methods <code>beginning_of_month</code> and <code>end_of_month</code> return the dates for the beginning and end of the month:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+d = Date.new(2010, 5, 9) # =&gt; Sun, 09 May 2010
+d.beginning_of_month     # =&gt; Sat, 01 May 2010
+d.end_of_month           # =&gt; Mon, 31 May 2010
+
+</pre>
+</div>
+<p><code>beginning_of_month</code> is aliased to <code>at_beginning_of_month</code>, and <code>end_of_month</code> is aliased to <code>at_end_of_month</code>.</p>
+<h6 id="beginning-of-quarter-end-of-quarter">14.1.2.8 <code>beginning_of_quarter</code>, <code>end_of_quarter</code>
+</h6>
+<p>The methods <code>beginning_of_quarter</code> and <code>end_of_quarter</code> return the dates for the beginning and end of the quarter of the receiver's calendar year:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+d = Date.new(2010, 5, 9) # =&gt; Sun, 09 May 2010
+d.beginning_of_quarter   # =&gt; Thu, 01 Apr 2010
+d.end_of_quarter         # =&gt; Wed, 30 Jun 2010
+
+</pre>
+</div>
+<p><code>beginning_of_quarter</code> is aliased to <code>at_beginning_of_quarter</code>, and <code>end_of_quarter</code> is aliased to <code>at_end_of_quarter</code>.</p>
+<h6 id="beginning-of-year-end-of-year">14.1.2.9 <code>beginning_of_year</code>, <code>end_of_year</code>
+</h6>
+<p>The methods <code>beginning_of_year</code> and <code>end_of_year</code> return the dates for the beginning and end of the year:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+d = Date.new(2010, 5, 9) # =&gt; Sun, 09 May 2010
+d.beginning_of_year      # =&gt; Fri, 01 Jan 2010
+d.end_of_year            # =&gt; Fri, 31 Dec 2010
+
+</pre>
+</div>
+<p><code>beginning_of_year</code> is aliased to <code>at_beginning_of_year</code>, and <code>end_of_year</code> is aliased to <code>at_end_of_year</code>.</p>
+<h5 id="other-date-computations">14.1.3 Other Date Computations</h5>
+<h6 id="years-ago-years-since">14.1.3.1 <code>years_ago</code>, <code>years_since</code>
+</h6>
+<p>The method <code>years_ago</code> receives a number of years and returns the same date those many years ago:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+date = Date.new(2010, 6, 7)
+date.years_ago(10) # =&gt; Wed, 07 Jun 2000
+
+</pre>
+</div>
+<p><code>years_since</code> moves forward in time:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+date = Date.new(2010, 6, 7)
+date.years_since(10) # =&gt; Sun, 07 Jun 2020
+
+</pre>
+</div>
+<p>If such a day does not exist, the last day of the corresponding month is returned:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+Date.new(2012, 2, 29).years_ago(3)     # =&gt; Sat, 28 Feb 2009
+Date.new(2012, 2, 29).years_since(3)   # =&gt; Sat, 28 Feb 2015
+
+</pre>
+</div>
+<h6 id="months-ago-months-since">14.1.3.2 <code>months_ago</code>, <code>months_since</code>
+</h6>
+<p>The methods <code>months_ago</code> and <code>months_since</code> work analogously for months:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+Date.new(2010, 4, 30).months_ago(2)   # =&gt; Sun, 28 Feb 2010
+Date.new(2010, 4, 30).months_since(2) # =&gt; Wed, 30 Jun 2010
+
+</pre>
+</div>
+<p>If such a day does not exist, the last day of the corresponding month is returned:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+Date.new(2010, 4, 30).months_ago(2)    # =&gt; Sun, 28 Feb 2010
+Date.new(2009, 12, 31).months_since(2) # =&gt; Sun, 28 Feb 2010
+
+</pre>
+</div>
+<h6 id="weeks-ago">14.1.3.3 <code>weeks_ago</code>
+</h6>
+<p>The method <code>weeks_ago</code> works analogously for weeks:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+Date.new(2010, 5, 24).weeks_ago(1)    # =&gt; Mon, 17 May 2010
+Date.new(2010, 5, 24).weeks_ago(2)    # =&gt; Mon, 10 May 2010
+
+</pre>
+</div>
+<h6 id="other-date-computations-advance">14.1.3.4 <code>advance</code>
+</h6>
+<p>The most generic way to jump to other days is <code>advance</code>. This method receives a hash with keys <code>:years</code>, <code>:months</code>, <code>:weeks</code>, <code>:days</code>, and returns a date advanced as much as the present keys indicate:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+date = Date.new(2010, 6, 6)
+date.advance(years: 1, weeks: 2)  # =&gt; Mon, 20 Jun 2011
+date.advance(months: 2, days: -2) # =&gt; Wed, 04 Aug 2010
+
+</pre>
+</div>
+<p>Note in the previous example that increments may be negative.</p>
+<p>To perform the computation the method first increments years, then months, then weeks, and finally days. This order is important towards the end of months. Say for example we are at the end of February of 2010, and we want to move one month and one day forward.</p>
+<p>The method <code>advance</code> advances first one month, and then one day, the result is:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+Date.new(2010, 2, 28).advance(months: 1, days: 1)
+# =&gt; Sun, 29 Mar 2010
+
+</pre>
+</div>
+<p>While if it did it the other way around the result would be different:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+Date.new(2010, 2, 28).advance(days: 1).advance(months: 1)
+# =&gt; Thu, 01 Apr 2010
+
+</pre>
+</div>
+<h5 id="extensions-to-date-calculations-changing-components">14.1.4 Changing Components</h5>
+<p>The method <code>change</code> allows you to get a new date which is the same as the receiver except for the given year, month, or day:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+Date.new(2010, 12, 23).change(year: 2011, month: 11)
+# =&gt; Wed, 23 Nov 2011
+
+</pre>
+</div>
+<p>This method is not tolerant to non-existing dates, if the change is invalid <code>ArgumentError</code> is raised:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+Date.new(2010, 1, 31).change(month: 2)
+# =&gt; ArgumentError: invalid date
+
+</pre>
+</div>
+<h5 id="extensions-to-date-calculations-durations">14.1.5 Durations</h5>
+<p>Durations can be added to and subtracted from dates:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+d = Date.current
+# =&gt; Mon, 09 Aug 2010
+d + 1.year
+# =&gt; Tue, 09 Aug 2011
+d - 3.hours
+# =&gt; Sun, 08 Aug 2010 21:00:00 UTC +00:00
+
+</pre>
+</div>
+<p>They translate to calls to <code>since</code> or <code>advance</code>. For example here we get the correct jump in the calendar reform:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+Date.new(1582, 10, 4) + 1.day
+# =&gt; Fri, 15 Oct 1582
+
+</pre>
+</div>
+<h5 id="timestamps">14.1.6 Timestamps</h5>
+<div class="info"><p>The following methods return a <code>Time</code> object if possible, otherwise a <code>DateTime</code>. If set, they honor the user time zone.</p></div>
+<h6 id="beginning-of-day-end-of-day">14.1.6.1 <code>beginning_of_day</code>, <code>end_of_day</code>
+</h6>
+<p>The method <code>beginning_of_day</code> returns a timestamp at the beginning of the day (00:00:00):</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+date = Date.new(2010, 6, 7)
+date.beginning_of_day # =&gt; Mon Jun 07 00:00:00 +0200 2010
+
+</pre>
+</div>
+<p>The method <code>end_of_day</code> returns a timestamp at the end of the day (23:59:59):</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+date = Date.new(2010, 6, 7)
+date.end_of_day # =&gt; Mon Jun 07 23:59:59 +0200 2010
+
+</pre>
+</div>
+<p><code>beginning_of_day</code> is aliased to <code>at_beginning_of_day</code>, <code>midnight</code>, <code>at_midnight</code>.</p>
+<h6 id="beginning-of-hour-end-of-hour">14.1.6.2 <code>beginning_of_hour</code>, <code>end_of_hour</code>
+</h6>
+<p>The method <code>beginning_of_hour</code> returns a timestamp at the beginning of the hour (hh:00:00):</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+date = DateTime.new(2010, 6, 7, 19, 55, 25)
+date.beginning_of_hour # =&gt; Mon Jun 07 19:00:00 +0200 2010
+
+</pre>
+</div>
+<p>The method <code>end_of_hour</code> returns a timestamp at the end of the hour (hh:59:59):</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+date = DateTime.new(2010, 6, 7, 19, 55, 25)
+date.end_of_hour # =&gt; Mon Jun 07 19:59:59 +0200 2010
+
+</pre>
+</div>
+<p><code>beginning_of_hour</code> is aliased to <code>at_beginning_of_hour</code>.</p>
+<h6 id="beginning-of-minute-end-of-minute">14.1.6.3 <code>beginning_of_minute</code>, <code>end_of_minute</code>
+</h6>
+<p>The method <code>beginning_of_minute</code> returns a timestamp at the beginning of the minute (hh:mm:00):</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+date = DateTime.new(2010, 6, 7, 19, 55, 25)
+date.beginning_of_minute # =&gt; Mon Jun 07 19:55:00 +0200 2010
+
+</pre>
+</div>
+<p>The method <code>end_of_minute</code> returns a timestamp at the end of the minute (hh:mm:59):</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+date = DateTime.new(2010, 6, 7, 19, 55, 25)
+date.end_of_minute # =&gt; Mon Jun 07 19:55:59 +0200 2010
+
+</pre>
+</div>
+<p><code>beginning_of_minute</code> is aliased to <code>at_beginning_of_minute</code>.</p>
+<div class="info"><p><code>beginning_of_hour</code>, <code>end_of_hour</code>, <code>beginning_of_minute</code> and <code>end_of_minute</code> are implemented for <code>Time</code> and <code>DateTime</code> but <strong>not</strong> <code>Date</code> as it does not make sense to request the beginning or end of an hour or minute on a <code>Date</code> instance.</p></div>
+<h6 id="ago-since">14.1.6.4 <code>ago</code>, <code>since</code>
+</h6>
+<p>The method <code>ago</code> receives a number of seconds as argument and returns a timestamp those many seconds ago from midnight:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+date = Date.current # =&gt; Fri, 11 Jun 2010
+date.ago(1)         # =&gt; Thu, 10 Jun 2010 23:59:59 EDT -04:00
+
+</pre>
+</div>
+<p>Similarly, <code>since</code> moves forward:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+date = Date.current # =&gt; Fri, 11 Jun 2010
+date.since(1)       # =&gt; Fri, 11 Jun 2010 00:00:01 EDT -04:00
+
+</pre>
+</div>
+<h5 id="other-time-computations">14.1.7 Other Time Computations</h5>
+<h4 id="extensions-to-date-conversions">14.2 Conversions</h4>
+</body>
+</html>

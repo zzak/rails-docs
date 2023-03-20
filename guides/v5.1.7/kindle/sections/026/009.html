@@ -1,0 +1,521 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>10 Common Gotchas</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v5.1.7/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="common-gotchas">10 Common Gotchas</h3>
+<h4 id="nesting-and-qualified-constants">10.1 Nesting and Qualified Constants</h4>
+
+<p>Let's consider</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+module Admin
+  class UsersController &lt; ApplicationController
+    def index
+      @users = User.all
+    end
+  end
+end
+
+</pre>
+</div>
+<p>and</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class Admin::UsersController &lt; ApplicationController
+  def index
+    @users = User.all
+  end
+end
+
+</pre>
+</div>
+<p>To resolve <code>User</code> Ruby checks <code>Admin</code> in the former case, but it does not in
+the latter because it does not belong to the nesting (see <a href="#nesting">Nesting</a>
+and <a href="#resolution-algorithms">Resolution Algorithms</a>).</p>
+
+<p>Unfortunately Rails autoloading does not know the nesting in the spot where the
+constant was missing and so it is not able to act as Ruby would. In particular,
+<code>Admin::User</code> will get autoloaded in either case.</p>
+
+<p>Albeit qualified constants with <code>class</code> and <code>module</code> keywords may technically
+work with autoloading in some cases, it is preferable to use relative constants
+instead:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+module Admin
+  class UsersController &lt; ApplicationController
+    def index
+      @users = User.all
+    end
+  end
+end
+
+</pre>
+</div>
+<h4 id="autoloading-and-sti">10.2 Autoloading and STI</h4>
+
+<p>Single Table Inheritance (STI) is a feature of Active Record that enables
+storing a hierarchy of models in one single table. The API of such models is
+aware of the hierarchy and encapsulates some common needs. For example, given
+these classes:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+# app/models/polygon.rb
+class Polygon &lt; ApplicationRecord
+end
+
+# app/models/triangle.rb
+class Triangle &lt; Polygon
+end
+
+# app/models/rectangle.rb
+class Rectangle &lt; Polygon
+end
+
+</pre>
+</div>
+<p><code>Triangle.create</code> creates a row that represents a triangle, and
+<code>Rectangle.create</code> creates a row that represents a rectangle. If <code>id</code> is the
+ID of an existing record, <code>Polygon.find(id)</code> returns an object of the correct
+type.</p>
+
+<p>Methods that operate on collections are also aware of the hierarchy. For
+example, <code>Polygon.all</code> returns all the records of the table, because all
+rectangles and triangles are polygons. Active Record takes care of returning
+instances of their corresponding class in the result set.</p>
+
+<p>Types are autoloaded as needed. For example, if <code>Polygon.first</code> is a rectangle
+and <code>Rectangle</code> has not yet been loaded, Active Record autoloads it and the
+record is correctly instantiated.</p>
+
+<p>All good, but if instead of performing queries based on the root class we need
+to work on some subclass, things get interesting.</p>
+
+<p>While working with <code>Polygon</code> you do not need to be aware of all its descendants,
+because anything in the table is by definition a polygon, but when working with
+subclasses Active Record needs to be able to enumerate the types it is looking
+for. Let’s see an example.</p>
+
+<p><code>Rectangle.all</code> only loads rectangles by adding a type constraint to the query:</p>
+
+<div class="code_container">
+<pre class="brush: sql; gutter: false; toolbar: false">
+SELECT "polygons".* FROM "polygons"
+WHERE "polygons"."type" IN ("Rectangle")
+
+</pre>
+</div>
+<p>Let’s introduce now a subclass of <code>Rectangle</code>:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+# app/models/square.rb
+class Square &lt; Rectangle
+end
+
+</pre>
+</div>
+<p><code>Rectangle.all</code> should now return rectangles <strong>and</strong> squares:</p>
+
+<div class="code_container">
+<pre class="brush: sql; gutter: false; toolbar: false">
+SELECT "polygons".* FROM "polygons"
+WHERE "polygons"."type" IN ("Rectangle", "Square")
+
+</pre>
+</div>
+<p>But there’s a caveat here: How does Active Record know that the class <code>Square</code>
+exists at all?</p>
+
+<p>Even if the file <code>app/models/square.rb</code> exists and defines the <code>Square</code> class,
+if no code yet used that class, <code>Rectangle.all</code> issues the query</p>
+
+<div class="code_container">
+<pre class="brush: sql; gutter: false; toolbar: false">
+SELECT "polygons".* FROM "polygons"
+WHERE "polygons"."type" IN ("Rectangle")
+
+</pre>
+</div>
+<p>That is not a bug, the query includes all <em>known</em> descendants of <code>Rectangle</code>.</p>
+
+<p>A way to ensure this works correctly regardless of the order of execution is to
+manually load the direct subclasses at the bottom of the file that defines each
+intermediate class:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+# app/models/rectangle.rb
+class Rectangle &lt; Polygon
+end
+require_dependency 'square'
+
+</pre>
+</div>
+<p>This needs to happen for every intermediate (non-root and non-leaf) class. The
+root class does not scope the query by type, and therefore does not necessarily
+have to know all its descendants.</p>
+
+<h4 id="autoloading-and-require">10.3 Autoloading and <code>require</code>
+</h4>
+
+<p>Files defining constants to be autoloaded should never be <code>require</code>d:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+require 'user' # DO NOT DO THIS
+
+class UsersController &lt; ApplicationController
+  ...
+end
+
+</pre>
+</div>
+<p>There are two possible gotchas here in development mode:</p>
+<ol>
+<li>If <code>User</code> is autoloaded before reaching the <code>require</code>, <code>app/models/user.rb</code>
+runs again because <code>load</code> does not update <code>$LOADED_FEATURES</code>.</li>
+<li>If the <code>require</code> runs first Rails does not mark <code>User</code> as an autoloaded
+constant and changes to <code>app/models/user.rb</code> aren't reloaded.</li>
+</ol>
+<p>Just follow the flow and use constant autoloading always, never mix
+autoloading and <code>require</code>. As a last resort, if some file absolutely needs to
+load a certain file use <code>require_dependency</code> to play nice with constant
+autoloading. This option is rarely needed in practice, though.</p>
+
+<p>Of course, using <code>require</code> in autoloaded files to load ordinary 3rd party
+libraries is fine, and Rails is able to distinguish their constants, they are
+not marked as autoloaded.</p>
+
+<h4 id="autoloading-and-initializers">10.4 Autoloading and Initializers</h4>
+
+<p>Consider this assignment in <code>config/initializers/set_auth_service.rb</code>:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+AUTH_SERVICE = if Rails.env.production?
+  RealAuthService
+else
+  MockedAuthService
+end
+
+</pre>
+</div>
+<p>The purpose of this setup would be that the application uses the class that
+corresponds to the environment via <code>AUTH_SERVICE</code>. In development mode
+<code>MockedAuthService</code> gets autoloaded when the initializer runs. Let’s suppose
+we do some requests, change its implementation, and hit the application again.
+To our surprise the changes are not reflected. Why?</p>
+
+<p>As <a href="#constant-reloading">we saw earlier</a>, Rails removes autoloaded constants,
+but <code>AUTH_SERVICE</code> stores the original class object. Stale, non-reachable
+using the original constant, but perfectly functional.</p>
+
+<p>The following code summarizes the situation:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class C
+  def quack
+    'quack!'
+  end
+end
+
+X = C
+Object.instance_eval { remove_const(:C) }
+X.new.quack # =&gt; quack!
+X.name      # =&gt; C
+C           # =&gt; uninitialized constant C (NameError)
+
+</pre>
+</div>
+<p>Because of that, it is not a good idea to autoload constants on application
+initialization.</p>
+
+<p>In the case above we could implement a dynamic access point:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+# app/models/auth_service.rb
+class AuthService
+  if Rails.env.production?
+    def self.instance
+      RealAuthService
+    end
+  else
+    def self.instance
+      MockedAuthService
+    end
+  end
+end
+
+</pre>
+</div>
+<p>and have the application use <code>AuthService.instance</code> instead. <code>AuthService</code>
+would be loaded on demand and be autoload-friendly.</p>
+
+<h4 id="require-dependency-and-initializers">10.5 <code>require_dependency</code> and Initializers</h4>
+
+<p>As we saw before, <code>require_dependency</code> loads files in an autoloading-friendly
+way. Normally, though, such a call does not make sense in an initializer.</p>
+
+<p>One could think about doing some <a href="#require-dependency"><code>require_dependency</code></a>
+calls in an initializer to make sure certain constants are loaded upfront, for
+example as an attempt to address the <a href="#autoloading-and-sti">gotcha with STIs</a>.</p>
+
+<p>Problem is, in development mode <a href="#constant-reloading">autoloaded constants are wiped</a>
+if there is any relevant change in the file system. If that happens then
+we are in the very same situation the initializer wanted to avoid!</p>
+
+<p>Calls to <code>require_dependency</code> have to be strategically written in autoloaded
+spots.</p>
+
+<h4 id="when-constants-aren-t-missed">10.6 When Constants aren't Missed</h4>
+
+<h5 id="when-constants-aren-t-missed-relative-references">10.6.1 Relative References</h5>
+
+<p>Let's consider a flight simulator. The application has a default flight model</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+# app/models/flight_model.rb
+class FlightModel
+end
+
+</pre>
+</div>
+<p>that can be overridden by each airplane, for instance</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+# app/models/bell_x1/flight_model.rb
+module BellX1
+  class FlightModel &lt; FlightModel
+  end
+end
+
+# app/models/bell_x1/aircraft.rb
+module BellX1
+  class Aircraft
+    def initialize
+      @flight_model = FlightModel.new
+    end
+  end
+end
+
+</pre>
+</div>
+<p>The initializer wants to create a <code>BellX1::FlightModel</code> and nesting has
+<code>BellX1</code>, that looks good. But if the default flight model is loaded and the
+one for the Bell-X1 is not, the interpreter is able to resolve the top-level
+<code>FlightModel</code> and autoloading is thus not triggered for <code>BellX1::FlightModel</code>.</p>
+
+<p>That code depends on the execution path.</p>
+
+<p>These kind of ambiguities can often be resolved using qualified constants:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+module BellX1
+  class Plane
+    def flight_model
+      @flight_model ||= BellX1::FlightModel.new
+    end
+  end
+end
+
+</pre>
+</div>
+<p>Also, <code>require_dependency</code> is a solution:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+require_dependency 'bell_x1/flight_model'
+
+module BellX1
+  class Plane
+    def flight_model
+      @flight_model ||= FlightModel.new
+    end
+  end
+end
+
+</pre>
+</div>
+<h5 id="when-constants-aren-t-missed-qualified-references">10.6.2 Qualified References</h5>
+
+<p>Given</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+# app/models/hotel.rb
+class Hotel
+end
+
+# app/models/image.rb
+class Image
+end
+
+# app/models/hotel/image.rb
+class Hotel
+  class Image &lt; Image
+  end
+end
+
+</pre>
+</div>
+<p>the expression <code>Hotel::Image</code> is ambiguous because it depends on the execution
+path.</p>
+
+<p>As <a href="#resolution-algorithm-for-qualified-constants">we saw before</a>, Ruby looks
+up the constant in <code>Hotel</code> and its ancestors. If <code>app/models/image.rb</code> has
+been loaded but <code>app/models/hotel/image.rb</code> hasn't, Ruby does not find <code>Image</code>
+in <code>Hotel</code>, but it does in <code>Object</code>:</p>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+$ bin/rails r 'Image; p Hotel::Image' 2&gt;/dev/null
+Image # NOT Hotel::Image!
+
+</pre>
+</div>
+<p>The code evaluating <code>Hotel::Image</code> needs to make sure
+<code>app/models/hotel/image.rb</code> has been loaded, possibly with
+<code>require_dependency</code>.</p>
+
+<p>In these cases the interpreter issues a warning though:</p>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+warning: toplevel constant Image referenced by Hotel::Image
+
+</pre>
+</div>
+<p>This surprising constant resolution can be observed with any qualifying class:</p>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+2.1.5 :001 &gt; String::Array
+(irb):1: warning: toplevel constant Array referenced by String::Array
+ =&gt; Array
+
+</pre>
+</div>
+<div class="warning"><p>To find this gotcha the qualifying namespace has to be a class,
+<code>Object</code> is not an ancestor of modules.</p></div>
+
+<h4 id="autoloading-within-singleton-classes">10.7 Autoloading within Singleton Classes</h4>
+
+<p>Let's suppose we have these class definitions:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+# app/models/hotel/services.rb
+module Hotel
+  class Services
+  end
+end
+
+# app/models/hotel/geo_location.rb
+module Hotel
+  class GeoLocation
+    class &lt;&lt; self
+      Services
+    end
+  end
+end
+
+</pre>
+</div>
+<p>If <code>Hotel::Services</code> is known by the time <code>app/models/hotel/geo_location.rb</code>
+is being loaded, <code>Services</code> is resolved by Ruby because <code>Hotel</code> belongs to the
+nesting when the singleton class of <code>Hotel::GeoLocation</code> is opened.</p>
+
+<p>But if <code>Hotel::Services</code> is not known, Rails is not able to autoload it, the
+application raises <code>NameError</code>.</p>
+
+<p>The reason is that autoloading is triggered for the singleton class, which is
+anonymous, and as <a href="#generic-procedure">we saw before</a>, Rails only checks the
+top-level namespace in that edge case.</p>
+
+<p>An easy solution to this caveat is to qualify the constant:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+module Hotel
+  class GeoLocation
+    class &lt;&lt; self
+      Hotel::Services
+    end
+  end
+end
+
+</pre>
+</div>
+<h4 id="autoloading-in-basicobject">10.8 Autoloading in <code>BasicObject</code>
+</h4>
+
+<p>Direct descendants of <code>BasicObject</code> do not have <code>Object</code> among their ancestors
+and cannot resolve top-level constants:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class C &lt; BasicObject
+  String # NameError: uninitialized constant C::String
+end
+
+</pre>
+</div>
+<p>When autoloading is involved that plot has a twist. Let's consider:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class C &lt; BasicObject
+  def user
+    User # WRONG
+  end
+end
+
+</pre>
+</div>
+<p>Since Rails checks the top-level namespace <code>User</code> gets autoloaded just fine the
+first time the <code>user</code> method is invoked. You only get the exception if the
+<code>User</code> constant is known at that point, in particular in a <em>second</em> call to
+<code>user</code>:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+c = C.new
+c.user # surprisingly fine, User
+c.user # NameError: uninitialized constant C::User
+
+</pre>
+</div>
+<p>because it detects that a parent namespace already has the constant (see <a href="#autoloading-algorithms-qualified-references">Qualified
+References</a>).</p>
+
+<p>As with pure Ruby, within the body of a direct descendant of <code>BasicObject</code> use
+always absolute constant paths:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class C &lt; BasicObject
+  ::String # RIGHT
+
+  def user
+    ::User # RIGHT
+  end
+end
+
+</pre>
+</div>
+</body>
+</html>

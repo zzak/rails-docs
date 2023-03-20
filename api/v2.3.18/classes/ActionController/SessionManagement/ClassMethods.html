@@ -1,0 +1,215 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html 
+     PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+  <head>
+    <title>Module: ActionController::SessionManagement::ClassMethods</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <link rel="stylesheet" href="../../.././rdoc-style.css" type="text/css" media="screen" />
+
+    <script language="JavaScript" type="text/javascript">
+    // <![CDATA[
+
+        function toggleSource( id )
+        {
+          var elem
+          var link
+
+          if( document.getElementById )
+          {
+            elem = document.getElementById( id )
+            link = document.getElementById( "l_" + id )
+          }
+          else if ( document.all )
+          {
+            elem = eval( "document.all." + id )
+            link = eval( "document.all.l_" + id )
+          }
+          else
+            return false;
+
+          if( elem.style.display == "block" )
+          {
+            elem.style.display = "none"
+            link.innerHTML = "show source"
+          }
+          else
+          {
+            elem.style.display = "block"
+            link.innerHTML = "hide source"
+          }
+        }
+
+        function openCode( url )
+        {
+          window.open( url, "SOURCE_CODE", "resizable=yes,scrollbars=yes,toolbar=no,status=no,height=480,width=750" ).focus();
+        }
+      // ]]>
+    </script>
+  </head>
+
+  <body>
+  <table width="100%" border='0' cellpadding='0' cellspacing='0' class='banner'><tr>
+  <td class="file-title"><span class="file-title-prefix">Module</span><br />ActionController::SessionManagement::ClassMethods</td>
+  <td align="right">
+    <table cellspacing="0" cellpadding="2">
+      <tr valign="top">
+        <td>In:</td>
+        <td>
+<a href="../../../files/actionpack/lib/action_controller/session_management_rb.html">actionpack/lib/action_controller/session_management.rb</a>
+        </td>
+      </tr>
+         </table>
+        </td>
+        </tr>
+      </table>
+ <!-- banner header -->
+
+  <div id="bodyContent">
+      <div id="content">
+
+
+
+
+  <div class="sectiontitle">Methods</div>
+  <ul>
+  <li><a href="#M001662">session</a></li>
+  <li><a href="#M001660">session=</a></li>
+  <li><a href="#M001661">session_options</a></li>
+  <li><a href="#M001659">session_store</a></li>
+  <li><a href="#M001658">session_store=</a></li>
+  </ul>
+
+
+
+
+
+
+<div class="sectiontitle">Public Instance methods</div>
+<div class="method">
+  <div class="title">
+    <a name="M001662"></a><b>session</b>(*args)
+  </div>
+<div class="sourcecode">
+  <p class="source-link">[ <a href="javascript:toggleSource('M001662_source')" id="l_M001662_source">show source</a> ]</p>
+  <div id="M001662_source" class="dyn-source">
+<pre>
+    <span class="ruby-comment cmt"># File actionpack/lib/action_controller/session_management.rb, line 45</span>
+45:       <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">session</span>(<span class="ruby-operator">*</span><span class="ruby-identifier">args</span>)
+46:         <span class="ruby-constant">ActiveSupport</span><span class="ruby-operator">::</span><span class="ruby-constant">Deprecation</span>.<span class="ruby-identifier">warn</span>(
+47:           <span class="ruby-value str">&quot;Disabling sessions for a single controller has been deprecated. &quot;</span> <span class="ruby-operator">+</span>
+48:           <span class="ruby-value str">&quot;Sessions are now lazy loaded. So if you don't access them, &quot;</span> <span class="ruby-operator">+</span>
+49:           <span class="ruby-value str">&quot;consider them off. You can still modify the session cookie &quot;</span> <span class="ruby-operator">+</span>
+50:           <span class="ruby-value str">&quot;options with request.session_options.&quot;</span>, <span class="ruby-identifier">caller</span>)
+51:       <span class="ruby-keyword kw">end</span>
+</pre>
+  </div>
+</div>
+</div>
+<div class="method">
+  <div class="title">
+    <a name="M001660"></a><b>session=</b>(options = {})
+  </div>
+<div class="sourcecode">
+  <p class="source-link">[ <a href="javascript:toggleSource('M001660_source')" id="l_M001660_source">show source</a> ]</p>
+  <div id="M001660_source" class="dyn-source">
+<pre>
+    <span class="ruby-comment cmt"># File actionpack/lib/action_controller/session_management.rb, line 33</span>
+33:       <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">session=</span>(<span class="ruby-identifier">options</span> = {})
+34:         <span class="ruby-keyword kw">self</span>.<span class="ruby-identifier">session_store</span> = <span class="ruby-keyword kw">nil</span> <span class="ruby-keyword kw">if</span> <span class="ruby-identifier">options</span>.<span class="ruby-identifier">delete</span>(<span class="ruby-identifier">:disabled</span>)
+35:         <span class="ruby-identifier">session_options</span>.<span class="ruby-identifier">merge!</span>(<span class="ruby-identifier">options</span>)
+36:       <span class="ruby-keyword kw">end</span>
+</pre>
+  </div>
+</div>
+</div>
+<div class="method">
+  <div class="title">
+    <a name="M001661"></a><b>session_options</b>()
+  </div>
+  <div class="description">
+  <p>
+Returns the hash used to configure the <a
+href="ClassMethods.html#M001662">session</a>. Example use:
+</p>
+<pre>
+  ActionController::Base.session_options[:secure] = true # session only available over HTTPS
+</pre>
+  </div>
+<div class="sourcecode">
+  <p class="source-link">[ <a href="javascript:toggleSource('M001661_source')" id="l_M001661_source">show source</a> ]</p>
+  <div id="M001661_source" class="dyn-source">
+<pre>
+    <span class="ruby-comment cmt"># File actionpack/lib/action_controller/session_management.rb, line 41</span>
+41:       <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">session_options</span>
+42:         <span class="ruby-ivar">@session_options</span> <span class="ruby-operator">||=</span> {}
+43:       <span class="ruby-keyword kw">end</span>
+</pre>
+  </div>
+</div>
+</div>
+<div class="method">
+  <div class="title">
+    <a name="M001659"></a><b>session_store</b>()
+  </div>
+  <div class="description">
+  <p>
+Returns the <a href="ClassMethods.html#M001662">session</a> store class
+currently used.
+</p>
+  </div>
+<div class="sourcecode">
+  <p class="source-link">[ <a href="javascript:toggleSource('M001659_source')" id="l_M001659_source">show source</a> ]</p>
+  <div id="M001659_source" class="dyn-source">
+<pre>
+    <span class="ruby-comment cmt"># File actionpack/lib/action_controller/session_management.rb, line 25</span>
+25:       <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">session_store</span>
+26:         <span class="ruby-keyword kw">if</span> <span class="ruby-keyword kw">defined?</span> <span class="ruby-ivar">@@session_store</span>
+27:           <span class="ruby-ivar">@@session_store</span>
+28:         <span class="ruby-keyword kw">else</span>
+29:           <span class="ruby-constant">Session</span><span class="ruby-operator">::</span><span class="ruby-constant">CookieStore</span>
+30:         <span class="ruby-keyword kw">end</span>
+31:       <span class="ruby-keyword kw">end</span>
+</pre>
+  </div>
+</div>
+</div>
+<div class="method">
+  <div class="title">
+    <a name="M001658"></a><b>session_store=</b>(store)
+  </div>
+  <div class="description">
+  <p>
+Set the <a href="ClassMethods.html#M001662">session</a> store to be used
+for keeping the <a href="ClassMethods.html#M001662">session</a> data
+between requests. By default, sessions are stored in browser cookies
+(<tt>:cookie_store</tt>), but you can also specify one of the other
+included stores (<tt>:active_record_store</tt>, <tt>:mem_cache_store</tt>,
+or your own custom class.
+</p>
+  </div>
+<div class="sourcecode">
+  <p class="source-link">[ <a href="javascript:toggleSource('M001658_source')" id="l_M001658_source">show source</a> ]</p>
+  <div id="M001658_source" class="dyn-source">
+<pre>
+    <span class="ruby-comment cmt"># File actionpack/lib/action_controller/session_management.rb, line 14</span>
+14:       <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">session_store=</span>(<span class="ruby-identifier">store</span>)
+15:         <span class="ruby-keyword kw">if</span> <span class="ruby-identifier">store</span> <span class="ruby-operator">==</span> <span class="ruby-identifier">:active_record_store</span>
+16:           <span class="ruby-keyword kw">self</span>.<span class="ruby-identifier">session_store</span> = <span class="ruby-constant">ActiveRecord</span><span class="ruby-operator">::</span><span class="ruby-constant">SessionStore</span>
+17:         <span class="ruby-keyword kw">else</span>
+18:           <span class="ruby-ivar">@@session_store</span> = <span class="ruby-identifier">store</span>.<span class="ruby-identifier">is_a?</span>(<span class="ruby-constant">Symbol</span>) <span class="ruby-operator">?</span>
+19:             <span class="ruby-constant">Session</span>.<span class="ruby-identifier">const_get</span>(<span class="ruby-identifier">store</span>.<span class="ruby-identifier">to_s</span>.<span class="ruby-identifier">camelize</span>) <span class="ruby-operator">:</span>
+20:             <span class="ruby-identifier">store</span>
+21:         <span class="ruby-keyword kw">end</span>
+22:       <span class="ruby-keyword kw">end</span>
+</pre>
+  </div>
+</div>
+</div>
+</div>
+
+  </div>
+
+    </body>
+</html>

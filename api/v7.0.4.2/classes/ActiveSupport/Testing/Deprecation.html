@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>ActiveSupport::Testing::Deprecation</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <link rel="stylesheet" href="../../../css/reset.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="../../../css/panel.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="../../../css/main.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="../../../css/github.css" type="text/css" media="screen" />
+<script src="../../../js/jquery-3.5.1.min.js" type="text/javascript" charset="utf-8"></script>
+<script src="../../../js/main.js" type="text/javascript" charset="utf-8"></script>
+<script src="../../../js/highlight.pack.js" type="text/javascript" charset="utf-8"></script>
+<script src="../../../js/turbolinks.js" type="text/javascript" charset="utf-8"></script>
+<script src="../../../js/search_index.js" type="text/javascript" charset="utf-8"></script>
+<script src="../../../js/searcher.js" type="text/javascript" charset="utf-8"></script>
+<script src="../../../panel/tree.js" type="text/javascript" charset="utf-8"></script>
+<script src="../../../js/searchdoc.js" type="text/javascript" charset="utf-8"></script>
+<meta name="data-rel-prefix" content="../../../">
+<meta name="data-tree-keys" content='["ActiveSupport", "Testing", "Deprecation"]'>
+
+
+    <meta property="og:title" value="ActiveSupport::Testing::Deprecation">
+
+  
+
+    <meta name="keywords" content="ActiveSupport::Testing::Deprecation class, assert_deprecated, assert_not_deprecated, collect_deprecations">
+</head>
+
+<body>
+    <a class="sr-only sr-only-focusable" href="#content" data-turbolinks="false">Skip to Content</a>
+    <a class="sr-only sr-only-focusable" href="#search" data-turbolinks="false">Skip to Search</a>
+
+    <input type="checkbox" id="hamburger" class="panel_checkbox">
+<label class="panel_mobile_button" for="hamburger"><span></span> Menu</label>
+<nav class="panel panel_tree" id="panel" data-turbolinks-permanent>
+  <div class="header">
+    <input type="text" placeholder="Search (/) for a class, method, ..." autosave="searchdoc" results="10" id="search" autocomplete="off" tabindex="-1" />
+    <label class="panel_mobile_button_close" for="hamburger"><span></span> Close</label>
+  </div>
+  <div class="tree">
+    <ul>
+    </ul>
+  </div>
+  <div class="result">
+    <ul>
+    </ul>
+  </div>
+  <a href="links.html" id="links">index</a>
+</nav>
+
+
+    <div class="banner">
+        
+            <span>Ruby on Rails 7.0.4.2</span><br />
+        
+        <h2>
+            <span class="type">Module</span>
+            ActiveSupport::Testing::Deprecation
+            
+        </h2>
+        <ul class="files">
+            
+            <li><a href="../../../files/activesupport/lib/active_support/testing/deprecation_rb.html">activesupport/lib/active_support/testing/deprecation.rb</a></li>
+            
+        </ul>
+    </div>
+
+    <main id="bodyContent">
+        <div id="content">
+  
+
+
+  
+
+
+  
+  
+
+
+  
+
+
+  
+    <!-- Method ref -->
+    <div class="sectiontitle">Methods</div>
+    <dl class="methods">
+      
+        <dt>A</dt>
+        <dd>
+          <ul>
+            
+              
+              <li>
+                <a href="#method-i-assert_deprecated">assert_deprecated</a>,
+              </li>
+            
+              
+              <li>
+                <a href="#method-i-assert_not_deprecated">assert_not_deprecated</a>
+              </li>
+            
+          </ul>
+        </dd>
+      
+        <dt>C</dt>
+        <dd>
+          <ul>
+            
+              
+              <li>
+                <a href="#method-i-collect_deprecations">collect_deprecations</a>
+              </li>
+            
+          </ul>
+        </dd>
+      
+    </dl>
+  
+
+  
+
+
+
+  
+
+    
+
+    
+
+    
+
+
+    
+
+
+    <!-- Methods -->
+    
+    
+      <h2 class="sectiontitle">Instance Public methods</h2>
+      
+        <div class="method">
+          <h3 class="title method-title" id="method-i-assert_deprecated">
+            
+              <b>assert_deprecated</b>(match = nil, deprecator = nil, &amp;block)
+            
+            <a href="../../../classes/ActiveSupport/Testing/Deprecation.html#method-i-assert_deprecated" name="method-i-assert_deprecated" class="permalink">Link</a>
+          </h3>
+
+          
+            <div class="description">
+              <p>Asserts that a matching deprecation warning was emitted by the given deprecator during the execution of the yielded block.</p>
+
+<pre><code>assert_deprecated(/foo/, CustomDeprecator) do
+  CustomDeprecator.warn &quot;foo should no longer be used&quot;
+end
+</code></pre>
+
+<p>The <code>match</code> object may be a <code>Regexp</code>, or <code>String</code> appearing in the message.</p>
+
+<pre><code>assert_deprecated(&#39;foo&#39;, CustomDeprecator) do
+  CustomDeprecator.warn &quot;foo should no longer be used&quot;
+end
+</code></pre>
+
+<p>If the <code>match</code> is omitted (or explicitly <code>nil</code>), any deprecation warning will match.</p>
+
+<pre><code>assert_deprecated(nil, CustomDeprecator) do
+  CustomDeprecator.warn &quot;foo should no longer be used&quot;
+end
+</code></pre>
+
+<p>If no <code>deprecator</code> is given, defaults to <a href="../Deprecation.html"><code>ActiveSupport::Deprecation</code></a>.</p>
+
+<pre><code>assert_deprecated do
+  ActiveSupport::Deprecation.warn &quot;foo should no longer be used&quot;
+end
+</code></pre>
+            </div>
+          
+
+          
+
+          
+
+          
+            
+            <div class="sourcecode">
+              
+              <p class="source-link">
+                 Source: 
+
+                
+                  <a href="javascript:toggleSource('method-i-assert_deprecated_source')" id="l_method-i-assert_deprecated_source">show</a>
+                
+
+                 | 
+
+                
+                  <a href="https://github.com/rails/rails/blob/7c70791470fc517deb7c640bead9f1b47efb5539/activesupport/lib/active_support/testing/deprecation.rb#L31" target="_blank" class="github_url">on GitHub</a>
+                
+              </p>
+              <div id="method-i-assert_deprecated_source" class="dyn-source">
+                <pre><span class="ruby-comment"># File activesupport/lib/active_support/testing/deprecation.rb, line 31</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier ruby-title">assert_deprecated</span>(<span class="ruby-identifier">match</span> = <span class="ruby-keyword">nil</span>, <span class="ruby-identifier">deprecator</span> = <span class="ruby-keyword">nil</span>, <span class="ruby-operator">&amp;</span><span class="ruby-identifier">block</span>)
+  <span class="ruby-identifier">result</span>, <span class="ruby-identifier">warnings</span> = <span class="ruby-identifier">collect_deprecations</span>(<span class="ruby-identifier">deprecator</span>, <span class="ruby-operator">&amp;</span><span class="ruby-identifier">block</span>)
+  <span class="ruby-identifier">assert</span> <span class="ruby-operator">!</span><span class="ruby-identifier">warnings</span>.<span class="ruby-identifier">empty?</span>, <span class="ruby-string">&quot;Expected a deprecation warning within the block but received none&quot;</span>
+  <span class="ruby-keyword">if</span> <span class="ruby-identifier">match</span>
+    <span class="ruby-identifier">match</span> = <span class="ruby-constant">Regexp</span>.<span class="ruby-identifier">new</span>(<span class="ruby-constant">Regexp</span>.<span class="ruby-identifier">escape</span>(<span class="ruby-identifier">match</span>)) <span class="ruby-keyword">unless</span> <span class="ruby-identifier">match</span>.<span class="ruby-identifier">is_a?</span>(<span class="ruby-constant">Regexp</span>)
+    <span class="ruby-identifier">assert</span> <span class="ruby-identifier">warnings</span>.<span class="ruby-identifier">any?</span> { <span class="ruby-operator">|</span><span class="ruby-identifier">w</span><span class="ruby-operator">|</span> <span class="ruby-identifier">match</span>.<span class="ruby-identifier">match?</span>(<span class="ruby-identifier">w</span>) }, <span class="ruby-node">&quot;No deprecation warning matched #{match}: #{warnings.join(&#39;, &#39;)}&quot;</span>
+  <span class="ruby-keyword">end</span>
+  <span class="ruby-identifier">result</span>
+<span class="ruby-keyword">end</span></pre>
+              </div>
+            </div>
+            
+          </div>
+        
+        <div class="method">
+          <h3 class="title method-title" id="method-i-assert_not_deprecated">
+            
+              <b>assert_not_deprecated</b>(deprecator = nil, &amp;block)
+            
+            <a href="../../../classes/ActiveSupport/Testing/Deprecation.html#method-i-assert_not_deprecated" name="method-i-assert_not_deprecated" class="permalink">Link</a>
+          </h3>
+
+          
+            <div class="description">
+              <p>Asserts that no deprecation warnings are emitted by the given deprecator during the execution of the yielded block.</p>
+
+<pre><code>assert_not_deprecated(CustomDeprecator) do
+  CustomDeprecator.warn &quot;message&quot; # fails assertion
+end
+</code></pre>
+
+<p>If no <code>deprecator</code> is given, defaults to <a href="../Deprecation.html"><code>ActiveSupport::Deprecation</code></a>.</p>
+
+<pre><code>assert_not_deprecated do
+  ActiveSupport::Deprecation.warn &quot;message&quot; # fails assertion
+end
+
+assert_not_deprecated do
+  CustomDeprecator.warn &quot;message&quot; # passes assertion
+end
+</code></pre>
+            </div>
+          
+
+          
+
+          
+
+          
+            
+            <div class="sourcecode">
+              
+              <p class="source-link">
+                 Source: 
+
+                
+                  <a href="javascript:toggleSource('method-i-assert_not_deprecated_source')" id="l_method-i-assert_not_deprecated_source">show</a>
+                
+
+                 | 
+
+                
+                  <a href="https://github.com/rails/rails/blob/7c70791470fc517deb7c640bead9f1b47efb5539/activesupport/lib/active_support/testing/deprecation.rb#L56" target="_blank" class="github_url">on GitHub</a>
+                
+              </p>
+              <div id="method-i-assert_not_deprecated_source" class="dyn-source">
+                <pre><span class="ruby-comment"># File activesupport/lib/active_support/testing/deprecation.rb, line 56</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier ruby-title">assert_not_deprecated</span>(<span class="ruby-identifier">deprecator</span> = <span class="ruby-keyword">nil</span>, <span class="ruby-operator">&amp;</span><span class="ruby-identifier">block</span>)
+  <span class="ruby-identifier">result</span>, <span class="ruby-identifier">deprecations</span> = <span class="ruby-identifier">collect_deprecations</span>(<span class="ruby-identifier">deprecator</span>, <span class="ruby-operator">&amp;</span><span class="ruby-identifier">block</span>)
+  <span class="ruby-identifier">assert</span> <span class="ruby-identifier">deprecations</span>.<span class="ruby-identifier">empty?</span>, <span class="ruby-node">&quot;Expected no deprecation warning within the block but received #{deprecations.size}: \n  #{deprecations * &quot;\n  &quot;}&quot;</span>
+  <span class="ruby-identifier">result</span>
+<span class="ruby-keyword">end</span></pre>
+              </div>
+            </div>
+            
+          </div>
+        
+        <div class="method">
+          <h3 class="title method-title" id="method-i-collect_deprecations">
+            
+              <b>collect_deprecations</b>(deprecator = nil)
+            
+            <a href="../../../classes/ActiveSupport/Testing/Deprecation.html#method-i-collect_deprecations" name="method-i-collect_deprecations" class="permalink">Link</a>
+          </h3>
+
+          
+            <div class="description">
+              <p>Returns an array of all the deprecation warnings emitted by the given <code>deprecator</code> during the execution of the yielded block.</p>
+
+<pre><code>collect_deprecations(CustomDeprecator) do
+  CustomDeprecator.warn &quot;message&quot;
+end # =&gt; [&quot;message&quot;]
+</code></pre>
+
+<p>If no <code>deprecator</code> is given, defaults to <a href="../Deprecation.html"><code>ActiveSupport::Deprecation</code></a>.</p>
+
+<pre><code>collect_deprecations do
+  CustomDeprecator.warn &quot;custom message&quot;
+  ActiveSupport::Deprecation.warn &quot;message&quot;
+end # =&gt; [&quot;message&quot;]
+</code></pre>
+            </div>
+          
+
+          
+
+          
+
+          
+            
+            <div class="sourcecode">
+              
+              <p class="source-link">
+                 Source: 
+
+                
+                  <a href="javascript:toggleSource('method-i-collect_deprecations_source')" id="l_method-i-collect_deprecations_source">show</a>
+                
+
+                 | 
+
+                
+                  <a href="https://github.com/rails/rails/blob/7c70791470fc517deb7c640bead9f1b47efb5539/activesupport/lib/active_support/testing/deprecation.rb#L75" target="_blank" class="github_url">on GitHub</a>
+                
+              </p>
+              <div id="method-i-collect_deprecations_source" class="dyn-source">
+                <pre><span class="ruby-comment"># File activesupport/lib/active_support/testing/deprecation.rb, line 75</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier ruby-title">collect_deprecations</span>(<span class="ruby-identifier">deprecator</span> = <span class="ruby-keyword">nil</span>)
+  <span class="ruby-identifier">deprecator</span> <span class="ruby-operator">||=</span> <span class="ruby-constant">ActiveSupport</span><span class="ruby-operator">::</span><span class="ruby-constant">Deprecation</span>
+  <span class="ruby-identifier">old_behavior</span> = <span class="ruby-identifier">deprecator</span>.<span class="ruby-identifier">behavior</span>
+  <span class="ruby-identifier">deprecations</span> = []
+  <span class="ruby-identifier">deprecator</span>.<span class="ruby-identifier">behavior</span> = <span class="ruby-constant">Proc</span>.<span class="ruby-identifier">new</span> <span class="ruby-keyword">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">message</span>, <span class="ruby-identifier">callstack</span><span class="ruby-operator">|</span>
+    <span class="ruby-identifier">deprecations</span> <span class="ruby-operator">&lt;&lt;</span> <span class="ruby-identifier">message</span>
+  <span class="ruby-keyword">end</span>
+  <span class="ruby-identifier">result</span> = <span class="ruby-keyword">yield</span>
+  [<span class="ruby-identifier">result</span>, <span class="ruby-identifier">deprecations</span>]
+<span class="ruby-keyword">ensure</span>
+  <span class="ruby-identifier">deprecator</span>.<span class="ruby-identifier">behavior</span> = <span class="ruby-identifier">old_behavior</span>
+<span class="ruby-keyword">end</span></pre>
+              </div>
+            </div>
+            
+          </div>
+        
+      
+    
+  
+</div>
+
+    </main>
+  </body>
+</html>

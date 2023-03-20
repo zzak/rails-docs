@@ -1,0 +1,293 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>2 Major Features</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v7.0.4.2/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="major-features"><a class="anchorlink" href="#major-features">2 Major Features</a></h3>
+<h4 id="spring-application-preloader"><a class="anchorlink" href="#spring-application-preloader">2.1 Spring Application Preloader</a></h4>
+
+<p>Spring is a Rails application preloader. It speeds up development by keeping
+your application running in the background so you don't need to boot it every
+time you run a test, rake task or migration.</p>
+
+<p>New Rails 4.1 applications will ship with "springified" binstubs. This means
+that <code>bin/rails</code> and <code>bin/rake</code> will automatically take advantage of preloaded
+spring environments.</p>
+
+<p><strong>Running rake tasks:</strong></p>
+
+<div class="code_container">
+<pre><code class="highlight console"><span class="gp">$</span><span class="w"> </span>bin/rake <span class="nb">test</span>:models
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="bin/rake test:models
+">Copy</button>
+</div>
+<p><strong>Running a Rails command:</strong></p>
+
+<div class="code_container">
+<pre><code class="highlight console"><span class="gp">$</span><span class="w"> </span><span class="nb">bin/rails </span>console
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="bin/rails console
+">Copy</button>
+</div>
+<p><strong>Spring introspection:</strong></p>
+
+<div class="code_container">
+<pre><code class="highlight console"><span class="gp">$</span><span class="w"> </span>bin/spring status
+<span class="go">Spring is running:
+
+ 1182 spring server | my_app | started 29 mins ago
+ 3656 spring app    | my_app | started 23 secs ago | test mode
+ 3746 spring app    | my_app | started 10 secs ago | development mode
+</span></code></pre>
+<button class="clipboard-button" data-clipboard-text="bin/spring status
+">Copy</button>
+</div>
+<p>Have a look at the
+<a href="https://github.com/rails/spring/blob/master/README.md">Spring README</a> to
+see all available features.</p>
+
+<p>See the <a href="upgrading_ruby_on_rails.html#spring">Upgrading Ruby on Rails</a>
+guide on how to migrate existing applications to use this feature.</p>
+
+<h4 id="config-secrets-yml"><a class="anchorlink" href="#config-secrets-yml">2.2 <code>config/secrets.yml</code></a></h4>
+
+<p>Rails 4.1 generates a new <code>secrets.yml</code> file in the <code>config</code> folder. By default,
+this file contains the application's <code>secret_key_base</code>, but it could also be
+used to store other secrets such as access keys for external APIs.</p>
+
+<p>The secrets added to this file are accessible via <code>Rails.application.secrets</code>.
+For example, with the following <code>config/secrets.yml</code>:</p>
+
+<div class="code_container">
+<pre><code class="highlight yaml"><span class="na">development</span><span class="pi">:</span>
+  <span class="na">secret_key_base</span><span class="pi">:</span> <span class="s">3b7cd727ee24e8444053437c36cc66c3</span>
+  <span class="na">some_api_key</span><span class="pi">:</span> <span class="s">SOMEKEY</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="development:
+  secret_key_base: 3b7cd727ee24e8444053437c36cc66c3
+  some_api_key: SOMEKEY
+">Copy</button>
+</div>
+<p><code>Rails.application.secrets.some_api_key</code> returns <code>SOMEKEY</code> in the development
+environment.</p>
+
+<p>See the <a href="upgrading_ruby_on_rails.html#config-secrets-yml">Upgrading Ruby on Rails</a>
+guide on how to migrate existing applications to use this feature.</p>
+
+<h4 id="action-pack-variants"><a class="anchorlink" href="#action-pack-variants">2.3 Action Pack Variants</a></h4>
+
+<p>We often want to render different HTML/JSON/XML templates for phones,
+tablets, and desktop browsers. Variants make it easy.</p>
+
+<p>The request variant is a specialization of the request format, like <code>:tablet</code>,
+<code>:phone</code>, or <code>:desktop</code>.</p>
+
+<p>You can set the variant in a <code>before_action</code>:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">request</span><span class="p">.</span><span class="nf">variant</span> <span class="o">=</span> <span class="ss">:tablet</span> <span class="k">if</span> <span class="n">request</span><span class="p">.</span><span class="nf">user_agent</span> <span class="o">=~</span> <span class="sr">/iPad/</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="request.variant = :tablet if request.user_agent =~ /iPad/
+">Copy</button>
+</div>
+<p>Respond to variants in the action just like you respond to formats:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">respond_to</span> <span class="k">do</span> <span class="o">|</span><span class="nb">format</span><span class="o">|</span>
+  <span class="nb">format</span><span class="p">.</span><span class="nf">html</span> <span class="k">do</span> <span class="o">|</span><span class="n">html</span><span class="o">|</span>
+    <span class="n">html</span><span class="p">.</span><span class="nf">tablet</span> <span class="c1"># renders app/views/projects/show.html+tablet.erb</span>
+    <span class="n">html</span><span class="p">.</span><span class="nf">phone</span> <span class="p">{</span> <span class="n">extra_setup</span><span class="p">;</span> <span class="n">render</span> <span class="o">...</span> <span class="p">}</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="respond_to do |format|
+  format.html do |html|
+    html.tablet # renders app/views/projects/show.html+tablet.erb
+    html.phone { extra_setup; render ... }
+  end
+end
+">Copy</button>
+</div>
+<p>Provide separate templates for each format and variant:</p>
+
+<div class="code_container">
+<pre><code class="highlight plaintext">app/views/projects/show.html.erb
+app/views/projects/show.html+tablet.erb
+app/views/projects/show.html+phone.erb
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="app/views/projects/show.html.erb
+app/views/projects/show.html+tablet.erb
+app/views/projects/show.html+phone.erb
+">Copy</button>
+</div>
+<p>You can also simplify the variants definition using the inline syntax:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">respond_to</span> <span class="k">do</span> <span class="o">|</span><span class="nb">format</span><span class="o">|</span>
+  <span class="nb">format</span><span class="p">.</span><span class="nf">js</span>         <span class="p">{</span> <span class="n">render</span> <span class="s2">"trash"</span> <span class="p">}</span>
+  <span class="nb">format</span><span class="p">.</span><span class="nf">html</span><span class="p">.</span><span class="nf">phone</span> <span class="p">{</span> <span class="n">redirect_to</span> <span class="n">progress_path</span> <span class="p">}</span>
+  <span class="nb">format</span><span class="p">.</span><span class="nf">html</span><span class="p">.</span><span class="nf">none</span>  <span class="p">{</span> <span class="n">render</span> <span class="s2">"trash"</span> <span class="p">}</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='respond_to do |format|
+  format.js         { render "trash" }
+  format.html.phone { redirect_to progress_path }
+  format.html.none  { render "trash" }
+end
+'>Copy</button>
+</div>
+<h4 id="action-mailer-previews"><a class="anchorlink" href="#action-mailer-previews">2.4 Action Mailer Previews</a></h4>
+
+<p>Action Mailer previews provide a way to see how emails look by visiting
+a special URL that renders them.</p>
+
+<p>You implement a preview class whose methods return the mail object you'd like
+to check:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">NotifierPreview</span> <span class="o">&lt;</span> <span class="no">ActionMailer</span><span class="o">::</span><span class="no">Preview</span>
+  <span class="k">def</span> <span class="nf">welcome</span>
+    <span class="no">Notifier</span><span class="p">.</span><span class="nf">welcome</span><span class="p">(</span><span class="no">User</span><span class="p">.</span><span class="nf">first</span><span class="p">)</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="class NotifierPreview &lt; ActionMailer::Preview
+  def welcome
+    Notifier.welcome(User.first)
+  end
+end
+">Copy</button>
+</div>
+<p>The preview is available in <a href="http://localhost:3000/rails/mailers/notifier/welcome">http://localhost:3000/rails/mailers/notifier/welcome</a>,
+and a list of them in <a href="http://localhost:3000/rails/mailers">http://localhost:3000/rails/mailers</a>.</p>
+
+<p>By default, these preview classes live in <code>test/mailers/previews</code>.
+This can be configured using the <code>preview_path</code> option.</p>
+
+<p>See its
+<a href="https://api.rubyonrails.org/v4.1.0/classes/ActionMailer/Base.html#class-ActionMailer::Base-label-Previewing+emails">documentation</a>
+for a detailed write up.</p>
+
+<h4 id="active-record-enums"><a class="anchorlink" href="#active-record-enums">2.5 Active Record enums</a></h4>
+
+<p>Declare an enum attribute where the values map to integers in the database, but
+can be queried by name.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">Conversation</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Base</span>
+  <span class="n">enum</span> <span class="ss">status: </span><span class="p">[</span> <span class="ss">:active</span><span class="p">,</span> <span class="ss">:archived</span> <span class="p">]</span>
+<span class="k">end</span>
+
+<span class="n">conversation</span><span class="p">.</span><span class="nf">archived!</span>
+<span class="n">conversation</span><span class="p">.</span><span class="nf">active?</span> <span class="c1"># =&gt; false</span>
+<span class="n">conversation</span><span class="p">.</span><span class="nf">status</span>  <span class="c1"># =&gt; "archived"</span>
+
+<span class="no">Conversation</span><span class="p">.</span><span class="nf">archived</span> <span class="c1"># =&gt; Relation for all archived Conversations</span>
+
+<span class="no">Conversation</span><span class="p">.</span><span class="nf">statuses</span> <span class="c1"># =&gt; { "active" =&gt; 0, "archived" =&gt; 1 }</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='class Conversation &lt; ActiveRecord::Base
+  enum status: [ :active, :archived ]
+end
+
+conversation.archived!
+conversation.active? # =&gt; false
+conversation.status  # =&gt; "archived"
+
+Conversation.archived # =&gt; Relation for all archived Conversations
+
+Conversation.statuses # =&gt; { "active" =&gt; 0, "archived" =&gt; 1 }
+'>Copy</button>
+</div>
+<p>See its
+<a href="https://api.rubyonrails.org/v4.1.0/classes/ActiveRecord/Enum.html">documentation</a>
+for a detailed write up.</p>
+
+<h4 id="message-verifiers"><a class="anchorlink" href="#message-verifiers">2.6 Message Verifiers</a></h4>
+
+<p>Message verifiers can be used to generate and verify signed messages. This can
+be useful to safely transport sensitive data like remember-me tokens and
+friends.</p>
+
+<p>The method <code>Rails.application.message_verifier</code> returns a new message verifier
+that signs messages with a key derived from secret_key_base and the given
+message verifier name:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">signed_token</span> <span class="o">=</span> <span class="no">Rails</span><span class="p">.</span><span class="nf">application</span><span class="p">.</span><span class="nf">message_verifier</span><span class="p">(</span><span class="ss">:remember_me</span><span class="p">).</span><span class="nf">generate</span><span class="p">(</span><span class="n">token</span><span class="p">)</span>
+<span class="no">Rails</span><span class="p">.</span><span class="nf">application</span><span class="p">.</span><span class="nf">message_verifier</span><span class="p">(</span><span class="ss">:remember_me</span><span class="p">).</span><span class="nf">verify</span><span class="p">(</span><span class="n">signed_token</span><span class="p">)</span> <span class="c1"># =&gt; token</span>
+
+<span class="no">Rails</span><span class="p">.</span><span class="nf">application</span><span class="p">.</span><span class="nf">message_verifier</span><span class="p">(</span><span class="ss">:remember_me</span><span class="p">).</span><span class="nf">verify</span><span class="p">(</span><span class="n">tampered_token</span><span class="p">)</span>
+<span class="c1"># raises ActiveSupport::MessageVerifier::InvalidSignature</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="signed_token = Rails.application.message_verifier(:remember_me).generate(token)
+Rails.application.message_verifier(:remember_me).verify(signed_token) # =&gt; token
+
+Rails.application.message_verifier(:remember_me).verify(tampered_token)
+# raises ActiveSupport::MessageVerifier::InvalidSignature
+">Copy</button>
+</div>
+<h4 id="module-concerning"><a class="anchorlink" href="#module-concerning">2.7 Module#concerning</a></h4>
+
+<p>A natural, low-ceremony way to separate responsibilities within a class:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">Todo</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Base</span>
+  <span class="n">concerning</span> <span class="ss">:EventTracking</span> <span class="k">do</span>
+    <span class="n">included</span> <span class="k">do</span>
+      <span class="n">has_many</span> <span class="ss">:events</span>
+    <span class="k">end</span>
+
+    <span class="k">def</span> <span class="nf">latest_event</span>
+      <span class="c1"># ...</span>
+    <span class="k">end</span>
+
+    <span class="kp">private</span>
+      <span class="k">def</span> <span class="nf">some_internal_method</span>
+        <span class="c1"># ...</span>
+      <span class="k">end</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="class Todo &lt; ActiveRecord::Base
+  concerning :EventTracking do
+    included do
+      has_many :events
+    end
+
+    def latest_event
+      # ...
+    end
+
+    private
+      def some_internal_method
+        # ...
+      end
+  end
+end
+">Copy</button>
+</div>
+<p>This example is equivalent to defining a <code>EventTracking</code> module inline,
+extending it with <code>ActiveSupport::Concern</code>, then mixing it in to the
+<code>Todo</code> class.</p>
+
+<p>See its
+<a href="https://api.rubyonrails.org/v4.1.0/classes/Module/Concerning.html">documentation</a>
+for a detailed write up and the intended use cases.</p>
+
+<h4 id="csrf-protection-from-remote-script-tags"><a class="anchorlink" href="#csrf-protection-from-remote-script-tags">2.8 CSRF protection from remote <code>&lt;script&gt;</code> tags</a></h4>
+
+<p>Cross-site request forgery (CSRF) protection now covers GET requests with
+JavaScript responses, too. That prevents a third-party site from referencing
+your JavaScript URL and attempting to run it to extract sensitive data.</p>
+
+<p>This means any of your tests that hit <code>.js</code> URLs will now fail CSRF protection
+unless they use <code>xhr</code>. Upgrade your tests to be explicit about expecting
+XmlHttpRequests. Instead of <code>post :create, format: :js</code>, switch to the explicit
+<code>xhr :post, :create, format: :js</code>.</p>
+</body>
+</html>

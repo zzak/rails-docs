@@ -1,0 +1,75 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>4 Ordering</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v7.0.4.2/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="ordering"><a class="anchorlink" href="#ordering">4 Ordering</a></h3>
+<p>To retrieve records from the database in a specific order, you can use the <a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveRecord/QueryMethods.html#method-i-order"><code>order</code></a> method.</p>
+
+<p>For example, if you're getting a set of records and want to order them in ascending order by the <code>created_at</code> field in your table:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="no">Book</span><span class="p">.</span><span class="nf">order</span><span class="p">(</span><span class="ss">:created_at</span><span class="p">)</span>
+<span class="c1"># OR</span>
+<span class="no">Book</span><span class="p">.</span><span class="nf">order</span><span class="p">(</span><span class="s2">"created_at"</span><span class="p">)</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='Book.order(:created_at)
+# OR
+Book.order("created_at")
+'>Copy</button>
+</div>
+<p>You could specify <code>ASC</code> or <code>DESC</code> as well:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="no">Book</span><span class="p">.</span><span class="nf">order</span><span class="p">(</span><span class="ss">created_at: :desc</span><span class="p">)</span>
+<span class="c1"># OR</span>
+<span class="no">Book</span><span class="p">.</span><span class="nf">order</span><span class="p">(</span><span class="ss">created_at: :asc</span><span class="p">)</span>
+<span class="c1"># OR</span>
+<span class="no">Book</span><span class="p">.</span><span class="nf">order</span><span class="p">(</span><span class="s2">"created_at DESC"</span><span class="p">)</span>
+<span class="c1"># OR</span>
+<span class="no">Book</span><span class="p">.</span><span class="nf">order</span><span class="p">(</span><span class="s2">"created_at ASC"</span><span class="p">)</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='Book.order(created_at: :desc)
+# OR
+Book.order(created_at: :asc)
+# OR
+Book.order("created_at DESC")
+# OR
+Book.order("created_at ASC")
+'>Copy</button>
+</div>
+<p>Or ordering by multiple fields:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="no">Book</span><span class="p">.</span><span class="nf">order</span><span class="p">(</span><span class="ss">title: :asc</span><span class="p">,</span> <span class="ss">created_at: :desc</span><span class="p">)</span>
+<span class="c1"># OR</span>
+<span class="no">Book</span><span class="p">.</span><span class="nf">order</span><span class="p">(</span><span class="ss">:title</span><span class="p">,</span> <span class="ss">created_at: :desc</span><span class="p">)</span>
+<span class="c1"># OR</span>
+<span class="no">Book</span><span class="p">.</span><span class="nf">order</span><span class="p">(</span><span class="s2">"title ASC, created_at DESC"</span><span class="p">)</span>
+<span class="c1"># OR</span>
+<span class="no">Book</span><span class="p">.</span><span class="nf">order</span><span class="p">(</span><span class="s2">"title ASC"</span><span class="p">,</span> <span class="s2">"created_at DESC"</span><span class="p">)</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='Book.order(title: :asc, created_at: :desc)
+# OR
+Book.order(:title, created_at: :desc)
+# OR
+Book.order("title ASC, created_at DESC")
+# OR
+Book.order("title ASC", "created_at DESC")
+'>Copy</button>
+</div>
+<p>If you want to call <code>order</code> multiple times, subsequent orders will be appended to the first:</p>
+
+<div class="code_container">
+<pre><code class="highlight irb"><span class="gp">irb&gt;</span><span class="w"> </span><span class="no">Book</span><span class="p">.</span><span class="nf">order</span><span class="p">(</span><span class="s2">"title ASC"</span><span class="p">).</span><span class="nf">order</span><span class="p">(</span><span class="s2">"created_at DESC"</span><span class="p">)</span>
+<span class="go">SELECT * FROM books ORDER BY title ASC, created_at DESC
+</span></code></pre>
+<button class="clipboard-button" data-clipboard-text='Book.order("title ASC").order("created_at DESC")
+'>Copy</button>
+</div>
+<div class="warning"><p>In most database systems, on selecting fields with <code>distinct</code> from a result set using methods like <code>select</code>, <code>pluck</code> and <code>ids</code>; the <code>order</code> method will raise an <code>ActiveRecord::StatementInvalid</code> exception unless the field(s) used in <code>order</code> clause are included in the select list. See the next section for selecting fields from the result set.</p></div>
+</body>
+</html>

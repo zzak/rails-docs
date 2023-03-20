@@ -1,0 +1,55 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>7 Relational Callbacks</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v6.1.7.3/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="relational-callbacks"><a class="anchorlink" href="#relational-callbacks">7 Relational Callbacks</a></h3>
+<p>Callbacks work through model relationships, and can even be defined by them. Suppose an example where a user has many articles. A user's articles should be destroyed if the user is destroyed. Let's add an <code>after_destroy</code> callback to the <code>User</code> model by way of its relationship to the <code>Article</code> model:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">User</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="n">has_many</span> <span class="ss">:articles</span><span class="p">,</span> <span class="ss">dependent: :destroy</span>
+<span class="k">end</span>
+
+<span class="k">class</span> <span class="nc">Article</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="n">after_destroy</span> <span class="ss">:log_destroy_action</span>
+
+  <span class="k">def</span> <span class="nf">log_destroy_action</span>
+    <span class="nb">puts</span> <span class="s1">'Article destroyed'</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-e7f802930f015849c40283a4119284b5">class User &lt; ApplicationRecord
+  has_many :articles, dependent: :destroy
+end
+
+class Article &lt; ApplicationRecord
+  after_destroy :log_destroy_action
+
+  def log_destroy_action
+    puts 'Article destroyed'
+  end
+end
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-e7f802930f015849c40283a4119284b5">Copy</button>
+</div>
+<div class="code_container">
+<pre><code class="highlight irb"><span class="gp">irb&gt;</span><span class="w"> </span><span class="n">user</span> <span class="o">=</span> <span class="no">User</span><span class="p">.</span><span class="nf">first</span>
+<span class="p">=&gt;</span> <span class="kt">#&lt;</span><span class="no">User</span> <span class="ss">id: </span><span class="mi">1</span><span class="kt">&gt;</span>
+<span class="gp">irb&gt;</span><span class="w"> </span><span class="n">user</span><span class="p">.</span><span class="nf">articles</span><span class="p">.</span><span class="nf">create!</span>
+<span class="p">=&gt;</span> <span class="kt">#&lt;</span><span class="no">Article</span> <span class="ss">id: </span><span class="mi">1</span><span class="p">,</span> <span class="ss">user_id: </span><span class="mi">1</span><span class="kt">&gt;</span>
+<span class="gp">irb&gt;</span><span class="w"> </span><span class="n">user</span><span class="p">.</span><span class="nf">destroy</span>
+<span class="go">Article destroyed
+</span><span class="p">=&gt;</span> <span class="kt">#&lt;</span><span class="no">User</span> <span class="ss">id: </span><span class="mi">1</span><span class="kt">&gt;</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-01fc4d4a4ecc561ba0c3f28b9790096e">user = User.first
+user.articles.create!
+user.destroy
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-01fc4d4a4ecc561ba0c3f28b9790096e">Copy</button>
+</div>
+</body>
+</html>

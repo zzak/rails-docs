@@ -1,0 +1,801 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>2 Resource Routing: the Rails Default</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v4.1.16/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="resource-routing-the-rails-default">2 Resource Routing: the Rails Default</h3>
+<p>Resource routing allows you to quickly declare all of the common routes for a given resourceful controller. Instead of declaring separate routes for your <code>index</code>, <code>show</code>, <code>new</code>, <code>edit</code>, <code>create</code>, <code>update</code> and <code>destroy</code> actions, a resourceful route declares them in a single line of code.</p>
+<h4 id="resources-on-the-web">2.1 Resources on the Web</h4>
+<p>Browsers request pages from Rails by making a request for a URL using a specific HTTP method, such as <code>GET</code>, <code>POST</code>, <code>PATCH</code>, <code>PUT</code> and <code>DELETE</code>. Each method is a request to perform an operation on the resource. A resource route maps a number of related requests to actions in a single controller.</p>
+<p>When your Rails application receives an incoming request for:</p>
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+DELETE /photos/17
+
+</pre>
+</div>
+<p>it asks the router to map it to a controller action. If the first matching route is:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+resources :photos
+
+</pre>
+</div>
+<p>Rails would dispatch that request to the <code>destroy</code> method on the <code>photos</code> controller with <code>{ id: '17' }</code> in <code>params</code>.</p>
+<h4 id="crud-verbs-and-actions">2.2 CRUD, Verbs, and Actions</h4>
+<p>In Rails, a resourceful route provides a mapping between HTTP verbs and URLs to controller actions. By convention, each action also maps to particular CRUD operations in a database. A single entry in the routing file, such as:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+resources :photos
+
+</pre>
+</div>
+<p>creates seven different routes in your application, all mapping to the <code>Photos</code> controller:</p>
+<table>
+<thead>
+<tr>
+<th>HTTP Verb</th>
+<th>Path</th>
+<th>Controller#Action</th>
+<th>Used for</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>GET</td>
+<td>/photos</td>
+<td>photos#index</td>
+<td>display a list of all photos</td>
+</tr>
+<tr>
+<td>GET</td>
+<td>/photos/new</td>
+<td>photos#new</td>
+<td>return an HTML form for creating a new photo</td>
+</tr>
+<tr>
+<td>POST</td>
+<td>/photos</td>
+<td>photos#create</td>
+<td>create a new photo</td>
+</tr>
+<tr>
+<td>GET</td>
+<td>/photos/:id</td>
+<td>photos#show</td>
+<td>display a specific photo</td>
+</tr>
+<tr>
+<td>GET</td>
+<td>/photos/:id/edit</td>
+<td>photos#edit</td>
+<td>return an HTML form for editing a photo</td>
+</tr>
+<tr>
+<td>PATCH/PUT</td>
+<td>/photos/:id</td>
+<td>photos#update</td>
+<td>update a specific photo</td>
+</tr>
+<tr>
+<td>DELETE</td>
+<td>/photos/:id</td>
+<td>photos#destroy</td>
+<td>delete a specific photo</td>
+</tr>
+</tbody>
+</table>
+<div class="note"><p>Because the router uses the HTTP verb and URL to match inbound requests, four URLs map to seven different actions.</p></div>
+<div class="note"><p>Rails routes are matched in the order they are specified, so if you have a <code>resources :photos</code> above a <code>get 'photos/poll'</code> the <code>show</code> action's route for the <code>resources</code> line will be matched before the <code>get</code> line. To fix this, move the <code>get</code> line <strong>above</strong> the <code>resources</code> line so that it is matched first.</p></div>
+<h4 id="path-and-url-helpers">2.3 Path and URL Helpers</h4>
+<p>Creating a resourceful route will also expose a number of helpers to the controllers in your application. In the case of <code>resources :photos</code>:</p>
+<ul>
+<li>
+<code>photos_path</code> returns <code>/photos</code>
+</li>
+<li>
+<code>new_photo_path</code> returns <code>/photos/new</code>
+</li>
+<li>
+<code>edit_photo_path(:id)</code> returns <code>/photos/:id/edit</code> (for instance, <code>edit_photo_path(10)</code> returns <code>/photos/10/edit</code>)</li>
+<li>
+<code>photo_path(:id)</code> returns <code>/photos/:id</code> (for instance, <code>photo_path(10)</code> returns <code>/photos/10</code>)</li>
+</ul>
+<p>Each of these helpers has a corresponding <code>_url</code> helper (such as <code>photos_url</code>) which returns the same path prefixed with the current host, port and path prefix.</p>
+<h4 id="defining-multiple-resources-at-the-same-time">2.4 Defining Multiple Resources at the Same Time</h4>
+<p>If you need to create routes for more than one resource, you can save a bit of typing by defining them all with a single call to <code>resources</code>:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+resources :photos, :books, :videos
+
+</pre>
+</div>
+<p>This works exactly the same as:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+resources :photos
+resources :books
+resources :videos
+
+</pre>
+</div>
+<h4 id="singular-resources">2.5 Singular Resources</h4>
+<p>Sometimes, you have a resource that clients always look up without referencing an ID. For example, you would like <code>/profile</code> to always show the profile of the currently logged in user. In this case, you can use a singular resource to map <code>/profile</code> (rather than <code>/profile/:id</code>) to the <code>show</code> action:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+get 'profile', to: 'users#show'
+
+</pre>
+</div>
+<p>Passing a <code>String</code> to <code>get</code> will expect a <code>controller#action</code> format, while passing a <code>Symbol</code> will map directly to an action:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+get 'profile', to: :show
+
+</pre>
+</div>
+<p>This resourceful route:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+resource :geocoder
+
+</pre>
+</div>
+<p>creates six different routes in your application, all mapping to the <code>Geocoders</code> controller:</p>
+<table>
+<thead>
+<tr>
+<th>HTTP Verb</th>
+<th>Path</th>
+<th>Controller#Action</th>
+<th>Used for</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>GET</td>
+<td>/geocoder/new</td>
+<td>geocoders#new</td>
+<td>return an HTML form for creating the geocoder</td>
+</tr>
+<tr>
+<td>POST</td>
+<td>/geocoder</td>
+<td>geocoders#create</td>
+<td>create the new geocoder</td>
+</tr>
+<tr>
+<td>GET</td>
+<td>/geocoder</td>
+<td>geocoders#show</td>
+<td>display the one and only geocoder resource</td>
+</tr>
+<tr>
+<td>GET</td>
+<td>/geocoder/edit</td>
+<td>geocoders#edit</td>
+<td>return an HTML form for editing the geocoder</td>
+</tr>
+<tr>
+<td>PATCH/PUT</td>
+<td>/geocoder</td>
+<td>geocoders#update</td>
+<td>update the one and only geocoder resource</td>
+</tr>
+<tr>
+<td>DELETE</td>
+<td>/geocoder</td>
+<td>geocoders#destroy</td>
+<td>delete the geocoder resource</td>
+</tr>
+</tbody>
+</table>
+<div class="note"><p>Because you might want to use the same controller for a singular route (<code>/account</code>) and a plural route (<code>/accounts/45</code>), singular resources map to plural controllers. So that, for example, <code>resource :photo</code> and <code>resources :photos</code> creates both singular and plural routes that map to the same controller (<code>PhotosController</code>).</p></div>
+<p>A singular resourceful route generates these helpers:</p>
+<ul>
+<li>
+<code>new_geocoder_path</code> returns <code>/geocoder/new</code>
+</li>
+<li>
+<code>edit_geocoder_path</code> returns <code>/geocoder/edit</code>
+</li>
+<li>
+<code>geocoder_path</code> returns <code>/geocoder</code>
+</li>
+</ul>
+<p>As with plural resources, the same helpers ending in <code>_url</code> will also include the host, port and path prefix.</p>
+<div class="warning"><p>A <a href="https://github.com/rails/rails/issues/1769">long-standing bug</a> prevents <code>form_for</code> from working automatically with singular resources. As a workaround, specify the URL for the form directly, like so:</p></div>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+form_for @geocoder, url: geocoder_path do |f|
+
+</pre>
+</div>
+<h4 id="controller-namespaces-and-routing">2.6 Controller Namespaces and Routing</h4>
+<p>You may wish to organize groups of controllers under a namespace. Most commonly, you might group a number of administrative controllers under an <code>Admin::</code> namespace. You would place these controllers under the <code>app/controllers/admin</code> directory, and you can group them together in your router:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+namespace :admin do
+  resources :posts, :comments
+end
+
+</pre>
+</div>
+<p>This will create a number of routes for each of the <code>posts</code> and <code>comments</code> controller. For <code>Admin::PostsController</code>, Rails will create:</p>
+<table>
+<thead>
+<tr>
+<th>HTTP Verb</th>
+<th>Path</th>
+<th>Controller#Action</th>
+<th>Named Helper</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>GET</td>
+<td>/admin/posts</td>
+<td>admin/posts#index</td>
+<td>admin_posts_path</td>
+</tr>
+<tr>
+<td>GET</td>
+<td>/admin/posts/new</td>
+<td>admin/posts#new</td>
+<td>new_admin_post_path</td>
+</tr>
+<tr>
+<td>POST</td>
+<td>/admin/posts</td>
+<td>admin/posts#create</td>
+<td>admin_posts_path</td>
+</tr>
+<tr>
+<td>GET</td>
+<td>/admin/posts/:id</td>
+<td>admin/posts#show</td>
+<td>admin_post_path(:id)</td>
+</tr>
+<tr>
+<td>GET</td>
+<td>/admin/posts/:id/edit</td>
+<td>admin/posts#edit</td>
+<td>edit_admin_post_path(:id)</td>
+</tr>
+<tr>
+<td>PATCH/PUT</td>
+<td>/admin/posts/:id</td>
+<td>admin/posts#update</td>
+<td>admin_post_path(:id)</td>
+</tr>
+<tr>
+<td>DELETE</td>
+<td>/admin/posts/:id</td>
+<td>admin/posts#destroy</td>
+<td>admin_post_path(:id)</td>
+</tr>
+</tbody>
+</table>
+<p>If you want to route <code>/posts</code> (without the prefix <code>/admin</code>) to <code>Admin::PostsController</code>, you could use:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+scope module: 'admin' do
+  resources :posts, :comments
+end
+
+</pre>
+</div>
+<p>or, for a single case:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+resources :posts, module: 'admin'
+
+</pre>
+</div>
+<p>If you want to route <code>/admin/posts</code> to <code>PostsController</code> (without the <code>Admin::</code> module prefix), you could use:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+scope '/admin' do
+  resources :posts, :comments
+end
+
+</pre>
+</div>
+<p>or, for a single case:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+resources :posts, path: '/admin/posts'
+
+</pre>
+</div>
+<p>In each of these cases, the named routes remain the same as if you did not use <code>scope</code>. In the last case, the following paths map to <code>PostsController</code>:</p>
+<table>
+<thead>
+<tr>
+<th>HTTP Verb</th>
+<th>Path</th>
+<th>Controller#Action</th>
+<th>Named Helper</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>GET</td>
+<td>/admin/posts</td>
+<td>posts#index</td>
+<td>posts_path</td>
+</tr>
+<tr>
+<td>GET</td>
+<td>/admin/posts/new</td>
+<td>posts#new</td>
+<td>new_post_path</td>
+</tr>
+<tr>
+<td>POST</td>
+<td>/admin/posts</td>
+<td>posts#create</td>
+<td>posts_path</td>
+</tr>
+<tr>
+<td>GET</td>
+<td>/admin/posts/:id</td>
+<td>posts#show</td>
+<td>post_path(:id)</td>
+</tr>
+<tr>
+<td>GET</td>
+<td>/admin/posts/:id/edit</td>
+<td>posts#edit</td>
+<td>edit_post_path(:id)</td>
+</tr>
+<tr>
+<td>PATCH/PUT</td>
+<td>/admin/posts/:id</td>
+<td>posts#update</td>
+<td>post_path(:id)</td>
+</tr>
+<tr>
+<td>DELETE</td>
+<td>/admin/posts/:id</td>
+<td>posts#destroy</td>
+<td>post_path(:id)</td>
+</tr>
+</tbody>
+</table>
+<div class="info"><p><em>If you need to use a different controller namespace inside a <code>namespace</code> block you can specify an absolute controller path, e.g: <code>get '/foo' =&gt; '/foo#index'</code>.</em></p></div>
+<h4 id="nested-resources">2.7 Nested Resources</h4>
+<p>It's common to have resources that are logically children of other resources. For example, suppose your application includes these models:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class Magazine &lt; ActiveRecord::Base
+  has_many :ads
+end
+
+class Ad &lt; ActiveRecord::Base
+  belongs_to :magazine
+end
+
+</pre>
+</div>
+<p>Nested routes allow you to capture this relationship in your routing. In this case, you could include this route declaration:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+resources :magazines do
+  resources :ads
+end
+
+</pre>
+</div>
+<p>In addition to the routes for magazines, this declaration will also route ads to an <code>AdsController</code>. The ad URLs require a magazine:</p>
+<table>
+<thead>
+<tr>
+<th>HTTP Verb</th>
+<th>Path</th>
+<th>Controller#Action</th>
+<th>Used for</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>GET</td>
+<td>/magazines/:magazine_id/ads</td>
+<td>ads#index</td>
+<td>display a list of all ads for a specific magazine</td>
+</tr>
+<tr>
+<td>GET</td>
+<td>/magazines/:magazine_id/ads/new</td>
+<td>ads#new</td>
+<td>return an HTML form for creating a new ad belonging to a specific magazine</td>
+</tr>
+<tr>
+<td>POST</td>
+<td>/magazines/:magazine_id/ads</td>
+<td>ads#create</td>
+<td>create a new ad belonging to a specific magazine</td>
+</tr>
+<tr>
+<td>GET</td>
+<td>/magazines/:magazine_id/ads/:id</td>
+<td>ads#show</td>
+<td>display a specific ad belonging to a specific magazine</td>
+</tr>
+<tr>
+<td>GET</td>
+<td>/magazines/:magazine_id/ads/:id/edit</td>
+<td>ads#edit</td>
+<td>return an HTML form for editing an ad belonging to a specific magazine</td>
+</tr>
+<tr>
+<td>PATCH/PUT</td>
+<td>/magazines/:magazine_id/ads/:id</td>
+<td>ads#update</td>
+<td>update a specific ad belonging to a specific magazine</td>
+</tr>
+<tr>
+<td>DELETE</td>
+<td>/magazines/:magazine_id/ads/:id</td>
+<td>ads#destroy</td>
+<td>delete a specific ad belonging to a specific magazine</td>
+</tr>
+</tbody>
+</table>
+<p>This will also create routing helpers such as <code>magazine_ads_url</code> and <code>edit_magazine_ad_path</code>. These helpers take an instance of Magazine as the first parameter (<code>magazine_ads_url(@magazine)</code>).</p>
+<h5 id="limits-to-nesting">2.7.1 Limits to Nesting</h5>
+<p>You can nest resources within other nested resources if you like. For example:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+resources :publishers do
+  resources :magazines do
+    resources :photos
+  end
+end
+
+</pre>
+</div>
+<p>Deeply-nested resources quickly become cumbersome. In this case, for example, the application would recognize paths such as:</p>
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+/publishers/1/magazines/2/photos/3
+
+</pre>
+</div>
+<p>The corresponding route helper would be <code>publisher_magazine_photo_url</code>, requiring you to specify objects at all three levels. Indeed, this situation is confusing enough that a popular <a href="http://weblog.jamisbuck.org/2007/2/5/nesting-resources">article</a> by Jamis Buck proposes a rule of thumb for good Rails design:</p>
+<div class="info"><p><em>Resources should never be nested more than 1 level deep.</em></p></div>
+<h5 id="shallow-nesting">2.7.2 Shallow Nesting</h5>
+<p>One way to avoid deep nesting (as recommended above) is to generate the collection actions scoped under the parent, so as to get a sense of the hierarchy, but to not nest the member actions. In other words, to only build routes with the minimal amount of information to uniquely identify the resource, like this:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+resources :posts do
+  resources :comments, only: [:index, :new, :create]
+end
+resources :comments, only: [:show, :edit, :update, :destroy]
+
+</pre>
+</div>
+<p>This idea strikes a balance between descriptive routes and deep nesting. There exists shorthand syntax to achieve just that, via the <code>:shallow</code> option:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+resources :posts do
+  resources :comments, shallow: true
+end
+
+</pre>
+</div>
+<p>This will generate the exact same routes as the first example. You can also specify the <code>:shallow</code> option in the parent resource, in which case all of the nested resources will be shallow:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+resources :posts, shallow: true do
+  resources :comments
+  resources :quotes
+  resources :drafts
+end
+
+</pre>
+</div>
+<p>The <code>shallow</code> method of the DSL creates a scope inside of which every nesting is shallow. This generates the same routes as the previous example:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+shallow do
+  resources :posts do
+    resources :comments
+    resources :quotes
+    resources :drafts
+  end
+end
+
+</pre>
+</div>
+<p>There exist two options for <code>scope</code> to customize shallow routes. <code>:shallow_path</code> prefixes member paths with the specified parameter:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+scope shallow_path: "sekret" do
+  resources :posts do
+    resources :comments, shallow: true
+  end
+end
+
+</pre>
+</div>
+<p>The comments resource here will have the following routes generated for it:</p>
+<table>
+<thead>
+<tr>
+<th>HTTP Verb</th>
+<th>Path</th>
+<th>Controller#Action</th>
+<th>Named Helper</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>GET</td>
+<td>/posts/:post_id/comments(.:format)</td>
+<td>comments#index</td>
+<td>post_comments</td>
+</tr>
+<tr>
+<td>POST</td>
+<td>/posts/:post_id/comments(.:format)</td>
+<td>comments#create</td>
+<td>post_comments</td>
+</tr>
+<tr>
+<td>GET</td>
+<td>/posts/:post_id/comments/new(.:format)</td>
+<td>comments#new</td>
+<td>new_post_comment</td>
+</tr>
+<tr>
+<td>GET</td>
+<td>/sekret/comments/:id/edit(.:format)</td>
+<td>comments#edit</td>
+<td>edit_comment</td>
+</tr>
+<tr>
+<td>GET</td>
+<td>/sekret/comments/:id(.:format)</td>
+<td>comments#show</td>
+<td>comment</td>
+</tr>
+<tr>
+<td>PATCH/PUT</td>
+<td>/sekret/comments/:id(.:format)</td>
+<td>comments#update</td>
+<td>comment</td>
+</tr>
+<tr>
+<td>DELETE</td>
+<td>/sekret/comments/:id(.:format)</td>
+<td>comments#destroy</td>
+<td>comment</td>
+</tr>
+</tbody>
+</table>
+<p>The <code>:shallow_prefix</code> option adds the specified parameter to the named helpers:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+scope shallow_prefix: "sekret" do
+  resources :posts do
+    resources :comments, shallow: true
+  end
+end
+
+</pre>
+</div>
+<p>The comments resource here will have the following routes generated for it:</p>
+<table>
+<thead>
+<tr>
+<th>HTTP Verb</th>
+<th>Path</th>
+<th>Controller#Action</th>
+<th>Named Helper</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>GET</td>
+<td>/posts/:post_id/comments(.:format)</td>
+<td>comments#index</td>
+<td>post_comments</td>
+</tr>
+<tr>
+<td>POST</td>
+<td>/posts/:post_id/comments(.:format)</td>
+<td>comments#create</td>
+<td>post_comments</td>
+</tr>
+<tr>
+<td>GET</td>
+<td>/posts/:post_id/comments/new(.:format)</td>
+<td>comments#new</td>
+<td>new_post_comment</td>
+</tr>
+<tr>
+<td>GET</td>
+<td>/comments/:id/edit(.:format)</td>
+<td>comments#edit</td>
+<td>edit_sekret_comment</td>
+</tr>
+<tr>
+<td>GET</td>
+<td>/comments/:id(.:format)</td>
+<td>comments#show</td>
+<td>sekret_comment</td>
+</tr>
+<tr>
+<td>PATCH/PUT</td>
+<td>/comments/:id(.:format)</td>
+<td>comments#update</td>
+<td>sekret_comment</td>
+</tr>
+<tr>
+<td>DELETE</td>
+<td>/comments/:id(.:format)</td>
+<td>comments#destroy</td>
+<td>sekret_comment</td>
+</tr>
+</tbody>
+</table>
+<h4 id="routing-concerns">2.8 Routing concerns</h4>
+<p>Routing Concerns allows you to declare common routes that can be reused inside other resources and routes. To define a concern:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+concern :commentable do
+  resources :comments
+end
+
+concern :image_attachable do
+  resources :images, only: :index
+end
+
+</pre>
+</div>
+<p>These concerns can be used in resources to avoid code duplication and share behavior across routes:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+resources :messages, concerns: :commentable
+
+resources :posts, concerns: [:commentable, :image_attachable]
+
+</pre>
+</div>
+<p>The above is equivalent to:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+resources :messages do
+  resources :comments
+end
+
+resources :posts do
+  resources :comments
+  resources :images, only: :index
+end
+
+</pre>
+</div>
+<p>Also you can use them in any place that you want inside the routes, for example in a scope or namespace call:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+namespace :posts do
+  concerns :commentable
+end
+
+</pre>
+</div>
+<h4 id="creating-paths-and-urls-from-objects">2.9 Creating Paths and URLs From Objects</h4>
+<p>In addition to using the routing helpers, Rails can also create paths and URLs from an array of parameters. For example, suppose you have this set of routes:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+resources :magazines do
+  resources :ads
+end
+
+</pre>
+</div>
+<p>When using <code>magazine_ad_path</code>, you can pass in instances of <code>Magazine</code> and <code>Ad</code> instead of the numeric IDs:</p>
+<div class="code_container">
+<pre class="brush: ruby; html-script: true; gutter: false; toolbar: false">
+&lt;%= link_to 'Ad details', magazine_ad_path(@magazine, @ad) %&gt;
+
+</pre>
+</div>
+<p>You can also use <code>url_for</code> with a set of objects, and Rails will automatically determine which route you want:</p>
+<div class="code_container">
+<pre class="brush: ruby; html-script: true; gutter: false; toolbar: false">
+&lt;%= link_to 'Ad details', url_for([@magazine, @ad]) %&gt;
+
+</pre>
+</div>
+<p>In this case, Rails will see that <code>@magazine</code> is a <code>Magazine</code> and <code>@ad</code> is an <code>Ad</code> and will therefore use the <code>magazine_ad_path</code> helper. In helpers like <code>link_to</code>, you can specify just the object in place of the full <code>url_for</code> call:</p>
+<div class="code_container">
+<pre class="brush: ruby; html-script: true; gutter: false; toolbar: false">
+&lt;%= link_to 'Ad details', [@magazine, @ad] %&gt;
+
+</pre>
+</div>
+<p>If you wanted to link to just a magazine:</p>
+<div class="code_container">
+<pre class="brush: ruby; html-script: true; gutter: false; toolbar: false">
+&lt;%= link_to 'Magazine details', @magazine %&gt;
+
+</pre>
+</div>
+<p>For other actions, you just need to insert the action name as the first element of the array:</p>
+<div class="code_container">
+<pre class="brush: ruby; html-script: true; gutter: false; toolbar: false">
+&lt;%= link_to 'Edit Ad', [:edit, @magazine, @ad] %&gt;
+
+</pre>
+</div>
+<p>This allows you to treat instances of your models as URLs, and is a key advantage to using the resourceful style.</p>
+<h4 id="adding-more-restful-actions">2.10 Adding More RESTful Actions</h4>
+<p>You are not limited to the seven routes that RESTful routing creates by default. If you like, you may add additional routes that apply to the collection or individual members of the collection.</p>
+<h5 id="adding-member-routes">2.10.1 Adding Member Routes</h5>
+<p>To add a member route, just add a <code>member</code> block into the resource block:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+resources :photos do
+  member do
+    get 'preview'
+  end
+end
+
+</pre>
+</div>
+<p>This will recognize <code>/photos/1/preview</code> with GET, and route to the <code>preview</code> action of <code>PhotosController</code>, with the resource id value passed in <code>params[:id]</code>. It will also create the <code>preview_photo_url</code> and <code>preview_photo_path</code> helpers.</p>
+<p>Within the block of member routes, each route name specifies the HTTP verb
+will be recognized. You can use <code>get</code>, <code>patch</code>, <code>put</code>, <code>post</code>, or <code>delete</code> here
+. If you don't have multiple <code>member</code> routes, you can also pass <code>:on</code> to a
+route, eliminating the block:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+resources :photos do
+  get 'preview', on: :member
+end
+
+</pre>
+</div>
+<p>You can leave out the <code>:on</code> option, this will create the same member route except that the resource id value will be available in <code>params[:photo_id]</code> instead of <code>params[:id]</code>.</p>
+<h5 id="adding-collection-routes">2.10.2 Adding Collection Routes</h5>
+<p>To add a route to the collection:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+resources :photos do
+  collection do
+    get 'search'
+  end
+end
+
+</pre>
+</div>
+<p>This will enable Rails to recognize paths such as <code>/photos/search</code> with GET, and route to the <code>search</code> action of <code>PhotosController</code>. It will also create the <code>search_photos_url</code> and <code>search_photos_path</code> route helpers.</p>
+<p>Just as with member routes, you can pass <code>:on</code> to a route:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+resources :photos do
+  get 'search', on: :collection
+end
+
+</pre>
+</div>
+<h5 id="adding-routes-for-additional-new-actions">2.10.3 Adding Routes for Additional New Actions</h5>
+<p>To add an alternate new action using the <code>:on</code> shortcut:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+resources :comments do
+  get 'preview', on: :new
+end
+
+</pre>
+</div>
+<p>This will enable Rails to recognize paths such as <code>/comments/new/preview</code> with GET, and route to the <code>preview</code> action of <code>CommentsController</code>. It will also create the <code>preview_new_comment_url</code> and <code>preview_new_comment_path</code> route helpers.</p>
+<div class="info"><p>If you find yourself adding many extra actions to a resourceful route, it's time to stop and ask yourself whether you're disguising the presence of another resource.</p></div>
+</body>
+</html>

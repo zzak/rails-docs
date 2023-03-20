@@ -1,0 +1,143 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>8 Active Record</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v6.1.7.3/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="active-record"><a class="anchorlink" href="#active-record">8 Active Record</a></h3>
+<p>Please refer to the <a href="https://github.com/rails/rails/blob/6-1-stable/activerecord/CHANGELOG.md">Changelog</a> for detailed changes.</p>
+
+<h4 id="active-record-removals"><a class="anchorlink" href="#active-record-removals">8.1 Removals</a></h4>
+<ul>
+<li>
+  Remove deprecated methods from <code>ActiveRecord::ConnectionAdapters::DatabaseLimits</code>.
+<code>column_name_length</code>
+<code>table_name_length</code>
+<code>columns_per_table</code>
+<code>indexes_per_table</code>
+<code>columns_per_multicolumn_index</code>
+<code>sql_query_length</code>
+<code>joins_per_query</code>
+</li>
+<li>  Remove deprecated <code>ActiveRecord::ConnectionAdapters::AbstractAdapter#supports_multi_insert?</code>.</li>
+<li>  Remove deprecated <code>ActiveRecord::ConnectionAdapters::AbstractAdapter#supports_foreign_keys_in_create?</code>.</li>
+<li>  Remove deprecated <code>ActiveRecord::ConnectionAdapters::PostgreSQLAdapter#supports_ranges?</code>.</li>
+<li>  Remove deprecated <code>ActiveRecord::Base#update_attributes</code> and <code>ActiveRecord::Base#update_attributes!</code>.</li>
+<li>  Remove deprecated <code>migrations_path</code> argument in
+<code>ActiveRecord::ConnectionAdapter::SchemaStatements#assume_migrated_upto_version</code>.</li>
+<li>  Remove deprecated <code>config.active_record.sqlite3.represent_boolean_as_integer</code>.</li>
+<li>
+  Remove deprecated methods from <code>ActiveRecord::DatabaseConfigurations</code>.
+<code>fetch</code>
+<code>each</code>
+<code>first</code>
+<code>values</code>
+<code>[]=</code>
+</li>
+<li>  Remove deprecated <code>ActiveRecord::Result#to_hash</code> method.</li>
+<li>  Remove deprecated support for using unsafe raw SQL in <code>ActiveRecord::Relation</code> methods.</li>
+</ul>
+<h4 id="active-record-deprecations"><a class="anchorlink" href="#active-record-deprecations">8.2 Deprecations</a></h4>
+<ul>
+<li>  Deprecate <code>ActiveRecord::Base.allow_unsafe_raw_sql</code>.</li>
+<li>  Deprecate <code>database</code> kwarg on <code>connected_to</code>.</li>
+<li>  Deprecate <code>connection_handlers</code> when <code>legacy_connection_handling</code> is set to false.</li>
+</ul>
+<h4 id="active-record-notable-changes"><a class="anchorlink" href="#active-record-notable-changes">8.3 Notable changes</a></h4>
+<ul>
+<li>  MySQL: Uniqueness validator now respects default database collation,
+no longer enforce case sensitive comparison by default.</li>
+<li>
+  <code>relation.create</code> does no longer leak scope to class level querying methods
+in initialization block and callbacks.
+Before:
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="no">User</span><span class="p">.</span><span class="nf">where</span><span class="p">(</span><span class="ss">name: </span><span class="s2">"John"</span><span class="p">).</span><span class="nf">create</span> <span class="k">do</span> <span class="o">|</span><span class="n">john</span><span class="o">|</span>
+  <span class="no">User</span><span class="p">.</span><span class="nf">find_by</span><span class="p">(</span><span class="ss">name: </span><span class="s2">"David"</span><span class="p">)</span> <span class="c1"># =&gt; nil</span>
+<span class="k">end</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-237c71cf9610b4b8db1a9bd8c9f12ff9">User.where(name: "John").create do |john|
+  User.find_by(name: "David") # =&gt; nil
+end
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-237c71cf9610b4b8db1a9bd8c9f12ff9">Copy</button>
+</div>
+After:
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="no">User</span><span class="p">.</span><span class="nf">where</span><span class="p">(</span><span class="ss">name: </span><span class="s2">"John"</span><span class="p">).</span><span class="nf">create</span> <span class="k">do</span> <span class="o">|</span><span class="n">john</span><span class="o">|</span>
+  <span class="no">User</span><span class="p">.</span><span class="nf">find_by</span><span class="p">(</span><span class="ss">name: </span><span class="s2">"David"</span><span class="p">)</span> <span class="c1"># =&gt; #&lt;User name: "David", ...&gt;</span>
+<span class="k">end</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-f078cb7668487c68bee12048a24ad94a">User.where(name: "John").create do |john|
+  User.find_by(name: "David") # =&gt; #&lt;User name: "David", ...&gt;
+end
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-f078cb7668487c68bee12048a24ad94a">Copy</button>
+</div>
+</li>
+<li>
+  Named scope chain does no longer leak scope to class level querying methods.
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">User</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Base</span>
+  <span class="n">scope</span> <span class="ss">:david</span><span class="p">,</span> <span class="o">-&gt;</span> <span class="p">{</span> <span class="no">User</span><span class="p">.</span><span class="nf">where</span><span class="p">(</span><span class="ss">name: </span><span class="s2">"David"</span><span class="p">)</span> <span class="p">}</span>
+<span class="k">end</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-70561c52dc7638ac90ce90a655c3dbf9">class User &lt; ActiveRecord::Base
+  scope :david, -&gt; { User.where(name: "David") }
+end
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-70561c52dc7638ac90ce90a655c3dbf9">Copy</button>
+</div>
+Before:
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="no">User</span><span class="p">.</span><span class="nf">where</span><span class="p">(</span><span class="ss">name: </span><span class="s2">"John"</span><span class="p">).</span><span class="nf">david</span>
+<span class="c1"># SELECT * FROM users WHERE name = 'John' AND name = 'David'</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-bff99a23f5f30d432bb97e5efb22519c">User.where(name: "John").david
+# SELECT * FROM users WHERE name = 'John' AND name = 'David'
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-bff99a23f5f30d432bb97e5efb22519c">Copy</button>
+</div>
+After:
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="no">User</span><span class="p">.</span><span class="nf">where</span><span class="p">(</span><span class="ss">name: </span><span class="s2">"John"</span><span class="p">).</span><span class="nf">david</span>
+<span class="c1"># SELECT * FROM users WHERE name = 'David'</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-3948cf41685ee3e513ff04ba5c096fcd">User.where(name: "John").david
+# SELECT * FROM users WHERE name = 'David'
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-3948cf41685ee3e513ff04ba5c096fcd">Copy</button>
+</div>
+</li>
+<li>
+  <code>where.not</code> now generates NAND predicates instead of NOR.
+Before:
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="no">User</span><span class="p">.</span><span class="nf">where</span><span class="p">.</span><span class="nf">not</span><span class="p">(</span><span class="ss">name: </span><span class="s2">"Jon"</span><span class="p">,</span> <span class="ss">role: </span><span class="s2">"admin"</span><span class="p">)</span>
+<span class="c1"># SELECT * FROM users WHERE name != 'Jon' AND role != 'admin'</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-a3ec0adc2f05357f0c3df5cea6112b09">User.where.not(name: "Jon", role: "admin")
+# SELECT * FROM users WHERE name != 'Jon' AND role != 'admin'
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-a3ec0adc2f05357f0c3df5cea6112b09">Copy</button>
+</div>
+After:
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="no">User</span><span class="p">.</span><span class="nf">where</span><span class="p">.</span><span class="nf">not</span><span class="p">(</span><span class="ss">name: </span><span class="s2">"Jon"</span><span class="p">,</span> <span class="ss">role: </span><span class="s2">"admin"</span><span class="p">)</span>
+<span class="c1"># SELECT * FROM users WHERE NOT (name == 'Jon' AND role == 'admin')</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-4ea77d2a2715a0653a3195edfe7684f5">User.where.not(name: "Jon", role: "admin")
+# SELECT * FROM users WHERE NOT (name == 'Jon' AND role == 'admin')
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-4ea77d2a2715a0653a3195edfe7684f5">Copy</button>
+</div>
+</li>
+<li>  To use the new per-database connection handling applications must change
+<code>legacy_connection_handling</code> to false and remove deprecated accessors on
+<code>connection_handlers</code>. Public methods for <code>connects_to</code> and <code>connected_to</code>
+require no changes.</li>
+</ul>
+</body>
+</html>

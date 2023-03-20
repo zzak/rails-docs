@@ -1,0 +1,307 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>6 Autoloading Algorithms</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v5.1.7/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="autoloading-algorithms">6 Autoloading Algorithms</h3>
+<h4 id="autoloading-algorithms-relative-references">6.1 Relative References</h4>
+
+<p>A relative constant reference may appear in several places, for example, in</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class PostsController &lt; ApplicationController
+  def index
+    @posts = Post.all
+  end
+end
+
+</pre>
+</div>
+<p>all three constant references are relative.</p>
+
+<h5 id="constants-after-the-class-and-module-keywords">6.1.1 Constants after the <code>class</code> and <code>module</code> Keywords</h5>
+
+<p>Ruby performs a lookup for the constant that follows a <code>class</code> or <code>module</code>
+keyword because it needs to know if the class or module is going to be created
+or reopened.</p>
+
+<p>If the constant is not defined at that point it is not considered to be a
+missing constant, autoloading is <strong>not</strong> triggered.</p>
+
+<p>So, in the previous example, if <code>PostsController</code> is not defined when the file
+is interpreted Rails autoloading is not going to be triggered, Ruby will just
+define the controller.</p>
+
+<h5 id="top-level-constants">6.1.2 Top-Level Constants</h5>
+
+<p>On the contrary, if <code>ApplicationController</code> is unknown, the constant is
+considered missing and an autoload is going to be attempted by Rails.</p>
+
+<p>In order to load <code>ApplicationController</code>, Rails iterates over <code>autoload_paths</code>.
+First it checks if <code>app/assets/application_controller.rb</code> exists. If it does not,
+which is normally the case, it continues and finds
+<code>app/controllers/application_controller.rb</code>.</p>
+
+<p>If the file defines the constant <code>ApplicationController</code> all is fine, otherwise
+<code>LoadError</code> is raised:</p>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+unable to autoload constant ApplicationController, expected
+&lt;full path to application_controller.rb&gt; to define it (LoadError)
+
+</pre>
+</div>
+<div class="info"><p>Rails does not require the value of autoloaded constants to be a class or
+module object. For example, if the file <code>app/models/max_clients.rb</code> defines
+<code>MAX_CLIENTS = 100</code> autoloading <code>MAX_CLIENTS</code> works just fine.</p></div>
+
+<h5 id="namespaces">6.1.3 Namespaces</h5>
+
+<p>Autoloading <code>ApplicationController</code> looks directly under the directories of
+<code>autoload_paths</code> because the nesting in that spot is empty. The situation of
+<code>Post</code> is different, the nesting in that line is <code>[PostsController]</code> and support
+for namespaces comes into play.</p>
+
+<p>The basic idea is that given</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+module Admin
+  class BaseController &lt; ApplicationController
+    @@all_roles = Role.all
+  end
+end
+
+</pre>
+</div>
+<p>to autoload <code>Role</code> we are going to check if it is defined in the current or
+parent namespaces, one at a time. So, conceptually we want to try to autoload
+any of</p>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+Admin::BaseController::Role
+Admin::Role
+Role
+
+</pre>
+</div>
+<p>in that order. That's the idea. To do so, Rails looks in <code>autoload_paths</code>
+respectively for file names like these:</p>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+admin/base_controller/role.rb
+admin/role.rb
+role.rb
+
+</pre>
+</div>
+<p>modulus some additional directory lookups we are going to cover soon.</p>
+
+<div class="info"><p><code>'Constant::Name'.underscore</code> gives the relative path without extension of
+the file name where <code>Constant::Name</code> is expected to be defined.</p></div>
+
+<p>Let's see how Rails autoloads the <code>Post</code> constant in the <code>PostsController</code>
+above assuming the application has a <code>Post</code> model defined in
+<code>app/models/post.rb</code>.</p>
+
+<p>First it checks for <code>posts_controller/post.rb</code> in <code>autoload_paths</code>:</p>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+app/assets/posts_controller/post.rb
+app/controllers/posts_controller/post.rb
+app/helpers/posts_controller/post.rb
+...
+test/mailers/previews/posts_controller/post.rb
+
+</pre>
+</div>
+<p>Since the lookup is exhausted without success, a similar search for a directory
+is performed, we are going to see why in the <a href="#automatic-modules">next section</a>:</p>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+app/assets/posts_controller/post
+app/controllers/posts_controller/post
+app/helpers/posts_controller/post
+...
+test/mailers/previews/posts_controller/post
+
+</pre>
+</div>
+<p>If all those attempts fail, then Rails starts the lookup again in the parent
+namespace. In this case only the top-level remains:</p>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+app/assets/post.rb
+app/controllers/post.rb
+app/helpers/post.rb
+app/mailers/post.rb
+app/models/post.rb
+
+</pre>
+</div>
+<p>A matching file is found in <code>app/models/post.rb</code>. The lookup stops there and the
+file is loaded. If the file actually defines <code>Post</code> all is fine, otherwise
+<code>LoadError</code> is raised.</p>
+
+<h4 id="autoloading-algorithms-qualified-references">6.2 Qualified References</h4>
+
+<p>When a qualified constant is missing Rails does not look for it in the parent
+namespaces. But there is a caveat: when a constant is missing, Rails is
+unable to tell if the trigger was a relative reference or a qualified one.</p>
+
+<p>For example, consider</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+module Admin
+  User
+end
+
+</pre>
+</div>
+<p>and</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+Admin::User
+
+</pre>
+</div>
+<p>If <code>User</code> is missing, in either case all Rails knows is that a constant called
+"User" was missing in a module called "Admin".</p>
+
+<p>If there is a top-level <code>User</code> Ruby would resolve it in the former example, but
+wouldn't in the latter. In general, Rails does not emulate the Ruby constant
+resolution algorithms, but in this case it tries using the following heuristic:</p>
+<blockquote>
+<p>If none of the parent namespaces of the class or module has the missing
+constant then Rails assumes the reference is relative. Otherwise qualified.</p>
+</blockquote>
+<p>For example, if this code triggers autoloading</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+Admin::User
+
+</pre>
+</div>
+<p>and the <code>User</code> constant is already present in <code>Object</code>, it is not possible that
+the situation is</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+module Admin
+  User
+end
+
+</pre>
+</div>
+<p>because otherwise Ruby would have resolved <code>User</code> and no autoloading would have
+been triggered in the first place. Thus, Rails assumes a qualified reference and
+considers the file <code>admin/user.rb</code> and directory <code>admin/user</code> to be the only
+valid options.</p>
+
+<p>In practice, this works quite well as long as the nesting matches all parent
+namespaces respectively and the constants that make the rule apply are known at
+that time.</p>
+
+<p>However, autoloading happens on demand. If by chance the top-level <code>User</code> was
+not yet loaded, then Rails assumes a relative reference by contract.</p>
+
+<p>Naming conflicts of this kind are rare in practice, but if one occurs,
+<code>require_dependency</code> provides a solution by ensuring that the constant needed
+to trigger the heuristic is defined in the conflicting place.</p>
+
+<h4 id="automatic-modules">6.3 Automatic Modules</h4>
+
+<p>When a module acts as a namespace, Rails does not require the application to
+define a file for it, a directory matching the namespace is enough.</p>
+
+<p>Suppose an application has a back office whose controllers are stored in
+<code>app/controllers/admin</code>. If the <code>Admin</code> module is not yet loaded when
+<code>Admin::UsersController</code> is hit, Rails needs first to autoload the constant
+<code>Admin</code>.</p>
+
+<p>If <code>autoload_paths</code> has a file called <code>admin.rb</code> Rails is going to load that
+one, but if there's no such file and a directory called <code>admin</code> is found, Rails
+creates an empty module and assigns it to the <code>Admin</code> constant on the fly.</p>
+
+<h4 id="generic-procedure">6.4 Generic Procedure</h4>
+
+<p>Relative references are reported to be missing in the cref where they were hit,
+and qualified references are reported to be missing in their parent (see
+<a href="#resolution-algorithm-for-relative-constants">Resolution Algorithm for Relative
+Constants</a> at the beginning of
+this guide for the definition of <em>cref</em>, and <a href="#resolution-algorithm-for-qualified-constants">Resolution Algorithm for Qualified
+Constants</a> for the definition of
+<em>parent</em>).</p>
+
+<p>The procedure to autoload constant <code>C</code> in an arbitrary situation is as follows:</p>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+if the class or module in which C is missing is Object
+  let ns = ''
+else
+  let M = the class or module in which C is missing
+
+  if M is anonymous
+    let ns = ''
+  else
+    let ns = M.name
+  end
+end
+
+loop do
+  # Look for a regular file.
+  for dir in autoload_paths
+    if the file "#{dir}/#{ns.underscore}/c.rb" exists
+      load/require "#{dir}/#{ns.underscore}/c.rb"
+
+      if C is now defined
+        return
+      else
+        raise LoadError
+      end
+    end
+  end
+
+  # Look for an automatic module.
+  for dir in autoload_paths
+    if the directory "#{dir}/#{ns.underscore}/c" exists
+      if ns is an empty string
+        let C = Module.new in Object and return
+      else
+        let C = Module.new in ns.constantize and return
+      end
+    end
+  end
+
+  if ns is empty
+    # We reached the top-level without finding the constant.
+    raise NameError
+  else
+    if C exists in any of the parent namespaces
+      # Qualified constants heuristic.
+      raise NameError
+    else
+      # Try again in the parent namespace.
+      let ns = the parent namespace of ns and retry
+    end
+  end
+end
+
+</pre>
+</div>
+</body>
+</html>

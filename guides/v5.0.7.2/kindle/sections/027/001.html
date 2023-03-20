@@ -1,0 +1,131 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>2 Cache Stores</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v5.0.7.2/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="cache-stores">2 Cache Stores</h3>
+<p>Rails provides different stores for the cached data (apart from SQL and page
+caching).</p>
+
+<h4 id="configuration">2.1 Configuration</h4>
+
+<p>You can set up your application's default cache store by setting the
+<code>config.cache_store</code> configuration option. Other parameters can be passed as
+arguments to the cache store's constructor:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+config.cache_store = :memory_store, { size: 64.megabytes }
+
+</pre>
+</div>
+<div class="note"><p>Alternatively, you can call <code>ActionController::Base.cache_store</code> outside of a configuration block.</p></div>
+
+<p>You can access the cache by calling <code>Rails.cache</code>.</p>
+
+<h4 id="activesupport-cache-store">2.2 ActiveSupport::Cache::Store</h4>
+
+<p>This class provides the foundation for interacting with the cache in Rails. This is an abstract class and you cannot use it on its own. Rather you must use a concrete implementation of the class tied to a storage engine. Rails ships with several implementations documented below.</p>
+
+<p>The main methods to call are <code>read</code>, <code>write</code>, <code>delete</code>, <code>exist?</code>, and <code>fetch</code>. The fetch method takes a block and will either return an existing value from the cache, or evaluate the block and write the result to the cache if no value exists.</p>
+
+<p>There are some common options used by all cache implementations. These can be passed to the constructor or the various methods to interact with entries.</p>
+<ul>
+<li>
+<code>:namespace</code> - This option can be used to create a namespace within the cache store. It is especially useful if your application shares a cache with other applications.</li>
+<li>
+<code>:compress</code> - This option can be used to indicate that compression should be used in the cache. This can be useful for transferring large cache entries over a slow network.</li>
+<li>
+<code>:compress_threshold</code> - This option is used in conjunction with the <code>:compress</code> option to indicate a threshold under which cache entries should not be compressed. This defaults to 16 kilobytes.</li>
+<li>
+<code>:expires_in</code> - This option sets an expiration time in seconds for the cache entry when it will be automatically removed from the cache.</li>
+<li>
+<code>:race_condition_ttl</code> - This option is used in conjunction with the <code>:expires_in</code> option. It will prevent race conditions when cache entries expire by preventing multiple processes from simultaneously regenerating the same entry (also known as the dog pile effect). This option sets the number of seconds that an expired entry can be reused while a new value is being regenerated. It's a good practice to set this value if you use the <code>:expires_in</code> option.</li>
+</ul>
+<h5 id="custom-cache-stores">2.2.1 Custom Cache Stores</h5>
+
+<p>You can create your own custom cache store by simply extending
+<code>ActiveSupport::Cache::Store</code> and implementing the appropriate methods. This way,
+you can swap in any number of caching technologies into your Rails application.</p>
+
+<p>To use a custom cache store, simply set the cache store to a new instance of your
+custom class.</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+config.cache_store = MyCacheStore.new
+
+</pre>
+</div>
+<h4 id="activesupport-cache-memorystore">2.3 ActiveSupport::Cache::MemoryStore</h4>
+
+<p>This cache store keeps entries in memory in the same Ruby process. The cache
+store has a bounded size specified by sending the <code>:size</code> option to the
+initializer (default is 32Mb). When the cache exceeds the allotted size, a
+cleanup will occur and the least recently used entries will be removed.</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+config.cache_store = :memory_store, { size: 64.megabytes }
+
+</pre>
+</div>
+<p>If you're running multiple Ruby on Rails server processes (which is the case
+if you're using mongrel_cluster or Phusion Passenger), then your Rails server
+process instances won't be able to share cache data with each other. This cache
+store is not appropriate for large application deployments. However, it can
+work well for small, low traffic sites with only a couple of server processes,
+as well as development and test environments.</p>
+
+<h4 id="activesupport-cache-filestore">2.4 ActiveSupport::Cache::FileStore</h4>
+
+<p>This cache store uses the file system to store entries. The path to the directory where the store files will be stored must be specified when initializing the cache.</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+config.cache_store = :file_store, "/path/to/cache/directory"
+
+</pre>
+</div>
+<p>With this cache store, multiple server processes on the same host can share a
+cache. The cache store is appropriate for low to medium traffic sites that are
+served off one or two hosts. Server processes running on different hosts could
+share a cache by using a shared file system, but that setup is not recommended.</p>
+
+<p>As the cache will grow until the disk is full, it is recommended to
+periodically clear out old entries.</p>
+
+<p>This is the default cache store implementation.</p>
+
+<h4 id="activesupport-cache-memcachestore">2.5 ActiveSupport::Cache::MemCacheStore</h4>
+
+<p>This cache store uses Danga's <code>memcached</code> server to provide a centralized cache for your application. Rails uses the bundled <code>dalli</code> gem by default. This is currently the most popular cache store for production websites. It can be used to provide a single, shared cache cluster with very high performance and redundancy.</p>
+
+<p>When initializing the cache, you need to specify the addresses for all
+memcached servers in your cluster. If none are specified, it will assume
+memcached is running on localhost on the default port, but this is not an ideal
+setup for larger sites.</p>
+
+<p>The <code>write</code> and <code>fetch</code> methods on this cache accept two additional options that take advantage of features specific to memcached. You can specify <code>:raw</code> to send a value directly to the server with no serialization. The value must be a string or number. You can use memcached direct operations like <code>increment</code> and <code>decrement</code> only on raw values. You can also specify <code>:unless_exist</code> if you don't want memcached to overwrite an existing entry.</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+config.cache_store = :mem_cache_store, "cache-1.example.com", "cache-2.example.com"
+
+</pre>
+</div>
+<h4 id="activesupport-cache-nullstore">2.6 ActiveSupport::Cache::NullStore</h4>
+
+<p>This cache store implementation is meant to be used only in development or test environments and it never stores anything. This can be very useful in development when you have code that interacts directly with <code>Rails.cache</code> but caching may interfere with being able to see the results of code changes. With this cache store, all <code>fetch</code> and <code>read</code> operations will result in a miss.</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+config.cache_store = :null_store
+
+</pre>
+</div>
+</body>
+</html>

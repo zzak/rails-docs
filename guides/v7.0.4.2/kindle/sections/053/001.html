@@ -1,0 +1,70 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>2 Major Features</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v7.0.4.2/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="major-features"><a class="anchorlink" href="#major-features">2 Major Features</a></h3>
+<h4 id="active-storage"><a class="anchorlink" href="#active-storage">2.1 Active Storage</a></h4>
+
+<p><a href="https://github.com/rails/rails/pull/30020">Pull Request</a></p>
+
+<p><a href="https://github.com/rails/rails/tree/5-2-stable/activestorage">Active Storage</a>
+facilitates uploading files to a cloud storage service like
+Amazon S3, Google Cloud Storage, or Microsoft Azure Storage and attaching
+those files to Active Record objects. It comes with a local disk-based service
+for development and testing and supports mirroring files to subordinate
+services for backups and migrations.
+You can read more about Active Storage in the
+<a href="active_storage_overview.html">Active Storage Overview</a> guide.</p>
+
+<h4 id="redis-cache-store"><a class="anchorlink" href="#redis-cache-store">2.2 Redis Cache Store</a></h4>
+
+<p><a href="https://github.com/rails/rails/pull/31134">Pull Request</a></p>
+
+<p>Rails 5.2 ships with built-in Redis cache store.
+You can read more about this in the
+<a href="caching_with_rails.html#activesupport-cache-rediscachestore">Caching with Rails: An Overview</a>
+guide.</p>
+
+<h4 id="http-2-early-hints"><a class="anchorlink" href="#http-2-early-hints">2.3 HTTP/2 Early Hints</a></h4>
+
+<p><a href="https://github.com/rails/rails/pull/30744">Pull Request</a></p>
+
+<p>Rails 5.2 supports <a href="https://tools.ietf.org/html/rfc8297">HTTP/2 Early Hints</a>.
+To start the server with Early Hints enabled pass <code>--early-hints</code>
+to <code>bin/rails server</code>.</p>
+
+<h4 id="credentials"><a class="anchorlink" href="#credentials">2.4 Credentials</a></h4>
+
+<p><a href="https://github.com/rails/rails/pull/30067">Pull Request</a></p>
+
+<p>Added <code>config/credentials.yml.enc</code> file to store production app secrets.
+It allows saving any authentication credentials for third-party services
+directly in repository encrypted with a key in the <code>config/master.key</code> file or
+the <code>RAILS_MASTER_KEY</code> environment variable.
+This will eventually replace <code>Rails.application.secrets</code> and the encrypted
+secrets introduced in Rails 5.1.
+Furthermore, Rails 5.2
+<a href="https://github.com/rails/rails/pull/30940">opens API underlying Credentials</a>,
+so you can easily deal with other encrypted configurations, keys, and files.
+You can read more about this in the
+<a href="security.html#custom-credentials">Securing Rails Applications</a>
+guide.</p>
+
+<h4 id="content-security-policy"><a class="anchorlink" href="#content-security-policy">2.5 Content Security Policy</a></h4>
+
+<p><a href="https://github.com/rails/rails/pull/31162">Pull Request</a></p>
+
+<p>Rails 5.2 ships with a new DSL that allows you to configure a
+<a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Security-Policy">Content Security Policy</a>
+for your application. You can configure a global default policy and then
+override it on a per-resource basis and even use lambdas to inject per-request
+values into the header such as account subdomains in a multi-tenant application.
+You can read more about this in the
+<a href="security.html#content-security-policy">Securing Rails Applications</a>
+guide.</p>
+</body>
+</html>

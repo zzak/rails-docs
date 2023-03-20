@@ -1,0 +1,50 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>2 UUID Primary Keys</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v7.0.4.2/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="uuid-primary-keys"><a class="anchorlink" href="#uuid-primary-keys">2 UUID Primary Keys</a></h3>
+<div class="note"><p>You need to enable the <code>pgcrypto</code> (only PostgreSQL &gt;= 9.4) or <code>uuid-ossp</code>
+extension to generate random UUIDs.</p></div>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="c1"># db/migrate/20131220144913_create_devices.rb</span>
+<span class="n">enable_extension</span> <span class="s1">'pgcrypto'</span> <span class="k">unless</span> <span class="n">extension_enabled?</span><span class="p">(</span><span class="s1">'pgcrypto'</span><span class="p">)</span>
+<span class="n">create_table</span> <span class="ss">:devices</span><span class="p">,</span> <span class="ss">id: :uuid</span> <span class="k">do</span> <span class="o">|</span><span class="n">t</span><span class="o">|</span>
+  <span class="n">t</span><span class="p">.</span><span class="nf">string</span> <span class="ss">:kind</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="# db/migrate/20131220144913_create_devices.rb
+enable_extension 'pgcrypto' unless extension_enabled?('pgcrypto')
+create_table :devices, id: :uuid do |t|
+  t.string :kind
+end
+">Copy</button>
+</div>
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="c1"># app/models/device.rb</span>
+<span class="k">class</span> <span class="nc">Device</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="# app/models/device.rb
+class Device &lt; ApplicationRecord
+end
+">Copy</button>
+</div>
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">irb</span><span class="o">&gt;</span> <span class="n">device</span> <span class="o">=</span> <span class="no">Device</span><span class="p">.</span><span class="nf">create</span>
+<span class="n">irb</span><span class="o">&gt;</span> <span class="n">device</span><span class="p">.</span><span class="nf">id</span>
+<span class="o">=&gt;</span> <span class="s2">"814865cd-5a1d-4771-9306-4268f188fe9e"</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='irb&gt; device = Device.create
+irb&gt; device.id
+=&gt; "814865cd-5a1d-4771-9306-4268f188fe9e"
+'>Copy</button>
+</div>
+<div class="note"><p><code>gen_random_uuid()</code> (from <code>pgcrypto</code>) is assumed if no <code>:default</code> option was
+passed to <code>create_table</code>.</p></div>
+</body>
+</html>

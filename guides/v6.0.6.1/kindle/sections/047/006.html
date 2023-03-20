@@ -1,0 +1,44 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>7 Action Mailer</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v6.0.6.1/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="action-mailer"><a class="anchorlink" href="#action-mailer">7 Action Mailer</a></h3>
+<p>Please refer to the <a href="https://github.com/rails/rails/blob/6-0-stable/actionmailer/CHANGELOG.md">Changelog</a> for detailed changes.</p>
+
+<h4 id="action-mailer-removals"><a class="anchorlink" href="#action-mailer-removals">7.1 Removals</a></h4>
+
+<h4 id="action-mailer-deprecations"><a class="anchorlink" href="#action-mailer-deprecations">7.2 Deprecations</a></h4>
+<ul>
+<li>  Deprecate <code>ActionMailer::Base.receive</code> in favor of Action Mailbox.
+(<a href="https://github.com/rails/rails/commit/e3f832a7433a291a51c5df397dc3dd654c1858cb">Commit</a>)</li>
+<li>  Deprecate <code>DeliveryJob</code> and <code>Parameterized::DeliveryJob</code> in favor of
+<code>MailDeliveryJob</code>.
+(<a href="https://github.com/rails/rails/pull/34591">Pull Request</a>)</li>
+</ul>
+<h4 id="action-mailer-notable-changes"><a class="anchorlink" href="#action-mailer-notable-changes">7.3 Notable changes</a></h4>
+<ul>
+<li>  Add <code>MailDeliveryJob</code> for delivering both regular and parameterized mail.
+(<a href="https://github.com/rails/rails/pull/34591">Pull Request</a>)</li>
+<li>  Allow custom email delivery jobs to work with the Action Mailer test assertions.
+(<a href="https://github.com/rails/rails/pull/34339">Pull Request</a>)</li>
+<li>  Allow specifying a template name for multipart emails with blocks instead of
+using just the action name.
+(<a href="https://github.com/rails/rails/pull/22534">Pull Request</a>)</li>
+<li>  Add <code>perform_deliveries</code> to payload of <code>deliver.action_mailer</code> notification.
+(<a href="https://github.com/rails/rails/pull/33824">Pull Request</a>)</li>
+<li>  Improve the logging message when <code>perform_deliveries</code> is false to indicate
+that sending of emails was skipped.
+(<a href="https://github.com/rails/rails/pull/33824">Pull Request</a>)</li>
+<li>  Allow calling <code>assert_enqueued_email_with</code> without block.
+(<a href="https://github.com/rails/rails/pull/33258">Pull Request</a>)</li>
+<li>  Perform the enqueued mail delivery jobs in the <code>assert_emails</code> block.
+(<a href="https://github.com/rails/rails/pull/32231">Pull Request</a>)</li>
+<li>  Allow <code>ActionMailer::Base</code> to unregister observers and interceptors.
+(<a href="https://github.com/rails/rails/pull/32207">Pull Request</a>)</li>
+</ul>
+</body>
+</html>

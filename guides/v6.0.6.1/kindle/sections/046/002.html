@@ -1,0 +1,28 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>3 Upgrading from Rails 5.1 to Rails 5.2</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v6.0.6.1/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="upgrading-from-rails-5-1-to-rails-5-2"><a class="anchorlink" href="#upgrading-from-rails-5-1-to-rails-5-2">3 Upgrading from Rails 5.1 to Rails 5.2</a></h3>
+<p>For more information on changes made to Rails 5.2 please see the <a href="5_2_release_notes.html">release notes</a>.</p>
+
+<h4 id="upgrading-from-rails-5-1-to-rails-5-2-bootsnap"><a class="anchorlink" href="#upgrading-from-rails-5-1-to-rails-5-2-bootsnap">3.1 Bootsnap</a></h4>
+
+<p>Rails 5.2 adds bootsnap gem in the <a href="https://github.com/rails/rails/pull/29313">newly generated app's Gemfile</a>.
+The <code>app:update</code> command sets it up in <code>boot.rb</code>. If you want to use it, then add it in the Gemfile,
+otherwise change the <code>boot.rb</code> to not use bootsnap.</p>
+
+<h4 id="expiry-in-signed-or-encrypted-cookie-is-now-embedded-in-the-cookies-values"><a class="anchorlink" href="#expiry-in-signed-or-encrypted-cookie-is-now-embedded-in-the-cookies-values">3.2 Expiry in signed or encrypted cookie is now embedded in the cookies values</a></h4>
+
+<p>To improve security, Rails now embeds the expiry information also in encrypted or signed cookies value.</p>
+
+<p>This new embed information make those cookies incompatible with versions of Rails older than 5.2.</p>
+
+<p>If you require your cookies to be read by 5.1 and older, or you are still validating your 5.2 deploy and want
+to allow you to rollback set
+<code>Rails.application.config.action_dispatch.use_authenticated_cookie_encryption</code> to <code>false</code>.</p>
+</body>
+</html>

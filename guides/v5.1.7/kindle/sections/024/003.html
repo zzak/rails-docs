@@ -1,0 +1,75 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>4 Dealing with Ajax events</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v5.1.7/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="dealing-with-ajax-events">4 Dealing with Ajax events</h3>
+<p>Here are the different events that are fired when you deal with elements
+that have a <code>data-remote</code> attribute:</p>
+
+<div class="note"><p>All handlers bound to these events are always passed the event object as the
+first argument. The table below describes the extra parameters passed after the
+event argument. For exemple, if the extra parameters are listed as <code>xhr, settings</code>,
+then to access them, you would define your handler with <code>function(event, xhr, settings)</code>.</p></div>
+<table>
+<thead>
+<tr>
+<th>Event name</th>
+<th>Extra parameters</th>
+<th>Fired</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>ajax:before</code></td>
+<td></td>
+<td>Before the whole ajax business, aborts if stopped.</td>
+</tr>
+<tr>
+<td><code>ajax:beforeSend</code></td>
+<td>xhr, options</td>
+<td>Before the request is sent, aborts if stopped.</td>
+</tr>
+<tr>
+<td><code>ajax:send</code></td>
+<td>xhr</td>
+<td>When the request is sent.</td>
+</tr>
+<tr>
+<td><code>ajax:success</code></td>
+<td>xhr, status, err</td>
+<td>After completion, if the response was a success.</td>
+</tr>
+<tr>
+<td><code>ajax:error</code></td>
+<td>xhr, status, err</td>
+<td>After completion, if the response was an error.</td>
+</tr>
+<tr>
+<td><code>ajax:complete</code></td>
+<td>xhr, status</td>
+<td>After the request has been completed, no matter the outcome.</td>
+</tr>
+<tr>
+<td><code>ajax:aborted:file</code></td>
+<td>elements</td>
+<td>If there are non-blank file inputs, aborts if stopped.</td>
+</tr>
+</tbody>
+</table>
+<h4 id="stoppable-events">4.1 Stoppable events</h4>
+
+<p>If you stop <code>ajax:before</code> or <code>ajax:beforeSend</code> by returning false from the
+handler method, the Ajax request will never take place. The <code>ajax:before</code> event
+is also useful for manipulating form data before serialization. The
+<code>ajax:beforeSend</code> event is also useful for adding custom request headers.</p>
+
+<p>If you stop the <code>ajax:aborted:file</code> event, the default behavior of allowing the
+browser to submit the form via normal means (i.e. non-AJAX submission) will be
+canceled and the form will not be submitted at all. This is useful for
+implementing your own AJAX file upload workaround.</p>
+</body>
+</html>

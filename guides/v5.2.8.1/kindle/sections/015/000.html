@@ -1,0 +1,66 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>1 How I18n in Ruby on Rails Works</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v5.2.8.1/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="how-i18n-in-ruby-on-rails-works"><a class="anchorlink" href="#how-i18n-in-ruby-on-rails-works">1 How I18n in Ruby on Rails Works</a></h3>
+<p>Internationalization is a complex problem. Natural languages differ in so many ways (e.g. in pluralization rules) that it is hard to provide tools for solving all problems at once. For that reason the Rails I18n API focuses on:</p>
+<ul>
+<li>providing support for English and similar languages out of the box</li>
+<li>making it easy to customize and extend everything for other languages</li>
+</ul>
+<p>As part of this solution, <strong>every static string in the Rails framework</strong> - e.g. Active Record validation messages, time and date formats - <strong>has been internationalized</strong>. <em>Localization</em> of a Rails application means defining translated values for these strings in desired languages.</p>
+
+<p>To localize store and update <em>content</em> in your application (e.g. translate blog posts), see the <a href="#translating-model-content">Translating model content</a> section.</p>
+
+<h4 id="the-overall-architecture-of-the-library"><a class="anchorlink" href="#the-overall-architecture-of-the-library">1.1 The Overall Architecture of the Library</a></h4>
+
+<p>Thus, the Ruby I18n gem is split into two parts:</p>
+<ul>
+<li>The public API of the i18n framework - a Ruby module with public methods that define how the library works</li>
+<li>A default backend (which is intentionally named <em>Simple</em> backend) that implements these methods</li>
+</ul>
+<p>As a user you should always only access the public methods on the I18n module, but it is useful to know about the capabilities of the backend.</p>
+
+<div class="note"><p>It is possible to swap the shipped Simple backend with a more powerful one, which would store translation data in a relational database, GetText dictionary, or similar. See section <a href="#using-different-backends">Using different backends</a> below.</p></div>
+
+<h4 id="the-public-i18n-api"><a class="anchorlink" href="#the-public-i18n-api">1.2 The Public I18n API</a></h4>
+
+<p>The most important methods of the I18n API are:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+translate # Lookup text translations
+localize  # Localize Date and Time objects to local formats
+
+</pre>
+</div>
+<p>These have the aliases #t and #l so you can use them like this:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+I18n.t 'store.title'
+I18n.l Time.now
+
+</pre>
+</div>
+<p>There are also attribute readers and writers for the following attributes:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+load_path                 # Announce your custom translation files
+locale                    # Get and set the current locale
+default_locale            # Get and set the default locale
+available_locales         # Whitelist locales available for the application
+enforce_available_locales # Enforce locale whitelisting (true or false)
+exception_handler         # Use a different exception_handler
+backend                   # Use a different backend
+
+</pre>
+</div>
+<p>So, let's internationalize a simple Rails application from the ground up in the next chapters!</p>
+</body>
+</html>

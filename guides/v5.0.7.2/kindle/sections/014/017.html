@@ -1,0 +1,31 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>18 Extensions to Marshal
+</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v5.0.7.2/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="extensions-to-marshal">18 Extensions to <code>Marshal</code>
+</h3>
+<h4 id="load">18.1 <code>load</code>
+</h4>
+
+<p>Active Support adds constant autoloading support to <code>load</code>.</p>
+
+<p>For example, the file cache store deserializes this way:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+File.open(file_name) { |f| Marshal.load(f) }
+
+</pre>
+</div>
+<p>If the cached data refers to a constant that is unknown at that point, the autoloading mechanism is triggered and if it succeeds the deserialization is retried transparently.</p>
+
+<div class="warning"><p>If the argument is an <code>IO</code> it needs to respond to <code>rewind</code> to be able to retry. Regular files respond to <code>rewind</code>.</p></div>
+
+<div class="note"><p>Defined in <code>active_support/core_ext/marshal.rb</code>.</p></div>
+</body>
+</html>

@@ -1,0 +1,235 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>3 Features</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v7.0.4.2/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="features"><a class="anchorlink" href="#features">3 Features</a></h3>
+<h4 id="action-text"><a class="anchorlink" href="#action-text">3.1 Action Text</a></h4>
+
+<p>You can encrypt action text attributes by passing <code>encrypted: true</code> in their declaration.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">Message</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="n">has_rich_text</span> <span class="ss">:content</span><span class="p">,</span> <span class="ss">encrypted: </span><span class="kp">true</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="class Message &lt; ApplicationRecord
+  has_rich_text :content, encrypted: true
+end
+">Copy</button>
+</div>
+<div class="note"><p>Passing individual encryption options to action text attributes is not supported yet. It will use non-deterministic encryption with the global encryption options configured.</p></div>
+
+<h4 id="fixtures"><a class="anchorlink" href="#fixtures">3.2 Fixtures</a></h4>
+
+<p>You can get Rails fixtures encrypted automatically by adding this option to your <code>test.rb</code>:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">config</span><span class="p">.</span><span class="nf">active_record</span><span class="p">.</span><span class="nf">encryption</span><span class="p">.</span><span class="nf">encrypt_fixtures</span> <span class="o">=</span> <span class="kp">true</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="config.active_record.encryption.encrypt_fixtures = true
+">Copy</button>
+</div>
+<p>When enabled, all the encryptable attributes will be encrypted according to the encryption settings defined in the model.</p>
+
+<h5 id="action-text-fixtures"><a class="anchorlink" href="#action-text-fixtures">3.2.1 Action Text Fixtures</a></h5>
+
+<p>To encrypt action text fixtures, you should place them in <code>fixtures/action_text/encrypted_rich_texts.yml</code>.</p>
+
+<h4 id="supported-types"><a class="anchorlink" href="#supported-types">3.3 Supported Types</a></h4>
+
+<p><code>active_record.encryption</code> will serialize values using the underlying type before encrypting them, but <em>they must be serializable as strings</em>. Structured types like <code>serialized</code> are supported out of the box.</p>
+
+<p>If you need to support a custom type, the recommended way is using a <a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveRecord/AttributeMethods/Serialization/ClassMethods.html">serialized attribute</a>. The declaration of the serialized attribute should go <strong>before</strong> the encryption declaration:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="c1"># CORRECT</span>
+<span class="k">class</span> <span class="nc">Article</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="n">serialize</span> <span class="ss">:title</span><span class="p">,</span> <span class="no">Title</span>
+  <span class="n">encrypts</span> <span class="ss">:title</span>
+<span class="k">end</span>
+
+<span class="c1"># INCORRECT</span>
+<span class="k">class</span> <span class="nc">Article</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="n">encrypts</span> <span class="ss">:title</span>
+  <span class="n">serialize</span> <span class="ss">:title</span><span class="p">,</span> <span class="no">Title</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="# CORRECT
+class Article &lt; ApplicationRecord
+  serialize :title, Title
+  encrypts :title
+end
+
+# INCORRECT
+class Article &lt; ApplicationRecord
+  encrypts :title
+  serialize :title, Title
+end
+">Copy</button>
+</div>
+<h4 id="ignoring-case"><a class="anchorlink" href="#ignoring-case">3.4 Ignoring Case</a></h4>
+
+<p>You might need to ignore casing when querying deterministically encrypted data. Two approaches make accomplishing this easier:</p>
+
+<p>You can use the <code>:downcase</code> option when declaring the encrypted attribute to downcase the content before encryption occurs.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">Person</span>
+  <span class="n">encrypts</span> <span class="ss">:email_address</span><span class="p">,</span> <span class="ss">deterministic: </span><span class="kp">true</span><span class="p">,</span> <span class="ss">downcase: </span><span class="kp">true</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="class Person
+  encrypts :email_address, deterministic: true, downcase: true
+end
+">Copy</button>
+</div>
+<p>When using <code>:downcase</code>, the original case is lost. In some situations, you might want to ignore the case only when querying while also storing the original case. For those situations, you can use the option <code>:ignore_case</code>. This requires you to add a new column named <code>original_&lt;column_name&gt;</code> to store the content with the case unchanged:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">Label</span>
+  <span class="n">encrypts</span> <span class="ss">:name</span><span class="p">,</span> <span class="ss">deterministic: </span><span class="kp">true</span><span class="p">,</span> <span class="ss">ignore_case: </span><span class="kp">true</span> <span class="c1"># the content with the original case will be stored in the column `original_name`</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="class Label
+  encrypts :name, deterministic: true, ignore_case: true # the content with the original case will be stored in the column `original_name`
+end
+">Copy</button>
+</div>
+<h4 id="support-for-unencrypted-data"><a class="anchorlink" href="#support-for-unencrypted-data">3.5 Support for Unencrypted Data</a></h4>
+
+<p>To ease migrations of unencrypted data, the library includes the option <code>config.active_record.encryption.support_unencrypted_data</code>. When set to <code>true</code>:</p>
+<ul>
+<li>Trying to read encrypted attributes that are not encrypted will work normally, without raising any error</li>
+<li>Queries with deterministically-encrypted attributes will include the "clear text" version of them to support finding both encrypted and unencrypted content. You need to set <code>config.active_record.encryption.extend_queries = true</code> to enable this.</li>
+</ul>
+<p><strong>This option is meant to be used during transition periods</strong> while clear data and encrypted data must coexist. Both are set to <code>false</code> by default, which is the recommended goal for any application: errors will be raised when working with unencrypted data.</p>
+
+<h4 id="support-for-previous-encryption-schemes"><a class="anchorlink" href="#support-for-previous-encryption-schemes">3.6 Support for Previous Encryption Schemes</a></h4>
+
+<p>Changing encryption properties of attributes can break existing data. For example, imagine you want to make a deterministic attribute non-deterministic. If you just change the declaration in the model, reading existing ciphertexts will fail because the encryption method is different now.</p>
+
+<p>To support these situations, you can declare previous encryption schemes that will be used in two scenarios:</p>
+<ul>
+<li>When reading encrypted data, Active Record Encryption will try previous encryption schemes if the current scheme doesn't work.</li>
+<li>When querying deterministic data, it will add ciphertexts using previous schemes so that queries work seamlessly with data encrypted with different schemes. You must set <code>config.active_record.encryption.extend_queries = true</code> to enable this.</li>
+</ul>
+<p>You can configure previous encryption schemes:</p>
+<ul>
+<li>Globally</li>
+<li>On a per-attribute basis</li>
+</ul>
+<h5 id="global-previous-encryption-schemes"><a class="anchorlink" href="#global-previous-encryption-schemes">3.6.1 Global Previous Encryption Schemes</a></h5>
+
+<p>You can add previous encryption schemes by adding them as list of properties using the <code>previous</code> config property in your <code>application.rb</code>:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">config</span><span class="p">.</span><span class="nf">active_record</span><span class="p">.</span><span class="nf">encryption</span><span class="p">.</span><span class="nf">previous</span> <span class="o">=</span> <span class="p">[</span> <span class="p">{</span> <span class="ss">key_provider: </span><span class="no">MyOldKeyProvider</span><span class="p">.</span><span class="nf">new</span> <span class="p">}</span> <span class="p">]</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="config.active_record.encryption.previous = [ { key_provider: MyOldKeyProvider.new } ]
+">Copy</button>
+</div>
+<h5 id="per-attribute-encryption-schemes"><a class="anchorlink" href="#per-attribute-encryption-schemes">3.6.2 Per-attribute Encryption Schemes</a></h5>
+
+<p>Use <code>:previous</code> when declaring the attribute:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">Article</span>
+  <span class="n">encrypts</span> <span class="ss">:title</span><span class="p">,</span> <span class="ss">deterministic: </span><span class="kp">true</span><span class="p">,</span> <span class="ss">previous: </span><span class="p">{</span> <span class="ss">deterministic: </span><span class="kp">false</span> <span class="p">}</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="class Article
+  encrypts :title, deterministic: true, previous: { deterministic: false }
+end
+">Copy</button>
+</div>
+<h5 id="encryption-schemes-and-deterministic-attributes"><a class="anchorlink" href="#encryption-schemes-and-deterministic-attributes">3.6.3 Encryption Schemes and Deterministic Attributes</a></h5>
+
+<p>When adding previous encryption schemes:</p>
+<ul>
+<li>With <strong>non-deterministic encryption</strong>, new information will always be encrypted with the <em>newest</em> (current) encryption scheme.</li>
+<li>With <strong>deterministic encryption</strong>, new information will always be encrypted with the <em>oldest</em> encryption scheme by default.</li>
+</ul>
+<p>Typically, with deterministic encryption, you want ciphertexts to remain constant. You can change this behavior by setting <code>deterministic: { fixed: false }</code>. In that case, it will use the <em>newest</em> encryption scheme for encrypting new data.</p>
+
+<h4 id="unique-constraints"><a class="anchorlink" href="#unique-constraints">3.7 Unique Constraints</a></h4>
+
+<div class="note"><p>Unique constraints can only be used with deterministically encrypted data.</p></div>
+
+<h5 id="unique-validations"><a class="anchorlink" href="#unique-validations">3.7.1 Unique Validations</a></h5>
+
+<p>Unique validations are supported normally as long as extended queries are enabled (<code>config.active_record.encryption.extend_queries = true</code>).</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">Person</span>
+  <span class="n">validates</span> <span class="ss">:email_address</span><span class="p">,</span> <span class="ss">uniqueness: </span><span class="kp">true</span>
+  <span class="n">encrypts</span> <span class="ss">:email_address</span><span class="p">,</span> <span class="ss">deterministic: </span><span class="kp">true</span><span class="p">,</span> <span class="ss">downcase: </span><span class="kp">true</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="class Person
+  validates :email_address, uniqueness: true
+  encrypts :email_address, deterministic: true, downcase: true
+end
+">Copy</button>
+</div>
+<p>They will also work when combining encrypted and unencrypted data,git and when configuring previous encryption schemes.</p>
+
+<div class="note"><p>If you want to ignore case, make sure to use <code>downcase:</code> or <code>ignore_case:</code> in the <code>encrypts</code> declaration. Using the <code>case_sensitive:</code> option in the validation won't work.</p></div>
+
+<h5 id="unique-indexes"><a class="anchorlink" href="#unique-indexes">3.7.2 Unique Indexes</a></h5>
+
+<p>To support unique indexes on deterministically-encrypted columns, you need to ensure their ciphertext doesn't ever change.</p>
+
+<p>To encourage this, deterministic attributes will always use the oldest available encryption scheme by default when multiple encryption schemes are configured. Otherwise, it's your job to ensure encryption properties don't change for these attributes, or the unique indexes won't work.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">Person</span>
+  <span class="n">encrypts</span> <span class="ss">:email_address</span><span class="p">,</span> <span class="ss">deterministic: </span><span class="kp">true</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="class Person
+  encrypts :email_address, deterministic: true
+end
+">Copy</button>
+</div>
+<h4 id="filtering-params-named-as-encrypted-columns"><a class="anchorlink" href="#filtering-params-named-as-encrypted-columns">3.8 Filtering Params Named as Encrypted Columns</a></h4>
+
+<p>By default, encrypted columns are configured to be <a href="action_controller_overview.html#parameters-filtering">automatically filtered in Rails logs</a>. You can disable this behavior by adding the following to your <code>application.rb</code>:</p>
+
+<p>When generating the filter parameter, it will use the model name as a prefix. E.g: For <code>Person#name</code> the filter parameter will be <code>person.name</code>.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">config</span><span class="p">.</span><span class="nf">active_record</span><span class="p">.</span><span class="nf">encryption</span><span class="p">.</span><span class="nf">add_to_filter_parameters</span> <span class="o">=</span> <span class="kp">false</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="config.active_record.encryption.add_to_filter_parameters = false
+">Copy</button>
+</div>
+<p>In case you want exclude specific columns from this automatic filtering, add them to <code>config.active_record.encryption.excluded_from_filter_parameters</code>.</p>
+
+<h4 id="encoding"><a class="anchorlink" href="#encoding">3.9 Encoding</a></h4>
+
+<p>The library will preserve the encoding for string values encrypted non-deterministically.</p>
+
+<p>Because encoding is stored along with the encrypted payload, values encrypted deterministically will force UTF-8 encoding by default. Therefore the same value with a different encoding will result in a different ciphertext when encrypted. You usually want to avoid this to keep queries and uniqueness constraints working, so the library will perform the conversion automatically on your behalf.</p>
+
+<p>You can configure the desired default encoding for deterministic encryption with:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">config</span><span class="p">.</span><span class="nf">active_record</span><span class="p">.</span><span class="nf">encryption</span><span class="p">.</span><span class="nf">forced_encoding_for_deterministic_encryption</span> <span class="o">=</span> <span class="no">Encoding</span><span class="o">::</span><span class="no">US_ASCII</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="config.active_record.encryption.forced_encoding_for_deterministic_encryption = Encoding::US_ASCII
+">Copy</button>
+</div>
+<p>And you can disable this behavior and preserve the encoding in all cases with:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">config</span><span class="p">.</span><span class="nf">active_record</span><span class="p">.</span><span class="nf">encryption</span><span class="p">.</span><span class="nf">forced_encoding_for_deterministic_encryption</span> <span class="o">=</span> <span class="kp">nil</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="config.active_record.encryption.forced_encoding_for_deterministic_encryption = nil
+">Copy</button>
+</div>
+</body>
+</html>

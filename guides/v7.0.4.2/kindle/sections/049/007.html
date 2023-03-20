@@ -1,0 +1,300 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>8 Upgrading from Rails 4.1 to Rails 4.2</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v7.0.4.2/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="upgrading-from-rails-4-1-to-rails-4-2"><a class="anchorlink" href="#upgrading-from-rails-4-1-to-rails-4-2">8 Upgrading from Rails 4.1 to Rails 4.2</a></h3>
+<h4 id="web-console"><a class="anchorlink" href="#web-console">8.1 Web Console</a></h4>
+
+<p>First, add <code>gem 'web-console', '~&gt; 2.0'</code> to the <code>:development</code> group in your <code>Gemfile</code> and run <code>bundle install</code> (it won't have been included when you upgraded Rails). Once it's been installed, you can simply drop a reference to the console helper (i.e., <code>&lt;%= console %&gt;</code>) into any view you want to enable it for. A console will also be provided on any error page you view in your development environment.</p>
+
+<h4 id="responders"><a class="anchorlink" href="#responders">8.2 Responders</a></h4>
+
+<p><code>respond_with</code> and the class-level <code>respond_to</code> methods have been extracted to the <code>responders</code> gem. To use them, simply add <code>gem 'responders', '~&gt; 2.0'</code> to your <code>Gemfile</code>. Calls to <code>respond_with</code> and <code>respond_to</code> (again, at the class level) will no longer work without having included the <code>responders</code> gem in your dependencies:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="c1"># app/controllers/users_controller.rb</span>
+
+<span class="k">class</span> <span class="nc">UsersController</span> <span class="o">&lt;</span> <span class="no">ApplicationController</span>
+  <span class="n">respond_to</span> <span class="ss">:html</span><span class="p">,</span> <span class="ss">:json</span>
+
+  <span class="k">def</span> <span class="nf">show</span>
+    <span class="vi">@user</span> <span class="o">=</span> <span class="no">User</span><span class="p">.</span><span class="nf">find</span><span class="p">(</span><span class="n">params</span><span class="p">[</span><span class="ss">:id</span><span class="p">])</span>
+    <span class="n">respond_with</span> <span class="vi">@user</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="# app/controllers/users_controller.rb
+
+class UsersController &lt; ApplicationController
+  respond_to :html, :json
+
+  def show
+    @user = User.find(params[:id])
+    respond_with @user
+  end
+end
+">Copy</button>
+</div>
+<p>Instance-level <code>respond_to</code> is unaffected and does not require the additional gem:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="c1"># app/controllers/users_controller.rb</span>
+
+<span class="k">class</span> <span class="nc">UsersController</span> <span class="o">&lt;</span> <span class="no">ApplicationController</span>
+  <span class="k">def</span> <span class="nf">show</span>
+    <span class="vi">@user</span> <span class="o">=</span> <span class="no">User</span><span class="p">.</span><span class="nf">find</span><span class="p">(</span><span class="n">params</span><span class="p">[</span><span class="ss">:id</span><span class="p">])</span>
+    <span class="n">respond_to</span> <span class="k">do</span> <span class="o">|</span><span class="nb">format</span><span class="o">|</span>
+      <span class="nb">format</span><span class="p">.</span><span class="nf">html</span>
+      <span class="nb">format</span><span class="p">.</span><span class="nf">json</span> <span class="p">{</span> <span class="n">render</span> <span class="ss">json: </span><span class="vi">@user</span> <span class="p">}</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="# app/controllers/users_controller.rb
+
+class UsersController &lt; ApplicationController
+  def show
+    @user = User.find(params[:id])
+    respond_to do |format|
+      format.html
+      format.json { render json: @user }
+    end
+  end
+end
+">Copy</button>
+</div>
+<p>See <a href="https://github.com/rails/rails/pull/16526">#16526</a> for more details.</p>
+
+<h4 id="error-handling-in-transaction-callbacks"><a class="anchorlink" href="#error-handling-in-transaction-callbacks">8.3 Error handling in transaction callbacks</a></h4>
+
+<p>Currently, Active Record suppresses errors raised
+within <code>after_rollback</code> or <code>after_commit</code> callbacks and only prints them to
+the logs. In the next version, these errors will no longer be suppressed.
+Instead, the errors will propagate normally just like in other Active
+Record callbacks.</p>
+
+<p>When you define an <code>after_rollback</code> or <code>after_commit</code> callback, you
+will receive a deprecation warning about this upcoming change. When
+you are ready, you can opt into the new behavior and remove the
+deprecation warning by adding following configuration to your
+<code>config/application.rb</code>:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">config</span><span class="p">.</span><span class="nf">active_record</span><span class="p">.</span><span class="nf">raise_in_transactional_callbacks</span> <span class="o">=</span> <span class="kp">true</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="config.active_record.raise_in_transactional_callbacks = true
+">Copy</button>
+</div>
+<p>See <a href="https://github.com/rails/rails/pull/14488">#14488</a> and
+<a href="https://github.com/rails/rails/pull/16537">#16537</a> for more details.</p>
+
+<h4 id="ordering-of-test-cases"><a class="anchorlink" href="#ordering-of-test-cases">8.4 Ordering of test cases</a></h4>
+
+<p>In Rails 5.0, test cases will be executed in random order by default. In
+anticipation of this change, Rails 4.2 introduced a new configuration option
+<code>active_support.test_order</code> for explicitly specifying the test ordering. This
+allows you to either lock down the current behavior by setting the option to
+<code>:sorted</code>, or opt into the future behavior by setting the option to <code>:random</code>.</p>
+
+<p>If you do not specify a value for this option, a deprecation warning will be
+emitted. To avoid this, add the following line to your test environment:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="c1"># config/environments/test.rb</span>
+<span class="no">Rails</span><span class="p">.</span><span class="nf">application</span><span class="p">.</span><span class="nf">configure</span> <span class="k">do</span>
+  <span class="n">config</span><span class="p">.</span><span class="nf">active_support</span><span class="p">.</span><span class="nf">test_order</span> <span class="o">=</span> <span class="ss">:sorted</span> <span class="c1"># or `:random` if you prefer</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="# config/environments/test.rb
+Rails.application.configure do
+  config.active_support.test_order = :sorted # or `:random` if you prefer
+end
+">Copy</button>
+</div>
+<h4 id="serialized-attributes"><a class="anchorlink" href="#serialized-attributes">8.5 Serialized attributes</a></h4>
+
+<p>When using a custom coder (e.g. <code>serialize :metadata, JSON</code>),
+assigning <code>nil</code> to a serialized attribute will save it to the database
+as <code>NULL</code> instead of passing the <code>nil</code> value through the coder (e.g. <code>"null"</code>
+when using the <code>JSON</code> coder).</p>
+
+<h4 id="production-log-level"><a class="anchorlink" href="#production-log-level">8.6 Production log level</a></h4>
+
+<p>In Rails 5, the default log level for the production environment will be changed
+to <code>:debug</code> (from <code>:info</code>). To preserve the current default, add the following
+line to your <code>production.rb</code>:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="c1"># Set to `:info` to match the current default, or set to `:debug` to opt-into</span>
+<span class="c1"># the future default.</span>
+<span class="n">config</span><span class="p">.</span><span class="nf">log_level</span> <span class="o">=</span> <span class="ss">:info</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="# Set to `:info` to match the current default, or set to `:debug` to opt-into
+# the future default.
+config.log_level = :info
+">Copy</button>
+</div>
+<h4 id="after-bundle-in-rails-templates"><a class="anchorlink" href="#after-bundle-in-rails-templates">8.7 <code>after_bundle</code> in Rails templates</a></h4>
+
+<p>If you have a Rails template that adds all the files in version control, it
+fails to add the generated binstubs because it gets executed before Bundler:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="c1"># template.rb</span>
+<span class="n">generate</span><span class="p">(</span><span class="ss">:scaffold</span><span class="p">,</span> <span class="s2">"person name:string"</span><span class="p">)</span>
+<span class="n">route</span> <span class="s2">"root to: 'people#index'"</span>
+<span class="n">rake</span><span class="p">(</span><span class="s2">"db:migrate"</span><span class="p">)</span>
+
+<span class="n">git</span> <span class="ss">:init</span>
+<span class="n">git</span> <span class="ss">add: </span><span class="s2">"."</span>
+<span class="n">git</span> <span class="ss">commit: </span><span class="sx">%Q{ -m 'Initial commit' }</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="# template.rb
+generate(:scaffold, &quot;person name:string&quot;)
+route &quot;root to: 'people#index'&quot;
+rake(&quot;db:migrate&quot;)
+
+git :init
+git add: &quot;.&quot;
+git commit: %Q{ -m 'Initial commit' }
+">Copy</button>
+</div>
+<p>You can now wrap the <code>git</code> calls in an <code>after_bundle</code> block. It will be run
+after the binstubs have been generated.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="c1"># template.rb</span>
+<span class="n">generate</span><span class="p">(</span><span class="ss">:scaffold</span><span class="p">,</span> <span class="s2">"person name:string"</span><span class="p">)</span>
+<span class="n">route</span> <span class="s2">"root to: 'people#index'"</span>
+<span class="n">rake</span><span class="p">(</span><span class="s2">"db:migrate"</span><span class="p">)</span>
+
+<span class="n">after_bundle</span> <span class="k">do</span>
+  <span class="n">git</span> <span class="ss">:init</span>
+  <span class="n">git</span> <span class="ss">add: </span><span class="s2">"."</span>
+  <span class="n">git</span> <span class="ss">commit: </span><span class="sx">%Q{ -m 'Initial commit' }</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="# template.rb
+generate(:scaffold, &quot;person name:string&quot;)
+route &quot;root to: 'people#index'&quot;
+rake(&quot;db:migrate&quot;)
+
+after_bundle do
+  git :init
+  git add: &quot;.&quot;
+  git commit: %Q{ -m 'Initial commit' }
+end
+">Copy</button>
+</div>
+<h4 id="rails-html-sanitizer"><a class="anchorlink" href="#rails-html-sanitizer">8.8 Rails HTML Sanitizer</a></h4>
+
+<p>There's a new choice for sanitizing HTML fragments in your applications. The
+venerable html-scanner approach is now officially being deprecated in favor of
+<a href="https://github.com/rails/rails-html-sanitizer"><code>Rails HTML Sanitizer</code></a>.</p>
+
+<p>This means the methods <code>sanitize</code>, <code>sanitize_css</code>, <code>strip_tags</code> and
+<code>strip_links</code> are backed by a new implementation.</p>
+
+<p>This new sanitizer uses <a href="https://github.com/flavorjones/loofah">Loofah</a> internally. Loofah in turn uses Nokogiri, which
+wraps XML parsers written in both C and Java, so sanitization should be faster
+no matter which Ruby version you run.</p>
+
+<p>The new version updates <code>sanitize</code>, so it can take a <code>Loofah::Scrubber</code> for
+powerful scrubbing.
+<a href="https://github.com/flavorjones/loofah#loofahscrubber">See some examples of scrubbers here</a>.</p>
+
+<p>Two new scrubbers have also been added: <code>PermitScrubber</code> and <code>TargetScrubber</code>.
+Read the <a href="https://github.com/rails/rails-html-sanitizer">gem's readme</a> for more information.</p>
+
+<p>The documentation for <code>PermitScrubber</code> and <code>TargetScrubber</code> explains how you
+can gain complete control over when and how elements should be stripped.</p>
+
+<p>If your application needs to use the old sanitizer implementation, include <code>rails-deprecated_sanitizer</code> in your <code>Gemfile</code>:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">gem</span> <span class="s1">'rails-deprecated_sanitizer'</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="gem 'rails-deprecated_sanitizer'
+">Copy</button>
+</div>
+<h4 id="rails-dom-testing"><a class="anchorlink" href="#rails-dom-testing">8.9 Rails DOM Testing</a></h4>
+
+<p>The <a href="https://api.rubyonrails.org/v4.1/classes/ActionDispatch/Assertions/TagAssertions.html"><code>TagAssertions</code> module</a> (containing methods such as <code>assert_tag</code>), <a href="https://github.com/rails/rails/blob/6061472b8c310158a2a2e8e9a6b81a1aef6b60fe/actionpack/lib/action_dispatch/testing/assertions/dom.rb">has been deprecated</a> in favor of the <code>assert_select</code> methods from the <code>SelectorAssertions</code> module, which has been extracted into the <a href="https://github.com/rails/rails-dom-testing">rails-dom-testing gem</a>.</p>
+
+<h4 id="masked-authenticity-tokens"><a class="anchorlink" href="#masked-authenticity-tokens">8.10 Masked Authenticity Tokens</a></h4>
+
+<p>In order to mitigate SSL attacks, <code>form_authenticity_token</code> is now masked so that it varies with each request.  Thus, tokens are validated by unmasking and then decrypting.  As a result, any strategies for verifying requests from non-rails forms that relied on a static session CSRF token have to take this into account.</p>
+
+<h4 id="action-mailer"><a class="anchorlink" href="#action-mailer">8.11 Action Mailer</a></h4>
+
+<p>Previously, calling a mailer method on a mailer class will result in the
+corresponding instance method being executed directly. With the introduction of
+Active Job and <code>#deliver_later</code>, this is no longer true. In Rails 4.2, the
+invocation of the instance methods are deferred until either <code>deliver_now</code> or
+<code>deliver_later</code> is called. For example:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">Notifier</span> <span class="o">&lt;</span> <span class="no">ActionMailer</span><span class="o">::</span><span class="no">Base</span>
+  <span class="k">def</span> <span class="nf">notify</span><span class="p">(</span><span class="n">user</span><span class="p">,</span> <span class="o">...</span><span class="p">)</span>
+    <span class="nb">puts</span> <span class="s2">"Called"</span>
+    <span class="n">mail</span><span class="p">(</span><span class="ss">to: </span><span class="n">user</span><span class="p">.</span><span class="nf">email</span><span class="p">,</span> <span class="o">...</span><span class="p">)</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='class Notifier &lt; ActionMailer::Base
+  def notify(user, ...)
+    puts "Called"
+    mail(to: user.email, ...)
+  end
+end
+'>Copy</button>
+</div>
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">mail</span> <span class="o">=</span> <span class="no">Notifier</span><span class="p">.</span><span class="nf">notify</span><span class="p">(</span><span class="n">user</span><span class="p">,</span> <span class="o">...</span><span class="p">)</span> <span class="c1"># Notifier#notify is not yet called at this point</span>
+<span class="n">mail</span> <span class="o">=</span> <span class="n">mail</span><span class="p">.</span><span class="nf">deliver_now</span>           <span class="c1"># Prints "Called"</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='mail = Notifier.notify(user, ...) # Notifier#notify is not yet called at this point
+mail = mail.deliver_now           # Prints "Called"
+'>Copy</button>
+</div>
+<p>This should not result in any noticeable differences for most applications.
+However, if you need some non-mailer methods to be executed synchronously, and
+you were previously relying on the synchronous proxying behavior, you should
+define them as class methods on the mailer class directly:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">Notifier</span> <span class="o">&lt;</span> <span class="no">ActionMailer</span><span class="o">::</span><span class="no">Base</span>
+  <span class="k">def</span> <span class="nc">self</span><span class="o">.</span><span class="nf">broadcast_notifications</span><span class="p">(</span><span class="n">users</span><span class="p">,</span> <span class="o">...</span><span class="p">)</span>
+    <span class="n">users</span><span class="p">.</span><span class="nf">each</span> <span class="p">{</span> <span class="o">|</span><span class="n">user</span><span class="o">|</span> <span class="no">Notifier</span><span class="p">.</span><span class="nf">notify</span><span class="p">(</span><span class="n">user</span><span class="p">,</span> <span class="o">...</span><span class="p">)</span> <span class="p">}</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="class Notifier &lt; ActionMailer::Base
+  def self.broadcast_notifications(users, ...)
+    users.each { |user| Notifier.notify(user, ...) }
+  end
+end
+">Copy</button>
+</div>
+<h4 id="foreign-key-support"><a class="anchorlink" href="#foreign-key-support">8.12 Foreign Key Support</a></h4>
+
+<p>The migration DSL has been expanded to support foreign key definitions. If
+you've been using the Foreigner gem, you might want to consider removing it.
+Note that the foreign key support of Rails is a subset of Foreigner. This means
+that not every Foreigner definition can be fully replaced by its Rails
+migration DSL counterpart.</p>
+
+<p>The migration procedure is as follows:</p>
+<ol>
+<li>remove <code>gem "foreigner"</code> from the <code>Gemfile</code>.</li>
+<li>run <code>bundle install</code>.</li>
+<li>run <code>bin/rake db:schema:dump</code>.</li>
+<li>make sure that <code>db/schema.rb</code> contains every foreign key definition with
+the necessary options.</li>
+</ol>
+</body>
+</html>

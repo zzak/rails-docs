@@ -1,0 +1,70 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>6 Action View</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v6.0.6.1/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="action-view"><a class="anchorlink" href="#action-view">6 Action View</a></h3>
+<p>Please refer to the <a href="https://github.com/rails/rails/blob/6-0-stable/actionview/CHANGELOG.md">Changelog</a> for detailed changes.</p>
+
+<h4 id="action-view-removals"><a class="anchorlink" href="#action-view-removals">6.1 Removals</a></h4>
+<ul>
+<li>  Remove deprecated <code>image_alt</code> helper.
+(<a href="https://github.com/rails/rails/commit/60c8a03c8d1e45e48fcb1055ba4c49ed3d5ff78f">Commit</a>)</li>
+<li>  Remove an empty <code>RecordTagHelper</code> module from which the functionality
+was already moved to the <code>record_tag_helper</code> gem.
+(<a href="https://github.com/rails/rails/commit/5c5ddd69b1e06fb6b2bcbb021e9b8dae17e7cb31">Commit</a>)</li>
+</ul>
+<h4 id="action-view-deprecations"><a class="anchorlink" href="#action-view-deprecations">6.2 Deprecations</a></h4>
+<ul>
+<li>  Deprecate <code>ActionView::Template.finalize_compiled_template_methods</code> with
+no replacement.
+(<a href="https://github.com/rails/rails/pull/35036">Pull Request</a>)</li>
+<li>  Deprecate <code>config.action_view.finalize_compiled_template_methods</code> with
+no replacement.
+(<a href="https://github.com/rails/rails/pull/35036">Pull Request</a>)</li>
+<li>  Deprecate calling private model methods from the <code>options_from_collection_for_select</code> view helper.
+(<a href="https://github.com/rails/rails/pull/33547">Pull Request</a>)</li>
+<li>  Deprecate <code>ActionView::TemplateRender.render(file: )</code> handling relative paths.
+Paths should now be absolute.
+(<a href="https://github.com/rails/rails/pull/35688">Pull Request</a>)</li>
+<li>  Deprecate single arity template handlers. The <code>call</code> method of
+<code>ActionView::Template::Handlers</code> subclasses should now accept two parameters,
+the view object and the source for the view object.
+(<a href="https://github.com/rails/rails/pull/35119">Pull Request</a>)</li>
+</ul>
+<h4 id="action-view-notable-changes"><a class="anchorlink" href="#action-view-notable-changes">6.3 Notable changes</a></h4>
+<ul>
+<li>  Clear ActionView cache in development only on file changes, speeding up
+development mode.
+(<a href="https://github.com/rails/rails/pull/35629">Pull Request</a>)</li>
+<li>  Move all of the Rails npm packages into a <code>@rails</code> scope.
+(<a href="https://github.com/rails/rails/pull/34905">Pull Request</a>)</li>
+<li>  Only accept formats from registered Mime types.
+(<a href="https://github.com/rails/rails/pull/35604">Pull Request</a>, <a href="https://github.com/rails/rails/pull/35753">Pull Request</a>)</li>
+<li>  Add allocations to the template and partial rendering server output.
+(<a href="https://github.com/rails/rails/pull/34136">Pull Request</a>)</li>
+<li>  Add a <code>year_format</code> option to <code>date_select</code> tag, making it possible to
+customize year names.
+(<a href="https://github.com/rails/rails/pull/32190">Pull Request</a>)</li>
+<li>  Add a <code>nonce: true</code> option for <code>javascript_include_tag</code> helper to
+support automatic nonce generation for a Content Security Policy.
+(<a href="https://github.com/rails/rails/pull/32607">Pull Request</a>)</li>
+<li>  Add a <code>action_view.finalize_compiled_template_methods</code> configuration to disable or
+enable <code>ActionView::Template</code> finalizers.
+(<a href="https://github.com/rails/rails/pull/32418">Pull Request</a>)</li>
+<li>  Extract the JS <code>confirm</code> call to its own, overridable method in <code>rails_ujs</code>.
+(<a href="https://github.com/rails/rails/pull/32404">Pull Request</a>)</li>
+<li>  Add a <code>action_controller.default_enforce_utf8</code> configuration option to handle
+enforcing UTF-8 encoding. This defaults to <code>false</code>.
+(<a href="https://github.com/rails/rails/pull/32125">Pull Request</a>)</li>
+<li>  Add I18n key style support for locale keys to submit tags.
+(<a href="https://github.com/rails/rails/pull/26799">Pull Request</a>)</li>
+<li>  <code>ActionView::TemplateRender.render(file: )</code> now renders the file directly,
+without using any handlers, using the new <code>Template::RawFile</code> class.
+(<a href="https://github.com/rails/rails/pull/35688">Pull Request</a>)</li>
+</ul>
+</body>
+</html>

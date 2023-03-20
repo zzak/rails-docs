@@ -1,0 +1,46 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>3 Rails Architectural Changes</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v5.2.8.1/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="rails-architectural-changes"><a class="anchorlink" href="#rails-architectural-changes">3 Rails Architectural Changes</a></h3>
+<p>There are six major changes in the architecture of Rails.</p>
+
+<h4 id="railties-restrung"><a class="anchorlink" href="#railties-restrung">3.1 Railties Restrung</a></h4>
+
+<p>Railties was updated to provide a consistent plugin API for the entire Rails framework as well as a total rewrite of generators and the Rails bindings, the result is that developers can now hook into any significant stage of the generators and application framework in a consistent, defined manner.</p>
+
+<h4 id="all-rails-core-components-are-decoupled"><a class="anchorlink" href="#all-rails-core-components-are-decoupled">3.2 All Rails core components are decoupled</a></h4>
+
+<p>With the merge of Merb and Rails, one of the big jobs was to remove the tight coupling between Rails core components. This has now been achieved, and all Rails core components are now using the same API that you can use for developing plugins. This means any plugin you make, or any core component replacement (like DataMapper or Sequel) can access all the functionality that the Rails core components have access to and extend and enhance at will.</p>
+
+<p>More information: - <a href="http://yehudakatz.com/2009/07/19/rails-3-the-great-decoupling/">The Great Decoupling</a></p>
+
+<h4 id="active-model-abstraction"><a class="anchorlink" href="#active-model-abstraction">3.3 Active Model Abstraction</a></h4>
+
+<p>Part of decoupling the core components was extracting all ties to Active Record from Action Pack. This has now been completed. All new ORM plugins now just need to implement Active Model interfaces to work seamlessly with Action Pack.</p>
+
+<p>More information: - <a href="http://yehudakatz.com/2010/01/10/activemodel-make-any-ruby-object-feel-like-activerecord/">Make Any Ruby Object Feel Like ActiveRecord</a></p>
+
+<h4 id="controller-abstraction"><a class="anchorlink" href="#controller-abstraction">3.4 Controller Abstraction</a></h4>
+
+<p>Another big part of decoupling the core components was creating a base superclass that is separated from the notions of HTTP in order to handle rendering of views etc. This creation of <code>AbstractController</code> allowed <code>ActionController</code> and <code>ActionMailer</code> to be greatly simplified with common code removed from all these libraries and put into Abstract Controller.</p>
+
+<p>More Information: - <a href="http://yehudakatz.com/2009/06/11/rails-edge-architecture/">Rails Edge Architecture</a></p>
+
+<h4 id="arel-integration"><a class="anchorlink" href="#arel-integration">3.5 Arel Integration</a></h4>
+
+<p><a href="https://github.com/brynary/arel">Arel</a> (or Active Relation) has been taken on as the underpinnings of Active Record and is now required for Rails. Arel provides an SQL abstraction that simplifies out Active Record and provides the underpinnings for the relation functionality in Active Record.</p>
+
+<p>More information: - <a href="https://web.archive.org/web/20120718093140/http://magicscalingsprinkles.wordpress.com/2010/01/28/why-i-wrote-arel/">Why I wrote Arel</a></p>
+
+<h4 id="mail-extraction"><a class="anchorlink" href="#mail-extraction">3.6 Mail Extraction</a></h4>
+
+<p>Action Mailer ever since its beginnings has had monkey patches, pre parsers and even delivery and receiver agents, all in addition to having TMail vendored in the source tree. Version 3 changes that with all email message related functionality abstracted out to the <a href="https://github.com/mikel/mail">Mail</a> gem. This again reduces code duplication and helps create definable boundaries between Action Mailer and the email parser.</p>
+
+<p>More information: - <a href="http://lindsaar.net/2010/1/26/new-actionmailer-api-in-rails-3">New Action Mailer API in Rails 3</a></p>
+</body>
+</html>

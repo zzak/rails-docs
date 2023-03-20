@@ -1,0 +1,49 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>3 Railties</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v4.1.16/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="railties">3 Railties</h3>
+<p>Please refer to the
+<a href="https://github.com/rails/rails/blob/4-1-stable/railties/CHANGELOG.md">Changelog</a>
+for detailed changes.</p>
+<h4 id="railties-removals">3.1 Removals</h4>
+<ul>
+<li>Removed <code>update:application_controller</code> rake task.</li>
+<li>Removed deprecated <code>Rails.application.railties.engines</code>.</li>
+<li>Removed deprecated <code>threadsafe!</code> from Rails Config.</li>
+<li>Removed deprecated <code>ActiveRecord::Generators::ActiveModel#update_attributes</code> in
+favor of <code>ActiveRecord::Generators::ActiveModel#update</code>.</li>
+<li>Removed deprecated <code>config.whiny_nils</code> option.</li>
+<li>Removed deprecated rake tasks for running tests: <code>rake test:uncommitted</code> and
+<code>rake test:recent</code>.</li>
+</ul>
+<h4 id="railties-notable-changes">3.2 Notable changes</h4>
+<ul>
+<li>The <a href="https://github.com/rails/spring">Spring application
+preloader</a> is now installed
+by default for new applications. It uses the development group of
+the Gemfile, so will not be installed in
+production. (<a href="https://github.com/rails/rails/pull/12958">Pull Request</a>)</li>
+<li>
+<code>BACKTRACE</code> environment variable to show unfiltered backtraces for test
+failures. (<a href="https://github.com/rails/rails/commit/84eac5dab8b0fe9ee20b51250e52ad7bfea36553">Commit</a>)</li>
+<li>Exposed <code>MiddlewareStack#unshift</code> to environment
+configuration. (<a href="https://github.com/rails/rails/pull/12479">Pull Request</a>)</li>
+<li>Added <code>Application#message_verifier</code> method to return a message
+verifier. (<a href="https://github.com/rails/rails/pull/12995">Pull Request</a>)</li>
+<li>The <code>test_help.rb</code> file which is required by the default generated test
+helper will automatically keep your test database up-to-date with
+<code>db/schema.rb</code> (or <code>db/structure.sql</code>). It raises an error if
+reloading the schema does not resolve all pending migrations. Opt out
+with <code>config.active_record.maintain_test_schema = false</code>. (<a href="https://github.com/rails/rails/pull/13528">Pull
+Request</a>)</li>
+<li>Introduce <code>Rails.gem_version</code> as a convenience method to return
+<code>Gem::Version.new(Rails.version)</code>, suggesting a more reliable way to perform
+version comparison. (<a href="https://github.com/rails/rails/pull/14103">Pull Request</a>)</li>
+</ul>
+</body>
+</html>

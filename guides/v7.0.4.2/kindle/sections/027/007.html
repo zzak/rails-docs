@@ -1,0 +1,129 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>8 Custom configuration</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v7.0.4.2/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="custom-configuration"><a class="anchorlink" href="#custom-configuration">8 Custom configuration</a></h3>
+<p>You can configure your own code through the Rails configuration object with
+custom configuration under either the <code>config.x</code> namespace, or <code>config</code> directly.
+The key difference between these two is that you should be using <code>config.x</code> if you
+are defining <em>nested</em> configuration (ex: <code>config.x.nested.hi</code>), and just
+<code>config</code> for <em>single level</em> configuration (ex: <code>config.hello</code>).</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">config</span><span class="p">.</span><span class="nf">x</span><span class="p">.</span><span class="nf">payment_processing</span><span class="p">.</span><span class="nf">schedule</span> <span class="o">=</span> <span class="ss">:daily</span>
+<span class="n">config</span><span class="p">.</span><span class="nf">x</span><span class="p">.</span><span class="nf">payment_processing</span><span class="p">.</span><span class="nf">retries</span>  <span class="o">=</span> <span class="mi">3</span>
+<span class="n">config</span><span class="p">.</span><span class="nf">super_debugger</span> <span class="o">=</span> <span class="kp">true</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="config.x.payment_processing.schedule = :daily
+config.x.payment_processing.retries  = 3
+config.super_debugger = true
+">Copy</button>
+</div>
+<p>These configuration points are then available through the configuration object:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="no">Rails</span><span class="p">.</span><span class="nf">configuration</span><span class="p">.</span><span class="nf">x</span><span class="p">.</span><span class="nf">payment_processing</span><span class="p">.</span><span class="nf">schedule</span> <span class="c1"># =&gt; :daily</span>
+<span class="no">Rails</span><span class="p">.</span><span class="nf">configuration</span><span class="p">.</span><span class="nf">x</span><span class="p">.</span><span class="nf">payment_processing</span><span class="p">.</span><span class="nf">retries</span>  <span class="c1"># =&gt; 3</span>
+<span class="no">Rails</span><span class="p">.</span><span class="nf">configuration</span><span class="p">.</span><span class="nf">x</span><span class="p">.</span><span class="nf">payment_processing</span><span class="p">.</span><span class="nf">not_set</span>  <span class="c1"># =&gt; nil</span>
+<span class="no">Rails</span><span class="p">.</span><span class="nf">configuration</span><span class="p">.</span><span class="nf">super_debugger</span>                <span class="c1"># =&gt; true</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="Rails.configuration.x.payment_processing.schedule # =&gt; :daily
+Rails.configuration.x.payment_processing.retries  # =&gt; 3
+Rails.configuration.x.payment_processing.not_set  # =&gt; nil
+Rails.configuration.super_debugger                # =&gt; true
+">Copy</button>
+</div>
+<p>You can also use <code>Rails::Application.config_for</code> to load whole configuration files:</p>
+
+<div class="code_container">
+<pre><code class="highlight yaml"><span class="c1"># config/payment.yml</span>
+<span class="na">production</span><span class="pi">:</span>
+  <span class="na">environment</span><span class="pi">:</span> <span class="s">production</span>
+  <span class="na">merchant_id</span><span class="pi">:</span> <span class="s">production_merchant_id</span>
+  <span class="na">public_key</span><span class="pi">:</span>  <span class="s">production_public_key</span>
+  <span class="na">private_key</span><span class="pi">:</span> <span class="s">production_private_key</span>
+
+<span class="na">development</span><span class="pi">:</span>
+  <span class="na">environment</span><span class="pi">:</span> <span class="s">sandbox</span>
+  <span class="na">merchant_id</span><span class="pi">:</span> <span class="s">development_merchant_id</span>
+  <span class="na">public_key</span><span class="pi">:</span>  <span class="s">development_public_key</span>
+  <span class="na">private_key</span><span class="pi">:</span> <span class="s">development_private_key</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="# config/payment.yml
+production:
+  environment: production
+  merchant_id: production_merchant_id
+  public_key:  production_public_key
+  private_key: production_private_key
+
+development:
+  environment: sandbox
+  merchant_id: development_merchant_id
+  public_key:  development_public_key
+  private_key: development_private_key
+">Copy</button>
+</div>
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="c1"># config/application.rb</span>
+<span class="k">module</span> <span class="nn">MyApp</span>
+  <span class="k">class</span> <span class="nc">Application</span> <span class="o">&lt;</span> <span class="no">Rails</span><span class="o">::</span><span class="no">Application</span>
+    <span class="n">config</span><span class="p">.</span><span class="nf">payment</span> <span class="o">=</span> <span class="n">config_for</span><span class="p">(</span><span class="ss">:payment</span><span class="p">)</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="# config/application.rb
+module MyApp
+  class Application &lt; Rails::Application
+    config.payment = config_for(:payment)
+  end
+end
+">Copy</button>
+</div>
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="no">Rails</span><span class="p">.</span><span class="nf">configuration</span><span class="p">.</span><span class="nf">payment</span><span class="p">[</span><span class="s1">'merchant_id'</span><span class="p">]</span> <span class="c1"># =&gt; production_merchant_id or development_merchant_id</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="Rails.configuration.payment['merchant_id'] # =&gt; production_merchant_id or development_merchant_id
+">Copy</button>
+</div>
+<p><code>Rails::Application.config_for</code> supports a <code>shared</code> configuration to group common
+configurations. The shared configuration will be merged into the environment
+configuration.</p>
+
+<div class="code_container">
+<pre><code class="highlight yaml"><span class="c1"># config/example.yml</span>
+<span class="na">shared</span><span class="pi">:</span>
+  <span class="na">foo</span><span class="pi">:</span>
+    <span class="na">bar</span><span class="pi">:</span>
+      <span class="na">baz</span><span class="pi">:</span> <span class="m">1</span>
+
+<span class="na">development</span><span class="pi">:</span>
+  <span class="na">foo</span><span class="pi">:</span>
+    <span class="na">bar</span><span class="pi">:</span>
+      <span class="na">qux</span><span class="pi">:</span> <span class="m">2</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="# config/example.yml
+shared:
+  foo:
+    bar:
+      baz: 1
+
+development:
+  foo:
+    bar:
+      qux: 2
+">Copy</button>
+</div>
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="c1"># development environment</span>
+<span class="no">Rails</span><span class="p">.</span><span class="nf">application</span><span class="p">.</span><span class="nf">config_for</span><span class="p">(</span><span class="ss">:example</span><span class="p">)[</span><span class="ss">:foo</span><span class="p">][</span><span class="ss">:bar</span><span class="p">]</span> <span class="c1">#=&gt; { baz: 1, qux: 2 }</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="# development environment
+Rails.application.config_for(:example)[:foo][:bar] #=&gt; { baz: 1, qux: 2 }
+">Copy</button>
+</div>
+</body>
+</html>

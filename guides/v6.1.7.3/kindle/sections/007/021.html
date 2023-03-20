@@ -1,0 +1,117 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>22 Calculations</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v6.1.7.3/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="calculations"><a class="anchorlink" href="#calculations">22 Calculations</a></h3>
+<p>This section uses <a href="https://api.rubyonrails.org/v6.1.7.3/classes/ActiveRecord/Calculations.html#method-i-count"><code>count</code></a> as an example method in this preamble, but the options described apply to all sub-sections.</p>
+
+<p>All calculation methods work directly on a model:</p>
+
+<div class="code_container">
+<pre><code class="highlight irb"><span class="gp">irb&gt;</span><span class="w"> </span><span class="no">Customer</span><span class="p">.</span><span class="nf">count</span>
+<span class="go">SELECT COUNT(*) FROM customers
+</span></code></pre>
+<textarea class="clipboard-content" id="clipboard-ed776846dd9e0f8ca2ef10c30b494686">Customer.count
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-ed776846dd9e0f8ca2ef10c30b494686">Copy</button>
+</div>
+<p>Or on a relation:</p>
+
+<div class="code_container">
+<pre><code class="highlight irb"><span class="gp">irb&gt;</span><span class="w"> </span><span class="no">Customer</span><span class="p">.</span><span class="nf">where</span><span class="p">(</span><span class="ss">first_name: </span><span class="s1">'Ryan'</span><span class="p">).</span><span class="nf">count</span>
+<span class="go">SELECT COUNT(*) FROM customers WHERE (first_name = 'Ryan')
+</span></code></pre>
+<textarea class="clipboard-content" id="clipboard-feb5aebba9ab87447bce138aff555f6f">Customer.where(first_name: 'Ryan').count
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-feb5aebba9ab87447bce138aff555f6f">Copy</button>
+</div>
+<p>You can also use various finder methods on a relation for performing complex calculations:</p>
+
+<div class="code_container">
+<pre><code class="highlight irb"><span class="gp">irb&gt;</span><span class="w"> </span><span class="no">Customer</span><span class="p">.</span><span class="nf">includes</span><span class="p">(</span><span class="s2">"orders"</span><span class="p">).</span><span class="nf">where</span><span class="p">(</span><span class="ss">first_name: </span><span class="s1">'Ryan'</span><span class="p">,</span> <span class="ss">orders: </span><span class="p">{</span> <span class="ss">status: </span><span class="s1">'shipped'</span> <span class="p">}).</span><span class="nf">count</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-681dd08c9781dd09af4765e8e8d73669">Customer.includes("orders").where(first_name: 'Ryan', orders: { status: 'shipped' }).count
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-681dd08c9781dd09af4765e8e8d73669">Copy</button>
+</div>
+<p>Which will execute:</p>
+
+<div class="code_container">
+<pre><code class="highlight sql"><span class="k">SELECT</span> <span class="k">COUNT</span><span class="p">(</span><span class="k">DISTINCT</span> <span class="n">customers</span><span class="p">.</span><span class="n">id</span><span class="p">)</span> <span class="k">FROM</span> <span class="n">customers</span>
+  <span class="k">LEFT</span> <span class="k">OUTER</span> <span class="k">JOIN</span> <span class="n">orders</span> <span class="k">ON</span> <span class="n">orders</span><span class="p">.</span><span class="n">customer_id</span> <span class="o">=</span> <span class="n">customers</span><span class="p">.</span><span class="n">id</span>
+  <span class="k">WHERE</span> <span class="p">(</span><span class="n">customers</span><span class="p">.</span><span class="n">first_name</span> <span class="o">=</span> <span class="s1">'Ryan'</span> <span class="k">AND</span> <span class="n">orders</span><span class="p">.</span><span class="n">status</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-0ff17af61f1a81f0bf61d0e8182bfedb">SELECT COUNT(DISTINCT customers.id) FROM customers
+  LEFT OUTER JOIN orders ON orders.customer_id = customers.id
+  WHERE (customers.first_name = 'Ryan' AND orders.status = 0)
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-0ff17af61f1a81f0bf61d0e8182bfedb">Copy</button>
+</div>
+<p>assuming that Order has <code>enum status: [ :shipped, :being_packed, :cancelled ]</code>.</p>
+
+<h4 id="count"><a class="anchorlink" href="#count">22.1 Count</a></h4>
+
+<p>If you want to see how many records are in your model's table you could call <code>Customer.count</code> and that will return the number.
+If you want to be more specific and find all the customers with a title present in the database you can use <code>Customer.count(:title)</code>.</p>
+
+<p>For options, please see the parent section, <a href="#calculations">Calculations</a>.</p>
+
+<h4 id="average"><a class="anchorlink" href="#average">22.2 Average</a></h4>
+
+<p>If you want to see the average of a certain number in one of your tables you can call the <a href="https://api.rubyonrails.org/v6.1.7.3/classes/ActiveRecord/Calculations.html#method-i-average"><code>average</code></a> method on the class that relates to the table. This method call will look something like this:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="no">Order</span><span class="p">.</span><span class="nf">average</span><span class="p">(</span><span class="s2">"subtotal"</span><span class="p">)</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-b69868f86d6b37ec27410f38bbd4b399">Order.average("subtotal")
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-b69868f86d6b37ec27410f38bbd4b399">Copy</button>
+</div>
+<p>This will return a number (possibly a floating point number such as 3.14159265) representing the average value in the field.</p>
+
+<p>For options, please see the parent section, <a href="#calculations">Calculations</a>.</p>
+
+<h4 id="minimum"><a class="anchorlink" href="#minimum">22.3 Minimum</a></h4>
+
+<p>If you want to find the minimum value of a field in your table you can call the <a href="https://api.rubyonrails.org/v6.1.7.3/classes/ActiveRecord/Calculations.html#method-i-minimum"><code>minimum</code></a> method on the class that relates to the table. This method call will look something like this:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="no">Order</span><span class="p">.</span><span class="nf">minimum</span><span class="p">(</span><span class="s2">"subtotal"</span><span class="p">)</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-ef271ac51bcc0d8b38ac88359c922c8b">Order.minimum("subtotal")
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-ef271ac51bcc0d8b38ac88359c922c8b">Copy</button>
+</div>
+<p>For options, please see the parent section, <a href="#calculations">Calculations</a>.</p>
+
+<h4 id="maximum"><a class="anchorlink" href="#maximum">22.4 Maximum</a></h4>
+
+<p>If you want to find the maximum value of a field in your table you can call the <a href="https://api.rubyonrails.org/v6.1.7.3/classes/ActiveRecord/Calculations.html#method-i-maximum"><code>maximum</code></a> method on the class that relates to the table. This method call will look something like this:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="no">Order</span><span class="p">.</span><span class="nf">maximum</span><span class="p">(</span><span class="s2">"subtotal"</span><span class="p">)</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-5ead563f8aae54526e29abfb42de9045">Order.maximum("subtotal")
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-5ead563f8aae54526e29abfb42de9045">Copy</button>
+</div>
+<p>For options, please see the parent section, <a href="#calculations">Calculations</a>.</p>
+
+<h4 id="sum"><a class="anchorlink" href="#sum">22.5 Sum</a></h4>
+
+<p>If you want to find the sum of a field for all records in your table you can call the <a href="https://api.rubyonrails.org/v6.1.7.3/classes/ActiveRecord/Calculations.html#method-i-sum"><code>sum</code></a> method on the class that relates to the table. This method call will look something like this:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="no">Order</span><span class="p">.</span><span class="nf">sum</span><span class="p">(</span><span class="s2">"subtotal"</span><span class="p">)</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-2c0be32adc3649b95276a3fdf8c69758">Order.sum("subtotal")
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-2c0be32adc3649b95276a3fdf8c69758">Copy</button>
+</div>
+<p>For options, please see the parent section, <a href="#calculations">Calculations</a>.</p>
+</body>
+</html>

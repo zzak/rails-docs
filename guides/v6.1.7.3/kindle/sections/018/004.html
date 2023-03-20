@@ -1,0 +1,22 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>5 Avoid N+1 queries</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v6.1.7.3/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="avoid-n-1-queries"><a class="anchorlink" href="#avoid-n-1-queries">5 Avoid N+1 queries</a></h3>
+<p>If you wish to preload the dependent <code>ActionText::RichText</code> model, assuming your rich text field is named <code>content</code>, you can use the named scope:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="no">Message</span><span class="p">.</span><span class="nf">all</span><span class="p">.</span><span class="nf">with_rich_text_content</span> <span class="c1"># Preload the body without attachments.</span>
+<span class="no">Message</span><span class="p">.</span><span class="nf">all</span><span class="p">.</span><span class="nf">with_rich_text_content_and_embeds</span> <span class="c1"># Preload both body and attachments.</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-145efbbe765d863a1cbd8a9007e48917">Message.all.with_rich_text_content # Preload the body without attachments.
+Message.all.with_rich_text_content_and_embeds # Preload both body and attachments.
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-145efbbe765d863a1cbd8a9007e48917">Copy</button>
+</div>
+</body>
+</html>

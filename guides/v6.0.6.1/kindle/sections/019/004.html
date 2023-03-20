@@ -1,0 +1,41 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>5 Linking to Files</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v6.0.6.1/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="linking-to-files"><a class="anchorlink" href="#linking-to-files">5 Linking to Files</a></h3>
+<p>Generate a permanent URL for the blob that points to the application. Upon
+access, a redirect to the actual service endpoint is returned. This indirection
+decouples the public URL from the actual one, and allows, for example, mirroring
+attachments in different services for high-availability. The redirection has an
+HTTP expiration of 5 min.</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+url_for(user.avatar)
+
+</pre>
+</div>
+<p>To create a download link, use the <code>rails_blob_{path|url}</code> helper. Using this
+helper allows you to set the disposition.</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+rails_blob_path(user.avatar, disposition: "attachment")
+
+</pre>
+</div>
+<p>If you need to create a link from outside of controller/view context (Background
+jobs, Cronjobs, etc.), you can access the rails_blob_path like this:</p>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+Rails.application.routes.url_helpers.rails_blob_path(user.avatar, only_path: true)
+
+</pre>
+</div>
+</body>
+</html>

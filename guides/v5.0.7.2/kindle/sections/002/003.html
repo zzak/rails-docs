@@ -1,0 +1,52 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>4 Overriding the Naming Conventions</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v5.0.7.2/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="overriding-the-naming-conventions">4 Overriding the Naming Conventions</h3>
+<p>What if you need to follow a different naming convention or need to use your
+Rails application with a legacy database? No problem, you can easily override
+the default conventions.</p>
+
+<p><code>ApplicationRecord</code> inherits from <code>ActiveRecord::Base</code>, which defines a
+number of helpful methods. You can use the <code>ActiveRecord::Base.table_name=</code>
+method to specify the table name that should be used:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class Product &lt; ApplicationRecord
+  self.table_name = "my_products"
+end
+
+</pre>
+</div>
+<p>If you do so, you will have to define manually the class name that is hosting
+the fixtures (my_products.yml) using the <code>set_fixture_class</code> method in your test
+definition:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class ProductTest &lt; ActiveSupport::TestCase
+  set_fixture_class my_products: Product
+  fixtures :my_products
+  ...
+end
+
+</pre>
+</div>
+<p>It's also possible to override the column that should be used as the table's
+primary key using the <code>ActiveRecord::Base.primary_key=</code> method:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class Product &lt; ApplicationRecord
+  self.primary_key = "product_id"
+end
+
+</pre>
+</div>
+</body>
+</html>

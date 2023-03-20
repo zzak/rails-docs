@@ -1,0 +1,51 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>1 The Purpose of the Rails Router</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v4.1.16/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="the-purpose-of-the-rails-router">1 The Purpose of the Rails Router</h3>
+<p>The Rails router recognizes URLs and dispatches them to a controller's action. It can also generate paths and URLs, avoiding the need to hardcode strings in your views.</p>
+<h4 id="connecting-urls-to-code">1.1 Connecting URLs to Code</h4>
+<p>When your Rails application receives an incoming request for:</p>
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+GET /patients/17
+
+</pre>
+</div>
+<p>it asks the router to match it to a controller action. If the first matching route is:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+get '/patients/:id', to: 'patients#show'
+
+</pre>
+</div>
+<p>the request is dispatched to the <code>patients</code> controller's <code>show</code> action with <code>{ id: '17' }</code> in <code>params</code>.</p>
+<h4 id="generating-paths-and-urls-from-code">1.2 Generating Paths and URLs from Code</h4>
+<p>You can also generate paths and URLs. If the route above is modified to be:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+get '/patients/:id', to: 'patients#show', as: 'patient'
+
+</pre>
+</div>
+<p>and your application contains this code in the controller:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+@patient = Patient.find(17)
+
+</pre>
+</div>
+<p>and this in the corresponding view:</p>
+<div class="code_container">
+<pre class="brush: ruby; html-script: true; gutter: false; toolbar: false">
+&lt;%= link_to 'Patient Record', patient_path(@patient) %&gt;
+
+</pre>
+</div>
+<p>then the router will generate the path <code>/patients/17</code>. This reduces the brittleness of your view and makes your code easier to understand. Note that the id does not need to be specified in the route helper.</p>
+</body>
+</html>

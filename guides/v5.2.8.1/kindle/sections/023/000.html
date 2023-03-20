@@ -1,0 +1,419 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>1 Command Line Basics</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v5.2.8.1/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="command-line-basics"><a class="anchorlink" href="#command-line-basics">1 Command Line Basics</a></h3>
+<p>There are a few commands that are absolutely critical to your everyday usage of Rails. In the order of how much you'll probably use them are:</p>
+<ul>
+<li><code>rails console</code></li>
+<li><code>rails server</code></li>
+<li><code>bin/rails</code></li>
+<li><code>rails generate</code></li>
+<li><code>rails dbconsole</code></li>
+<li><code>rails new app_name</code></li>
+</ul>
+<p>All commands can run with <code>-h</code> or <code>--help</code> to list more information.</p>
+
+<p>Let's create a simple Rails application to step through each of these commands in context.</p>
+
+<h4 id="rails-new"><a class="anchorlink" href="#rails-new">1.1 <code>rails new</code></a></h4>
+
+<p>The first thing we'll want to do is create a new Rails application by running the <code>rails new</code> command after installing Rails.</p>
+
+<div class="info"><p>You can install the rails gem by typing <code>gem install rails</code>, if you don't have it already.</p></div>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+$ rails new commandsapp
+     create
+     create  README.md
+     create  Rakefile
+     create  config.ru
+     create  .gitignore
+     create  Gemfile
+     create  app
+     ...
+     create  tmp/cache
+     ...
+        run  bundle install
+
+</pre>
+</div>
+<p>Rails will set you up with what seems like a huge amount of stuff for such a tiny command! You've got the entire Rails directory structure now with all the code you need to run our simple application right out of the box.</p>
+
+<h4 id="rails-server"><a class="anchorlink" href="#rails-server">1.2 <code>rails server</code></a></h4>
+
+<p>The <code>rails server</code> command launches a web server named Puma which comes bundled with Rails. You'll use this any time you want to access your application through a web browser.</p>
+
+<p>With no further work, <code>rails server</code> will run our new shiny Rails app:</p>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+$ cd commandsapp
+$ bin/rails server
+=&gt; Booting Puma
+=&gt; Rails 5.1.0 application starting in development on http://0.0.0.0:3000
+=&gt; Run `rails server -h` for more startup options
+Puma starting in single mode...
+* Version 3.0.2 (ruby 2.3.0-p0), codename: Plethora of Penguin Pinatas
+* Min threads: 5, max threads: 5
+* Environment: development
+* Listening on tcp://localhost:3000
+Use Ctrl-C to stop
+
+</pre>
+</div>
+<p>With just three commands we whipped up a Rails server listening on port 3000. Go to your browser and open <a href="http://localhost:3000">http://localhost:3000</a>, you will see a basic Rails app running.</p>
+
+<div class="info"><p>You can also use the alias "s" to start the server: <code>rails s</code>.</p></div>
+
+<p>The server can be run on a different port using the <code>-p</code> option. The default development environment can be changed using <code>-e</code>.</p>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+$ bin/rails server -e production -p 4000
+
+</pre>
+</div>
+<p>The <code>-b</code> option binds Rails to the specified IP, by default it is localhost. You can run a server as a daemon by passing a <code>-d</code> option.</p>
+
+<h4 id="rails-generate"><a class="anchorlink" href="#rails-generate">1.3 <code>rails generate</code></a></h4>
+
+<p>The <code>rails generate</code> command uses templates to create a whole lot of things. Running <code>rails generate</code> by itself gives a list of available generators:</p>
+
+<div class="info"><p>You can also use the alias "g" to invoke the generator command: <code>rails g</code>.</p></div>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+$ bin/rails generate
+Usage: rails generate GENERATOR [args] [options]
+
+...
+...
+
+Please choose a generator below.
+
+Rails:
+  assets
+  channel
+  controller
+  generator
+  ...
+  ...
+
+</pre>
+</div>
+<div class="note"><p>You can install more generators through generator gems, portions of plugins you'll undoubtedly install, and you can even create your own!</p></div>
+
+<p>Using generators will save you a large amount of time by writing <strong>boilerplate code</strong>, code that is necessary for the app to work.</p>
+
+<p>Let's make our own controller with the controller generator. But what command should we use? Let's ask the generator:</p>
+
+<div class="info"><p>All Rails console utilities have help text. As with most *nix utilities, you can try adding <code>--help</code> or <code>-h</code> to the end, for example <code>rails server --help</code>.</p></div>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+$ bin/rails generate controller
+Usage: rails generate controller NAME [action action] [options]
+
+...
+...
+
+Description:
+    ...
+
+    To create a controller within a module, specify the controller name as a path like 'parent_module/controller_name'.
+
+    ...
+
+Example:
+    `rails generate controller CreditCards open debit credit close`
+
+    Credit card controller with URLs like /credit_cards/debit.
+        Controller: app/controllers/credit_cards_controller.rb
+        Test:       test/controllers/credit_cards_controller_test.rb
+        Views:      app/views/credit_cards/debit.html.erb [...]
+        Helper:     app/helpers/credit_cards_helper.rb
+
+</pre>
+</div>
+<p>The controller generator is expecting parameters in the form of <code>generate controller ControllerName action1 action2</code>. Let's make a <code>Greetings</code> controller with an action of <strong>hello</strong>, which will say something nice to us.</p>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+$ bin/rails generate controller Greetings hello
+     create  app/controllers/greetings_controller.rb
+      route  get "greetings/hello"
+     invoke  erb
+     create    app/views/greetings
+     create    app/views/greetings/hello.html.erb
+     invoke  test_unit
+     create    test/controllers/greetings_controller_test.rb
+     invoke  helper
+     create    app/helpers/greetings_helper.rb
+     invoke  assets
+     invoke    coffee
+     create      app/assets/javascripts/greetings.coffee
+     invoke    scss
+     create      app/assets/stylesheets/greetings.scss
+
+</pre>
+</div>
+<p>What all did this generate? It made sure a bunch of directories were in our application, and created a controller file, a view file, a functional test file, a helper for the view, a JavaScript file and a stylesheet file.</p>
+
+<p>Check out the controller and modify it a little (in <code>app/controllers/greetings_controller.rb</code>):</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class GreetingsController &lt; ApplicationController
+  def hello
+    @message = "Hello, how are you today?"
+  end
+end
+
+</pre>
+</div>
+<p>Then the view, to display our message (in <code>app/views/greetings/hello.html.erb</code>):</p>
+
+<div class="code_container">
+<pre class="brush: ruby; html-script: true; gutter: false; toolbar: false">
+&lt;h1&gt;A Greeting for You!&lt;/h1&gt;
+&lt;p&gt;&lt;%= @message %&gt;&lt;/p&gt;
+
+</pre>
+</div>
+<p>Fire up your server using <code>rails server</code>.</p>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+$ bin/rails server
+=&gt; Booting Puma...
+
+</pre>
+</div>
+<p>The URL will be <a href="http://localhost:3000/greetings/hello">http://localhost:3000/greetings/hello</a>.</p>
+
+<div class="info"><p>With a normal, plain-old Rails application, your URLs will generally follow the pattern of http://(host)/(controller)/(action), and a URL like http://(host)/(controller) will hit the <strong>index</strong> action of that controller.</p></div>
+
+<p>Rails comes with a generator for data models too.</p>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+$ bin/rails generate model
+Usage:
+  rails generate model NAME [field[:type][:index] field[:type][:index]] [options]
+
+...
+
+Active Record options:
+      [--migration]            # Indicates when to generate migration
+                               # Default: true
+
+...
+
+Description:
+    Create rails files for model generator.
+
+</pre>
+</div>
+<div class="note"><p>For a list of available field types for the <code>type</code> parameter, refer to the <a href="http://api.rubyonrails.org/v5.2.8.1/classes/ActiveRecord/ConnectionAdapters/SchemaStatements.html#method-i-add_column">API documentation</a> for the add_column method for the <code>SchemaStatements</code> module. The <code>index</code> parameter generates a corresponding index for the column.</p></div>
+
+<p>But instead of generating a model directly (which we'll be doing later), let's set up a scaffold. A <strong>scaffold</strong> in Rails is a full set of model, database migration for that model, controller to manipulate it, views to view and manipulate the data, and a test suite for each of the above.</p>
+
+<p>We will set up a simple resource called "HighScore" that will keep track of our highest score on video games we play.</p>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+$ bin/rails generate scaffold HighScore game:string score:integer
+    invoke  active_record
+    create    db/migrate/20130717151933_create_high_scores.rb
+    create    app/models/high_score.rb
+    invoke    test_unit
+    create      test/models/high_score_test.rb
+    create      test/fixtures/high_scores.yml
+    invoke  resource_route
+     route    resources :high_scores
+    invoke  scaffold_controller
+    create    app/controllers/high_scores_controller.rb
+    invoke    erb
+    create      app/views/high_scores
+    create      app/views/high_scores/index.html.erb
+    create      app/views/high_scores/edit.html.erb
+    create      app/views/high_scores/show.html.erb
+    create      app/views/high_scores/new.html.erb
+    create      app/views/high_scores/_form.html.erb
+    invoke    test_unit
+    create      test/controllers/high_scores_controller_test.rb
+    invoke    helper
+    create      app/helpers/high_scores_helper.rb
+    invoke    jbuilder
+    create      app/views/high_scores/index.json.jbuilder
+    create      app/views/high_scores/show.json.jbuilder
+    invoke  test_unit
+    create    test/system/high_scores_test.rb
+    invoke  assets
+    invoke    coffee
+    create      app/assets/javascripts/high_scores.coffee
+    invoke    scss
+    create      app/assets/stylesheets/high_scores.scss
+    invoke  scss
+   identical    app/assets/stylesheets/scaffolds.scss
+
+</pre>
+</div>
+<p>The generator checks that there exist the directories for models, controllers, helpers, layouts, functional and unit tests, stylesheets, creates the views, controller, model and database migration for HighScore (creating the <code>high_scores</code> table and fields), takes care of the route for the <strong>resource</strong>, and new tests for everything.</p>
+
+<p>The migration requires that we <strong>migrate</strong>, that is, run some Ruby code (living in that <code>20130717151933_create_high_scores.rb</code>) to modify the schema of our database. Which database? The SQLite3 database that Rails will create for you when we run the <code>bin/rails db:migrate</code> command. We'll talk more about bin/rails in-depth in a little while.</p>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+$ bin/rails db:migrate
+==  CreateHighScores: migrating ===============================================
+-- create_table(:high_scores)
+   -&gt; 0.0017s
+==  CreateHighScores: migrated (0.0019s) ======================================
+
+</pre>
+</div>
+<div class="info"><p>Let's talk about unit tests. Unit tests are code that tests and makes assertions
+about code. In unit testing, we take a little part of code, say a method of a model,
+and test its inputs and outputs. Unit tests are your friend. The sooner you make
+peace with the fact that your quality of life will drastically increase when you unit
+test your code, the better. Seriously. Please visit
+<a href="http://guides.rubyonrails.org/testing.html">the testing guide</a> for an in-depth
+look at unit testing.</p></div>
+
+<p>Let's see the interface Rails created for us.</p>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+$ bin/rails server
+
+</pre>
+</div>
+<p>Go to your browser and open <a href="http://localhost:3000/high_scores">http://localhost:3000/high_scores</a>, now we can create new high scores (55,160 on Space Invaders!)</p>
+
+<h4 id="rails-console"><a class="anchorlink" href="#rails-console">1.4 <code>rails console</code></a></h4>
+
+<p>The <code>console</code> command lets you interact with your Rails application from the command line. On the underside, <code>rails console</code> uses IRB, so if you've ever used it, you'll be right at home. This is useful for testing out quick ideas with code and changing data server-side without touching the website.</p>
+
+<div class="info"><p>You can also use the alias "c" to invoke the console: <code>rails c</code>.</p></div>
+
+<p>You can specify the environment in which the <code>console</code> command should operate.</p>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+$ bin/rails console -e staging
+
+</pre>
+</div>
+<p>If you wish to test out some code without changing any data, you can do that by invoking <code>rails console --sandbox</code>.</p>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+$ bin/rails console --sandbox
+Loading development environment in sandbox (Rails 5.1.0)
+Any modifications you make will be rolled back on exit
+irb(main):001:0&gt;
+
+</pre>
+</div>
+<h5 id="the-app-and-helper-objects"><a class="anchorlink" href="#the-app-and-helper-objects">1.4.1 The app and helper objects</a></h5>
+
+<p>Inside the <code>rails console</code> you have access to the <code>app</code> and <code>helper</code> instances.</p>
+
+<p>With the <code>app</code> method you can access url and path helpers, as well as do requests.</p>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+&gt;&gt; app.root_path
+=&gt; "/"
+
+&gt;&gt; app.get _
+Started GET "/" for 127.0.0.1 at 2014-06-19 10:41:57 -0300
+...
+
+</pre>
+</div>
+<p>With the <code>helper</code> method it is possible to access Rails and your application's helpers.</p>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+&gt;&gt; helper.time_ago_in_words 30.days.ago
+=&gt; "about 1 month"
+
+&gt;&gt; helper.my_custom_helper
+=&gt; "my custom helper"
+
+</pre>
+</div>
+<h4 id="rails-dbconsole"><a class="anchorlink" href="#rails-dbconsole">1.5 <code>rails dbconsole</code></a></h4>
+
+<p><code>rails dbconsole</code> figures out which database you're using and drops you into whichever command line interface you would use with it (and figures out the command line parameters to give to it, too!). It supports MySQL (including MariaDB), PostgreSQL and SQLite3.</p>
+
+<div class="info"><p>You can also use the alias "db" to invoke the dbconsole: <code>rails db</code>.</p></div>
+
+<h4 id="rails-runner"><a class="anchorlink" href="#rails-runner">1.6 <code>rails runner</code></a></h4>
+
+<p><code>runner</code> runs Ruby code in the context of Rails non-interactively. For instance:</p>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+$ bin/rails runner "Model.long_running_method"
+
+</pre>
+</div>
+<div class="info"><p>You can also use the alias "r" to invoke the runner: <code>rails r</code>.</p></div>
+
+<p>You can specify the environment in which the <code>runner</code> command should operate using the <code>-e</code> switch.</p>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+$ bin/rails runner -e staging "Model.long_running_method"
+
+</pre>
+</div>
+<p>You can even execute ruby code written in a file with runner.</p>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+$ bin/rails runner lib/code_to_be_run.rb
+
+</pre>
+</div>
+<h4 id="rails-destroy"><a class="anchorlink" href="#rails-destroy">1.7 <code>rails destroy</code></a></h4>
+
+<p>Think of <code>destroy</code> as the opposite of <code>generate</code>. It'll figure out what generate did, and undo it.</p>
+
+<div class="info"><p>You can also use the alias "d" to invoke the destroy command: <code>rails d</code>.</p></div>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+$ bin/rails generate model Oops
+      invoke  active_record
+      create    db/migrate/20120528062523_create_oops.rb
+      create    app/models/oops.rb
+      invoke    test_unit
+      create      test/models/oops_test.rb
+      create      test/fixtures/oops.yml
+
+</pre>
+</div>
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+$ bin/rails destroy model Oops
+      invoke  active_record
+      remove    db/migrate/20120528062523_create_oops.rb
+      remove    app/models/oops.rb
+      invoke    test_unit
+      remove      test/models/oops_test.rb
+      remove      test/fixtures/oops.yml
+
+</pre>
+</div>
+</body>
+</html>

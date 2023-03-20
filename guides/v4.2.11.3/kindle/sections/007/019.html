@@ -1,0 +1,120 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>20 Running EXPLAIN</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v4.2.11.3/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="running-explain">20 Running EXPLAIN</h3>
+<p>You can run EXPLAIN on the queries triggered by relations. For example,</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+User.where(id: 1).joins(:articles).explain
+
+</pre>
+</div>
+<p>may yield</p>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+EXPLAIN for: SELECT `users`.* FROM `users` INNER JOIN `articles` ON `articles`.`user_id` = `users`.`id` WHERE `users`.`id` = 1
++----+-------------+----------+-------+---------------+
+| id | select_type | table    | type  | possible_keys |
++----+-------------+----------+-------+---------------+
+|  1 | SIMPLE      | users    | const | PRIMARY       |
+|  1 | SIMPLE      | articles | ALL   | NULL          |
++----+-------------+----------+-------+---------------+
++---------+---------+-------+------+-------------+
+| key     | key_len | ref   | rows | Extra       |
++---------+---------+-------+------+-------------+
+| PRIMARY | 4       | const |    1 |             |
+| NULL    | NULL    | NULL  |    1 | Using where |
++---------+---------+-------+------+-------------+
+
+2 rows in set (0.00 sec)
+
+</pre>
+</div>
+<p>under MySQL.</p>
+
+<p>Active Record performs a pretty printing that emulates the one of the database
+shells. So, the same query running with the PostgreSQL adapter would yield instead</p>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+EXPLAIN for: SELECT "users".* FROM "users" INNER JOIN "articles" ON "articles"."user_id" = "users"."id" WHERE "users"."id" = 1
+                                  QUERY PLAN
+------------------------------------------------------------------------------
+ Nested Loop Left Join  (cost=0.00..37.24 rows=8 width=0)
+   Join Filter: (articles.user_id = users.id)
+   -&gt;  Index Scan using users_pkey on users  (cost=0.00..8.27 rows=1 width=4)
+         Index Cond: (id = 1)
+   -&gt;  Seq Scan on articles  (cost=0.00..28.88 rows=8 width=4)
+         Filter: (articles.user_id = 1)
+(6 rows)
+
+</pre>
+</div>
+<p>Eager loading may trigger more than one query under the hood, and some queries
+may need the results of previous ones. Because of that, <code>explain</code> actually
+executes the query, and then asks for the query plans. For example,</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+User.where(id: 1).includes(:articles).explain
+
+</pre>
+</div>
+<p>yields</p>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+EXPLAIN for: SELECT `users`.* FROM `users`  WHERE `users`.`id` = 1
++----+-------------+-------+-------+---------------+
+| id | select_type | table | type  | possible_keys |
++----+-------------+-------+-------+---------------+
+|  1 | SIMPLE      | users | const | PRIMARY       |
++----+-------------+-------+-------+---------------+
++---------+---------+-------+------+-------+
+| key     | key_len | ref   | rows | Extra |
++---------+---------+-------+------+-------+
+| PRIMARY | 4       | const |    1 |       |
++---------+---------+-------+------+-------+
+
+1 row in set (0.00 sec)
+
+EXPLAIN for: SELECT `articles`.* FROM `articles`  WHERE `articles`.`user_id` IN (1)
++----+-------------+----------+------+---------------+
+| id | select_type | table    | type | possible_keys |
++----+-------------+----------+------+---------------+
+|  1 | SIMPLE      | articles | ALL  | NULL          |
++----+-------------+----------+------+---------------+
++------+---------+------+------+-------------+
+| key  | key_len | ref  | rows | Extra       |
++------+---------+------+------+-------------+
+| NULL | NULL    | NULL |    1 | Using where |
++------+---------+------+------+-------------+
+
+
+1 row in set (0.00 sec)
+
+</pre>
+</div>
+<p>under MySQL.</p>
+
+<h4 id="interpreting-explain">20.1 Interpreting EXPLAIN</h4>
+
+<p>Interpretation of the output of EXPLAIN is beyond the scope of this guide. The
+following pointers may be helpful:</p>
+<ul>
+<li>SQLite3: <a href="http://www.sqlite.org/eqp.html">EXPLAIN QUERY PLAN</a>
+</li>
+<li>MySQL: <a href="http://dev.mysql.com/doc/refman/5.6/en/explain-output.html">EXPLAIN Output Format</a>
+</li>
+<li>PostgreSQL: <a href="http://www.postgresql.org/docs/current/static/using-explain.html">Using EXPLAIN</a>
+</li>
+</ul>
+</body>
+</html>

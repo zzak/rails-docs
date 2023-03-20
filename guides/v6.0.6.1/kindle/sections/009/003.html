@@ -1,0 +1,60 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>4 Partial Layouts</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v6.0.6.1/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="partial-layouts"><a class="anchorlink" href="#partial-layouts">4 Partial Layouts</a></h3>
+<p>Partials can have their own layouts applied to them. These layouts are different from those applied to a controller action, but they work in a similar fashion.</p>
+
+<p>Let's say we're displaying an article on a page which should be wrapped in a <code>div</code> for display purposes. Firstly, we'll create a new <code>Article</code>:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+Article.create(body: 'Partial Layouts are cool!')
+
+</pre>
+</div>
+<p>In the <code>show</code> template, we'll render the <code>_article</code> partial wrapped in the <code>box</code> layout:</p>
+
+<p><strong>articles/show.html.erb</strong></p>
+
+<div class="code_container">
+<pre class="brush: ruby; html-script: true; gutter: false; toolbar: false">
+&lt;%= render partial: 'article', layout: 'box', locals: { article: @article } %&gt;
+
+</pre>
+</div>
+<p>The <code>box</code> layout simply wraps the <code>_article</code> partial in a <code>div</code>:</p>
+
+<p><strong>articles/_box.html.erb</strong></p>
+
+<div class="code_container">
+<pre class="brush: ruby; html-script: true; gutter: false; toolbar: false">
+&lt;div class='box'&gt;
+  &lt;%= yield %&gt;
+&lt;/div&gt;
+
+</pre>
+</div>
+<p>Note that the partial layout has access to the local <code>article</code> variable that was passed into the <code>render</code> call. However, unlike application-wide layouts, partial layouts still have the underscore prefix.</p>
+
+<p>You can also render a block of code within a partial layout instead of calling <code>yield</code>. For example, if we didn't have the <code>_article</code> partial, we could do this instead:</p>
+
+<p><strong>articles/show.html.erb</strong></p>
+
+<div class="code_container">
+<pre class="brush: ruby; html-script: true; gutter: false; toolbar: false">
+&lt;% render(layout: 'box', locals: { article: @article }) do %&gt;
+  &lt;div&gt;
+    &lt;p&gt;&lt;%= article.body %&gt;&lt;/p&gt;
+  &lt;/div&gt;
+&lt;% end %&gt;
+
+</pre>
+</div>
+<p>Supposing we use the same <code>_box</code> partial from above, this would produce the same output as the previous example.</p>
+</body>
+</html>

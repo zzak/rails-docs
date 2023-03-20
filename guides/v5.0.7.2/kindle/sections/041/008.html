@@ -1,0 +1,37 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>9 Active Job</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v5.0.7.2/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="active-job">9 Active Job</h3>
+<p>Please refer to the <a href="https://github.com/rails/rails/blob/5-0-stable/activejob/CHANGELOG.md">Changelog</a> for detailed changes.</p>
+
+<h4 id="active-job-notable-changes">9.1 Notable changes</h4>
+<ul>
+<li>  <code>ActiveJob::Base.deserialize</code> delegates to the job class. This allows jobs
+to attach arbitrary metadata when they get serialized and read it back when
+they get performed.
+(<a href="https://github.com/rails/rails/pull/18260">Pull Request</a>)</li>
+<li>  Add ability to configure the queue adapter on a per job basis without
+affecting each other.
+(<a href="https://github.com/rails/rails/pull/16992">Pull Request</a>)</li>
+<li>  A generated job now inherits from <code>app/jobs/application_job.rb</code> by default.
+(<a href="https://github.com/rails/rails/pull/19034">Pull Request</a>)</li>
+<li>  Allow <code>DelayedJob</code>, <code>Sidekiq</code>, <code>qu</code>, <code>que</code>, and <code>queue_classic</code> to report
+the job id back to <code>ActiveJob::Base</code> as <code>provider_job_id</code>.
+(<a href="https://github.com/rails/rails/pull/20064">Pull Request</a>,
+ <a href="https://github.com/rails/rails/pull/20056">Pull Request</a>,
+ <a href="https://github.com/rails/rails/commit/68e3279163d06e6b04e043f91c9470e9259bbbe0">commit</a>)</li>
+<li>  Implement a simple <code>AsyncJob</code> processor and associated <code>AsyncAdapter</code> that
+queue jobs to a <code>concurrent-ruby</code> thread pool.
+(<a href="https://github.com/rails/rails/pull/21257">Pull Request</a>)</li>
+<li>  Change the default adapter from inline to async. It's a better default as
+tests will then not mistakenly come to rely on behavior happening
+synchronously.
+(<a href="https://github.com/rails/rails/commit/625baa69d14881ac49ba2e5c7d9cac4b222d7022">commit</a>)</li>
+</ul>
+</body>
+</html>

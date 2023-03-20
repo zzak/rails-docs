@@ -1,0 +1,39 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>4 Autoloading Availability</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v5.1.7/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="autoloading-availability">4 Autoloading Availability</h3>
+<p>Rails is always able to autoload provided its environment is in place. For
+example the <code>runner</code> command autoloads:</p>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+$ bin/rails runner 'p User.column_names'
+["id", "email", "created_at", "updated_at"]
+
+</pre>
+</div>
+<p>The console autoloads, the test suite autoloads, and of course the application
+autoloads.</p>
+
+<p>By default, Rails eager loads the application files when it boots in production
+mode, so most of the autoloading going on in development does not happen. But
+autoloading may still be triggered during eager loading.</p>
+
+<p>For example, given</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class BeachHouse &lt; House
+end
+
+</pre>
+</div>
+<p>if <code>House</code> is still unknown when <code>app/models/beach_house.rb</code> is being eager
+loaded, Rails autoloads it.</p>
+</body>
+</html>

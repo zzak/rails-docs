@@ -1,0 +1,76 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>11 Active Record</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v6.1.7.3/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="active-record"><a class="anchorlink" href="#active-record">11 Active Record</a></h3>
+<p>Please refer to the <a href="https://github.com/rails/rails/blob/4-0-stable/activerecord/CHANGELOG.md">Changelog</a> for detailed changes.</p>
+
+<h4 id="active-record-notable-changes"><a class="anchorlink" href="#active-record-notable-changes">11.1 Notable changes</a></h4>
+<ul>
+<li>
+Improve ways to write <code>change</code> migrations, making the old <code>up</code> &amp; <code>down</code> methods no longer necessary.
+<ul>
+<li>The methods <code>drop_table</code> and <code>remove_column</code> are now reversible, as long as the necessary information is given.
+The method <code>remove_column</code> used to accept multiple column names; instead use <code>remove_columns</code> (which is not revertible).
+The method <code>change_table</code> is also reversible, as long as its block doesn't call <code>remove</code>, <code>change</code> or <code>change_default</code>
+</li>
+<li>New method <code>reversible</code> makes it possible to specify code to be run when migrating up or down.
+See the <a href="https://github.com/rails/rails/blob/main/guides/source/active_record_migrations.md#using-reversible">Guide on Migration</a>
+</li>
+<li>New method <code>revert</code> will revert a whole migration or the given block.
+If migrating down, the given migration / block is run normally.
+See the <a href="https://github.com/rails/rails/blob/main/guides/source/active_record_migrations.md#reverting-previous-migrations">Guide on Migration</a>
+</li>
+</ul>
+</li>
+<li>Adds PostgreSQL array type support. Any datatype can be used to create an array column, with full migration and schema dumper support.</li>
+<li>Add <code>Relation#load</code> to explicitly load the record and return <code>self</code>.</li>
+<li>
+<code>Model.all</code> now returns an <code>ActiveRecord::Relation</code>, rather than an array of records. Use <code>Relation#to_a</code> if you really want an array. In some specific cases, this may cause breakage when upgrading.</li>
+<li>Added <code>ActiveRecord::Migration.check_pending!</code> that raises an error if migrations are pending.</li>
+<li>
+Added custom coders support for <code>ActiveRecord::Store</code>. Now you can set your custom coder like this:
+<div class="code_container">
+<pre><code class="highlight plaintext">store :settings, accessors: [ :color, :homepage ], coder: JSON
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-52fa36e2aa8fd8dfe06035a89bbb6441">store :settings, accessors: [ :color, :homepage ], coder: JSON
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-52fa36e2aa8fd8dfe06035a89bbb6441">Copy</button>
+</div>
+</li>
+<li>
+<code>mysql</code> and <code>mysql2</code> connections will set <code>SQL_MODE=STRICT_ALL_TABLES</code> by default to avoid silent data loss. This can be disabled by specifying <code>strict: false</code> in your <code>database.yml</code>.</li>
+<li>Remove IdentityMap.</li>
+<li>Remove automatic execution of EXPLAIN queries. The option <code>active_record.auto_explain_threshold_in_seconds</code> is no longer used and should be removed.</li>
+<li>Adds <code>ActiveRecord::NullRelation</code> and <code>ActiveRecord::Relation#none</code> implementing the null object pattern for the Relation class.</li>
+<li>Added <code>create_join_table</code> migration helper to create HABTM join tables.</li>
+<li>Allows PostgreSQL hstore records to be created.</li>
+</ul>
+<h4 id="active-record-deprecations"><a class="anchorlink" href="#active-record-deprecations">11.2 Deprecations</a></h4>
+<ul>
+<li>Deprecated the old-style hash based finder API. This means that methods which previously accepted "finder options" no longer do.</li>
+<li>
+All dynamic methods except for <code>find_by_...</code> and <code>find_by_...!</code> are deprecated. Here's
+how you can rewrite the code:
+<ul>
+<li>
+<code>find_all_by_...</code> can be rewritten using <code>where(...)</code>.</li>
+<li>
+<code>find_last_by_...</code> can be rewritten using <code>where(...).last</code>.</li>
+<li>
+<code>scoped_by_...</code> can be rewritten using <code>where(...)</code>.</li>
+<li>
+<code>find_or_initialize_by_...</code> can be rewritten using <code>find_or_initialize_by(...)</code>.</li>
+<li>
+<code>find_or_create_by_...</code> can be rewritten using <code>find_or_create_by(...)</code>.</li>
+<li>
+<code>find_or_create_by_...!</code> can be rewritten using <code>find_or_create_by!(...)</code>.</li>
+</ul>
+</li>
+</ul>
+</body>
+</html>

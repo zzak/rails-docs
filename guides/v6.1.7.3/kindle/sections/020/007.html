@@ -1,0 +1,45 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>8 Transforming Images</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v6.1.7.3/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="transforming-images"><a class="anchorlink" href="#transforming-images">8 Transforming Images</a></h3>
+<p>To enable variants, add the <code>image_processing</code> gem to your <code>Gemfile</code>:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">gem</span> <span class="s1">'image_processing'</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-e7d018a1bbb235b8040ebeb7a009ee3c">gem 'image_processing'
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-e7d018a1bbb235b8040ebeb7a009ee3c">Copy</button>
+</div>
+<p>To create a variation of an image, call <a href="https://api.rubyonrails.org/v6.1.7.3/classes/ActiveStorage/Blob/Representable.html#method-i-variant"><code>variant</code></a> on the attachment. You can pass any transformation to the method supported by the processor. The default processor for Active Storage is MiniMagick, but you can also use <a href="https://www.rubydoc.info/gems/ruby-vips/Vips/Image">Vips</a>.</p>
+
+<p>When the browser hits the variant URL, Active Storage will lazily transform the
+original blob into the specified format and redirect to its new service
+location.</p>
+
+<div class="code_container">
+<pre><code class="highlight erb"><span class="cp">&lt;%=</span> <span class="n">image_tag</span> <span class="n">user</span><span class="p">.</span><span class="nf">avatar</span><span class="p">.</span><span class="nf">variant</span><span class="p">(</span><span class="ss">resize_to_limit: </span><span class="p">[</span><span class="mi">100</span><span class="p">,</span> <span class="mi">100</span><span class="p">])</span> <span class="cp">%&gt;</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-82f0bcdfc0360362f65ddaad3df30f87">&lt;%= image_tag user.avatar.variant(resize_to_limit: [100, 100]) %&gt;
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-82f0bcdfc0360362f65ddaad3df30f87">Copy</button>
+</div>
+<p>To switch to the Vips processor, you would add the following to
+<code>config/application.rb</code>:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="c1"># Use Vips for processing variants.</span>
+<span class="n">config</span><span class="p">.</span><span class="nf">active_storage</span><span class="p">.</span><span class="nf">variant_processor</span> <span class="o">=</span> <span class="ss">:vips</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-fbe326d6a3c7ff09ebba6ce62be658e4"># Use Vips for processing variants.
+config.active_storage.variant_processor = :vips
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-fbe326d6a3c7ff09ebba6ce62be658e4">Copy</button>
+</div>
+</body>
+</html>

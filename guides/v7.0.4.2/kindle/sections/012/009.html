@@ -1,0 +1,247 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>10 Building Complex Forms</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v7.0.4.2/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="building-complex-forms"><a class="anchorlink" href="#building-complex-forms">10 Building Complex Forms</a></h3>
+<p>Many apps grow beyond simple forms editing a single object. For example, when creating a <code>Person</code> you might want to allow the user to (on the same form) create multiple address records (home, work, etc.). When later editing that person the user should be able to add, remove, or amend addresses as necessary.</p>
+
+<h4 id="configuring-the-model"><a class="anchorlink" href="#configuring-the-model">10.1 Configuring the Model</a></h4>
+
+<p>Active Record provides model level support via the <a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveRecord/NestedAttributes/ClassMethods.html#method-i-accepts_nested_attributes_for"><code>accepts_nested_attributes_for</code></a> method:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">Person</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="n">has_many</span> <span class="ss">:addresses</span><span class="p">,</span> <span class="ss">inverse_of: :person</span>
+  <span class="n">accepts_nested_attributes_for</span> <span class="ss">:addresses</span>
+<span class="k">end</span>
+
+<span class="k">class</span> <span class="nc">Address</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="n">belongs_to</span> <span class="ss">:person</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="class Person &lt; ApplicationRecord
+  has_many :addresses, inverse_of: :person
+  accepts_nested_attributes_for :addresses
+end
+
+class Address &lt; ApplicationRecord
+  belongs_to :person
+end
+">Copy</button>
+</div>
+<p>This creates an <code>addresses_attributes=</code> method on <code>Person</code> that allows you to create, update, and (optionally) destroy addresses.</p>
+
+<h4 id="nested-forms"><a class="anchorlink" href="#nested-forms">10.2 Nested Forms</a></h4>
+
+<p>The following form allows a user to create a <code>Person</code> and its associated addresses.</p>
+
+<div class="code_container">
+<pre><code class="highlight erb"><span class="cp">&lt;%=</span> <span class="n">form_with</span> <span class="ss">model: </span><span class="vi">@person</span> <span class="k">do</span> <span class="o">|</span><span class="n">form</span><span class="o">|</span> <span class="cp">%&gt;</span>
+  Addresses:
+  <span class="nt">&lt;ul&gt;</span>
+    <span class="cp">&lt;%=</span> <span class="n">form</span><span class="p">.</span><span class="nf">fields_for</span> <span class="ss">:addresses</span> <span class="k">do</span> <span class="o">|</span><span class="n">addresses_form</span><span class="o">|</span> <span class="cp">%&gt;</span>
+      <span class="nt">&lt;li&gt;</span>
+        <span class="cp">&lt;%=</span> <span class="n">addresses_form</span><span class="p">.</span><span class="nf">label</span> <span class="ss">:kind</span> <span class="cp">%&gt;</span>
+        <span class="cp">&lt;%=</span> <span class="n">addresses_form</span><span class="p">.</span><span class="nf">text_field</span> <span class="ss">:kind</span> <span class="cp">%&gt;</span>
+
+        <span class="cp">&lt;%=</span> <span class="n">addresses_form</span><span class="p">.</span><span class="nf">label</span> <span class="ss">:street</span> <span class="cp">%&gt;</span>
+        <span class="cp">&lt;%=</span> <span class="n">addresses_form</span><span class="p">.</span><span class="nf">text_field</span> <span class="ss">:street</span> <span class="cp">%&gt;</span>
+        ...
+      <span class="nt">&lt;/li&gt;</span>
+    <span class="cp">&lt;%</span> <span class="k">end</span> <span class="cp">%&gt;</span>
+  <span class="nt">&lt;/ul&gt;</span>
+<span class="cp">&lt;%</span> <span class="k">end</span> <span class="cp">%&gt;</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="&lt;%= form_with model: @person do |form| %&gt;
+  Addresses:
+  &lt;ul&gt;
+    &lt;%= form.fields_for :addresses do |addresses_form| %&gt;
+      &lt;li&gt;
+        &lt;%= addresses_form.label :kind %&gt;
+        &lt;%= addresses_form.text_field :kind %&gt;
+
+        &lt;%= addresses_form.label :street %&gt;
+        &lt;%= addresses_form.text_field :street %&gt;
+        ...
+      &lt;/li&gt;
+    &lt;% end %&gt;
+  &lt;/ul&gt;
+&lt;% end %&gt;
+">Copy</button>
+</div>
+<p>When an association accepts nested attributes <code>fields_for</code> renders its block once for every element of the association. In particular, if a person has no addresses it renders nothing. A common pattern is for the controller to build one or more empty children so that at least one set of fields is shown to the user. The example below would result in 2 sets of address fields being rendered on the new person form.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">def</span> <span class="nf">new</span>
+  <span class="vi">@person</span> <span class="o">=</span> <span class="no">Person</span><span class="p">.</span><span class="nf">new</span>
+  <span class="mi">2</span><span class="p">.</span><span class="nf">times</span> <span class="p">{</span> <span class="vi">@person</span><span class="p">.</span><span class="nf">addresses</span><span class="p">.</span><span class="nf">build</span> <span class="p">}</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="def new
+  @person = Person.new
+  2.times { @person.addresses.build }
+end
+">Copy</button>
+</div>
+<p>The <code>fields_for</code> yields a form builder. The parameters' name will be what
+<code>accepts_nested_attributes_for</code> expects. For example, when creating a user with
+2 addresses, the submitted parameters would look like:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="p">{</span>
+  <span class="s1">'person'</span> <span class="o">=&gt;</span> <span class="p">{</span>
+    <span class="s1">'name'</span> <span class="o">=&gt;</span> <span class="s1">'John Doe'</span><span class="p">,</span>
+    <span class="s1">'addresses_attributes'</span> <span class="o">=&gt;</span> <span class="p">{</span>
+      <span class="s1">'0'</span> <span class="o">=&gt;</span> <span class="p">{</span>
+        <span class="s1">'kind'</span> <span class="o">=&gt;</span> <span class="s1">'Home'</span><span class="p">,</span>
+        <span class="s1">'street'</span> <span class="o">=&gt;</span> <span class="s1">'221b Baker Street'</span>
+      <span class="p">},</span>
+      <span class="s1">'1'</span> <span class="o">=&gt;</span> <span class="p">{</span>
+        <span class="s1">'kind'</span> <span class="o">=&gt;</span> <span class="s1">'Office'</span><span class="p">,</span>
+        <span class="s1">'street'</span> <span class="o">=&gt;</span> <span class="s1">'31 Spooner Street'</span>
+      <span class="p">}</span>
+    <span class="p">}</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="{
+  'person' =&gt; {
+    'name' =&gt; 'John Doe',
+    'addresses_attributes' =&gt; {
+      '0' =&gt; {
+        'kind' =&gt; 'Home',
+        'street' =&gt; '221b Baker Street'
+      },
+      '1' =&gt; {
+        'kind' =&gt; 'Office',
+        'street' =&gt; '31 Spooner Street'
+      }
+    }
+  }
+}
+">Copy</button>
+</div>
+<p>The keys of the <code>:addresses_attributes</code> hash are unimportant, they need merely be different for each address.</p>
+
+<p>If the associated object is already saved, <code>fields_for</code> autogenerates a hidden input with the <code>id</code> of the saved record. You can disable this by passing <code>include_id: false</code> to <code>fields_for</code>.</p>
+
+<h4 id="the-controller"><a class="anchorlink" href="#the-controller">10.3 The Controller</a></h4>
+
+<p>As usual you need to
+<a href="action_controller_overview.html#strong-parameters">declare the permitted parameters</a> in
+the controller before you pass them to the model:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">def</span> <span class="nf">create</span>
+  <span class="vi">@person</span> <span class="o">=</span> <span class="no">Person</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="n">person_params</span><span class="p">)</span>
+  <span class="c1"># ...</span>
+<span class="k">end</span>
+
+<span class="kp">private</span>
+  <span class="k">def</span> <span class="nf">person_params</span>
+    <span class="n">params</span><span class="p">.</span><span class="nf">require</span><span class="p">(</span><span class="ss">:person</span><span class="p">).</span><span class="nf">permit</span><span class="p">(</span><span class="ss">:name</span><span class="p">,</span> <span class="ss">addresses_attributes: </span><span class="p">[</span><span class="ss">:id</span><span class="p">,</span> <span class="ss">:kind</span><span class="p">,</span> <span class="ss">:street</span><span class="p">])</span>
+  <span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="def create
+  @person = Person.new(person_params)
+  # ...
+end
+
+private
+  def person_params
+    params.require(:person).permit(:name, addresses_attributes: [:id, :kind, :street])
+  end
+">Copy</button>
+</div>
+<h4 id="removing-objects"><a class="anchorlink" href="#removing-objects">10.4 Removing Objects</a></h4>
+
+<p>You can allow users to delete associated objects by passing <code>allow_destroy: true</code> to <code>accepts_nested_attributes_for</code></p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">Person</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="n">has_many</span> <span class="ss">:addresses</span>
+  <span class="n">accepts_nested_attributes_for</span> <span class="ss">:addresses</span><span class="p">,</span> <span class="ss">allow_destroy: </span><span class="kp">true</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="class Person &lt; ApplicationRecord
+  has_many :addresses
+  accepts_nested_attributes_for :addresses, allow_destroy: true
+end
+">Copy</button>
+</div>
+<p>If the hash of attributes for an object contains the key <code>_destroy</code> with a value that
+evaluates to <code>true</code> (e.g. 1, '1', true, or 'true') then the object will be destroyed.
+This form allows users to remove addresses:</p>
+
+<div class="code_container">
+<pre><code class="highlight erb"><span class="cp">&lt;%=</span> <span class="n">form_with</span> <span class="ss">model: </span><span class="vi">@person</span> <span class="k">do</span> <span class="o">|</span><span class="n">form</span><span class="o">|</span> <span class="cp">%&gt;</span>
+  Addresses:
+  <span class="nt">&lt;ul&gt;</span>
+    <span class="cp">&lt;%=</span> <span class="n">form</span><span class="p">.</span><span class="nf">fields_for</span> <span class="ss">:addresses</span> <span class="k">do</span> <span class="o">|</span><span class="n">addresses_form</span><span class="o">|</span> <span class="cp">%&gt;</span>
+      <span class="nt">&lt;li&gt;</span>
+        <span class="cp">&lt;%=</span> <span class="n">addresses_form</span><span class="p">.</span><span class="nf">check_box</span> <span class="ss">:_destroy</span> <span class="cp">%&gt;</span>
+        <span class="cp">&lt;%=</span> <span class="n">addresses_form</span><span class="p">.</span><span class="nf">label</span> <span class="ss">:kind</span> <span class="cp">%&gt;</span>
+        <span class="cp">&lt;%=</span> <span class="n">addresses_form</span><span class="p">.</span><span class="nf">text_field</span> <span class="ss">:kind</span> <span class="cp">%&gt;</span>
+        ...
+      <span class="nt">&lt;/li&gt;</span>
+    <span class="cp">&lt;%</span> <span class="k">end</span> <span class="cp">%&gt;</span>
+  <span class="nt">&lt;/ul&gt;</span>
+<span class="cp">&lt;%</span> <span class="k">end</span> <span class="cp">%&gt;</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="&lt;%= form_with model: @person do |form| %&gt;
+  Addresses:
+  &lt;ul&gt;
+    &lt;%= form.fields_for :addresses do |addresses_form| %&gt;
+      &lt;li&gt;
+        &lt;%= addresses_form.check_box :_destroy %&gt;
+        &lt;%= addresses_form.label :kind %&gt;
+        &lt;%= addresses_form.text_field :kind %&gt;
+        ...
+      &lt;/li&gt;
+    &lt;% end %&gt;
+  &lt;/ul&gt;
+&lt;% end %&gt;
+">Copy</button>
+</div>
+<p>Don't forget to update the permitted params in your controller to also include
+the <code>_destroy</code> field:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">def</span> <span class="nf">person_params</span>
+  <span class="n">params</span><span class="p">.</span><span class="nf">require</span><span class="p">(</span><span class="ss">:person</span><span class="p">).</span>
+    <span class="nf">permit</span><span class="p">(</span><span class="ss">:name</span><span class="p">,</span> <span class="ss">addresses_attributes: </span><span class="p">[</span><span class="ss">:id</span><span class="p">,</span> <span class="ss">:kind</span><span class="p">,</span> <span class="ss">:street</span><span class="p">,</span> <span class="ss">:_destroy</span><span class="p">])</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="def person_params
+  params.require(:person).
+    permit(:name, addresses_attributes: [:id, :kind, :street, :_destroy])
+end
+">Copy</button>
+</div>
+<h4 id="preventing-empty-records"><a class="anchorlink" href="#preventing-empty-records">10.5 Preventing Empty Records</a></h4>
+
+<p>It is often useful to ignore sets of fields that the user has not filled in. You can control this by passing a <code>:reject_if</code> proc to <code>accepts_nested_attributes_for</code>. This proc will be called with each hash of attributes submitted by the form. If the proc returns <code>true</code> then Active Record will not build an associated object for that hash. The example below only tries to build an address if the <code>kind</code> attribute is set.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">Person</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="n">has_many</span> <span class="ss">:addresses</span>
+  <span class="n">accepts_nested_attributes_for</span> <span class="ss">:addresses</span><span class="p">,</span> <span class="ss">reject_if: </span><span class="nb">lambda</span> <span class="p">{</span><span class="o">|</span><span class="n">attributes</span><span class="o">|</span> <span class="n">attributes</span><span class="p">[</span><span class="s1">'kind'</span><span class="p">].</span><span class="nf">blank?</span><span class="p">}</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="class Person &lt; ApplicationRecord
+  has_many :addresses
+  accepts_nested_attributes_for :addresses, reject_if: lambda {|attributes| attributes['kind'].blank?}
+end
+">Copy</button>
+</div>
+<p>As a convenience you can instead pass the symbol <code>:all_blank</code> which will create a proc that will reject records where all the attributes are blank excluding any value for <code>_destroy</code>.</p>
+
+<h4 id="adding-fields-on-the-fly"><a class="anchorlink" href="#adding-fields-on-the-fly">10.6 Adding Fields on the Fly</a></h4>
+
+<p>Rather than rendering multiple sets of fields ahead of time you may wish to add them only when a user clicks on an "Add new address" button. Rails does not provide any built-in support for this. When generating new sets of fields you must ensure the key of the associated array is unique - the current JavaScript date (milliseconds since the <a href="https://en.wikipedia.org/wiki/Unix_time">epoch</a>) is a common choice.</p>
+</body>
+</html>

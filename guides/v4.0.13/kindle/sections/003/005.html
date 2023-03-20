@@ -1,0 +1,156 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>6 Using Models in Your Migrations</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v4.0.13/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="using-models-in-your-migrations">6 Using Models in Your Migrations</h3>
+<p>When creating or updating data in a migration it is often tempting to use one
+of your models. After all, they exist to provide easy access to the underlying
+data. This can be done, but some caution should be observed.</p>
+<p>For example, problems occur when the model uses database columns which are (1)
+not currently in the database and (2) will be created by this or a subsequent
+migration.</p>
+<p>Consider this example, where Alice and Bob are working on the same code base
+which contains a <code>Product</code> model:</p>
+<p>Bob goes on vacation.</p>
+<p>Alice creates a migration for the <code>products</code> table which adds a new column and
+initializes it:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+# db/migrate/20100513121110_add_flag_to_product.rb
+
+class AddFlagToProduct &lt; ActiveRecord::Migration
+  def change
+    add_column :products, :flag, :boolean
+    reversible do |dir|
+      dir.up { Product.update_all flag: false }
+    end
+  end
+end
+
+</pre>
+</div>
+<p>She also adds a validation to the <code>Product</code> model for the new column:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+# app/models/product.rb
+
+class Product &lt; ActiveRecord::Base
+  validates :flag, presence: true
+end
+
+</pre>
+</div>
+<p>Alice adds a second migration which adds another column to the <code>products</code>
+table and initializes it:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+# db/migrate/20100515121110_add_fuzz_to_product.rb
+
+class AddFuzzToProduct &lt; ActiveRecord::Migration
+  def change
+    add_column :products, :fuzz, :string
+    reversible do |dir|
+      dir.up { Product.update_all fuzz: 'fuzzy' }
+    end
+  end
+end
+
+</pre>
+</div>
+<p>She also adds a validation to the <code>Product</code> model for the new column:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+# app/models/product.rb
+
+class Product &lt; ActiveRecord::Base
+  validates :flag, :fuzz, presence: true
+end
+
+</pre>
+</div>
+<p>Both migrations work for Alice.</p>
+<p>Bob comes back from vacation and:</p>
+<ul>
+<li>  Updates the source - which contains both migrations and the latest version
+of the Product model.</li>
+<li>  Runs outstanding migrations with <code>rake db:migrate</code>, which
+includes the one that updates the <code>Product</code> model.</li>
+</ul>
+<p>The migration crashes because when the model attempts to save, it tries to
+validate the second added column, which is not in the database when the <em>first</em>
+migration runs:</p>
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+rake aborted!
+An error has occurred, this and all later migrations canceled:
+
+undefined method `fuzz' for #&lt;Product:0x000001049b14a0&gt;
+
+</pre>
+</div>
+<p>A fix for this is to create a local model within the migration. This keeps
+Rails from running the validations, so that the migrations run to completion.</p>
+<p>When using a local model, it's a good idea to call
+<code>Product.reset_column_information</code> to refresh the Active Record cache for the
+<code>Product</code> model prior to updating data in the database.</p>
+<p>If Alice had done this instead, there would have been no problem:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+# db/migrate/20100513121110_add_flag_to_product.rb
+
+class AddFlagToProduct &lt; ActiveRecord::Migration
+  class Product &lt; ActiveRecord::Base
+  end
+
+  def change
+    add_column :products, :flag, :boolean
+    Product.reset_column_information
+    reversible do |dir|
+      dir.up { Product.update_all flag: false }
+    end
+  end
+end
+
+</pre>
+</div>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+# db/migrate/20100515121110_add_fuzz_to_product.rb
+
+class AddFuzzToProduct &lt; ActiveRecord::Migration
+  class Product &lt; ActiveRecord::Base
+  end
+
+  def change
+    add_column :products, :fuzz, :string
+    Product.reset_column_information
+    reversible do |dir|
+      dir.up { Product.update_all fuzz: 'fuzzy' }
+    end
+  end
+end
+
+</pre>
+</div>
+<p>There are other ways in which the above example could have gone badly.</p>
+<p>For example, imagine that Alice creates a migration that selectively
+updates the <code>description</code> field on certain products. She runs the
+migration, commits the code, and then begins working on the next feature,
+which is to add a new column <code>fuzz</code> to the products table.</p>
+<p>She creates two migrations for this new feature, one which adds the new
+column, and a second which selectively updates the <code>fuzz</code> column based on
+other product attributes.</p>
+<p>These migrations run just fine, but when Bob comes back from his vacation
+and calls <code>rake db:migrate</code> to run all the outstanding migrations, he gets a
+subtle bug: The descriptions have defaults, and the <code>fuzz</code> column is present,
+but <code>fuzz</code> is <code>nil</code> on all products.</p>
+<p>The solution is again to use <code>Product.reset_column_information</code> before
+referencing the Product model in a migration, ensuring the Active Record's
+knowledge of the table structure is current before manipulating data in those
+records.</p>
+</body>
+</html>

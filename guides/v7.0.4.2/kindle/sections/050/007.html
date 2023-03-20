@@ -1,0 +1,103 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>8 Active Record</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v7.0.4.2/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="active-record"><a class="anchorlink" href="#active-record">8 Active Record</a></h3>
+<p>Please refer to the <a href="https://github.com/rails/rails/blob/7-0-stable/activerecord/CHANGELOG.md">Changelog</a> for detailed changes.</p>
+
+<h4 id="active-record-removals"><a class="anchorlink" href="#active-record-removals">8.1 Removals</a></h4>
+<ul>
+<li>  Remove deprecated <code>database</code> kwarg from <code>connected_to</code>.</li>
+<li>  Remove deprecated  <code>ActiveRecord::Base.allow_unsafe_raw_sql</code>.</li>
+<li>  Remove deprecated option <code>:spec_name</code> in the <code>configs_for</code> method.</li>
+<li>  Remove deprecated support to YAML load <code>ActiveRecord::Base</code> instance in the Rails 4.2 and 4.1 formats.</li>
+<li>
+  Remove deprecation warning when <code>:interval</code> column is used in PostgreSQL database.
+Now, interval columns will return <code>ActiveSupport::Duration</code> objects instead of strings.
+To keep the old behavior, you can add this line to your model:
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">attribute</span> <span class="ss">:column</span><span class="p">,</span> <span class="ss">:string</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="attribute :column, :string
+">Copy</button>
+</div>
+</li>
+<li>  Remove deprecated support to resolve connection using <code>"primary"</code> as connection specification name.</li>
+<li>  Remove deprecated support to quote <code>ActiveRecord::Base</code> objects.</li>
+<li>  Remove deprecated support to type cast to database values <code>ActiveRecord::Base</code> objects.</li>
+<li>  Remove deprecated support to pass a column to <code>type_cast</code>.</li>
+<li>  Remove deprecated <code>DatabaseConfig#config</code> method.</li>
+<li>
+  Remove deprecated rake tasks:
+<ul>
+<li><code>db:schema:load_if_ruby</code></li>
+<li><code>db:structure:dump</code></li>
+<li><code>db:structure:load</code></li>
+<li><code>db:structure:load_if_sql</code></li>
+<li><code>db:structure:dump:#{name}</code></li>
+<li><code>db:structure:load:#{name}</code></li>
+<li><code>db:test:load_structure</code></li>
+<li><code>db:test:load_structure:#{name}</code></li>
+</ul>
+</li>
+<li>  Remove deprecated support to <code>Model.reorder(nil).first</code> to search using non-deterministic order.</li>
+<li>  Remove deprecated <code>environment</code> and <code>name</code> arguments from <code>Tasks::DatabaseTasks.schema_up_to_date?</code>.</li>
+<li>  Remove deprecated <code>Tasks::DatabaseTasks.dump_filename</code>.</li>
+<li>  Remove deprecated <code>Tasks::DatabaseTasks.schema_file</code>.</li>
+<li>  Remove deprecated <code>Tasks::DatabaseTasks.spec</code>.</li>
+<li>  Remove deprecated <code>Tasks::DatabaseTasks.current_config</code>.</li>
+<li>  Remove deprecated <code>ActiveRecord::Connection#allowed_index_name_length</code>.</li>
+<li>  Remove deprecated <code>ActiveRecord::Connection#in_clause_length</code>.</li>
+<li>  Remove deprecated <code>ActiveRecord::DatabaseConfigurations::DatabaseConfig#spec_name</code>.</li>
+<li>  Remove deprecated <code>ActiveRecord::Base.connection_config</code>.</li>
+<li>  Remove deprecated <code>ActiveRecord::Base.arel_attribute</code>.</li>
+<li>  Remove deprecated <code>ActiveRecord::Base.configurations.default_hash</code>.</li>
+<li>  Remove deprecated <code>ActiveRecord::Base.configurations.to_h</code>.</li>
+<li>  Remove deprecated <code>ActiveRecord::Result#map!</code> and <code>ActiveRecord::Result#collect!</code>.</li>
+<li>  Remove deprecated <code>ActiveRecord::Base#remove_connection</code>.</li>
+</ul>
+<h4 id="active-record-deprecations"><a class="anchorlink" href="#active-record-deprecations">8.2 Deprecations</a></h4>
+<ul>
+<li>  Deprecated <code>Tasks::DatabaseTasks.schema_file_type</code>.</li>
+</ul>
+<h4 id="active-record-notable-changes"><a class="anchorlink" href="#active-record-notable-changes">8.3 Notable changes</a></h4>
+<ul>
+<li>
+  Rollback transactions when the block returns earlier than expected.
+Before this change, when a transaction block returned early, the transaction would be committed.
+The problem is that timeouts triggered inside the transaction block was also making the incomplete transaction
+to be committed, so in order to avoid this mistake, the transaction block is rolled back.
+</li>
+<li>
+  Merging conditions on the same column no longer maintain both conditions,
+and will be consistently replaced by the latter condition.
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="c1"># Rails 6.1 (IN clause is replaced by merger side equality condition)</span>
+<span class="no">Author</span><span class="p">.</span><span class="nf">where</span><span class="p">(</span><span class="ss">id: </span><span class="p">[</span><span class="n">david</span><span class="p">.</span><span class="nf">id</span><span class="p">,</span> <span class="n">mary</span><span class="p">.</span><span class="nf">id</span><span class="p">]).</span><span class="nf">merge</span><span class="p">(</span><span class="no">Author</span><span class="p">.</span><span class="nf">where</span><span class="p">(</span><span class="ss">id: </span><span class="n">bob</span><span class="p">))</span> <span class="c1"># =&gt; [bob]</span>
+<span class="c1"># Rails 6.1 (both conflict conditions exists, deprecated)</span>
+<span class="no">Author</span><span class="p">.</span><span class="nf">where</span><span class="p">(</span><span class="ss">id: </span><span class="n">david</span><span class="p">.</span><span class="nf">id</span><span class="o">..</span><span class="n">mary</span><span class="p">.</span><span class="nf">id</span><span class="p">).</span><span class="nf">merge</span><span class="p">(</span><span class="no">Author</span><span class="p">.</span><span class="nf">where</span><span class="p">(</span><span class="ss">id: </span><span class="n">bob</span><span class="p">))</span> <span class="c1"># =&gt; []</span>
+<span class="c1"># Rails 6.1 with rewhere to migrate to Rails 7.0's behavior</span>
+<span class="no">Author</span><span class="p">.</span><span class="nf">where</span><span class="p">(</span><span class="ss">id: </span><span class="n">david</span><span class="p">.</span><span class="nf">id</span><span class="o">..</span><span class="n">mary</span><span class="p">.</span><span class="nf">id</span><span class="p">).</span><span class="nf">merge</span><span class="p">(</span><span class="no">Author</span><span class="p">.</span><span class="nf">where</span><span class="p">(</span><span class="ss">id: </span><span class="n">bob</span><span class="p">),</span> <span class="ss">rewhere: </span><span class="kp">true</span><span class="p">)</span> <span class="c1"># =&gt; [bob]</span>
+<span class="c1"># Rails 7.0 (same behavior with IN clause, mergee side condition is consistently replaced)</span>
+<span class="no">Author</span><span class="p">.</span><span class="nf">where</span><span class="p">(</span><span class="ss">id: </span><span class="p">[</span><span class="n">david</span><span class="p">.</span><span class="nf">id</span><span class="p">,</span> <span class="n">mary</span><span class="p">.</span><span class="nf">id</span><span class="p">]).</span><span class="nf">merge</span><span class="p">(</span><span class="no">Author</span><span class="p">.</span><span class="nf">where</span><span class="p">(</span><span class="ss">id: </span><span class="n">bob</span><span class="p">))</span> <span class="c1"># =&gt; [bob]</span>
+<span class="no">Author</span><span class="p">.</span><span class="nf">where</span><span class="p">(</span><span class="ss">id: </span><span class="n">david</span><span class="p">.</span><span class="nf">id</span><span class="o">..</span><span class="n">mary</span><span class="p">.</span><span class="nf">id</span><span class="p">).</span><span class="nf">merge</span><span class="p">(</span><span class="no">Author</span><span class="p">.</span><span class="nf">where</span><span class="p">(</span><span class="ss">id: </span><span class="n">bob</span><span class="p">))</span> <span class="c1"># =&gt; [bob]</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="# Rails 6.1 (IN clause is replaced by merger side equality condition)
+Author.where(id: [david.id, mary.id]).merge(Author.where(id: bob)) # =&gt; [bob]
+# Rails 6.1 (both conflict conditions exists, deprecated)
+Author.where(id: david.id..mary.id).merge(Author.where(id: bob)) # =&gt; []
+# Rails 6.1 with rewhere to migrate to Rails 7.0's behavior
+Author.where(id: david.id..mary.id).merge(Author.where(id: bob), rewhere: true) # =&gt; [bob]
+# Rails 7.0 (same behavior with IN clause, mergee side condition is consistently replaced)
+Author.where(id: [david.id, mary.id]).merge(Author.where(id: bob)) # =&gt; [bob]
+Author.where(id: david.id..mary.id).merge(Author.where(id: bob)) # =&gt; [bob]
+">Copy</button>
+</div>
+</li>
+</ul>
+</body>
+</html>

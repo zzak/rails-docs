@@ -1,0 +1,101 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>3 Creating a Job</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v7.0.4.2/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="creating-a-job"><a class="anchorlink" href="#creating-a-job">3 Creating a Job</a></h3>
+<p>This section will provide a step-by-step guide to creating a job and enqueuing it.</p>
+
+<h4 id="create-the-job"><a class="anchorlink" href="#create-the-job">3.1 Create the Job</a></h4>
+
+<p>Active Job provides a Rails generator to create jobs. The following will create a
+job in <code>app/jobs</code> (with an attached test case under <code>test/jobs</code>):</p>
+
+<div class="code_container">
+<pre><code class="highlight console"><span class="gp">$</span><span class="w"> </span><span class="nb">bin/rails </span>generate job guests_cleanup
+<span class="go">invoke  test_unit
+create    test/jobs/guests_cleanup_job_test.rb
+create  app/jobs/guests_cleanup_job.rb
+</span></code></pre>
+<button class="clipboard-button" data-clipboard-text="bin/rails generate job guests_cleanup
+">Copy</button>
+</div>
+<p>You can also create a job that will run on a specific queue:</p>
+
+<div class="code_container">
+<pre><code class="highlight console"><span class="gp">$</span><span class="w"> </span><span class="nb">bin/rails </span>generate job guests_cleanup <span class="nt">--queue</span> urgent
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="bin/rails generate job guests_cleanup --queue urgent
+">Copy</button>
+</div>
+<p>If you don't want to use a generator, you could create your own file inside of
+<code>app/jobs</code>, just make sure that it inherits from <code>ApplicationJob</code>.</p>
+
+<p>Here's what a job looks like:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">GuestsCleanupJob</span> <span class="o">&lt;</span> <span class="no">ApplicationJob</span>
+  <span class="n">queue_as</span> <span class="ss">:default</span>
+
+  <span class="k">def</span> <span class="nf">perform</span><span class="p">(</span><span class="o">*</span><span class="n">guests</span><span class="p">)</span>
+    <span class="c1"># Do something later</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="class GuestsCleanupJob &lt; ApplicationJob
+  queue_as :default
+
+  def perform(*guests)
+    # Do something later
+  end
+end
+">Copy</button>
+</div>
+<p>Note that you can define <code>perform</code> with as many arguments as you want.</p>
+
+<h4 id="enqueue-the-job"><a class="anchorlink" href="#enqueue-the-job">3.2 Enqueue the Job</a></h4>
+
+<p>Enqueue a job using <a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveJob/Enqueuing/ClassMethods.html#method-i-perform_later"><code>perform_later</code></a> and, optionally, <a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveJob/Core/ClassMethods.html#method-i-set"><code>set</code></a>. Like so:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="c1"># Enqueue a job to be performed as soon as the queuing system is</span>
+<span class="c1"># free.</span>
+<span class="no">GuestsCleanupJob</span><span class="p">.</span><span class="nf">perform_later</span> <span class="n">guest</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="# Enqueue a job to be performed as soon as the queuing system is
+# free.
+GuestsCleanupJob.perform_later guest
+">Copy</button>
+</div>
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="c1"># Enqueue a job to be performed tomorrow at noon.</span>
+<span class="no">GuestsCleanupJob</span><span class="p">.</span><span class="nf">set</span><span class="p">(</span><span class="ss">wait_until: </span><span class="no">Date</span><span class="p">.</span><span class="nf">tomorrow</span><span class="p">.</span><span class="nf">noon</span><span class="p">).</span><span class="nf">perform_later</span><span class="p">(</span><span class="n">guest</span><span class="p">)</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="# Enqueue a job to be performed tomorrow at noon.
+GuestsCleanupJob.set(wait_until: Date.tomorrow.noon).perform_later(guest)
+">Copy</button>
+</div>
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="c1"># Enqueue a job to be performed 1 week from now.</span>
+<span class="no">GuestsCleanupJob</span><span class="p">.</span><span class="nf">set</span><span class="p">(</span><span class="ss">wait: </span><span class="mi">1</span><span class="p">.</span><span class="nf">week</span><span class="p">).</span><span class="nf">perform_later</span><span class="p">(</span><span class="n">guest</span><span class="p">)</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="# Enqueue a job to be performed 1 week from now.
+GuestsCleanupJob.set(wait: 1.week).perform_later(guest)
+">Copy</button>
+</div>
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="c1"># `perform_now` and `perform_later` will call `perform` under the hood so</span>
+<span class="c1"># you can pass as many arguments as defined in the latter.</span>
+<span class="no">GuestsCleanupJob</span><span class="p">.</span><span class="nf">perform_later</span><span class="p">(</span><span class="n">guest1</span><span class="p">,</span> <span class="n">guest2</span><span class="p">,</span> <span class="ss">filter: </span><span class="s1">'some_filter'</span><span class="p">)</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="# `perform_now` and `perform_later` will call `perform` under the hood so
+# you can pass as many arguments as defined in the latter.
+GuestsCleanupJob.perform_later(guest1, guest2, filter: 'some_filter')
+">Copy</button>
+</div>
+<p>That's it!</p>
+</body>
+</html>

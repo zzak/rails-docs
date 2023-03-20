@@ -1,0 +1,82 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>5 Choosing Controller Modules</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v5.0.7.2/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="choosing-controller-modules">5 Choosing Controller Modules</h3>
+<p>An API application (using <code>ActionController::API</code>) comes with the following
+controller modules by default:</p>
+<ul>
+<li>
+<code>ActionController::UrlFor</code>: Makes <code>url_for</code> and similar helpers available.</li>
+<li>
+<code>ActionController::Redirecting</code>: Support for <code>redirect_to</code>.</li>
+<li>
+<code>AbstractController::Rendering</code> and <code>ActionController::ApiRendering</code>: Basic support for rendering.</li>
+<li>
+<code>ActionController::Renderers::All</code>: Support for <code>render :json</code> and friends.</li>
+<li>
+<code>ActionController::ConditionalGet</code>: Support for <code>stale?</code>.</li>
+<li>
+<code>ActionController::BasicImplicitRender</code>: Makes sure to return an empty response
+if there's not an explicit one.</li>
+<li>
+<code>ActionController::StrongParameters</code>: Support for parameters white-listing in
+combination with Active Model mass assignment.</li>
+<li>
+<code>ActionController::ForceSSL</code>: Support for <code>force_ssl</code>.</li>
+<li>
+<code>ActionController::DataStreaming</code>: Support for <code>send_file</code> and <code>send_data</code>.</li>
+<li>
+<code>AbstractController::Callbacks</code>: Support for <code>before_action</code> and
+similar helpers.</li>
+<li>
+<code>ActionController::Rescue</code>: Support for <code>rescue_from</code>.</li>
+<li>
+<code>ActionController::Instrumentation</code>: Support for the instrumentation
+hooks defined by Action Controller (see <a href="active_support_instrumentation.html#action-controller">the instrumentation
+guide</a> for
+more information regarding this).</li>
+<li>
+<code>ActionController::ParamsWrapper</code>: Wraps the parameters hash into a nested hash
+so you don't have to specify root elements sending POST requests for instance.</li>
+</ul>
+<p>Other plugins may add additional modules. You can get a list of all modules
+included into <code>ActionController::API</code> in the rails console:</p>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+$ bin/rails c
+&gt;&gt; ActionController::API.ancestors - ActionController::Metal.ancestors
+
+</pre>
+</div>
+<h4 id="adding-other-modules">5.1 Adding Other Modules</h4>
+
+<p>All Action Controller modules know about their dependent modules, so you can feel
+free to include any modules into your controllers, and all dependencies will be
+included and set up as well.</p>
+
+<p>Some common modules you might want to add:</p>
+<ul>
+<li>
+<code>AbstractController::Translation</code>: Support for the <code>l</code> and <code>t</code> localization
+and translation methods.</li>
+<li>
+<code>ActionController::HttpAuthentication::Basic</code> (or <code>Digest</code> or <code>Token</code>): Support
+for basic, digest or token HTTP authentication.</li>
+<li>
+<code>ActionView::Layouts</code>: Support for layouts when rendering.</li>
+<li>
+<code>ActionController::MimeResponds</code>: Support for <code>respond_to</code>.</li>
+<li>
+<code>ActionController::Cookies</code>: Support for <code>cookies</code>, which includes
+support for signed and encrypted cookies. This requires the cookies middleware.</li>
+</ul>
+<p>The best place to add a module is in your <code>ApplicationController</code>, but you can
+also add modules to individual controllers.</p>
+</body>
+</html>

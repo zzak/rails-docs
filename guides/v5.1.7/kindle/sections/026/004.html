@@ -1,0 +1,75 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>5 autoload_paths</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v5.1.7/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="autoload-paths">5 autoload_paths</h3>
+<p>As you probably know, when <code>require</code> gets a relative file name:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+require 'erb'
+
+</pre>
+</div>
+<p>Ruby looks for the file in the directories listed in <code>$LOAD_PATH</code>. That is, Ruby
+iterates over all its directories and for each one of them checks whether they
+have a file called "erb.rb", or "erb.so", or "erb.o", or "erb.dll". If it finds
+any of them, the interpreter loads it and ends the search. Otherwise, it tries
+again in the next directory of the list. If the list gets exhausted, <code>LoadError</code>
+is raised.</p>
+
+<p>We are going to cover how constant autoloading works in more detail later, but
+the idea is that when a constant like <code>Post</code> is hit and missing, if there's a
+<code>post.rb</code> file for example in <code>app/models</code> Rails is going to find it, evaluate
+it, and have <code>Post</code> defined as a side-effect.</p>
+
+<p>Alright, Rails has a collection of directories similar to <code>$LOAD_PATH</code> in which
+to look up <code>post.rb</code>. That collection is called <code>autoload_paths</code> and by
+default it contains:</p>
+<ul>
+<li>All subdirectories of <code>app</code> in the application and engines present at boot
+time. For example, <code>app/controllers</code>. They do not need to be the default
+ones, any custom directories like <code>app/workers</code> belong automatically to
+<code>autoload_paths</code>.</li>
+<li>Any existing second level directories called <code>app/*/concerns</code> in the
+application and engines.</li>
+<li>The directory <code>test/mailers/previews</code>.</li>
+</ul>
+<p>Also, this collection is configurable via <code>config.autoload_paths</code>. For example,
+<code>lib</code> was in the list years ago, but no longer is. An application can opt-in
+by adding this to <code>config/application.rb</code>:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+config.autoload_paths &lt;&lt; "#{Rails.root}/lib"
+
+</pre>
+</div>
+<p><code>config.autoload_paths</code> is not changeable from environment-specific configuration files.</p>
+
+<p>The value of <code>autoload_paths</code> can be inspected. In a just generated application
+it is (edited):</p>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+$ bin/rails r 'puts ActiveSupport::Dependencies.autoload_paths'
+.../app/assets
+.../app/controllers
+.../app/helpers
+.../app/mailers
+.../app/models
+.../app/controllers/concerns
+.../app/models/concerns
+.../test/mailers/previews
+
+</pre>
+</div>
+<div class="info"><p><code>autoload_paths</code> is computed and cached during the initialization process.
+The application needs to be restarted to reflect any changes in the directory
+structure.</p></div>
+</body>
+</html>

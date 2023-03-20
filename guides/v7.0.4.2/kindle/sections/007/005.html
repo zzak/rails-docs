@@ -1,0 +1,45 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>6 Limit and Offset</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v7.0.4.2/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="limit-and-offset"><a class="anchorlink" href="#limit-and-offset">6 Limit and Offset</a></h3>
+<p>To apply <code>LIMIT</code> to the SQL fired by the <code>Model.find</code>, you can specify the <code>LIMIT</code> using <a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveRecord/QueryMethods.html#method-i-limit"><code>limit</code></a> and <a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveRecord/QueryMethods.html#method-i-offset"><code>offset</code></a> methods on the relation.</p>
+
+<p>You can use <code>limit</code> to specify the number of records to be retrieved, and use <code>offset</code> to specify the number of records to skip before starting to return the records. For example</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="no">Customer</span><span class="p">.</span><span class="nf">limit</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="Customer.limit(5)
+">Copy</button>
+</div>
+<p>will return a maximum of 5 customers and because it specifies no offset it will return the first 5 in the table. The SQL it executes looks like this:</p>
+
+<div class="code_container">
+<pre><code class="highlight sql"><span class="k">SELECT</span> <span class="o">*</span> <span class="k">FROM</span> <span class="n">customers</span> <span class="k">LIMIT</span> <span class="mi">5</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="SELECT * FROM customers LIMIT 5
+">Copy</button>
+</div>
+<p>Adding <code>offset</code> to that</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="no">Customer</span><span class="p">.</span><span class="nf">limit</span><span class="p">(</span><span class="mi">5</span><span class="p">).</span><span class="nf">offset</span><span class="p">(</span><span class="mi">30</span><span class="p">)</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="Customer.limit(5).offset(30)
+">Copy</button>
+</div>
+<p>will return instead a maximum of 5 customers beginning with the 31st. The SQL looks like:</p>
+
+<div class="code_container">
+<pre><code class="highlight sql"><span class="k">SELECT</span> <span class="o">*</span> <span class="k">FROM</span> <span class="n">customers</span> <span class="k">LIMIT</span> <span class="mi">5</span> <span class="k">OFFSET</span> <span class="mi">30</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="SELECT * FROM customers LIMIT 5 OFFSET 30
+">Copy</button>
+</div>
+</body>
+</html>

@@ -1,0 +1,261 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>1 Dealing with Basic Forms</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v6.1.7.3/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="dealing-with-basic-forms"><a class="anchorlink" href="#dealing-with-basic-forms">1 Dealing with Basic Forms</a></h3>
+<p>The main form helper is <a href="https://api.rubyonrails.org/v6.1.7.3/classes/ActionView/Helpers/FormHelper.html#method-i-form_with"><code>form_with</code></a>.</p>
+
+<div class="code_container">
+<pre><code class="highlight erb"><span class="cp">&lt;%=</span> <span class="n">form_with</span> <span class="k">do</span> <span class="o">|</span><span class="n">form</span><span class="o">|</span> <span class="cp">%&gt;</span>
+  Form contents
+<span class="cp">&lt;%</span> <span class="k">end</span> <span class="cp">%&gt;</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-14c50fdf05001a475de5767d9653bf72">&lt;%= form_with do |form| %&gt;
+  Form contents
+&lt;% end %&gt;
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-14c50fdf05001a475de5767d9653bf72">Copy</button>
+</div>
+<p>When called without arguments like this, it creates a form tag which, when submitted, will POST to the current page. For instance, assuming the current page is a home page, the generated HTML will look like this:</p>
+
+<div class="code_container">
+<pre><code class="highlight html"><span class="nt">&lt;form</span> <span class="na">accept-charset=</span><span class="s">"UTF-8"</span> <span class="na">action=</span><span class="s">"/"</span> <span class="na">method=</span><span class="s">"post"</span><span class="nt">&gt;</span>
+  <span class="nt">&lt;input</span> <span class="na">name=</span><span class="s">"authenticity_token"</span> <span class="na">type=</span><span class="s">"hidden"</span> <span class="na">value=</span><span class="s">"J7CBxfHalt49OSHp27hblqK20c9PgwJ108nDHX/8Cts="</span> <span class="nt">/&gt;</span>
+  Form contents
+<span class="nt">&lt;/form&gt;</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-5578e9869d810d562665b45bb968d629">&lt;form accept-charset="UTF-8" action="/" method="post"&gt;
+  &lt;input name="authenticity_token" type="hidden" value="J7CBxfHalt49OSHp27hblqK20c9PgwJ108nDHX/8Cts=" /&gt;
+  Form contents
+&lt;/form&gt;
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-5578e9869d810d562665b45bb968d629">Copy</button>
+</div>
+<p>You'll notice that the HTML contains an <code>input</code> element with type <code>hidden</code>. This <code>input</code> is important, because non-GET forms cannot be successfully submitted without it.
+The hidden input element with the name <code>authenticity_token</code> is a security feature of Rails called <strong>cross-site request forgery protection</strong>, and form helpers generate it for every non-GET form (provided that this security feature is enabled). You can read more about this in the <a href="security.html#cross-site-request-forgery-csrf">Securing Rails Applications</a> guide.</p>
+
+<h4 id="a-generic-search-form"><a class="anchorlink" href="#a-generic-search-form">1.1 A Generic Search Form</a></h4>
+
+<p>One of the most basic forms you see on the web is a search form. This form contains:</p>
+<ul>
+<li>a form element with "GET" method,</li>
+<li>a label for the input,</li>
+<li>a text input element, and</li>
+<li>a submit element.</li>
+</ul>
+<p>To create this form you will use <code>form_with</code> and the form builder object it yields. Like so:</p>
+
+<div class="code_container">
+<pre><code class="highlight erb"><span class="cp">&lt;%=</span> <span class="n">form_with</span> <span class="ss">url: </span><span class="s2">"/search"</span><span class="p">,</span> <span class="ss">method: :get</span> <span class="k">do</span> <span class="o">|</span><span class="n">form</span><span class="o">|</span> <span class="cp">%&gt;</span>
+  <span class="cp">&lt;%=</span> <span class="n">form</span><span class="p">.</span><span class="nf">label</span> <span class="ss">:query</span><span class="p">,</span> <span class="s2">"Search for:"</span> <span class="cp">%&gt;</span>
+  <span class="cp">&lt;%=</span> <span class="n">form</span><span class="p">.</span><span class="nf">text_field</span> <span class="ss">:query</span> <span class="cp">%&gt;</span>
+  <span class="cp">&lt;%=</span> <span class="n">form</span><span class="p">.</span><span class="nf">submit</span> <span class="s2">"Search"</span> <span class="cp">%&gt;</span>
+<span class="cp">&lt;%</span> <span class="k">end</span> <span class="cp">%&gt;</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-71959ee2851b84d9a7f2ea7d3644ae8f">&lt;%= form_with url: "/search", method: :get do |form| %&gt;
+  &lt;%= form.label :query, "Search for:" %&gt;
+  &lt;%= form.text_field :query %&gt;
+  &lt;%= form.submit "Search" %&gt;
+&lt;% end %&gt;
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-71959ee2851b84d9a7f2ea7d3644ae8f">Copy</button>
+</div>
+<p>This will generate the following HTML:</p>
+
+<div class="code_container">
+<pre><code class="highlight html"><span class="nt">&lt;form</span> <span class="na">action=</span><span class="s">"/search"</span> <span class="na">method=</span><span class="s">"get"</span> <span class="na">accept-charset=</span><span class="s">"UTF-8"</span> <span class="nt">&gt;</span>
+  <span class="nt">&lt;label</span> <span class="na">for=</span><span class="s">"query"</span><span class="nt">&gt;</span>Search for:<span class="nt">&lt;/label&gt;</span>
+  <span class="nt">&lt;input</span> <span class="na">id=</span><span class="s">"query"</span> <span class="na">name=</span><span class="s">"query"</span> <span class="na">type=</span><span class="s">"text"</span> <span class="nt">/&gt;</span>
+  <span class="nt">&lt;input</span> <span class="na">name=</span><span class="s">"commit"</span> <span class="na">type=</span><span class="s">"submit"</span> <span class="na">value=</span><span class="s">"Search"</span> <span class="na">data-disable-with=</span><span class="s">"Search"</span> <span class="nt">/&gt;</span>
+<span class="nt">&lt;/form&gt;</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-4d97c0a7788f605a3732489325a63791">&lt;form action="/search" method="get" accept-charset="UTF-8" &gt;
+  &lt;label for="query"&gt;Search for:&lt;/label&gt;
+  &lt;input id="query" name="query" type="text" /&gt;
+  &lt;input name="commit" type="submit" value="Search" data-disable-with="Search" /&gt;
+&lt;/form&gt;
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-4d97c0a7788f605a3732489325a63791">Copy</button>
+</div>
+<div class="info"><p>Passing <code>url: my_specified_path</code> to <code>form_with</code> tells the form where to make the request. However, as explained below, you can also pass ActiveRecord objects to the form.</p></div>
+
+<div class="info"><p>For every form input, an ID attribute is generated from its name (<code>"query"</code> in above example). These IDs can be very useful for CSS styling or manipulation of form controls with JavaScript.</p></div>
+
+<div class="warning"><p>Use "GET" as the method for search forms. This allows users to bookmark a specific search and get back to it. More generally Rails encourages you to use the right HTTP verb for an action.</p></div>
+
+<h4 id="helpers-for-generating-form-elements"><a class="anchorlink" href="#helpers-for-generating-form-elements">1.2 Helpers for Generating Form Elements</a></h4>
+
+<p>The form builder object yielded by <code>form_with</code> provides numerous helper methods for generating form elements such as text fields, checkboxes, and radio buttons. The first parameter to these methods is always the name of the
+input. When the form is submitted, the name will be passed along with the form
+data, and will make its way to the <code>params</code> in the controller with the
+value entered by the user for that field. For example, if the form contains
+<code>&lt;%= form.text_field :query %&gt;</code>, then you would be able to get the value of this
+field in the controller with <code>params[:query]</code>.</p>
+
+<p>When naming inputs, Rails uses certain conventions that make it possible to submit parameters with non-scalar values such as arrays or hashes, which will also be accessible in <code>params</code>. You can read more about them in chapter <a href="#understanding-parameter-naming-conventions">Understanding Parameter Naming Conventions</a> of this guide. For details on the precise usage of these helpers, please refer to the <a href="https://api.rubyonrails.org/v6.1.7.3/classes/ActionView/Helpers/FormTagHelper.html">API documentation</a>.</p>
+
+<h5 id="checkboxes"><a class="anchorlink" href="#checkboxes">1.2.1 Checkboxes</a></h5>
+
+<p>Checkboxes are form controls that give the user a set of options they can enable or disable:</p>
+
+<div class="code_container">
+<pre><code class="highlight erb"><span class="cp">&lt;%=</span> <span class="n">form</span><span class="p">.</span><span class="nf">check_box</span> <span class="ss">:pet_dog</span> <span class="cp">%&gt;</span>
+<span class="cp">&lt;%=</span> <span class="n">form</span><span class="p">.</span><span class="nf">label</span> <span class="ss">:pet_dog</span><span class="p">,</span> <span class="s2">"I own a dog"</span> <span class="cp">%&gt;</span>
+<span class="cp">&lt;%=</span> <span class="n">form</span><span class="p">.</span><span class="nf">check_box</span> <span class="ss">:pet_cat</span> <span class="cp">%&gt;</span>
+<span class="cp">&lt;%=</span> <span class="n">form</span><span class="p">.</span><span class="nf">label</span> <span class="ss">:pet_cat</span><span class="p">,</span> <span class="s2">"I own a cat"</span> <span class="cp">%&gt;</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-271fde838f17d2f9c50ebd53598e4574">&lt;%= form.check_box :pet_dog %&gt;
+&lt;%= form.label :pet_dog, "I own a dog" %&gt;
+&lt;%= form.check_box :pet_cat %&gt;
+&lt;%= form.label :pet_cat, "I own a cat" %&gt;
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-271fde838f17d2f9c50ebd53598e4574">Copy</button>
+</div>
+<p>This generates the following:</p>
+
+<div class="code_container">
+<pre><code class="highlight html"><span class="nt">&lt;input</span> <span class="na">type=</span><span class="s">"checkbox"</span> <span class="na">id=</span><span class="s">"pet_dog"</span> <span class="na">name=</span><span class="s">"pet_dog"</span> <span class="na">value=</span><span class="s">"1"</span> <span class="nt">/&gt;</span>
+<span class="nt">&lt;label</span> <span class="na">for=</span><span class="s">"pet_dog"</span><span class="nt">&gt;</span>I own a dog<span class="nt">&lt;/label&gt;</span>
+<span class="nt">&lt;input</span> <span class="na">type=</span><span class="s">"checkbox"</span> <span class="na">id=</span><span class="s">"pet_cat"</span> <span class="na">name=</span><span class="s">"pet_cat"</span> <span class="na">value=</span><span class="s">"1"</span> <span class="nt">/&gt;</span>
+<span class="nt">&lt;label</span> <span class="na">for=</span><span class="s">"pet_cat"</span><span class="nt">&gt;</span>I own a cat<span class="nt">&lt;/label&gt;</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-5fd0928b3af332d6d952046425fb6a7f">&lt;input type="checkbox" id="pet_dog" name="pet_dog" value="1" /&gt;
+&lt;label for="pet_dog"&gt;I own a dog&lt;/label&gt;
+&lt;input type="checkbox" id="pet_cat" name="pet_cat" value="1" /&gt;
+&lt;label for="pet_cat"&gt;I own a cat&lt;/label&gt;
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-5fd0928b3af332d6d952046425fb6a7f">Copy</button>
+</div>
+<p>The first parameter to <a href="https://api.rubyonrails.org/v6.1.7.3/classes/ActionView/Helpers/FormBuilder.html#method-i-check_box"><code>check_box</code></a> is the name of the input. The second parameter is the value of the input. This value will be included in the form data (and be present in <code>params</code>) when the checkbox is checked.</p>
+
+<h5 id="radio-buttons"><a class="anchorlink" href="#radio-buttons">1.2.2 Radio Buttons</a></h5>
+
+<p>Radio buttons, while similar to checkboxes, are controls that specify a set of options in which they are mutually exclusive (i.e., the user can only pick one):</p>
+
+<div class="code_container">
+<pre><code class="highlight erb"><span class="cp">&lt;%=</span> <span class="n">form</span><span class="p">.</span><span class="nf">radio_button</span> <span class="ss">:age</span><span class="p">,</span> <span class="s2">"child"</span> <span class="cp">%&gt;</span>
+<span class="cp">&lt;%=</span> <span class="n">form</span><span class="p">.</span><span class="nf">label</span> <span class="ss">:age_child</span><span class="p">,</span> <span class="s2">"I am younger than 21"</span> <span class="cp">%&gt;</span>
+<span class="cp">&lt;%=</span> <span class="n">form</span><span class="p">.</span><span class="nf">radio_button</span> <span class="ss">:age</span><span class="p">,</span> <span class="s2">"adult"</span> <span class="cp">%&gt;</span>
+<span class="cp">&lt;%=</span> <span class="n">form</span><span class="p">.</span><span class="nf">label</span> <span class="ss">:age_adult</span><span class="p">,</span> <span class="s2">"I am over 21"</span> <span class="cp">%&gt;</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-53db8bdcab6fae27e564497089df6752">&lt;%= form.radio_button :age, "child" %&gt;
+&lt;%= form.label :age_child, "I am younger than 21" %&gt;
+&lt;%= form.radio_button :age, "adult" %&gt;
+&lt;%= form.label :age_adult, "I am over 21" %&gt;
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-53db8bdcab6fae27e564497089df6752">Copy</button>
+</div>
+<p>Output:</p>
+
+<div class="code_container">
+<pre><code class="highlight html"><span class="nt">&lt;input</span> <span class="na">type=</span><span class="s">"radio"</span> <span class="na">id=</span><span class="s">"age_child"</span> <span class="na">name=</span><span class="s">"age"</span> <span class="na">value=</span><span class="s">"child"</span> <span class="nt">/&gt;</span>
+<span class="nt">&lt;label</span> <span class="na">for=</span><span class="s">"age_child"</span><span class="nt">&gt;</span>I am younger than 21<span class="nt">&lt;/label&gt;</span>
+<span class="nt">&lt;input</span> <span class="na">type=</span><span class="s">"radio"</span> <span class="na">id=</span><span class="s">"age_adult"</span> <span class="na">name=</span><span class="s">"age"</span> <span class="na">value=</span><span class="s">"adult"</span> <span class="nt">/&gt;</span>
+<span class="nt">&lt;label</span> <span class="na">for=</span><span class="s">"age_adult"</span><span class="nt">&gt;</span>I am over 21<span class="nt">&lt;/label&gt;</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-a399be3b87acfad64fe1466ff2ad91f6">&lt;input type="radio" id="age_child" name="age" value="child" /&gt;
+&lt;label for="age_child"&gt;I am younger than 21&lt;/label&gt;
+&lt;input type="radio" id="age_adult" name="age" value="adult" /&gt;
+&lt;label for="age_adult"&gt;I am over 21&lt;/label&gt;
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-a399be3b87acfad64fe1466ff2ad91f6">Copy</button>
+</div>
+<p>As with <code>check_box</code>, the second parameter to <a href="https://api.rubyonrails.org/v6.1.7.3/classes/ActionView/Helpers/FormBuilder.html#method-i-radio_button"><code>radio_button</code></a> is the value of the input. Because these two radio buttons share the same name (<code>age</code>), the user will only be able to select one of them, and <code>params[:age]</code> will contain either <code>"child"</code> or <code>"adult"</code>.</p>
+
+<div class="note"><p>Always use labels for checkbox and radio buttons. They associate text with a specific option and,
+by expanding the clickable region,
+make it easier for users to click the inputs.</p></div>
+
+<h4 id="other-helpers-of-interest"><a class="anchorlink" href="#other-helpers-of-interest">1.3 Other Helpers of Interest</a></h4>
+
+<p>Other form controls worth mentioning are text areas, hidden fields, password fields, number fields, date and time fields, and many more:</p>
+
+<div class="code_container">
+<pre><code class="highlight erb"><span class="cp">&lt;%=</span> <span class="n">form</span><span class="p">.</span><span class="nf">text_area</span> <span class="ss">:message</span><span class="p">,</span> <span class="ss">size: </span><span class="s2">"70x5"</span> <span class="cp">%&gt;</span>
+<span class="cp">&lt;%=</span> <span class="n">form</span><span class="p">.</span><span class="nf">hidden_field</span> <span class="ss">:parent_id</span><span class="p">,</span> <span class="ss">value: </span><span class="s2">"foo"</span> <span class="cp">%&gt;</span>
+<span class="cp">&lt;%=</span> <span class="n">form</span><span class="p">.</span><span class="nf">password_field</span> <span class="ss">:password</span> <span class="cp">%&gt;</span>
+<span class="cp">&lt;%=</span> <span class="n">form</span><span class="p">.</span><span class="nf">number_field</span> <span class="ss">:price</span><span class="p">,</span> <span class="ss">in: </span><span class="mf">1.0</span><span class="o">..</span><span class="mf">20.0</span><span class="p">,</span> <span class="ss">step: </span><span class="mf">0.5</span> <span class="cp">%&gt;</span>
+<span class="cp">&lt;%=</span> <span class="n">form</span><span class="p">.</span><span class="nf">range_field</span> <span class="ss">:discount</span><span class="p">,</span> <span class="ss">in: </span><span class="mi">1</span><span class="o">..</span><span class="mi">100</span> <span class="cp">%&gt;</span>
+<span class="cp">&lt;%=</span> <span class="n">form</span><span class="p">.</span><span class="nf">date_field</span> <span class="ss">:born_on</span> <span class="cp">%&gt;</span>
+<span class="cp">&lt;%=</span> <span class="n">form</span><span class="p">.</span><span class="nf">time_field</span> <span class="ss">:started_at</span> <span class="cp">%&gt;</span>
+<span class="cp">&lt;%=</span> <span class="n">form</span><span class="p">.</span><span class="nf">datetime_local_field</span> <span class="ss">:graduation_day</span> <span class="cp">%&gt;</span>
+<span class="cp">&lt;%=</span> <span class="n">form</span><span class="p">.</span><span class="nf">month_field</span> <span class="ss">:birthday_month</span> <span class="cp">%&gt;</span>
+<span class="cp">&lt;%=</span> <span class="n">form</span><span class="p">.</span><span class="nf">week_field</span> <span class="ss">:birthday_week</span> <span class="cp">%&gt;</span>
+<span class="cp">&lt;%=</span> <span class="n">form</span><span class="p">.</span><span class="nf">search_field</span> <span class="ss">:name</span> <span class="cp">%&gt;</span>
+<span class="cp">&lt;%=</span> <span class="n">form</span><span class="p">.</span><span class="nf">email_field</span> <span class="ss">:address</span> <span class="cp">%&gt;</span>
+<span class="cp">&lt;%=</span> <span class="n">form</span><span class="p">.</span><span class="nf">telephone_field</span> <span class="ss">:phone</span> <span class="cp">%&gt;</span>
+<span class="cp">&lt;%=</span> <span class="n">form</span><span class="p">.</span><span class="nf">url_field</span> <span class="ss">:homepage</span> <span class="cp">%&gt;</span>
+<span class="cp">&lt;%=</span> <span class="n">form</span><span class="p">.</span><span class="nf">color_field</span> <span class="ss">:favorite_color</span> <span class="cp">%&gt;</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-267a6256e866b841074cb930b424f59f">&lt;%= form.text_area :message, size: "70x5" %&gt;
+&lt;%= form.hidden_field :parent_id, value: "foo" %&gt;
+&lt;%= form.password_field :password %&gt;
+&lt;%= form.number_field :price, in: 1.0..20.0, step: 0.5 %&gt;
+&lt;%= form.range_field :discount, in: 1..100 %&gt;
+&lt;%= form.date_field :born_on %&gt;
+&lt;%= form.time_field :started_at %&gt;
+&lt;%= form.datetime_local_field :graduation_day %&gt;
+&lt;%= form.month_field :birthday_month %&gt;
+&lt;%= form.week_field :birthday_week %&gt;
+&lt;%= form.search_field :name %&gt;
+&lt;%= form.email_field :address %&gt;
+&lt;%= form.telephone_field :phone %&gt;
+&lt;%= form.url_field :homepage %&gt;
+&lt;%= form.color_field :favorite_color %&gt;
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-267a6256e866b841074cb930b424f59f">Copy</button>
+</div>
+<p>Output:</p>
+
+<div class="code_container">
+<pre><code class="highlight html"><span class="nt">&lt;textarea</span> <span class="na">name=</span><span class="s">"message"</span> <span class="na">id=</span><span class="s">"message"</span> <span class="na">cols=</span><span class="s">"70"</span> <span class="na">rows=</span><span class="s">"5"</span><span class="nt">&gt;&lt;/textarea&gt;</span>
+<span class="nt">&lt;input</span> <span class="na">type=</span><span class="s">"hidden"</span> <span class="na">name=</span><span class="s">"parent_id"</span> <span class="na">id=</span><span class="s">"parent_id"</span> <span class="na">value=</span><span class="s">"foo"</span> <span class="nt">/&gt;</span>
+<span class="nt">&lt;input</span> <span class="na">type=</span><span class="s">"password"</span> <span class="na">name=</span><span class="s">"password"</span> <span class="na">id=</span><span class="s">"password"</span> <span class="nt">/&gt;</span>
+<span class="nt">&lt;input</span> <span class="na">type=</span><span class="s">"number"</span> <span class="na">name=</span><span class="s">"price"</span> <span class="na">id=</span><span class="s">"price"</span> <span class="na">step=</span><span class="s">"0.5"</span> <span class="na">min=</span><span class="s">"1.0"</span> <span class="na">max=</span><span class="s">"20.0"</span> <span class="nt">/&gt;</span>
+<span class="nt">&lt;input</span> <span class="na">type=</span><span class="s">"range"</span> <span class="na">name=</span><span class="s">"discount"</span> <span class="na">id=</span><span class="s">"discount"</span> <span class="na">min=</span><span class="s">"1"</span> <span class="na">max=</span><span class="s">"100"</span> <span class="nt">/&gt;</span>
+<span class="nt">&lt;input</span> <span class="na">type=</span><span class="s">"date"</span> <span class="na">name=</span><span class="s">"born_on"</span> <span class="na">id=</span><span class="s">"born_on"</span> <span class="nt">/&gt;</span>
+<span class="nt">&lt;input</span> <span class="na">type=</span><span class="s">"time"</span> <span class="na">name=</span><span class="s">"started_at"</span> <span class="na">id=</span><span class="s">"started_at"</span> <span class="nt">/&gt;</span>
+<span class="nt">&lt;input</span> <span class="na">type=</span><span class="s">"datetime-local"</span> <span class="na">name=</span><span class="s">"graduation_day"</span> <span class="na">id=</span><span class="s">"graduation_day"</span> <span class="nt">/&gt;</span>
+<span class="nt">&lt;input</span> <span class="na">type=</span><span class="s">"month"</span> <span class="na">name=</span><span class="s">"birthday_month"</span> <span class="na">id=</span><span class="s">"birthday_month"</span> <span class="nt">/&gt;</span>
+<span class="nt">&lt;input</span> <span class="na">type=</span><span class="s">"week"</span> <span class="na">name=</span><span class="s">"birthday_week"</span> <span class="na">id=</span><span class="s">"birthday_week"</span> <span class="nt">/&gt;</span>
+<span class="nt">&lt;input</span> <span class="na">type=</span><span class="s">"search"</span> <span class="na">name=</span><span class="s">"name"</span> <span class="na">id=</span><span class="s">"name"</span> <span class="nt">/&gt;</span>
+<span class="nt">&lt;input</span> <span class="na">type=</span><span class="s">"email"</span> <span class="na">name=</span><span class="s">"address"</span> <span class="na">id=</span><span class="s">"address"</span> <span class="nt">/&gt;</span>
+<span class="nt">&lt;input</span> <span class="na">type=</span><span class="s">"tel"</span> <span class="na">name=</span><span class="s">"phone"</span> <span class="na">id=</span><span class="s">"phone"</span> <span class="nt">/&gt;</span>
+<span class="nt">&lt;input</span> <span class="na">type=</span><span class="s">"url"</span> <span class="na">name=</span><span class="s">"homepage"</span> <span class="na">id=</span><span class="s">"homepage"</span> <span class="nt">/&gt;</span>
+<span class="nt">&lt;input</span> <span class="na">type=</span><span class="s">"color"</span> <span class="na">name=</span><span class="s">"favorite_color"</span> <span class="na">id=</span><span class="s">"favorite_color"</span> <span class="na">value=</span><span class="s">"#000000"</span> <span class="nt">/&gt;</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-e2776ed1c78b13d9837c1bbd43af9053">&lt;textarea name="message" id="message" cols="70" rows="5"&gt;&lt;/textarea&gt;
+&lt;input type="hidden" name="parent_id" id="parent_id" value="foo" /&gt;
+&lt;input type="password" name="password" id="password" /&gt;
+&lt;input type="number" name="price" id="price" step="0.5" min="1.0" max="20.0" /&gt;
+&lt;input type="range" name="discount" id="discount" min="1" max="100" /&gt;
+&lt;input type="date" name="born_on" id="born_on" /&gt;
+&lt;input type="time" name="started_at" id="started_at" /&gt;
+&lt;input type="datetime-local" name="graduation_day" id="graduation_day" /&gt;
+&lt;input type="month" name="birthday_month" id="birthday_month" /&gt;
+&lt;input type="week" name="birthday_week" id="birthday_week" /&gt;
+&lt;input type="search" name="name" id="name" /&gt;
+&lt;input type="email" name="address" id="address" /&gt;
+&lt;input type="tel" name="phone" id="phone" /&gt;
+&lt;input type="url" name="homepage" id="homepage" /&gt;
+&lt;input type="color" name="favorite_color" id="favorite_color" value="#000000" /&gt;
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-e2776ed1c78b13d9837c1bbd43af9053">Copy</button>
+</div>
+<p>Hidden inputs are not shown to the user but instead hold data like any textual input. Values inside them can be changed with JavaScript.</p>
+
+<div class="warning"><p>The search, telephone, date, time, color, datetime, datetime-local,
+month, week, URL, email, number, and range inputs are HTML5 controls.
+If you require your app to have a consistent experience in older browsers,
+you will need an HTML5 polyfill (provided by CSS and/or JavaScript).
+There is definitely <a href="https://github.com/Modernizr/Modernizr/wiki/HTML5-Cross-Browser-Polyfills">no shortage of solutions for this</a>, although a popular tool at the moment is
+<a href="https://modernizr.com/">Modernizr</a>, which provides a simple way to add functionality based on the presence of
+detected HTML5 features.</p></div>
+
+<div class="info"><p>If you're using password input fields (for any purpose), you might want to configure your application to prevent those parameters from being logged. You can learn about this in the <a href="security.html#logging">Securing Rails Applications</a> guide.</p></div>
+</body>
+</html>

@@ -1,0 +1,406 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>4 Parameters</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v7.0.4.2/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="parameters"><a class="anchorlink" href="#parameters">4 Parameters</a></h3>
+<p>You will probably want to access data sent in by the user or other parameters in your controller actions. There are two kinds of parameters possible in a web application. The first are parameters that are sent as part of the URL, called query string parameters. The query string is everything after "?" in the URL. The second type of parameter is usually referred to as POST data. This information usually comes from an HTML form which has been filled in by the user. It's called POST data because it can only be sent as part of an HTTP POST request. Rails does not make any distinction between query string parameters and POST parameters, and both are available in the <a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActionController/StrongParameters.html#method-i-params"><code>params</code></a> hash in your controller:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">ClientsController</span> <span class="o">&lt;</span> <span class="no">ApplicationController</span>
+  <span class="c1"># This action uses query string parameters because it gets run</span>
+  <span class="c1"># by an HTTP GET request, but this does not make any difference</span>
+  <span class="c1"># to how the parameters are accessed. The URL for</span>
+  <span class="c1"># this action would look like this to list activated</span>
+  <span class="c1"># clients: /clients?status=activated</span>
+  <span class="k">def</span> <span class="nf">index</span>
+    <span class="k">if</span> <span class="n">params</span><span class="p">[</span><span class="ss">:status</span><span class="p">]</span> <span class="o">==</span> <span class="s2">"activated"</span>
+      <span class="vi">@clients</span> <span class="o">=</span> <span class="no">Client</span><span class="p">.</span><span class="nf">activated</span>
+    <span class="k">else</span>
+      <span class="vi">@clients</span> <span class="o">=</span> <span class="no">Client</span><span class="p">.</span><span class="nf">inactivated</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+
+  <span class="c1"># This action uses POST parameters. They are most likely coming</span>
+  <span class="c1"># from an HTML form that the user has submitted. The URL for</span>
+  <span class="c1"># this RESTful request will be "/clients", and the data will be</span>
+  <span class="c1"># sent as part of the request body.</span>
+  <span class="k">def</span> <span class="nf">create</span>
+    <span class="vi">@client</span> <span class="o">=</span> <span class="no">Client</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="n">params</span><span class="p">[</span><span class="ss">:client</span><span class="p">])</span>
+    <span class="k">if</span> <span class="vi">@client</span><span class="p">.</span><span class="nf">save</span>
+      <span class="n">redirect_to</span> <span class="vi">@client</span>
+    <span class="k">else</span>
+      <span class="c1"># This line overrides the default rendering behavior, which</span>
+      <span class="c1"># would have been to render the "create" view.</span>
+      <span class="n">render</span> <span class="s2">"new"</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='class ClientsController &lt; ApplicationController
+  # This action uses query string parameters because it gets run
+  # by an HTTP GET request, but this does not make any difference
+  # to how the parameters are accessed. The URL for
+  # this action would look like this to list activated
+  # clients: /clients?status=activated
+  def index
+    if params[:status] == "activated"
+      @clients = Client.activated
+    else
+      @clients = Client.inactivated
+    end
+  end
+
+  # This action uses POST parameters. They are most likely coming
+  # from an HTML form that the user has submitted. The URL for
+  # this RESTful request will be "/clients", and the data will be
+  # sent as part of the request body.
+  def create
+    @client = Client.new(params[:client])
+    if @client.save
+      redirect_to @client
+    else
+      # This line overrides the default rendering behavior, which
+      # would have been to render the "create" view.
+      render "new"
+    end
+  end
+end
+'>Copy</button>
+</div>
+<h4 id="hash-and-array-parameters"><a class="anchorlink" href="#hash-and-array-parameters">4.1 Hash and Array Parameters</a></h4>
+
+<p>The <code>params</code> hash is not limited to one-dimensional keys and values. It can contain nested arrays and hashes. To send an array of values, append an empty pair of square brackets "[]" to the key name:</p>
+
+<div class="code_container">
+<pre><code class="highlight plaintext">GET /clients?ids[]=1&amp;ids[]=2&amp;ids[]=3
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="GET /clients?ids[]=1&amp;ids[]=2&amp;ids[]=3
+">Copy</button>
+</div>
+<div class="note"><p>The actual URL in this example will be encoded as "/clients?ids%5b%5d=1&amp;ids%5b%5d=2&amp;ids%5b%5d=3" as the "[" and "]" characters are not allowed in URLs. Most of the time you don't have to worry about this because the browser will encode it for you, and Rails will decode it automatically, but if you ever find yourself having to send those requests to the server manually you should keep this in mind.</p></div>
+
+<p>The value of <code>params[:ids]</code> will now be <code>["1", "2", "3"]</code>. Note that parameter values are always strings; Rails does not attempt to guess or cast the type.</p>
+
+<div class="note"><p>Values such as <code>[nil]</code> or <code>[nil, nil, ...]</code> in <code>params</code> are replaced
+with <code>[]</code> for security reasons by default. See <a href="security.html#unsafe-query-generation">Security Guide</a>
+for more information.</p></div>
+
+<p>To send a hash, you include the key name inside the brackets:</p>
+
+<div class="code_container">
+<pre><code class="highlight html"><span class="nt">&lt;form</span> <span class="na">accept-charset=</span><span class="s">"UTF-8"</span> <span class="na">action=</span><span class="s">"/clients"</span> <span class="na">method=</span><span class="s">"post"</span><span class="nt">&gt;</span>
+  <span class="nt">&lt;input</span> <span class="na">type=</span><span class="s">"text"</span> <span class="na">name=</span><span class="s">"client[name]"</span> <span class="na">value=</span><span class="s">"Acme"</span> <span class="nt">/&gt;</span>
+  <span class="nt">&lt;input</span> <span class="na">type=</span><span class="s">"text"</span> <span class="na">name=</span><span class="s">"client[phone]"</span> <span class="na">value=</span><span class="s">"12345"</span> <span class="nt">/&gt;</span>
+  <span class="nt">&lt;input</span> <span class="na">type=</span><span class="s">"text"</span> <span class="na">name=</span><span class="s">"client[address][postcode]"</span> <span class="na">value=</span><span class="s">"12345"</span> <span class="nt">/&gt;</span>
+  <span class="nt">&lt;input</span> <span class="na">type=</span><span class="s">"text"</span> <span class="na">name=</span><span class="s">"client[address][city]"</span> <span class="na">value=</span><span class="s">"Carrot City"</span> <span class="nt">/&gt;</span>
+<span class="nt">&lt;/form&gt;</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='&lt;form accept-charset="UTF-8" action="/clients" method="post"&gt;
+  &lt;input type="text" name="client[name]" value="Acme" /&gt;
+  &lt;input type="text" name="client[phone]" value="12345" /&gt;
+  &lt;input type="text" name="client[address][postcode]" value="12345" /&gt;
+  &lt;input type="text" name="client[address][city]" value="Carrot City" /&gt;
+&lt;/form&gt;
+'>Copy</button>
+</div>
+<p>When this form is submitted, the value of <code>params[:client]</code> will be <code>{ "name" =&gt; "Acme", "phone" =&gt; "12345", "address" =&gt; { "postcode" =&gt; "12345", "city" =&gt; "Carrot City" } }</code>. Note the nested hash in <code>params[:client][:address]</code>.</p>
+
+<p>The <code>params</code> object acts like a Hash, but lets you use symbols and strings interchangeably as keys.</p>
+
+<h4 id="json-parameters"><a class="anchorlink" href="#json-parameters">4.2 JSON parameters</a></h4>
+
+<p>If you're writing a web service application, you might find yourself more comfortable accepting parameters in JSON format. If the "Content-Type" header of your request is set to "application/json", Rails will automatically load your parameters into the <code>params</code> hash, which you can access as you would normally.</p>
+
+<p>So for example, if you are sending this JSON content:</p>
+
+<div class="code_container">
+<pre><code class="highlight json"><span class="p">{</span><span class="w"> </span><span class="nl">"company"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nl">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"acme"</span><span class="p">,</span><span class="w"> </span><span class="nl">"address"</span><span class="p">:</span><span class="w"> </span><span class="s2">"123 Carrot Street"</span><span class="w"> </span><span class="p">}</span><span class="w"> </span><span class="p">}</span><span class="w">
+</span></code></pre>
+<button class="clipboard-button" data-clipboard-text='{ "company": { "name": "acme", "address": "123 Carrot Street" } }
+'>Copy</button>
+</div>
+<p>Your controller will receive <code>params[:company]</code> as <code>{ "name" =&gt; "acme", "address" =&gt; "123 Carrot Street" }</code>.</p>
+
+<p>Also, if you've turned on <code>config.wrap_parameters</code> in your initializer or called <a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActionController/ParamsWrapper/Options/ClassMethods.html#method-i-wrap_parameters"><code>wrap_parameters</code></a> in your controller, you can safely omit the root element in the JSON parameter. In this case, the parameters will be cloned and wrapped with a key chosen based on your controller's name. So the above JSON request can be written as:</p>
+
+<div class="code_container">
+<pre><code class="highlight json"><span class="p">{</span><span class="w"> </span><span class="nl">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"acme"</span><span class="p">,</span><span class="w"> </span><span class="nl">"address"</span><span class="p">:</span><span class="w"> </span><span class="s2">"123 Carrot Street"</span><span class="w"> </span><span class="p">}</span><span class="w">
+</span></code></pre>
+<button class="clipboard-button" data-clipboard-text='{ "name": "acme", "address": "123 Carrot Street" }
+'>Copy</button>
+</div>
+<p>And, assuming that you're sending the data to <code>CompaniesController</code>, it would then be wrapped within the <code>:company</code> key like this:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="p">{</span> <span class="ss">name: </span><span class="s2">"acme"</span><span class="p">,</span> <span class="ss">address: </span><span class="s2">"123 Carrot Street"</span><span class="p">,</span> <span class="ss">company: </span><span class="p">{</span> <span class="ss">name: </span><span class="s2">"acme"</span><span class="p">,</span> <span class="ss">address: </span><span class="s2">"123 Carrot Street"</span> <span class="p">}</span> <span class="p">}</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='{ name: "acme", address: "123 Carrot Street", company: { name: "acme", address: "123 Carrot Street" } }
+'>Copy</button>
+</div>
+<p>You can customize the name of the key or specific parameters you want to wrap by consulting the <a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActionController/ParamsWrapper.html">API documentation</a></p>
+
+<div class="note"><p>Support for parsing XML parameters has been extracted into a gem named <code>actionpack-xml_parser</code>.</p></div>
+
+<h4 id="routing-parameters"><a class="anchorlink" href="#routing-parameters">4.3 Routing Parameters</a></h4>
+
+<p>The <code>params</code> hash will always contain the <code>:controller</code> and <code>:action</code> keys, but you should use the methods <a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActionController/Metal.html#method-i-controller_name"><code>controller_name</code></a> and <a href="https://api.rubyonrails.org/v7.0.4.2/classes/AbstractController/Base.html#method-i-action_name"><code>action_name</code></a> instead to access these values. Any other parameters defined by the routing, such as <code>:id</code>, will also be available. As an example, consider a listing of clients where the list can show either active or inactive clients. We can add a route that captures the <code>:status</code> parameter in a "pretty" URL:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">get</span> <span class="s1">'/clients/:status'</span><span class="p">,</span> <span class="ss">to: </span><span class="s1">'clients#index'</span><span class="p">,</span> <span class="ss">foo: </span><span class="s1">'bar'</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="get '/clients/:status', to: 'clients#index', foo: 'bar'
+">Copy</button>
+</div>
+<p>In this case, when a user opens the URL <code>/clients/active</code>, <code>params[:status]</code> will be set to "active". When this route is used, <code>params[:foo]</code> will also be set to "bar", as if it were passed in the query string. Your controller will also receive <code>params[:action]</code> as "index" and <code>params[:controller]</code> as "clients".</p>
+
+<h4 id="default-url-options"><a class="anchorlink" href="#default-url-options">4.4 <code>default_url_options</code></a></h4>
+
+<p>You can set global default parameters for URL generation by defining a method called <code>default_url_options</code> in your controller. Such a method must return a hash with the desired defaults, whose keys must be symbols:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">ApplicationController</span> <span class="o">&lt;</span> <span class="no">ActionController</span><span class="o">::</span><span class="no">Base</span>
+  <span class="k">def</span> <span class="nf">default_url_options</span>
+    <span class="p">{</span> <span class="ss">locale: </span><span class="no">I18n</span><span class="p">.</span><span class="nf">locale</span> <span class="p">}</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="class ApplicationController &lt; ActionController::Base
+  def default_url_options
+    { locale: I18n.locale }
+  end
+end
+">Copy</button>
+</div>
+<p>These options will be used as a starting point when generating URLs, so it's possible they'll be overridden by the options passed to <code>url_for</code> calls.</p>
+
+<p>If you define <code>default_url_options</code> in <code>ApplicationController</code>, as in the example above, these defaults will be used for all URL generation. The method can also be defined in a specific controller, in which case it only affects URLs generated there.</p>
+
+<p>In a given request, the method is not actually called for every single generated URL. For performance reasons, the returned hash is cached, and there is at most one invocation per request.</p>
+
+<h4 id="strong-parameters"><a class="anchorlink" href="#strong-parameters">4.5 Strong Parameters</a></h4>
+
+<p>With strong parameters, Action Controller parameters are forbidden to
+be used in Active Model mass assignments until they have been
+permitted. This means that you'll have to make a conscious decision about
+which attributes to permit for mass update. This is a better security
+practice to help prevent accidentally allowing users to update sensitive
+model attributes.</p>
+
+<p>In addition, parameters can be marked as required and will flow through a
+predefined raise/rescue flow that will result in a 400 Bad Request being
+returned if not all required parameters are passed in.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">PeopleController</span> <span class="o">&lt;</span> <span class="no">ActionController</span><span class="o">::</span><span class="no">Base</span>
+  <span class="c1"># This will raise an ActiveModel::ForbiddenAttributesError exception</span>
+  <span class="c1"># because it's using mass assignment without an explicit permit</span>
+  <span class="c1"># step.</span>
+  <span class="k">def</span> <span class="nf">create</span>
+    <span class="no">Person</span><span class="p">.</span><span class="nf">create</span><span class="p">(</span><span class="n">params</span><span class="p">[</span><span class="ss">:person</span><span class="p">])</span>
+  <span class="k">end</span>
+
+  <span class="c1"># This will pass with flying colors as long as there's a person key</span>
+  <span class="c1"># in the parameters, otherwise it'll raise an</span>
+  <span class="c1"># ActionController::ParameterMissing exception, which will get</span>
+  <span class="c1"># caught by ActionController::Base and turned into a 400 Bad</span>
+  <span class="c1"># Request error.</span>
+  <span class="k">def</span> <span class="nf">update</span>
+    <span class="n">person</span> <span class="o">=</span> <span class="n">current_account</span><span class="p">.</span><span class="nf">people</span><span class="p">.</span><span class="nf">find</span><span class="p">(</span><span class="n">params</span><span class="p">[</span><span class="ss">:id</span><span class="p">])</span>
+    <span class="n">person</span><span class="p">.</span><span class="nf">update!</span><span class="p">(</span><span class="n">person_params</span><span class="p">)</span>
+    <span class="n">redirect_to</span> <span class="n">person</span>
+  <span class="k">end</span>
+
+  <span class="kp">private</span>
+    <span class="c1"># Using a private method to encapsulate the permissible parameters</span>
+    <span class="c1"># is just a good pattern since you'll be able to reuse the same</span>
+    <span class="c1"># permit list between create and update. Also, you can specialize</span>
+    <span class="c1"># this method with per-user checking of permissible attributes.</span>
+    <span class="k">def</span> <span class="nf">person_params</span>
+      <span class="n">params</span><span class="p">.</span><span class="nf">require</span><span class="p">(</span><span class="ss">:person</span><span class="p">).</span><span class="nf">permit</span><span class="p">(</span><span class="ss">:name</span><span class="p">,</span> <span class="ss">:age</span><span class="p">)</span>
+    <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="class PeopleController &lt; ActionController::Base
+  # This will raise an ActiveModel::ForbiddenAttributesError exception
+  # because it's using mass assignment without an explicit permit
+  # step.
+  def create
+    Person.create(params[:person])
+  end
+
+  # This will pass with flying colors as long as there's a person key
+  # in the parameters, otherwise it'll raise an
+  # ActionController::ParameterMissing exception, which will get
+  # caught by ActionController::Base and turned into a 400 Bad
+  # Request error.
+  def update
+    person = current_account.people.find(params[:id])
+    person.update!(person_params)
+    redirect_to person
+  end
+
+  private
+    # Using a private method to encapsulate the permissible parameters
+    # is just a good pattern since you'll be able to reuse the same
+    # permit list between create and update. Also, you can specialize
+    # this method with per-user checking of permissible attributes.
+    def person_params
+      params.require(:person).permit(:name, :age)
+    end
+end
+">Copy</button>
+</div>
+<h5 id="permitted-scalar-values"><a class="anchorlink" href="#permitted-scalar-values">4.5.1 Permitted Scalar Values</a></h5>
+
+<p>Calling <a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActionController/Parameters.html#method-i-permit"><code>permit</code></a> like:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">params</span><span class="p">.</span><span class="nf">permit</span><span class="p">(</span><span class="ss">:id</span><span class="p">)</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="params.permit(:id)
+">Copy</button>
+</div>
+<p>permits the specified key (<code>:id</code>) for inclusion if it appears in <code>params</code> and
+it has a permitted scalar value associated. Otherwise, the key is going
+to be filtered out, so arrays, hashes, or any other objects cannot be
+injected.</p>
+
+<p>The permitted scalar types are <code>String</code>, <code>Symbol</code>, <code>NilClass</code>,
+<code>Numeric</code>, <code>TrueClass</code>, <code>FalseClass</code>, <code>Date</code>, <code>Time</code>, <code>DateTime</code>,
+<code>StringIO</code>, <code>IO</code>, <code>ActionDispatch::Http::UploadedFile</code>, and
+<code>Rack::Test::UploadedFile</code>.</p>
+
+<p>To declare that the value in <code>params</code> must be an array of permitted
+scalar values, map the key to an empty array:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">params</span><span class="p">.</span><span class="nf">permit</span><span class="p">(</span><span class="ss">id: </span><span class="p">[])</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="params.permit(id: [])
+">Copy</button>
+</div>
+<p>Sometimes it is not possible or convenient to declare the valid keys of
+a hash parameter or its internal structure. Just map to an empty hash:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">params</span><span class="p">.</span><span class="nf">permit</span><span class="p">(</span><span class="ss">preferences: </span><span class="p">{})</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="params.permit(preferences: {})
+">Copy</button>
+</div>
+<p>but be careful because this opens the door to arbitrary input. In this
+case, <code>permit</code> ensures values in the returned structure are permitted
+scalars and filters out anything else.</p>
+
+<p>To permit an entire hash of parameters, the <a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActionController/Parameters.html#method-i-permit-21"><code>permit!</code></a> method can be
+used:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">params</span><span class="p">.</span><span class="nf">require</span><span class="p">(</span><span class="ss">:log_entry</span><span class="p">).</span><span class="nf">permit!</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="params.require(:log_entry).permit!
+">Copy</button>
+</div>
+<p>This marks the <code>:log_entry</code> parameters hash and any sub-hash of it as
+permitted and does not check for permitted scalars, anything is accepted.
+Extreme care should be taken when using <code>permit!</code>, as it will allow all current
+and future model attributes to be mass-assigned.</p>
+
+<h5 id="nested-parameters"><a class="anchorlink" href="#nested-parameters">4.5.2 Nested Parameters</a></h5>
+
+<p>You can also use <code>permit</code> on nested parameters, like:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">params</span><span class="p">.</span><span class="nf">permit</span><span class="p">(</span><span class="ss">:name</span><span class="p">,</span> <span class="p">{</span> <span class="ss">emails: </span><span class="p">[]</span> <span class="p">},</span>
+              <span class="ss">friends: </span><span class="p">[</span> <span class="ss">:name</span><span class="p">,</span>
+                         <span class="p">{</span> <span class="ss">family: </span><span class="p">[</span> <span class="ss">:name</span> <span class="p">],</span> <span class="ss">hobbies: </span><span class="p">[]</span> <span class="p">}])</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="params.permit(:name, { emails: [] },
+              friends: [ :name,
+                         { family: [ :name ], hobbies: [] }])
+">Copy</button>
+</div>
+<p>This declaration permits the <code>name</code>, <code>emails</code>, and <code>friends</code>
+attributes. It is expected that <code>emails</code> will be an array of permitted
+scalar values, and that <code>friends</code> will be an array of resources with
+specific attributes: they should have a <code>name</code> attribute (any
+permitted scalar values allowed), a <code>hobbies</code> attribute as an array of
+permitted scalar values, and a <code>family</code> attribute which is restricted
+to having a <code>name</code> (any permitted scalar values allowed here, too).</p>
+
+<h5 id="more-examples"><a class="anchorlink" href="#more-examples">4.5.3 More Examples</a></h5>
+
+<p>You may want to also use the permitted attributes in your <code>new</code>
+action. This raises the problem that you can't use <a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActionController/Parameters.html#method-i-require"><code>require</code></a> on the
+root key because, normally, it does not exist when calling <code>new</code>:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="c1"># using `fetch` you can supply a default and use</span>
+<span class="c1"># the Strong Parameters API from there.</span>
+<span class="n">params</span><span class="p">.</span><span class="nf">fetch</span><span class="p">(</span><span class="ss">:blog</span><span class="p">,</span> <span class="p">{}).</span><span class="nf">permit</span><span class="p">(</span><span class="ss">:title</span><span class="p">,</span> <span class="ss">:author</span><span class="p">)</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="# using `fetch` you can supply a default and use
+# the Strong Parameters API from there.
+params.fetch(:blog, {}).permit(:title, :author)
+">Copy</button>
+</div>
+<p>The model class method <code>accepts_nested_attributes_for</code> allows you to
+update and destroy associated records. This is based on the <code>id</code> and <code>_destroy</code>
+parameters:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="c1"># permit :id and :_destroy</span>
+<span class="n">params</span><span class="p">.</span><span class="nf">require</span><span class="p">(</span><span class="ss">:author</span><span class="p">).</span><span class="nf">permit</span><span class="p">(</span><span class="ss">:name</span><span class="p">,</span> <span class="ss">books_attributes: </span><span class="p">[</span><span class="ss">:title</span><span class="p">,</span> <span class="ss">:id</span><span class="p">,</span> <span class="ss">:_destroy</span><span class="p">])</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="# permit :id and :_destroy
+params.require(:author).permit(:name, books_attributes: [:title, :id, :_destroy])
+">Copy</button>
+</div>
+<p>Hashes with integer keys are treated differently, and you can declare
+the attributes as if they were direct children. You get these kinds of
+parameters when you use <code>accepts_nested_attributes_for</code> in combination
+with a <code>has_many</code> association:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="c1"># To permit the following data:</span>
+<span class="c1"># {"book" =&gt; {"title" =&gt; "Some Book",</span>
+<span class="c1">#             "chapters_attributes" =&gt; { "1" =&gt; {"title" =&gt; "First Chapter"},</span>
+<span class="c1">#                                        "2" =&gt; {"title" =&gt; "Second Chapter"}}}}</span>
+
+<span class="n">params</span><span class="p">.</span><span class="nf">require</span><span class="p">(</span><span class="ss">:book</span><span class="p">).</span><span class="nf">permit</span><span class="p">(</span><span class="ss">:title</span><span class="p">,</span> <span class="ss">chapters_attributes: </span><span class="p">[</span><span class="ss">:title</span><span class="p">])</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='# To permit the following data:
+# {"book" =&gt; {"title" =&gt; "Some Book",
+#             "chapters_attributes" =&gt; { "1" =&gt; {"title" =&gt; "First Chapter"},
+#                                        "2" =&gt; {"title" =&gt; "Second Chapter"}}}}
+
+params.require(:book).permit(:title, chapters_attributes: [:title])
+'>Copy</button>
+</div>
+<p>Imagine a scenario where you have parameters representing a product
+name, and a hash of arbitrary data associated with that product, and
+you want to permit the product name attribute and also the whole
+data hash:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">def</span> <span class="nf">product_params</span>
+  <span class="n">params</span><span class="p">.</span><span class="nf">require</span><span class="p">(</span><span class="ss">:product</span><span class="p">).</span><span class="nf">permit</span><span class="p">(</span><span class="ss">:name</span><span class="p">,</span> <span class="ss">data: </span><span class="p">{})</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="def product_params
+  params.require(:product).permit(:name, data: {})
+end
+">Copy</button>
+</div>
+<h5 id="outside-the-scope-of-strong-parameters"><a class="anchorlink" href="#outside-the-scope-of-strong-parameters">4.5.4 Outside the Scope of Strong Parameters</a></h5>
+
+<p>The strong parameter API was designed with the most common use cases
+in mind. It is not meant as a silver bullet to handle all of your
+parameter filtering problems. However, you can easily mix the API with your
+own code to adapt to your situation.</p>
+</body>
+</html>

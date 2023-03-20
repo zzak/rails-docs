@@ -1,0 +1,55 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>5 Turbolinks</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v4.1.16/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="turbolinks">5 Turbolinks</h3>
+<p>Rails 4 ships with the <a href="https://github.com/rails/turbolinks">Turbolinks gem</a>.
+This gem uses Ajax to speed up page rendering in most applications.</p>
+<h4 id="how-turbolinks-works">5.1 How Turbolinks Works</h4>
+<p>Turbolinks attaches a click handler to all <code>&lt;a&gt;</code> on the page. If your browser
+supports
+<a href="https://developer.mozilla.org/en-US/docs/DOM/Manipulating_the_browser_history#The_pushState().C2.A0method">PushState</a>,
+Turbolinks will make an Ajax request for the page, parse the response, and
+replace the entire <code>&lt;body&gt;</code> of the page with the <code>&lt;body&gt;</code> of the response. It
+will then use PushState to change the URL to the correct one, preserving
+refresh semantics and giving you pretty URLs.</p>
+<p>The only thing you have to do to enable Turbolinks is have it in your Gemfile,
+and put <code>//= require turbolinks</code> in your CoffeeScript manifest, which is usually
+<code>app/assets/javascripts/application.js</code>.</p>
+<p>If you want to disable Turbolinks for certain links, add a <code>data-no-turbolink</code>
+attribute to the tag:</p>
+<div class="code_container">
+<pre class="brush: xml; gutter: false; toolbar: false">
+&lt;a href="..." data-no-turbolink&gt;No turbolinks here&lt;/a&gt;.
+
+</pre>
+</div>
+<h4 id="page-change-events">5.2 Page Change Events</h4>
+<p>When writing CoffeeScript, you'll often want to do some sort of processing upon
+page load. With jQuery, you'd write something like this:</p>
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+$(document).ready -&gt;
+  alert "page has loaded!"
+
+</pre>
+</div>
+<p>However, because Turbolinks overrides the normal page loading process, the
+event that this relies on will not be fired. If you have code that looks like
+this, you must change your code to do this instead:</p>
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+$(document).on "page:change", -&gt;
+  alert "page has loaded!"
+
+</pre>
+</div>
+<p>For more details, including other events you can bind to, check out <a href="https://github.com/rails/turbolinks/blob/master/README.md">the
+Turbolinks
+README</a>.</p>
+</body>
+</html>

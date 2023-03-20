@@ -1,0 +1,132 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>3 Extending Core Classes</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v7.0.4.2/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="extending-core-classes"><a class="anchorlink" href="#extending-core-classes">3 Extending Core Classes</a></h3>
+<p>This section will explain how to add a method to String that will be available anywhere in your Rails application.</p>
+
+<p>In this example you will add a method to String named <code>to_squawk</code>. To begin, create a new test file with a few assertions:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="c1"># yaffle/test/core_ext_test.rb</span>
+
+<span class="nb">require</span> <span class="s2">"test_helper"</span>
+
+<span class="k">class</span> <span class="nc">CoreExtTest</span> <span class="o">&lt;</span> <span class="no">ActiveSupport</span><span class="o">::</span><span class="no">TestCase</span>
+  <span class="k">def</span> <span class="nf">test_to_squawk_prepends_the_word_squawk</span>
+    <span class="n">assert_equal</span> <span class="s2">"squawk! Hello World"</span><span class="p">,</span> <span class="s2">"Hello World"</span><span class="p">.</span><span class="nf">to_squawk</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='# yaffle/test/core_ext_test.rb
+
+require "test_helper"
+
+class CoreExtTest &lt; ActiveSupport::TestCase
+  def test_to_squawk_prepends_the_word_squawk
+    assert_equal "squawk! Hello World", "Hello World".to_squawk
+  end
+end
+'>Copy</button>
+</div>
+<p>Run <code>bin/test</code> to run the test. This test should fail because we haven't implemented the <code>to_squawk</code> method:</p>
+
+<div class="code_container">
+<pre><code class="highlight plaintext">E
+
+Error:
+CoreExtTest#test_to_squawk_prepends_the_word_squawk:
+NoMethodError: undefined method `to_squawk' for "Hello World":String
+
+
+bin/test /path/to/yaffle/test/core_ext_test.rb:4
+
+.
+
+Finished in 0.003358s, 595.6483 runs/s, 297.8242 assertions/s.
+
+2 runs, 1 assertions, 0 failures, 1 errors, 0 skips
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="E
+
+Error:
+CoreExtTest#test_to_squawk_prepends_the_word_squawk:
+NoMethodError: undefined method `to_squawk' for &quot;Hello World&quot;:String
+
+
+bin/test /path/to/yaffle/test/core_ext_test.rb:4
+
+.
+
+Finished in 0.003358s, 595.6483 runs/s, 297.8242 assertions/s.
+
+2 runs, 1 assertions, 0 failures, 1 errors, 0 skips
+">Copy</button>
+</div>
+<p>Great - now you are ready to start development.</p>
+
+<p>In <code>lib/yaffle.rb</code>, add <code>require "yaffle/core_ext"</code>:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="c1"># yaffle/lib/yaffle.rb</span>
+
+<span class="nb">require</span> <span class="s2">"yaffle/railtie"</span>
+<span class="nb">require</span> <span class="s2">"yaffle/core_ext"</span>
+
+<span class="k">module</span> <span class="nn">Yaffle</span>
+  <span class="c1"># Your code goes here...</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='# yaffle/lib/yaffle.rb
+
+require "yaffle/railtie"
+require "yaffle/core_ext"
+
+module Yaffle
+  # Your code goes here...
+end
+'>Copy</button>
+</div>
+<p>Finally, create the <code>core_ext.rb</code> file and add the <code>to_squawk</code> method:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="c1"># yaffle/lib/yaffle/core_ext.rb</span>
+
+<span class="k">class</span> <span class="nc">String</span>
+  <span class="k">def</span> <span class="nf">to_squawk</span>
+    <span class="s2">"squawk! </span><span class="si">#{</span><span class="nb">self</span><span class="si">}</span><span class="s2">"</span><span class="p">.</span><span class="nf">strip</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='# yaffle/lib/yaffle/core_ext.rb
+
+class String
+  def to_squawk
+    "squawk! #{self}".strip
+  end
+end
+'>Copy</button>
+</div>
+<p>To test that your method does what it says it does, run the unit tests with <code>bin/test</code> from your plugin directory.</p>
+
+<div class="code_container">
+<pre><code class="highlight plaintext">  2 runs, 2 assertions, 0 failures, 0 errors, 0 skips
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="  2 runs, 2 assertions, 0 failures, 0 errors, 0 skips
+">Copy</button>
+</div>
+<p>To see this in action, change to the <code>test/dummy</code> directory, start <code>bin/rails console</code>, and commence squawking:</p>
+
+<div class="code_container">
+<pre><code class="highlight irb"><span class="gp">irb&gt;</span><span class="w"> </span><span class="s2">"Hello World"</span><span class="p">.</span><span class="nf">to_squawk</span>
+<span class="p">=&gt;</span> <span class="s2">"squawk! Hello World"</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='"Hello World".to_squawk
+'>Copy</button>
+</div>
+</body>
+</html>

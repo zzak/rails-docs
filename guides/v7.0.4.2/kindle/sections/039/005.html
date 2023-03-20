@@ -1,0 +1,153 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>6 Configuration</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v7.0.4.2/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="configuration"><a class="anchorlink" href="#configuration">6 Configuration</a></h3>
+<h4 id="configuration-options"><a class="anchorlink" href="#configuration-options">6.1 Configuration Options</a></h4>
+
+<p>You can configure Active Record Encryption options in your <code>application.rb</code> (most common scenario) or in a specific environment config file <code>config/environments/&lt;env name&gt;.rb</code> if you want to set them on a per-environment basis.</p>
+
+<div class="warning"><p>It's recommended to use Rails built-in credentials support to store keys. If you prefer to set them manually via config properties, make sure you don't commit them with your code (e.g. use environment variables).</p></div>
+
+<h5 id="config-active-record-encryption-support-unencrypted-data"><a class="anchorlink" href="#config-active-record-encryption-support-unencrypted-data">6.1.1 <code>config.active_record.encryption.support_unencrypted_data</code></a></h5>
+
+<p>When true, unencrypted data can be read normally. When false, it will raise errors. Default: <code>false</code>.</p>
+
+<h5 id="config-active-record-encryption-extend-queries"><a class="anchorlink" href="#config-active-record-encryption-extend-queries">6.1.2 <code>config.active_record.encryption.extend_queries</code></a></h5>
+
+<p>When true, queries referencing deterministically encrypted attributes will be modified to include additional values if needed. Those additional values will be the clean version of the value (when <code>config.active_record.encryption.support_unencrypted_data</code> is true) and values encrypted with previous encryption schemes, if any (as provided with the <code>previous:</code> option). Default: <code>false</code> (experimental).</p>
+
+<h5 id="config-active-record-encryption-encrypt-fixtures"><a class="anchorlink" href="#config-active-record-encryption-encrypt-fixtures">6.1.3 <code>config.active_record.encryption.encrypt_fixtures</code></a></h5>
+
+<p>When true, encryptable attributes in fixtures will be automatically encrypted when loaded. Default: <code>false</code>.</p>
+
+<h5 id="config-active-record-encryption-store-key-references"><a class="anchorlink" href="#config-active-record-encryption-store-key-references">6.1.4 <code>config.active_record.encryption.store_key_references</code></a></h5>
+
+<p>When true, a reference to the encryption key is stored in the headers of the encrypted message. This makes for faster decryption when multiple keys are in use. Default: <code>false</code>.</p>
+
+<h5 id="config-active-record-encryption-add-to-filter-parameters"><a class="anchorlink" href="#config-active-record-encryption-add-to-filter-parameters">6.1.5 <code>config.active_record.encryption.add_to_filter_parameters</code></a></h5>
+
+<p>When true, encrypted attribute names are added automatically to <a href="configuring.html#config-filter-parameters"><code>config.filter_parameters</code></a> and won't be shown in logs. Default: <code>true</code>.</p>
+
+<h5 id="config-active-record-encryption-excluded-from-filter-parameters"><a class="anchorlink" href="#config-active-record-encryption-excluded-from-filter-parameters">6.1.6 <code>config.active_record.encryption.excluded_from_filter_parameters</code></a></h5>
+
+<p>You can configure a list of params that won't be filtered out when <code>config.active_record.encryption.add_to_filter_parameters</code> is true. Default: <code>[]</code>.</p>
+
+<h5 id="config-active-record-encryption-validate-column-size"><a class="anchorlink" href="#config-active-record-encryption-validate-column-size">6.1.7 <code>config.active_record.encryption.validate_column_size</code></a></h5>
+
+<p>Adds a validation based on the column size. This is recommended to prevent storing huge values using highly compressible payloads. Default: <code>true</code>.</p>
+
+<h5 id="config-active-record-encryption-primary-key"><a class="anchorlink" href="#config-active-record-encryption-primary-key">6.1.8 <code>config.active_record.encryption.primary_key</code></a></h5>
+
+<p>The key or lists of keys used to derive root data-encryption keys. The way they are used depends on the key provider configured. It's preferred to configure it via the <code>active_record_encryption.primary_key</code> credential.</p>
+
+<h5 id="config-active-record-encryption-deterministic-key"><a class="anchorlink" href="#config-active-record-encryption-deterministic-key">6.1.9 <code>config.active_record.encryption.deterministic_key</code></a></h5>
+
+<p>The key or list of keys used for deterministic encryption. It's preferred to configure it via the <code>active_record_encryption.deterministic_key</code> credential.</p>
+
+<h5 id="config-active-record-encryption-key-derivation-salt"><a class="anchorlink" href="#config-active-record-encryption-key-derivation-salt">6.1.10 <code>config.active_record.encryption.key_derivation_salt</code></a></h5>
+
+<p>The salt used when deriving keys. It's preferred to configure it via the <code>active_record_encryption.key_derivation_salt</code> credential.</p>
+
+<h5 id="config-active-record-encryption-forced-encoding-for-deterministic-encryption"><a class="anchorlink" href="#config-active-record-encryption-forced-encoding-for-deterministic-encryption">6.1.11 <code>config.active_record.encryption.forced_encoding_for_deterministic_encryption</code></a></h5>
+
+<p>The default encoding for attributes encrypted deterministically. You can disable forced encoding by setting this option to <code>nil</code>. It's <code>Encoding::UTF_8</code> by default.</p>
+
+<h4 id="encryption-contexts"><a class="anchorlink" href="#encryption-contexts">6.2 Encryption Contexts</a></h4>
+
+<p>An encryption context defines the encryption components that are used in a given moment. There is a default encryption context based on your global configuration, but you can configure a custom context for a given attribute or when running a specific block of code.</p>
+
+<div class="note"><p>Encryption contexts are a flexible but advanced configuration mechanism. Most users should not have to care about them.</p></div>
+
+<p>The main components of encryption contexts are:</p>
+<ul>
+<li>
+<code>encryptor</code>: exposes the internal API for encrypting and decrypting data.  It interacts with a <code>key_provider</code> to build encrypted messages and deal with their serialization. The encryption/decryption itself is done by the <code>cipher</code> and the serialization by <code>message_serializer</code>.</li>
+<li>
+<code>cipher</code>: the encryption algorithm itself (AES 256 GCM)</li>
+<li>
+<code>key_provider</code>: serves encryption and decryption keys.</li>
+<li>
+<code>message_serializer</code>: serializes and deserializes encrypted payloads (<code>Message</code>).</li>
+</ul>
+<div class="note"><p>If you decide to build your own <code>message_serializer</code>, it's important to use safe mechanisms that can't deserialize arbitrary objects. A common supported scenario is encrypting existing unencrypted data. An attacker can leverage this to enter a tampered payload before encryption takes place and perform RCE attacks. This means custom serializers should avoid <code>Marshal</code>, <code>YAML.load</code> (use <code>YAML.safe_load</code>  instead), or <code>JSON.load</code> (use <code>JSON.parse</code> instead).</p></div>
+
+<h5 id="global-encryption-context"><a class="anchorlink" href="#global-encryption-context">6.2.1 Global Encryption Context</a></h5>
+
+<p>The global encryption context is the one used by default and is configured as other configuration properties in your <code>application.rb</code> or environment config files.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">config</span><span class="p">.</span><span class="nf">active_record</span><span class="p">.</span><span class="nf">encryption</span><span class="p">.</span><span class="nf">key_provider</span> <span class="o">=</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Encryption</span><span class="o">::</span><span class="no">EnvelopeEncryptionKeyProvider</span><span class="p">.</span><span class="nf">new</span>
+<span class="n">config</span><span class="p">.</span><span class="nf">active_record</span><span class="p">.</span><span class="nf">encryption</span><span class="p">.</span><span class="nf">encryptor</span> <span class="o">=</span> <span class="no">MyEncryptor</span><span class="p">.</span><span class="nf">new</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="config.active_record.encryption.key_provider = ActiveRecord::Encryption::EnvelopeEncryptionKeyProvider.new
+config.active_record.encryption.encryptor = MyEncryptor.new
+">Copy</button>
+</div>
+<h5 id="per-attribute-encryption-contexts"><a class="anchorlink" href="#per-attribute-encryption-contexts">6.2.2 Per-attribute Encryption Contexts</a></h5>
+
+<p>You can override encryption context params by passing them in the attribute declaration:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">Attribute</span>
+  <span class="n">encrypts</span> <span class="ss">:title</span><span class="p">,</span> <span class="ss">encryptor: </span><span class="no">MyAttributeEncryptor</span><span class="p">.</span><span class="nf">new</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="class Attribute
+  encrypts :title, encryptor: MyAttributeEncryptor.new
+end
+">Copy</button>
+</div>
+<h5 id="encryption-context-when-running-a-block-of-code"><a class="anchorlink" href="#encryption-context-when-running-a-block-of-code">6.2.3 Encryption Context When Running a Block of Code</a></h5>
+
+<p>You can use <code>ActiveRecord::Encryption.with_encryption_context</code> to set an encryption context for a given block of code:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Encryption</span><span class="p">.</span><span class="nf">with_encryption_context</span><span class="p">(</span><span class="ss">encryptor: </span><span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Encryption</span><span class="o">::</span><span class="no">NullEncryptor</span><span class="p">.</span><span class="nf">new</span><span class="p">)</span> <span class="k">do</span>
+  <span class="o">...</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="ActiveRecord::Encryption.with_encryption_context(encryptor: ActiveRecord::Encryption::NullEncryptor.new) do
+  ...
+end
+">Copy</button>
+</div>
+<h5 id="built-in-encryption-contexts"><a class="anchorlink" href="#built-in-encryption-contexts">6.2.4 Built-in Encryption Contexts</a></h5>
+
+<h6 id="disable-encryption"><a class="anchorlink" href="#disable-encryption">6.2.4.1 Disable Encryption</a></h6>
+
+<p>You can run code without encryption:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Encryption</span><span class="p">.</span><span class="nf">without_encryption</span> <span class="k">do</span>
+   <span class="o">...</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="ActiveRecord::Encryption.without_encryption do
+   ...
+end
+">Copy</button>
+</div>
+<p>This means that reading encrypted text will return the ciphertext, and saved content will be stored unencrypted.</p>
+
+<h6 id="protect-encrypted-data"><a class="anchorlink" href="#protect-encrypted-data">6.2.4.2 Protect Encrypted Data</a></h6>
+
+<p>You can run code without encryption but prevent overwriting encrypted content:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Encryption</span><span class="p">.</span><span class="nf">protecting_encrypted_data</span> <span class="k">do</span>
+   <span class="o">...</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="ActiveRecord::Encryption.protecting_encrypted_data do
+   ...
+end
+">Copy</button>
+</div>
+<p>This can be handy if you want to protect encrypted data while still running arbitrary code against it (e.g. in a Rails console).</p>
+</body>
+</html>

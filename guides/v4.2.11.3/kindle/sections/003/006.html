@@ -1,0 +1,25 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>7 Active Record and Referential Integrity</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v4.2.11.3/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="active-record-and-referential-integrity">7 Active Record and Referential Integrity</h3>
+<p>The Active Record way claims that intelligence belongs in your models, not in
+the database. As such, features such as triggers or constraints,
+which push some of that intelligence back into the database, are not heavily
+used.</p>
+
+<p>Validations such as <code>validates :foreign_key, uniqueness: true</code> are one way in
+which models can enforce data integrity. The <code>:dependent</code> option on
+associations allows models to automatically destroy child objects when the
+parent is destroyed. Like anything which operates at the application level,
+these cannot guarantee referential integrity and so some people augment them
+with <a href="#foreign-keys">foreign key constraints</a> in the database.</p>
+
+<p>Although Active Record does not provide all the tools for working directly with
+such features, the <code>execute</code> method can be used to execute arbitrary SQL.</p>
+</body>
+</html>

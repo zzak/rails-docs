@@ -1,0 +1,67 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>1 General Advice</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v5.2.8.1/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="general-advice"><a class="anchorlink" href="#general-advice">1 General Advice</a></h3>
+<p>Before attempting to upgrade an existing application, you should be sure you have a good reason to upgrade. You need to balance several factors: the need for new features, the increasing difficulty of finding support for old code, and your available time and skills, to name a few.</p>
+
+<h4 id="test-coverage"><a class="anchorlink" href="#test-coverage">1.1 Test Coverage</a></h4>
+
+<p>The best way to be sure that your application still works after upgrading is to have good test coverage before you start the process. If you don't have automated tests that exercise the bulk of your application, you'll need to spend time manually exercising all the parts that have changed. In the case of a Rails upgrade, that will mean every single piece of functionality in the application. Do yourself a favor and make sure your test coverage is good <em>before</em> you start an upgrade.</p>
+
+<h4 id="the-upgrade-process"><a class="anchorlink" href="#the-upgrade-process">1.2 The Upgrade Process</a></h4>
+
+<p>When changing Rails versions, it's best to move slowly, one minor version at a time, in order to make good use of the deprecation warnings. Rails version numbers are in the form Major.Minor.Patch. Major and Minor versions are allowed to make changes to the public API, so this may cause errors in your application. Patch versions only include bug fixes, and don't change any public API.</p>
+
+<p>The process should go as follows:</p>
+<ol>
+<li>Write tests and make sure they pass.</li>
+<li>Move to the latest patch version after your current version.</li>
+<li>Fix tests and deprecated features.</li>
+<li>Move to the latest patch version of the next minor version.</li>
+</ol>
+<p>Repeat this process until you reach your target Rails version. Each time you move versions, you will need to change the Rails version number in the <code>Gemfile</code> (and possibly other gem versions) and run <code>bundle update</code>. Then run the Update task mentioned below to update configuration files, then run your tests.</p>
+
+<p>You can find a list of all released Rails versions <a href="https://rubygems.org/gems/rails/versions">here</a>.</p>
+
+<h4 id="ruby-versions"><a class="anchorlink" href="#ruby-versions">1.3 Ruby Versions</a></h4>
+
+<p>Rails generally stays close to the latest released Ruby version when it's released:</p>
+<ul>
+<li>Rails 5 requires Ruby 2.2.2 or newer.</li>
+<li>Rails 4 prefers Ruby 2.0 and requires 1.9.3 or newer.</li>
+<li>Rails 3.2.x is the last branch to support Ruby 1.8.7.</li>
+<li>Rails 3 and above require Ruby 1.8.7 or higher. Support for all of the previous Ruby versions has been dropped officially. You should upgrade as early as possible.</li>
+</ul>
+<div class="info"><p>Ruby 1.8.7 p248 and p249 have marshaling bugs that crash Rails. Ruby Enterprise Edition has these fixed since the release of 1.8.7-2010.02. On the 1.9 front, Ruby 1.9.1 is not usable because it outright segfaults, so if you want to use 1.9.x, jump straight to 1.9.3 for smooth sailing.</p></div>
+
+<h4 id="the-update-task"><a class="anchorlink" href="#the-update-task">1.4 The Update Task</a></h4>
+
+<p>Rails provides the <code>app:update</code> task (<code>rake rails:update</code> on 4.2 and earlier). After updating the Rails version
+in the <code>Gemfile</code>, run this task.
+This will help you with the creation of new files and changes of old files in an
+interactive session.</p>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+$ rails app:update
+   identical  config/boot.rb
+       exist  config
+    conflict  config/routes.rb
+Overwrite /myapp/config/routes.rb? (enter "h" for help) [Ynaqdh]
+       force  config/routes.rb
+    conflict  config/application.rb
+Overwrite /myapp/config/application.rb? (enter "h" for help) [Ynaqdh]
+       force  config/application.rb
+    conflict  config/environment.rb
+...
+
+</pre>
+</div>
+<p>Don't forget to review the difference, to see if there were any unexpected changes.</p>
+</body>
+</html>

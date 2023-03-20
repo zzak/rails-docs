@@ -1,0 +1,61 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>3 Ordering</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v5.1.7/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="ordering">3 Ordering</h3>
+<p>To retrieve records from the database in a specific order, you can use the <code>order</code> method.</p>
+
+<p>For example, if you're getting a set of records and want to order them in ascending order by the <code>created_at</code> field in your table:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+Client.order(:created_at)
+# OR
+Client.order("created_at")
+
+</pre>
+</div>
+<p>You could specify <code>ASC</code> or <code>DESC</code> as well:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+Client.order(created_at: :desc)
+# OR
+Client.order(created_at: :asc)
+# OR
+Client.order("created_at DESC")
+# OR
+Client.order("created_at ASC")
+
+</pre>
+</div>
+<p>Or ordering by multiple fields:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+Client.order(orders_count: :asc, created_at: :desc)
+# OR
+Client.order(:orders_count, created_at: :desc)
+# OR
+Client.order("orders_count ASC, created_at DESC")
+# OR
+Client.order("orders_count ASC", "created_at DESC")
+
+</pre>
+</div>
+<p>If you want to call <code>order</code> multiple times, subsequent orders will be appended to the first:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+Client.order("orders_count ASC").order("created_at DESC")
+# SELECT * FROM clients ORDER BY orders_count ASC, created_at DESC
+
+</pre>
+</div>
+<div class="warning"><p>If you are using <strong>MySQL 5.7.5</strong> and above, then on selecting fields from a result set using methods like <code>select</code>, <code>pluck</code> and <code>ids</code>; the <code>order</code> method will raise an <code>ActiveRecord::StatementInvalid</code> exception unless the field(s) used in <code>order</code> clause are included in the select list. See the next section for selecting fields from the result set.</p></div>
+</body>
+</html>

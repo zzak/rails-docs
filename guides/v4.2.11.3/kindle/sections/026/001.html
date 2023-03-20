@@ -1,0 +1,219 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>2 Loading Rails</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v4.2.11.3/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="loading-rails">2 Loading Rails</h3>
+<p>The next line in <code>config/application.rb</code> is:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+require 'rails/all'
+
+</pre>
+</div>
+<h4 id="railties-lib-rails-all-rb">2.1 <code>railties/lib/rails/all.rb</code>
+</h4>
+
+<p>This file is responsible for requiring all the individual frameworks of Rails:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+require "rails"
+
+%w(
+  active_record
+  action_controller
+  action_view
+  action_mailer
+  rails/test_unit
+  sprockets
+).each do |framework|
+  begin
+    require "#{framework}/railtie"
+  rescue LoadError
+  end
+end
+
+</pre>
+</div>
+<p>This is where all the Rails frameworks are loaded and thus made
+available to the application. We won't go into detail of what happens
+inside each of those frameworks, but you're encouraged to try and
+explore them on your own.</p>
+
+<p>For now, just keep in mind that common functionality like Rails engines,
+I18n and Rails configuration are all being defined here.</p>
+
+<h4 id="back-to-config-environment-rb">2.2 Back to <code>config/environment.rb</code>
+</h4>
+
+<p>The rest of <code>config/application.rb</code> defines the configuration for the
+<code>Rails::Application</code> which will be used once the application is fully
+initialized. When <code>config/application.rb</code> has finished loading Rails and defined
+the application namespace, we go back to <code>config/environment.rb</code>,
+where the application is initialized. For example, if the application was called
+<code>Blog</code>, here we would find <code>Rails.application.initialize!</code>, which is
+defined in <code>rails/application.rb</code>.</p>
+
+<h4 id="railties-lib-rails-application-rb">2.3 <code>railties/lib/rails/application.rb</code>
+</h4>
+
+<p>The <code>initialize!</code> method looks like this:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+def initialize!(group=:default) #:nodoc:
+  raise "Application has been already initialized." if @initialized
+  run_initializers(group, self)
+  @initialized = true
+  self
+end
+
+</pre>
+</div>
+<p>As you can see, you can only initialize an app once. The initializers are run through
+the <code>run_initializers</code> method which is defined in <code>railties/lib/rails/initializable.rb</code>:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+def run_initializers(group=:default, *args)
+  return if instance_variable_defined?(:@ran)
+  initializers.tsort_each do |initializer|
+    initializer.run(*args) if initializer.belongs_to?(group)
+  end
+  @ran = true
+end
+
+</pre>
+</div>
+<p>The <code>run_initializers</code> code itself is tricky. What Rails is doing here is
+traversing all the class ancestors looking for those that respond to an
+<code>initializers</code> method. It then sorts the ancestors by name, and runs them.
+For example, the <code>Engine</code> class will make all the engines available by
+providing an <code>initializers</code> method on them.</p>
+
+<p>The <code>Rails::Application</code> class, as defined in <code>railties/lib/rails/application.rb</code>
+defines <code>bootstrap</code>, <code>railtie</code>, and <code>finisher</code> initializers. The <code>bootstrap</code> initializers
+prepare the application (like initializing the logger) while the <code>finisher</code>
+initializers (like building the middleware stack) are run last. The <code>railtie</code>
+initializers are the initializers which have been defined on the <code>Rails::Application</code>
+itself and are run between the <code>bootstrap</code> and <code>finishers</code>.</p>
+
+<p>After this is done we go back to <code>Rack::Server</code>.</p>
+
+<h4 id="loading-rails-rack-lib-rack-server-rb">2.4 Rack: lib/rack/server.rb</h4>
+
+<p>Last time we left when the <code>app</code> method was being defined:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+def app
+  @app ||= options[:builder] ? build_app_from_string : build_app_and_options_from_config
+end
+...
+private
+  def build_app_and_options_from_config
+    if !::File.exist? options[:config]
+      abort "configuration #{options[:config]} not found"
+    end
+
+    app, options = Rack::Builder.parse_file(self.options[:config], opt_parser)
+    self.options.merge! options
+    app
+  end
+
+  def build_app_from_string
+    Rack::Builder.new_from_string(self.options[:builder])
+  end
+
+</pre>
+</div>
+<p>At this point <code>app</code> is the Rails app itself (a middleware), and what
+happens next is Rack will call all the provided middlewares:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+def build_app(app)
+  middleware[options[:environment]].reverse_each do |middleware|
+    middleware = middleware.call(self) if middleware.respond_to?(:call)
+    next unless middleware
+    klass = middleware.shift
+    app = klass.new(app, *middleware)
+  end
+  app
+end
+
+</pre>
+</div>
+<p>Remember, <code>build_app</code> was called (by <code>wrapped_app</code>) in the last line of <code>Server#start</code>.
+Here's how it looked like when we left:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+server.run wrapped_app, options, &amp;blk
+
+</pre>
+</div>
+<p>At this point, the implementation of <code>server.run</code> will depend on the
+server you're using. For example, if you were using Puma, here's what
+the <code>run</code> method would look like:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+...
+DEFAULT_OPTIONS = {
+  :Host =&gt; '0.0.0.0',
+  :Port =&gt; 8080,
+  :Threads =&gt; '0:16',
+  :Verbose =&gt; false
+}
+
+def self.run(app, options = {})
+  options  = DEFAULT_OPTIONS.merge(options)
+
+  if options[:Verbose]
+    app = Rack::CommonLogger.new(app, STDOUT)
+  end
+
+  if options[:environment]
+    ENV['RACK_ENV'] = options[:environment].to_s
+  end
+
+  server   = ::Puma::Server.new(app)
+  min, max = options[:Threads].split(':', 2)
+
+  puts "Puma #{::Puma::Const::PUMA_VERSION} starting..."
+  puts "* Min threads: #{min}, max threads: #{max}"
+  puts "* Environment: #{ENV['RACK_ENV']}"
+  puts "* Listening on tcp://#{options[:Host]}:#{options[:Port]}"
+
+  server.add_tcp_listener options[:Host], options[:Port]
+  server.min_threads = min
+  server.max_threads = max
+  yield server if block_given?
+
+  begin
+    server.run.join
+  rescue Interrupt
+    puts "* Gracefully stopping, waiting for requests to finish"
+    server.stop(true)
+    puts "* Goodbye!"
+  end
+
+end
+
+</pre>
+</div>
+<p>We won't dig into the server configuration itself, but this is
+the last piece of our journey in the Rails initialization process.</p>
+
+<p>This high level overview will help you understand when your code is
+executed and how, and overall become a better Rails developer. If you
+still want to know more, the Rails source code itself is probably the
+best place to go next.</p>
+</body>
+</html>

@@ -1,0 +1,41 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>8 Transforming Images</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v6.0.6.1/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="transforming-images"><a class="anchorlink" href="#transforming-images">8 Transforming Images</a></h3>
+<p>To enable variants, add the <code>image_processing</code> gem to your <code>Gemfile</code>:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+gem 'image_processing'
+
+</pre>
+</div>
+<p>To create a variation of an image, call <code>variant</code> on the <code>Blob</code>. You can pass any transformation to the method supported by the processor. The default processor for Active Storage is MiniMagick, but you can also use <a href="https://www.rubydoc.info/gems/ruby-vips/Vips/Image">Vips</a>.</p>
+
+<p>When the browser hits the variant URL, Active Storage will lazily transform the
+original blob into the specified format and redirect to its new service
+location.</p>
+
+<div class="code_container">
+<pre class="brush: ruby; html-script: true; gutter: false; toolbar: false">
+&lt;%= image_tag user.avatar.variant(resize_to_limit: [100, 100]) %&gt;
+
+</pre>
+</div>
+<p>To switch to the Vips processor, you would add the following to
+<code>config/application.rb</code>:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+# Use Vips for processing variants.
+config.active_storage.variant_processor = :vips
+
+</pre>
+</div>
+</body>
+</html>

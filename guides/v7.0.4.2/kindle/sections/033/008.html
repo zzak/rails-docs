@@ -1,0 +1,84 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>9 New Features You Can Leverage</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v7.0.4.2/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="new-features-you-can-leverage"><a class="anchorlink" href="#new-features-you-can-leverage">9 New Features You Can Leverage</a></h3>
+<h4 id="delete-require-dependency-calls"><a class="anchorlink" href="#delete-require-dependency-calls">9.1 Delete <code>require_dependency</code> calls</a></h4>
+
+<p>All known use cases of <code>require_dependency</code> have been eliminated with Zeitwerk. You should grep the project and delete them.</p>
+
+<p>If your application uses Single Table Inheritance, please see the <a href="autoloading_and_reloading_constants.html#single-table-inheritance">Single Table Inheritance section</a> of the Autoloading and Reloading Constants (Zeitwerk Mode) guide.</p>
+
+<h4 id="qualified-names-in-class-and-module-definitions-are-now-possible"><a class="anchorlink" href="#qualified-names-in-class-and-module-definitions-are-now-possible">9.2 Qualified Names in Class and Module Definitions Are Now Possible</a></h4>
+
+<p>You can now robustly use constant paths in class and module definitions:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="c1"># Autoloading in this class body matches Ruby semantics now.</span>
+<span class="k">class</span> <span class="nc">Admin::UsersController</span> <span class="o">&lt;</span> <span class="no">ApplicationController</span>
+  <span class="c1"># ...</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="# Autoloading in this class body matches Ruby semantics now.
+class Admin::UsersController &lt; ApplicationController
+  # ...
+end
+">Copy</button>
+</div>
+<p>A gotcha to be aware of is that, depending on the order of execution, the classic autoloader could sometimes be able to autoload <code>Foo::Wadus</code> in</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">Foo::Bar</span>
+  <span class="nc">Wadus</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="class Foo::Bar
+  Wadus
+end
+">Copy</button>
+</div>
+<p>That does not match Ruby semantics because <code>Foo</code> is not in the nesting, and won't work at all in <code>zeitwerk</code> mode. If you find such corner case you can use the qualified name <code>Foo::Wadus</code>:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">Foo::Bar</span>
+  <span class="nc">Foo::Wadus</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="class Foo::Bar
+  Foo::Wadus
+end
+">Copy</button>
+</div>
+<p>or add <code>Foo</code> to the nesting:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">module</span> <span class="nn">Foo</span>
+  <span class="k">class</span> <span class="nc">Bar</span>
+    <span class="no">Wadus</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="module Foo
+  class Bar
+    Wadus
+  end
+end
+">Copy</button>
+</div>
+<h4 id="thread-safety-everywhere"><a class="anchorlink" href="#thread-safety-everywhere">9.3 Thread-safety Everywhere</a></h4>
+
+<p>In <code>classic</code> mode, constant autoloading is not thread-safe, though Rails has locks in place for example to make web requests thread-safe.</p>
+
+<p>Constant autoloading is thread-safe in <code>zeitwerk</code> mode. For example, you can now autoload in multi-threaded scripts executed by the <code>runner</code> command.</p>
+
+<h4 id="eager-loading-and-autoloading-are-consistent"><a class="anchorlink" href="#eager-loading-and-autoloading-are-consistent">9.4 Eager Loading and Autoloading are Consistent</a></h4>
+
+<p>In <code>classic</code> mode, if <code>app/models/foo.rb</code> defines <code>Bar</code>, you won't be able to autoload that file, but eager loading will work because it loads files recursively blindly. This can be a source of errors if you test things first eager loading, execution may fail later autoloading.</p>
+
+<p>In <code>zeitwerk</code> mode both loading modes are consistent, they fail and err in the same files.</p>
+</body>
+</html>

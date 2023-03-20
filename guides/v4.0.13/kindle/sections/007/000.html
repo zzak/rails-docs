@@ -1,0 +1,353 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>1 Retrieving Objects from the Database</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v4.0.13/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="retrieving-objects-from-the-database">1 Retrieving Objects from the Database</h3>
+<p>To retrieve objects from the database, Active Record provides several finder methods. Each finder method allows you to pass arguments into it to perform certain queries on your database without writing raw SQL.</p>
+<p>The methods are:</p>
+<ul>
+<li><code>bind</code></li>
+<li><code>create_with</code></li>
+<li><code>eager_load</code></li>
+<li><code>extending</code></li>
+<li><code>from</code></li>
+<li><code>group</code></li>
+<li><code>having</code></li>
+<li><code>includes</code></li>
+<li><code>joins</code></li>
+<li><code>limit</code></li>
+<li><code>lock</code></li>
+<li><code>none</code></li>
+<li><code>offset</code></li>
+<li><code>order</code></li>
+<li><code>preload</code></li>
+<li><code>readonly</code></li>
+<li><code>references</code></li>
+<li><code>reorder</code></li>
+<li><code>reverse_order</code></li>
+<li><code>select</code></li>
+<li><code>distinct</code></li>
+<li><code>uniq</code></li>
+<li><code>where</code></li>
+</ul>
+<p>All of the above methods return an instance of <code>ActiveRecord::Relation</code>.</p>
+<p>The primary operation of <code>Model.find(options)</code> can be summarized as:</p>
+<ul>
+<li>Convert the supplied options to an equivalent SQL query.</li>
+<li>Fire the SQL query and retrieve the corresponding results from the database.</li>
+<li>Instantiate the equivalent Ruby object of the appropriate model for every resulting row.</li>
+<li>Run <code>after_find</code> callbacks, if any.</li>
+</ul>
+<h4 id="retrieving-a-single-object">1.1 Retrieving a Single Object</h4>
+<p>Active Record provides five different ways of retrieving a single object.</p>
+<h5 id="using-a-primary-key">1.1.1 Using a Primary Key</h5>
+<p>Using <code>Model.find(primary_key)</code>, you can retrieve the object corresponding to the specified <em>primary key</em> that matches any supplied options. For example:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+# Find the client with primary key (id) 10.
+client = Client.find(10)
+# =&gt; #&lt;Client id: 10, first_name: "Ryan"&gt;
+
+</pre>
+</div>
+<p>The SQL equivalent of the above is:</p>
+<div class="code_container">
+<pre class="brush: sql; gutter: false; toolbar: false">
+SELECT * FROM clients WHERE (clients.id = 10) LIMIT 1
+
+</pre>
+</div>
+<p><code>Model.find(primary_key)</code> will raise an <code>ActiveRecord::RecordNotFound</code> exception if no matching record is found.</p>
+<h5 id="retrieving-a-single-object-take">1.1.2 <code>take</code>
+</h5>
+<p><code>Model.take</code> retrieves a record without any implicit ordering. For example:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+client = Client.take
+# =&gt; #&lt;Client id: 1, first_name: "Lifo"&gt;
+
+</pre>
+</div>
+<p>The SQL equivalent of the above is:</p>
+<div class="code_container">
+<pre class="brush: sql; gutter: false; toolbar: false">
+SELECT * FROM clients LIMIT 1
+
+</pre>
+</div>
+<p><code>Model.take</code> returns <code>nil</code> if no record is found and no exception will be raised.</p>
+<div class="info"><p>The retrieved record may vary depending on the database engine.</p></div>
+<h5 id="retrieving-a-single-object-first">1.1.3 <code>first</code>
+</h5>
+<p><code>Model.first</code> finds the first record ordered by the primary key. For example:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+client = Client.first
+# =&gt; #&lt;Client id: 1, first_name: "Lifo"&gt;
+
+</pre>
+</div>
+<p>The SQL equivalent of the above is:</p>
+<div class="code_container">
+<pre class="brush: sql; gutter: false; toolbar: false">
+SELECT * FROM clients ORDER BY clients.id ASC LIMIT 1
+
+</pre>
+</div>
+<p><code>Model.first</code> returns <code>nil</code> if no matching record is found and no exception will be raised.</p>
+<h5 id="retrieving-a-single-object-last">1.1.4 <code>last</code>
+</h5>
+<p><code>Model.last</code> finds the last record ordered by the primary key. For example:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+client = Client.last
+# =&gt; #&lt;Client id: 221, first_name: "Russel"&gt;
+
+</pre>
+</div>
+<p>The SQL equivalent of the above is:</p>
+<div class="code_container">
+<pre class="brush: sql; gutter: false; toolbar: false">
+SELECT * FROM clients ORDER BY clients.id DESC LIMIT 1
+
+</pre>
+</div>
+<p><code>Model.last</code> returns <code>nil</code> if no matching record is found and no exception will be raised.</p>
+<h5 id="find-by">1.1.5 <code>find_by</code>
+</h5>
+<p><code>Model.find_by</code> finds the first record matching some conditions. For example:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+Client.find_by first_name: 'Lifo'
+# =&gt; #&lt;Client id: 1, first_name: "Lifo"&gt;
+
+Client.find_by first_name: 'Jon'
+# =&gt; nil
+
+</pre>
+</div>
+<p>It is equivalent to writing:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+Client.where(first_name: 'Lifo').take
+
+</pre>
+</div>
+<h5 id="take-bang">1.1.6 <code>take!</code>
+</h5>
+<p><code>Model.take!</code> retrieves a record without any implicit ordering. For example:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+client = Client.take!
+# =&gt; #&lt;Client id: 1, first_name: "Lifo"&gt;
+
+</pre>
+</div>
+<p>The SQL equivalent of the above is:</p>
+<div class="code_container">
+<pre class="brush: sql; gutter: false; toolbar: false">
+SELECT * FROM clients LIMIT 1
+
+</pre>
+</div>
+<p><code>Model.take!</code> raises <code>ActiveRecord::RecordNotFound</code> if no matching record is found.</p>
+<h5 id="first-bang">1.1.7 <code>first!</code>
+</h5>
+<p><code>Model.first!</code> finds the first record ordered by the primary key. For example:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+client = Client.first!
+# =&gt; #&lt;Client id: 1, first_name: "Lifo"&gt;
+
+</pre>
+</div>
+<p>The SQL equivalent of the above is:</p>
+<div class="code_container">
+<pre class="brush: sql; gutter: false; toolbar: false">
+SELECT * FROM clients ORDER BY clients.id ASC LIMIT 1
+
+</pre>
+</div>
+<p><code>Model.first!</code> raises <code>ActiveRecord::RecordNotFound</code> if no matching record is found.</p>
+<h5 id="last-bang">1.1.8 <code>last!</code>
+</h5>
+<p><code>Model.last!</code> finds the last record ordered by the primary key. For example:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+client = Client.last!
+# =&gt; #&lt;Client id: 221, first_name: "Russel"&gt;
+
+</pre>
+</div>
+<p>The SQL equivalent of the above is:</p>
+<div class="code_container">
+<pre class="brush: sql; gutter: false; toolbar: false">
+SELECT * FROM clients ORDER BY clients.id DESC LIMIT 1
+
+</pre>
+</div>
+<p><code>Model.last!</code> raises <code>ActiveRecord::RecordNotFound</code> if no matching record is found.</p>
+<h5 id="find-by-bang">1.1.9 <code>find_by!</code>
+</h5>
+<p><code>Model.find_by!</code> finds the first record matching some conditions. It raises <code>ActiveRecord::RecordNotFound</code> if no matching record is found. For example:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+Client.find_by! first_name: 'Lifo'
+# =&gt; #&lt;Client id: 1, first_name: "Lifo"&gt;
+
+Client.find_by! first_name: 'Jon'
+# =&gt; ActiveRecord::RecordNotFound
+
+</pre>
+</div>
+<p>It is equivalent to writing:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+Client.where(first_name: 'Lifo').take!
+
+</pre>
+</div>
+<h4 id="retrieving-multiple-objects">1.2 Retrieving Multiple Objects</h4>
+<h5 id="using-multiple-primary-keys">1.2.1 Using Multiple Primary Keys</h5>
+<p><code>Model.find(array_of_primary_key)</code> accepts an array of <em>primary keys</em>, returning an array containing all of the matching records for the supplied <em>primary keys</em>. For example:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+# Find the clients with primary keys 1 and 10.
+client = Client.find([1, 10]) # Or even Client.find(1, 10)
+# =&gt; [#&lt;Client id: 1, first_name: "Lifo"&gt;, #&lt;Client id: 10, first_name: "Ryan"&gt;]
+
+</pre>
+</div>
+<p>The SQL equivalent of the above is:</p>
+<div class="code_container">
+<pre class="brush: sql; gutter: false; toolbar: false">
+SELECT * FROM clients WHERE (clients.id IN (1,10))
+
+</pre>
+</div>
+<div class="warning"><p><code>Model.find(array_of_primary_key)</code> will raise an <code>ActiveRecord::RecordNotFound</code> exception unless a matching record is found for <strong>all</strong> of the supplied primary keys.</p></div>
+<h5 id="retrieving-multiple-objects-take">1.2.2 take</h5>
+<p><code>Model.take(limit)</code> retrieves the first number of records specified by <code>limit</code> without any explicit ordering:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+Client.take(2)
+# =&gt; [#&lt;Client id: 1, first_name: "Lifo"&gt;,
+      #&lt;Client id: 2, first_name: "Raf"&gt;]
+
+</pre>
+</div>
+<p>The SQL equivalent of the above is:</p>
+<div class="code_container">
+<pre class="brush: sql; gutter: false; toolbar: false">
+SELECT * FROM clients LIMIT 2
+
+</pre>
+</div>
+<h5 id="retrieving-multiple-objects-first">1.2.3 first</h5>
+<p><code>Model.first(limit)</code> finds the first number of records specified by <code>limit</code> ordered by primary key:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+Client.first(2)
+# =&gt; [#&lt;Client id: 1, first_name: "Lifo"&gt;,
+      #&lt;Client id: 2, first_name: "Raf"&gt;]
+
+</pre>
+</div>
+<p>The SQL equivalent of the above is:</p>
+<div class="code_container">
+<pre class="brush: sql; gutter: false; toolbar: false">
+SELECT * FROM clients ORDER BY id ASC LIMIT 2
+
+</pre>
+</div>
+<h5 id="retrieving-multiple-objects-last">1.2.4 last</h5>
+<p><code>Model.last(limit)</code> finds the number of records specified by <code>limit</code> ordered by primary key in descending order:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+Client.last(2)
+# =&gt; [#&lt;Client id: 10, first_name: "Ryan"&gt;,
+      #&lt;Client id: 9, first_name: "John"&gt;]
+
+</pre>
+</div>
+<p>The SQL equivalent of the above is:</p>
+<div class="code_container">
+<pre class="brush: sql; gutter: false; toolbar: false">
+SELECT * FROM clients ORDER BY id DESC LIMIT 2
+
+</pre>
+</div>
+<h4 id="retrieving-multiple-objects-in-batches">1.3 Retrieving Multiple Objects in Batches</h4>
+<p>We often need to iterate over a large set of records, as when we send a newsletter to a large set of users, or when we export data.</p>
+<p>This may appear straightforward:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+# This is very inefficient when the users table has thousands of rows.
+User.all.each do |user|
+  NewsLetter.weekly_deliver(user)
+end
+
+</pre>
+</div>
+<p>But this approach becomes increasingly impractical as the table size increases, since <code>User.all.each</code> instructs Active Record to fetch <em>the entire table</em> in a single pass, build a model object per row, and then keep the entire array of model objects in memory. Indeed, if we have a large number of records, the entire collection may exceed the amount of memory available.</p>
+<p>Rails provides two methods that address this problem by dividing records into memory-friendly batches for processing. The first method, <code>find_each</code>, retrieves a batch of records and then yields <em>each</em> record to the block individually as a model. The second method, <code>find_in_batches</code>, retrieves a batch of records and then yields <em>the entire batch</em> to the block as an array of models.</p>
+<div class="info"><p>The <code>find_each</code> and <code>find_in_batches</code> methods are intended for use in the batch processing of a large number of records that wouldn't fit in memory all at once. If you just need to loop over a thousand records the regular find methods are the preferred option.</p></div>
+<h5 id="find-each">1.3.1 <code>find_each</code>
+</h5>
+<p>The <code>find_each</code> method retrieves a batch of records and then yields <em>each</em> record to the block individually as a model. In the following example, <code>find_each</code> will retrieve 1000 records (the current default for both <code>find_each</code> and <code>find_in_batches</code>) and then yield each record individually to the block as a model. This process is repeated until all of the records have been processed:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+User.find_each do |user|
+  NewsLetter.weekly_deliver(user)
+end
+
+</pre>
+</div>
+<h6 id="options-for-find-each">1.3.1.1 Options for <code>find_each</code>
+</h6>
+<p>The <code>find_each</code> method accepts most of the options allowed by the regular <code>find</code> method, except for <code>:order</code> and <code>:limit</code>, which are reserved for internal use by <code>find_each</code>.</p>
+<p>Two additional options, <code>:batch_size</code> and <code>:start</code>, are available as well.</p>
+<p><strong><code>:batch_size</code></strong></p>
+<p>The <code>:batch_size</code> option allows you to specify the number of records to be retrieved in each batch, before being passed individually to the block. For example, to retrieve records in batches of 5000:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+User.find_each(batch_size: 5000) do |user|
+  NewsLetter.weekly_deliver(user)
+end
+
+</pre>
+</div>
+<p><strong><code>:start</code></strong></p>
+<p>By default, records are fetched in ascending order of the primary key, which must be an integer. The <code>:start</code> option allows you to configure the first ID of the sequence whenever the lowest ID is not the one you need. This would be useful, for example, if you wanted to resume an interrupted batch process, provided you saved the last processed ID as a checkpoint.</p>
+<p>For example, to send newsletters only to users with the primary key starting from 2000, and to retrieve them in batches of 5000:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+User.find_each(start: 2000, batch_size: 5000) do |user|
+  NewsLetter.weekly_deliver(user)
+end
+
+</pre>
+</div>
+<p>Another example would be if you wanted multiple workers handling the same processing queue. You could have each worker handle 10000 records by setting the appropriate <code>:start</code> option on each worker.</p>
+<h5 id="find-in-batches">1.3.2 <code>find_in_batches</code>
+</h5>
+<p>The <code>find_in_batches</code> method is similar to <code>find_each</code>, since both retrieve batches of records. The difference is that <code>find_in_batches</code> yields <em>batches</em> to the block as an array of models, instead of individually. The following example will yield to the supplied block an array of up to 1000 invoices at a time, with the final block containing any remaining invoices:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+# Give add_invoices an array of 1000 invoices at a time
+Invoice.find_in_batches(include: :invoice_lines) do |invoices|
+  export.add_invoices(invoices)
+end
+
+</pre>
+</div>
+<div class="note"><p>The <code>:include</code> option allows you to name associations that should be loaded alongside with the models.</p></div>
+<h6 id="options-for-find-in-batches">1.3.2.1 Options for <code>find_in_batches</code>
+</h6>
+<p>The <code>find_in_batches</code> method accepts the same <code>:batch_size</code> and <code>:start</code> options as <code>find_each</code>, as well as most of the options allowed by the regular <code>find</code> method, except for <code>:order</code> and <code>:limit</code>, which are reserved for internal use by <code>find_in_batches</code>.</p>
+</body>
+</html>

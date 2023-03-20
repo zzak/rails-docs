@@ -1,0 +1,398 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>6 Autoloading Algorithms</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v6.1.7.3/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="autoloading-algorithms"><a class="anchorlink" href="#autoloading-algorithms">6 Autoloading Algorithms</a></h3>
+<h4 id="autoloading-algorithms-relative-references"><a class="anchorlink" href="#autoloading-algorithms-relative-references">6.1 Relative References</a></h4>
+
+<p>A relative constant reference may appear in several places, for example, in</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">PostsController</span> <span class="o">&lt;</span> <span class="no">ApplicationController</span>
+  <span class="k">def</span> <span class="nf">index</span>
+    <span class="vi">@posts</span> <span class="o">=</span> <span class="no">Post</span><span class="p">.</span><span class="nf">all</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-e2c06ee3041af60f67eeda20a84cfe90">class PostsController &lt; ApplicationController
+  def index
+    @posts = Post.all
+  end
+end
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-e2c06ee3041af60f67eeda20a84cfe90">Copy</button>
+</div>
+<p>all three constant references are relative.</p>
+
+<h5 id="constants-after-the-class-and-module-keywords"><a class="anchorlink" href="#constants-after-the-class-and-module-keywords">6.1.1 Constants after the <code>class</code> and <code>module</code> Keywords</a></h5>
+
+<p>Ruby performs a lookup for the constant that follows a <code>class</code> or <code>module</code>
+keyword because it needs to know if the class or module is going to be created
+or reopened.</p>
+
+<p>If the constant is not defined at that point it is not considered to be a
+missing constant, autoloading is <strong>not</strong> triggered.</p>
+
+<p>So, in the previous example, if <code>PostsController</code> is not defined when the file
+is interpreted Rails autoloading is not going to be triggered, Ruby will just
+define the controller.</p>
+
+<h5 id="top-level-constants"><a class="anchorlink" href="#top-level-constants">6.1.2 Top-Level Constants</a></h5>
+
+<p>On the contrary, if <code>ApplicationController</code> is unknown, the constant is
+considered missing and an autoload is going to be attempted by Rails.</p>
+
+<p>In order to load <code>ApplicationController</code>, Rails iterates over <code>autoload_paths</code>.
+First it checks if <code>app/assets/application_controller.rb</code> exists. If it does not,
+which is normally the case, it continues and finds
+<code>app/controllers/application_controller.rb</code>.</p>
+
+<p>If the file defines the constant <code>ApplicationController</code> all is fine, otherwise
+<code>LoadError</code> is raised:</p>
+
+<div class="code_container">
+<pre><code class="highlight plaintext">unable to autoload constant ApplicationController, expected
+&lt;full path to application_controller.rb&gt; to define it (LoadError)
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-97a9e3bb242851e51ec04f20986f3906">unable to autoload constant ApplicationController, expected
+&lt;full path to application_controller.rb&gt; to define it (LoadError)
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-97a9e3bb242851e51ec04f20986f3906">Copy</button>
+</div>
+<div class="info"><p>Rails does not require the value of autoloaded constants to be a class or
+module object. For example, if the file <code>app/models/max_clients.rb</code> defines
+<code>MAX_CLIENTS = 100</code> autoloading <code>MAX_CLIENTS</code> works just fine.</p></div>
+
+<h5 id="namespaces"><a class="anchorlink" href="#namespaces">6.1.3 Namespaces</a></h5>
+
+<p>Autoloading <code>ApplicationController</code> looks directly under the directories of
+<code>autoload_paths</code> because the nesting in that spot is empty. The situation of
+<code>Post</code> is different, the nesting in that line is <code>[PostsController]</code> and support
+for namespaces comes into play.</p>
+
+<p>The basic idea is that given</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">module</span> <span class="nn">Admin</span>
+  <span class="k">class</span> <span class="nc">BaseController</span> <span class="o">&lt;</span> <span class="no">ApplicationController</span>
+    <span class="vc">@@all_roles</span> <span class="o">=</span> <span class="no">Role</span><span class="p">.</span><span class="nf">all</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-4d49cd63ad53abb3b2583243d7a06e59">module Admin
+  class BaseController &lt; ApplicationController
+    @@all_roles = Role.all
+  end
+end
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-4d49cd63ad53abb3b2583243d7a06e59">Copy</button>
+</div>
+<p>to autoload <code>Role</code> we are going to check if it is defined in the current or
+parent namespaces, one at a time. So, conceptually we want to try to autoload
+any of</p>
+
+<div class="code_container">
+<pre><code class="highlight plaintext">Admin::BaseController::Role
+Admin::Role
+Role
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-9bd8d17180eaf655740270b2453697eb">Admin::BaseController::Role
+Admin::Role
+Role
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-9bd8d17180eaf655740270b2453697eb">Copy</button>
+</div>
+<p>in that order. That's the idea. To do so, Rails looks in <code>autoload_paths</code>
+respectively for file names like these:</p>
+
+<div class="code_container">
+<pre><code class="highlight plaintext">admin/base_controller/role.rb
+admin/role.rb
+role.rb
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-8bda1c0324697b24a6b480fecf38230b">admin/base_controller/role.rb
+admin/role.rb
+role.rb
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-8bda1c0324697b24a6b480fecf38230b">Copy</button>
+</div>
+<p>modulus some additional directory lookups we are going to cover soon.</p>
+
+<div class="info"><p><code>'Constant::Name'.underscore</code> gives the relative path without extension of
+the file name where <code>Constant::Name</code> is expected to be defined.</p></div>
+
+<p>Let's see how Rails autoloads the <code>Post</code> constant in the <code>PostsController</code>
+above assuming the application has a <code>Post</code> model defined in
+<code>app/models/post.rb</code>.</p>
+
+<p>First it checks for <code>posts_controller/post.rb</code> in <code>autoload_paths</code>:</p>
+
+<div class="code_container">
+<pre><code class="highlight plaintext">app/assets/posts_controller/post.rb
+app/controllers/posts_controller/post.rb
+app/helpers/posts_controller/post.rb
+...
+test/mailers/previews/posts_controller/post.rb
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-c7f4d79eda518e888d2f8fdf7a16fb96">app/assets/posts_controller/post.rb
+app/controllers/posts_controller/post.rb
+app/helpers/posts_controller/post.rb
+...
+test/mailers/previews/posts_controller/post.rb
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-c7f4d79eda518e888d2f8fdf7a16fb96">Copy</button>
+</div>
+<p>Since the lookup is exhausted without success, a similar search for a directory
+is performed, we are going to see why in the <a href="#automatic-modules">next section</a>:</p>
+
+<div class="code_container">
+<pre><code class="highlight plaintext">app/assets/posts_controller/post
+app/controllers/posts_controller/post
+app/helpers/posts_controller/post
+...
+test/mailers/previews/posts_controller/post
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-f5ace8f5086045df031811b23974d191">app/assets/posts_controller/post
+app/controllers/posts_controller/post
+app/helpers/posts_controller/post
+...
+test/mailers/previews/posts_controller/post
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-f5ace8f5086045df031811b23974d191">Copy</button>
+</div>
+<p>If all those attempts fail, then Rails starts the lookup again in the parent
+namespace. In this case only the top-level remains:</p>
+
+<div class="code_container">
+<pre><code class="highlight plaintext">app/assets/post.rb
+app/controllers/post.rb
+app/helpers/post.rb
+app/mailers/post.rb
+app/models/post.rb
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-a5b9e3a5bcda60ab9a8b7ac5dbdcc95d">app/assets/post.rb
+app/controllers/post.rb
+app/helpers/post.rb
+app/mailers/post.rb
+app/models/post.rb
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-a5b9e3a5bcda60ab9a8b7ac5dbdcc95d">Copy</button>
+</div>
+<p>A matching file is found in <code>app/models/post.rb</code>. The lookup stops there and the
+file is loaded. If the file actually defines <code>Post</code> all is fine, otherwise
+<code>LoadError</code> is raised.</p>
+
+<h4 id="autoloading-algorithms-qualified-references"><a class="anchorlink" href="#autoloading-algorithms-qualified-references">6.2 Qualified References</a></h4>
+
+<p>When a qualified constant is missing Rails does not look for it in the parent
+namespaces. But there is a caveat: when a constant is missing, Rails is
+unable to tell if the trigger was a relative reference or a qualified one.</p>
+
+<p>For example, consider</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">module</span> <span class="nn">Admin</span>
+  <span class="no">User</span>
+<span class="k">end</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-2c71560f45a709b36f7e2b1ce73a79b5">module Admin
+  User
+end
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-2c71560f45a709b36f7e2b1ce73a79b5">Copy</button>
+</div>
+<p>and</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="no">Admin</span><span class="o">::</span><span class="no">User</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-0c975b371cd9873744cf7dbd15f4f9a6">Admin::User
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-0c975b371cd9873744cf7dbd15f4f9a6">Copy</button>
+</div>
+<p>If <code>User</code> is missing, in either case all Rails knows is that a constant called
+"User" was missing in a module called "Admin".</p>
+
+<p>If there is a top-level <code>User</code> Ruby would resolve it in the former example, but
+wouldn't in the latter. In general, Rails does not emulate the Ruby constant
+resolution algorithms, but in this case it tries using the following heuristic:</p>
+<blockquote>
+<p>If none of the parent namespaces of the class or module has the missing
+constant then Rails assumes the reference is relative. Otherwise qualified.</p>
+</blockquote>
+<p>For example, if this code triggers autoloading</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="no">Admin</span><span class="o">::</span><span class="no">User</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-e6a4eac9a60264d040a3faeb4010105a">Admin::User
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-e6a4eac9a60264d040a3faeb4010105a">Copy</button>
+</div>
+<p>and the <code>User</code> constant is already present in <code>Object</code>, it is not possible that
+the situation is</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">module</span> <span class="nn">Admin</span>
+  <span class="no">User</span>
+<span class="k">end</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-8cb3b684a229b9f8a556bdd168a4f833">module Admin
+  User
+end
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-8cb3b684a229b9f8a556bdd168a4f833">Copy</button>
+</div>
+<p>because otherwise Ruby would have resolved <code>User</code> and no autoloading would have
+been triggered in the first place. Thus, Rails assumes a qualified reference and
+considers the file <code>admin/user.rb</code> and directory <code>admin/user</code> to be the only
+valid options.</p>
+
+<p>In practice, this works quite well as long as the nesting matches all parent
+namespaces respectively and the constants that make the rule apply are known at
+that time.</p>
+
+<p>However, autoloading happens on demand. If by chance the top-level <code>User</code> was
+not yet loaded, then Rails assumes a relative reference by contract.</p>
+
+<p>Naming conflicts of this kind are rare in practice, but if one occurs,
+<code>require_dependency</code> provides a solution by ensuring that the constant needed
+to trigger the heuristic is defined in the conflicting place.</p>
+
+<h4 id="automatic-modules"><a class="anchorlink" href="#automatic-modules">6.3 Automatic Modules</a></h4>
+
+<p>When a module acts as a namespace, Rails does not require the application to
+define a file for it, a directory matching the namespace is enough.</p>
+
+<p>Suppose an application has a back office whose controllers are stored in
+<code>app/controllers/admin</code>. If the <code>Admin</code> module is not yet loaded when
+<code>Admin::UsersController</code> is hit, Rails needs first to autoload the constant
+<code>Admin</code>.</p>
+
+<p>If <code>autoload_paths</code> has a file called <code>admin.rb</code> Rails is going to load that
+one, but if there's no such file and a directory called <code>admin</code> is found, Rails
+creates an empty module and assigns it to the <code>Admin</code> constant on the fly.</p>
+
+<h4 id="generic-procedure"><a class="anchorlink" href="#generic-procedure">6.4 Generic Procedure</a></h4>
+
+<p>Relative references are reported to be missing in the cref where they were hit,
+and qualified references are reported to be missing in their parent (see
+<a href="#resolution-algorithm-for-relative-constants">Resolution Algorithm for Relative
+Constants</a> at the beginning of
+this guide for the definition of <em>cref</em>, and <a href="#resolution-algorithm-for-qualified-constants">Resolution Algorithm for Qualified
+Constants</a> for the definition of
+<em>parent</em>).</p>
+
+<p>The procedure to autoload constant <code>C</code> in an arbitrary situation is as follows:</p>
+
+<div class="code_container">
+<pre><code class="highlight plaintext">if the class or module in which C is missing is Object
+  let ns = ''
+else
+  let M = the class or module in which C is missing
+
+  if M is anonymous
+    let ns = ''
+  else
+    let ns = M.name
+  end
+end
+
+loop do
+  # Look for a regular file.
+  for dir in autoload_paths
+    if the file "#{dir}/#{ns.underscore}/c.rb" exists
+      load/require "#{dir}/#{ns.underscore}/c.rb"
+
+      if C is now defined
+        return
+      else
+        raise LoadError
+      end
+    end
+  end
+
+  # Look for an automatic module.
+  for dir in autoload_paths
+    if the directory "#{dir}/#{ns.underscore}/c" exists
+      if ns is an empty string
+        let C = Module.new in Object and return
+      else
+        let C = Module.new in ns.constantize and return
+      end
+    end
+  end
+
+  if ns is empty
+    # We reached the top-level without finding the constant.
+    raise NameError
+  else
+    if C exists in any of the parent namespaces
+      # Qualified constants heuristic.
+      raise NameError
+    else
+      # Try again in the parent namespace.
+      let ns = the parent namespace of ns and retry
+    end
+  end
+end
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-f1c17fc245e48e8d343ca05824df33b4">if the class or module in which C is missing is Object
+  let ns = ''
+else
+  let M = the class or module in which C is missing
+
+  if M is anonymous
+    let ns = ''
+  else
+    let ns = M.name
+  end
+end
+
+loop do
+  # Look for a regular file.
+  for dir in autoload_paths
+    if the file "#{dir}/#{ns.underscore}/c.rb" exists
+      load/require "#{dir}/#{ns.underscore}/c.rb"
+
+      if C is now defined
+        return
+      else
+        raise LoadError
+      end
+    end
+  end
+
+  # Look for an automatic module.
+  for dir in autoload_paths
+    if the directory "#{dir}/#{ns.underscore}/c" exists
+      if ns is an empty string
+        let C = Module.new in Object and return
+      else
+        let C = Module.new in ns.constantize and return
+      end
+    end
+  end
+
+  if ns is empty
+    # We reached the top-level without finding the constant.
+    raise NameError
+  else
+    if C exists in any of the parent namespaces
+      # Qualified constants heuristic.
+      raise NameError
+    else
+      # Try again in the parent namespace.
+      let ns = the parent namespace of ns and retry
+    end
+  end
+end
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-f1c17fc245e48e8d343ca05824df33b4">Copy</button>
+</div>
+</body>
+</html>

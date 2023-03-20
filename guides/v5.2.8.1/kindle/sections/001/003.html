@@ -1,0 +1,171 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>4 Hello, Rails!</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v5.2.8.1/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="hello-rails-bang"><a class="anchorlink" href="#hello-rails-bang">4 Hello, Rails!</a></h3>
+<p>To begin with, let's get some text up on screen quickly. To do this, you need to
+get your Rails application server running.</p>
+
+<h4 id="starting-up-the-web-server"><a class="anchorlink" href="#starting-up-the-web-server">4.1 Starting up the Web Server</a></h4>
+
+<p>You actually have a functional Rails application already. To see it, you need to
+start a web server on your development machine. You can do this by running the
+following in the <code>blog</code> directory:</p>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+$ bin/rails server
+
+</pre>
+</div>
+<div class="info"><p>If you are using Windows, you have to pass the scripts under the <code>bin</code>
+folder directly to the Ruby interpreter e.g. <code>ruby bin\rails server</code>.</p></div>
+
+<div class="info"><p>Compiling CoffeeScript and JavaScript asset compression requires you
+have a JavaScript runtime available on your system, in the absence
+of a runtime you will see an <code>execjs</code> error during asset compilation.
+Usually macOS and Windows come with a JavaScript runtime installed.
+Rails adds the <code>mini_racer</code> gem to the generated <code>Gemfile</code> in a
+commented line for new apps and you can uncomment if you need it.
+<code>therubyrhino</code> is the recommended runtime for JRuby users and is added by
+default to the <code>Gemfile</code> in apps generated under JRuby. You can investigate
+all the supported runtimes at <a href="https://github.com/rails/execjs#readme">ExecJS</a>.</p></div>
+
+<p>This will fire up Puma, a web server distributed with Rails by default. To see
+your application in action, open a browser window and navigate to
+<a href="http://localhost:3000">http://localhost:3000</a>. You should see the Rails default information page:</p>
+
+<p><img src="/home/rails/v5.2.8.1/guides/output/kindle/images/getting_started/rails_welcome.png" alt="Welcome aboard screenshot"></p>
+
+<div class="info"><p>To stop the web server, hit Ctrl+C in the terminal window where it's
+running. To verify the server has stopped you should see your command prompt
+cursor again. For most UNIX-like systems including macOS this will be a
+dollar sign <code>$</code>. In development mode, Rails does not generally require you to
+restart the server; changes you make in files will be automatically picked up by
+the server.</p></div>
+
+<p>The "Welcome aboard" page is the <em>smoke test</em> for a new Rails application: it
+makes sure that you have your software configured correctly enough to serve a
+page.</p>
+
+<h4 id="say-hello-rails"><a class="anchorlink" href="#say-hello-rails">4.2 Say "Hello", Rails</a></h4>
+
+<p>To get Rails saying "Hello", you need to create at minimum a <em>controller</em> and a
+<em>view</em>.</p>
+
+<p>A controller's purpose is to receive specific requests for the application.
+<em>Routing</em> decides which controller receives which requests. Often, there is more
+than one route to each controller, and different routes can be served by
+different <em>actions</em>. Each action's purpose is to collect information to provide
+it to a view.</p>
+
+<p>A view's purpose is to display this information in a human readable format. An
+important distinction to make is that it is the <em>controller</em>, not the view,
+where information is collected. The view should just display that information.
+By default, view templates are written in a language called eRuby (Embedded
+Ruby) which is processed by the request cycle in Rails before being sent to the
+user.</p>
+
+<p>To create a new controller, you will need to run the "controller" generator and
+tell it you want a controller called "Welcome" with an action called "index",
+just like this:</p>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+$ bin/rails generate controller Welcome index
+
+</pre>
+</div>
+<p>Rails will create several files and a route for you.</p>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+create  app/controllers/welcome_controller.rb
+ route  get 'welcome/index'
+invoke  erb
+create    app/views/welcome
+create    app/views/welcome/index.html.erb
+invoke  test_unit
+create    test/controllers/welcome_controller_test.rb
+invoke  helper
+create    app/helpers/welcome_helper.rb
+invoke    test_unit
+invoke  assets
+invoke    coffee
+create      app/assets/javascripts/welcome.coffee
+invoke    scss
+create      app/assets/stylesheets/welcome.scss
+
+</pre>
+</div>
+<p>Most important of these are of course the controller, located at
+<code>app/controllers/welcome_controller.rb</code> and the view, located at
+<code>app/views/welcome/index.html.erb</code>.</p>
+
+<p>Open the <code>app/views/welcome/index.html.erb</code> file in your text editor. Delete all
+of the existing code in the file, and replace it with the following single line
+of code:</p>
+
+<div class="code_container">
+<pre class="brush: xml; gutter: false; toolbar: false">
+&lt;h1&gt;Hello, Rails!&lt;/h1&gt;
+
+</pre>
+</div>
+<h4 id="setting-the-application-home-page"><a class="anchorlink" href="#setting-the-application-home-page">4.3 Setting the Application Home Page</a></h4>
+
+<p>Now that we have made the controller and view, we need to tell Rails when we
+want "Hello, Rails!" to show up. In our case, we want it to show up when we
+navigate to the root URL of our site, <a href="http://localhost:3000">http://localhost:3000</a>. At the moment,
+"Welcome aboard" is occupying that spot.</p>
+
+<p>Next, you have to tell Rails where your actual home page is located.</p>
+
+<p>Open the file <code>config/routes.rb</code> in your editor.</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+Rails.application.routes.draw do
+  get 'welcome/index'
+
+  # For details on the DSL available within this file, see http://guides.rubyonrails.org/routing.html
+end
+
+</pre>
+</div>
+<p>This is your application's <em>routing file</em> which holds entries in a special
+<a href="https://en.wikipedia.org/wiki/Domain-specific_language">DSL (domain-specific language)</a>
+that tells Rails how to connect incoming requests to
+controllers and actions.
+Edit this file by adding the line of code <code>root 'welcome#index'</code>.
+It should look something like the following:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+Rails.application.routes.draw do
+  get 'welcome/index'
+
+  root 'welcome#index'
+end
+
+</pre>
+</div>
+<p><code>root 'welcome#index'</code> tells Rails to map requests to the root of the
+application to the welcome controller's index action and <code>get 'welcome/index'</code>
+tells Rails to map requests to <a href="http://localhost:3000/welcome/index">http://localhost:3000/welcome/index</a> to the
+welcome controller's index action. This was created earlier when you ran the
+controller generator (<code>bin/rails generate controller Welcome index</code>).</p>
+
+<p>Launch the web server again if you stopped it to generate the controller (<code>bin/rails
+server</code>) and navigate to <a href="http://localhost:3000">http://localhost:3000</a> in your browser. You'll see the
+"Hello, Rails!" message you put into <code>app/views/welcome/index.html.erb</code>,
+indicating that this new route is indeed going to <code>WelcomeController</code>'s <code>index</code>
+action and is rendering the view correctly.</p>
+
+<div class="info"><p>For more information about routing, refer to <a href="routing.html">Rails Routing from the Outside In</a>.</p></div>
+</body>
+</html>

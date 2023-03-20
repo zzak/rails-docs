@@ -1,0 +1,52 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>3 Vocabulary</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v5.2.8.1/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="vocabulary"><a class="anchorlink" href="#vocabulary">3 Vocabulary</a></h3>
+<h4 id="parent-namespaces"><a class="anchorlink" href="#parent-namespaces">3.1 Parent Namespaces</a></h4>
+
+<p>Given a string with a constant path we define its <em>parent namespace</em> to be the
+string that results from removing its rightmost segment.</p>
+
+<p>For example, the parent namespace of the string "A::B::C" is the string "A::B",
+the parent namespace of "A::B" is "A", and the parent namespace of "A" is "".</p>
+
+<p>The interpretation of a parent namespace when thinking about classes and modules
+is tricky though. Let's consider a module M named "A::B":</p>
+<ul>
+<li>The parent namespace, "A", may not reflect nesting at a given spot.</li>
+<li>The constant <code>A</code> may no longer exist, some code could have removed it from
+<code>Object</code>.</li>
+<li>If <code>A</code> exists, the class or module that was originally in <code>A</code> may not be there
+anymore. For example, if after a constant removal there was another constant
+assignment there would generally be a different object in there.</li>
+<li>In such case, it could even happen that the reassigned <code>A</code> held a new class or
+module called also "A"!</li>
+<li>In the previous scenarios M would no longer be reachable through <code>A::B</code> but
+the module object itself could still be alive somewhere and its name would
+still be "A::B".</li>
+</ul>
+<p>The idea of a parent namespace is at the core of the autoloading algorithms
+and helps explain and understand their motivation intuitively, but as you see
+that metaphor leaks easily. Given an edge case to reason about, take always into
+account that by "parent namespace" the guide means exactly that specific string
+derivation.</p>
+
+<h4 id="loading-mechanism"><a class="anchorlink" href="#loading-mechanism">3.2 Loading Mechanism</a></h4>
+
+<p>Rails autoloads files with <code>Kernel#load</code> when <code>config.cache_classes</code> is false,
+the default in development mode, and with <code>Kernel#require</code> otherwise, the
+default in production mode.</p>
+
+<p><code>Kernel#load</code> allows Rails to execute files more than once if <a href="#constant-reloading">constant
+reloading</a> is enabled.</p>
+
+<p>This guide uses the word "load" freely to mean a given file is interpreted, but
+the actual mechanism can be <code>Kernel#load</code> or <code>Kernel#require</code> depending on that
+flag.</p>
+</body>
+</html>

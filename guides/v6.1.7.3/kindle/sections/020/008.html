@@ -1,0 +1,40 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>9 Previewing Files</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v6.1.7.3/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="previewing-files"><a class="anchorlink" href="#previewing-files">9 Previewing Files</a></h3>
+<p>Some non-image files can be previewed: that is, they can be presented as images.
+For example, a video file can be previewed by extracting its first frame. Out of
+the box, Active Storage supports previewing videos and PDF documents. To create
+a link to a lazily-generated preview, use the attachment's <a href="https://api.rubyonrails.org/v6.1.7.3/classes/ActiveStorage/Blob/Representable.html#method-i-preview"><code>preview</code></a> method:</p>
+
+<div class="code_container">
+<pre><code class="highlight erb"><span class="nt">&lt;ul&gt;</span>
+  <span class="cp">&lt;%</span> <span class="vi">@message</span><span class="p">.</span><span class="nf">files</span><span class="p">.</span><span class="nf">each</span> <span class="k">do</span> <span class="o">|</span><span class="n">file</span><span class="o">|</span> <span class="cp">%&gt;</span>
+    <span class="nt">&lt;li&gt;</span>
+      <span class="cp">&lt;%=</span> <span class="n">image_tag</span> <span class="n">file</span><span class="p">.</span><span class="nf">preview</span><span class="p">(</span><span class="ss">resize_to_limit: </span><span class="p">[</span><span class="mi">100</span><span class="p">,</span> <span class="mi">100</span><span class="p">])</span> <span class="cp">%&gt;</span>
+    <span class="nt">&lt;/li&gt;</span>
+  <span class="cp">&lt;%</span> <span class="k">end</span> <span class="cp">%&gt;</span>
+<span class="nt">&lt;/ul&gt;</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-d3921faec55bbc5cb9df1a4fb526a845">&lt;ul&gt;
+  &lt;% @message.files.each do |file| %&gt;
+    &lt;li&gt;
+      &lt;%= image_tag file.preview(resize_to_limit: [100, 100]) %&gt;
+    &lt;/li&gt;
+  &lt;% end %&gt;
+&lt;/ul&gt;
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-d3921faec55bbc5cb9df1a4fb526a845">Copy</button>
+</div>
+<div class="warning"><p>Extracting previews requires third-party applications: FFmpeg v3.4+ for
+video and muPDF for PDFs, and on macOS also XQuartz and Poppler.
+These libraries are not provided by Rails. You must install them yourself to
+use the built-in previewers. Before you install and use third-party software,
+make sure you understand the licensing implications of doing so.</p></div>
+</body>
+</html>

@@ -1,0 +1,32 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>9 Active Storage</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v7.0.4.2/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="active-storage"><a class="anchorlink" href="#active-storage">9 Active Storage</a></h3>
+<p>Please refer to the <a href="https://github.com/rails/rails/blob/6-1-stable/activestorage/CHANGELOG.md">Changelog</a> for detailed changes.</p>
+
+<h4 id="active-storage-removals"><a class="anchorlink" href="#active-storage-removals">9.1 Removals</a></h4>
+<ul>
+<li>  Remove deprecated support to pass <code>:combine_options</code> operations to <code>ActiveStorage::Transformers::ImageProcessing</code>.</li>
+<li>  Remove deprecated <code>ActiveStorage::Transformers::MiniMagickTransformer</code>.</li>
+<li>  Remove deprecated <code>config.active_storage.queue</code>.</li>
+<li>  Remove deprecated <code>ActiveStorage::Downloading</code>.</li>
+</ul>
+<h4 id="active-storage-deprecations"><a class="anchorlink" href="#active-storage-deprecations">9.2 Deprecations</a></h4>
+<ul>
+<li>  Deprecate <code>Blob.create_after_upload</code> in favor of <code>Blob.create_and_upload</code>.
+(<a href="https://github.com/rails/rails/pull/34827">Pull Request</a>)</li>
+</ul>
+<h4 id="active-storage-notable-changes"><a class="anchorlink" href="#active-storage-notable-changes">9.3 Notable changes</a></h4>
+<ul>
+<li>  Add <code>Blob.create_and_upload</code> to create a new blob and upload the given <code>io</code>
+to the service.
+(<a href="https://github.com/rails/rails/pull/34827">Pull Request</a>)</li>
+<li>  <code>ActiveStorage::Blob#service_name</code> column was added. It is required that a migration is run after the upgrade. Run <code>bin/rails app:update</code> to generate that migration.</li>
+</ul>
+</body>
+</html>

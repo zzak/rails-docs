@@ -1,0 +1,38 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>7 Rendering XML and JSON data</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v7.0.4.2/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="rendering-xml-and-json-data"><a class="anchorlink" href="#rendering-xml-and-json-data">7 Rendering XML and JSON data</a></h3>
+<p>ActionController makes it extremely easy to render <code>XML</code> or <code>JSON</code> data. If you've generated a controller using scaffolding, it would look something like this:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">UsersController</span> <span class="o">&lt;</span> <span class="no">ApplicationController</span>
+  <span class="k">def</span> <span class="nf">index</span>
+    <span class="vi">@users</span> <span class="o">=</span> <span class="no">User</span><span class="p">.</span><span class="nf">all</span>
+    <span class="n">respond_to</span> <span class="k">do</span> <span class="o">|</span><span class="nb">format</span><span class="o">|</span>
+      <span class="nb">format</span><span class="p">.</span><span class="nf">html</span> <span class="c1"># index.html.erb</span>
+      <span class="nb">format</span><span class="p">.</span><span class="nf">xml</span>  <span class="p">{</span> <span class="n">render</span> <span class="ss">xml: </span><span class="vi">@users</span> <span class="p">}</span>
+      <span class="nb">format</span><span class="p">.</span><span class="nf">json</span> <span class="p">{</span> <span class="n">render</span> <span class="ss">json: </span><span class="vi">@users</span> <span class="p">}</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="class UsersController &lt; ApplicationController
+  def index
+    @users = User.all
+    respond_to do |format|
+      format.html # index.html.erb
+      format.xml  { render xml: @users }
+      format.json { render json: @users }
+    end
+  end
+end
+">Copy</button>
+</div>
+<p>You may notice in the above code that we're using <code>render xml: @users</code>, not <code>render xml: @users.to_xml</code>. If the object is not a String, then Rails will automatically invoke <code>to_xml</code> for us.</p>
+</body>
+</html>

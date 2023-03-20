@@ -1,0 +1,572 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html 
+     PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+  <head>
+    <title>Module: ActionDispatch::TestResponse::DeprecatedHelpers</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <link rel="stylesheet" href="../../../rdoc-style.css" type="text/css" media="screen" />
+
+    <script language="JavaScript" type="text/javascript">
+    // <![CDATA[
+
+        function toggleSource( id )
+        {
+          var elem
+          var link
+
+          if( document.getElementById )
+          {
+            elem = document.getElementById( id )
+            link = document.getElementById( "l_" + id )
+          }
+          else if ( document.all )
+          {
+            elem = eval( "document.all." + id )
+            link = eval( "document.all.l_" + id )
+          }
+          else
+            return false;
+
+          if( elem.style.display == "block" )
+          {
+            elem.style.display = "none"
+            link.innerHTML = "show source"
+          }
+          else
+          {
+            elem.style.display = "block"
+            link.innerHTML = "hide source"
+          }
+        }
+
+        function openCode( url )
+        {
+          window.open( url, "SOURCE_CODE", "resizable=yes,scrollbars=yes,toolbar=no,status=no,height=480,width=750" ).focus();
+        }
+      // ]]>
+    </script>
+  </head>
+
+  <body>
+    <table width="100%" border='0' cellpadding='0' cellspacing='0' class='banner'>
+    <tr><td>Ruby on Rails v3.0.9</td></tr>
+    <tr>
+  <td class="file-title"><span class="file-title-prefix">Module</span><br />ActionDispatch::TestResponse::DeprecatedHelpers</td>
+  <td align="right">
+    <table cellspacing="0" cellpadding="2">
+      <tr valign="top">
+        <td>In:</td>
+        <td>
+<a href="../../../files/actionpack/lib/action_dispatch/testing/test_response_rb.html">actionpack/lib/action_dispatch/testing/test_response.rb</a>:
+        </td>
+      </tr>
+         </table>
+        </td>
+        </tr>
+      </table>
+  <div id="bodyContent">
+  <div id="content">
+
+  <div class="description"></div>
+
+
+  <div class="sectiontitle">Methods</div>
+  <ul>
+                <li><a href="#method-i-assigns">assigns</a></li>
+                <li><a href="#method-i-binary_content">binary_content</a></li>
+                <li><a href="#method-i-flash">flash</a></li>
+                <li><a href="#method-i-has_flash-3F">has_flash?</a></li>
+                <li><a href="#method-i-has_flash_object-3F">has_flash_object?</a></li>
+                <li><a href="#method-i-has_flash_with_contents-3F">has_flash_with_contents?</a></li>
+                <li><a href="#method-i-has_session_object-3F">has_session_object?</a></li>
+                <li><a href="#method-i-has_template_object-3F">has_template_object?</a></li>
+                <li><a href="#method-i-layout">layout</a></li>
+                <li><a href="#method-i-redirect_url_match-3F">redirect_url_match?</a></li>
+                <li><a href="#method-i-redirected_to">redirected_to</a></li>
+                <li><a href="#method-i-rendered">rendered</a></li>
+                <li><a href="#method-i-session">session</a></li>
+                <li><a href="#method-i-template">template</a></li>
+                <li><a href="#method-i-template_objects">template_objects</a></li>
+      </ul>
+
+
+
+  <div class="sectiontitle">Attributes</div>
+  <table border='0' cellpadding='5'>
+  <tr valign='top'>
+    <td class='attr-rw'>
+[W]
+    </td>
+    <td class='attr-name'>template</td>
+    <td class='attr-desc'>
+                        </td>
+  </tr>
+  </table>
+
+                        
+    <div class="sectiontitle">
+      Public      Instance      methods
+    </div>
+
+          
+      <div class="method">
+        <div class="title">
+                      <a name="method-i-assigns"></a>
+            <b>assigns</b>()          
+        </div>
+
+                  <div class="description">
+                      </div>
+        
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('assigns_source')"
+                 id="l_method-i-assigns_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="assigns_source">
+<pre>
+  <span class="ruby-comment"># File actionpack/lib/action_dispatch/testing/test_response.rb, line 29</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">assigns</span>
+  <span class="ruby-constant">ActiveSupport</span><span class="ruby-operator">::</span><span class="ruby-constant">Deprecation</span>.<span class="ruby-identifier">warn</span>(<span class="ruby-string">&quot;response.assigns has been deprecated. Use controller.assigns instead&quot;</span>, <span class="ruby-identifier">caller</span>)
+  <span class="ruby-ivar">@template</span>.<span class="ruby-identifier">controller</span>.<span class="ruby-identifier">assigns</span>
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+          
+      <div class="method">
+        <div class="title">
+                      <a name="method-i-binary_content"></a>
+            <b>binary_content</b>()          
+        </div>
+
+                  <div class="description">
+            <p>Returns binary content (downloadable file), converted to a <a
+href="../../String.html">String</a></p>          </div>
+        
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('binary_content_source')"
+                 id="l_method-i-binary_content_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="binary_content_source">
+<pre>
+  <span class="ruby-comment"># File actionpack/lib/action_dispatch/testing/test_response.rb, line 103</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">binary_content</span>
+  <span class="ruby-constant">ActiveSupport</span><span class="ruby-operator">::</span><span class="ruby-constant">Deprecation</span>.<span class="ruby-identifier">warn</span>(<span class="ruby-string">&quot;response.binary_content has been deprecated. Use response.body instead&quot;</span>, <span class="ruby-identifier">caller</span>)
+  <span class="ruby-identifier">body</span>
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+          
+      <div class="method">
+        <div class="title">
+                      <a name="method-i-flash"></a>
+            <b>flash</b>()          
+        </div>
+
+                  <div class="description">
+            <p>A shortcut to the flash. Returns an empty hash if no session flash exists.</p>          </div>
+        
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('flash_source')"
+                 id="l_method-i-flash_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="flash_source">
+<pre>
+  <span class="ruby-comment"># File actionpack/lib/action_dispatch/testing/test_response.rb, line 61</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">flash</span>
+  <span class="ruby-constant">ActiveSupport</span><span class="ruby-operator">::</span><span class="ruby-constant">Deprecation</span>.<span class="ruby-identifier">warn</span>(<span class="ruby-string">&quot;response.flash has been deprecated. Use request.flash instead&quot;</span>, <span class="ruby-identifier">caller</span>)
+  <span class="ruby-identifier">request</span>.<span class="ruby-identifier">session</span>[<span class="ruby-string">'flash'</span>] <span class="ruby-operator">||</span> {}
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+          
+      <div class="method">
+        <div class="title">
+                      <a name="method-i-has_flash-3F"></a>
+            <b>has_flash?</b>()          
+        </div>
+
+                  <div class="description">
+            <p>Do we have a flash?</p>          </div>
+        
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('has_flash-3F_source')"
+                 id="l_method-i-has_flash-3F_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="has_flash-3F_source">
+<pre>
+  <span class="ruby-comment"># File actionpack/lib/action_dispatch/testing/test_response.rb, line 67</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">has_flash?</span>
+  <span class="ruby-constant">ActiveSupport</span><span class="ruby-operator">::</span><span class="ruby-constant">Deprecation</span>.<span class="ruby-identifier">warn</span>(<span class="ruby-string">&quot;response.has_flash? has been deprecated. Use flash.any? instead&quot;</span>, <span class="ruby-identifier">caller</span>)
+  <span class="ruby-operator">!</span><span class="ruby-identifier">flash</span>.<span class="ruby-identifier">empty?</span>
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+          
+      <div class="method">
+        <div class="title">
+                      <a name="method-i-has_flash_object-3F"></a>
+            <b>has_flash_object?</b>(name=nil)          
+        </div>
+
+                  <div class="description">
+            <p>Does the specified flash object exist?</p>          </div>
+        
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('has_flash_object-3F_source')"
+                 id="l_method-i-has_flash_object-3F_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="has_flash_object-3F_source">
+<pre>
+  <span class="ruby-comment"># File actionpack/lib/action_dispatch/testing/test_response.rb, line 79</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">has_flash_object?</span>(<span class="ruby-identifier">name</span>=<span class="ruby-keyword">nil</span>)
+  <span class="ruby-constant">ActiveSupport</span><span class="ruby-operator">::</span><span class="ruby-constant">Deprecation</span>.<span class="ruby-identifier">warn</span>(<span class="ruby-string">&quot;response.has_flash_object? has been deprecated. Use flash[name] instead&quot;</span>, <span class="ruby-identifier">caller</span>)
+  <span class="ruby-operator">!</span><span class="ruby-identifier">flash</span>[<span class="ruby-identifier">name</span>].<span class="ruby-identifier">nil?</span>
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+          
+      <div class="method">
+        <div class="title">
+                      <a name="method-i-has_flash_with_contents-3F"></a>
+            <b>has_flash_with_contents?</b>()          
+        </div>
+
+                  <div class="description">
+            <p>Do we have a flash that has contents?</p>          </div>
+        
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('has_flash_with_contents-3F_source')"
+                 id="l_method-i-has_flash_with_contents-3F_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="has_flash_with_contents-3F_source">
+<pre>
+  <span class="ruby-comment"># File actionpack/lib/action_dispatch/testing/test_response.rb, line 73</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">has_flash_with_contents?</span>
+  <span class="ruby-constant">ActiveSupport</span><span class="ruby-operator">::</span><span class="ruby-constant">Deprecation</span>.<span class="ruby-identifier">warn</span>(<span class="ruby-string">&quot;response.has_flash_with_contents? has been deprecated. Use flash.any? instead&quot;</span>, <span class="ruby-identifier">caller</span>)
+  <span class="ruby-operator">!</span><span class="ruby-identifier">flash</span>.<span class="ruby-identifier">empty?</span>
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+          
+      <div class="method">
+        <div class="title">
+                      <a name="method-i-has_session_object-3F"></a>
+            <b>has_session_object?</b>(name=nil)          
+        </div>
+
+                  <div class="description">
+            <p>Does the specified object exist in the session?</p>          </div>
+        
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('has_session_object-3F_source')"
+                 id="l_method-i-has_session_object-3F_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="has_session_object-3F_source">
+<pre>
+  <span class="ruby-comment"># File actionpack/lib/action_dispatch/testing/test_response.rb, line 85</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">has_session_object?</span>(<span class="ruby-identifier">name</span>=<span class="ruby-keyword">nil</span>)
+  <span class="ruby-constant">ActiveSupport</span><span class="ruby-operator">::</span><span class="ruby-constant">Deprecation</span>.<span class="ruby-identifier">warn</span>(<span class="ruby-string">&quot;response.has_session_object? has been deprecated. Use session[name] instead&quot;</span>, <span class="ruby-identifier">caller</span>)
+  <span class="ruby-operator">!</span><span class="ruby-identifier">session</span>[<span class="ruby-identifier">name</span>].<span class="ruby-identifier">nil?</span>
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+          
+      <div class="method">
+        <div class="title">
+                      <a name="method-i-has_template_object-3F"></a>
+            <b>has_template_object?</b>(name=nil)          
+        </div>
+
+                  <div class="description">
+            <p>Does the specified template object exist?</p>          </div>
+        
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('has_template_object-3F_source')"
+                 id="l_method-i-has_template_object-3F_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="has_template_object-3F_source">
+<pre>
+  <span class="ruby-comment"># File actionpack/lib/action_dispatch/testing/test_response.rb, line 97</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">has_template_object?</span>(<span class="ruby-identifier">name</span>=<span class="ruby-keyword">nil</span>)
+  <span class="ruby-constant">ActiveSupport</span><span class="ruby-operator">::</span><span class="ruby-constant">Deprecation</span>.<span class="ruby-identifier">warn</span>(<span class="ruby-string">&quot;response.has_template_object? has been deprecated. Use tempate.assigns[name].nil? instead&quot;</span>, <span class="ruby-identifier">caller</span>)
+  <span class="ruby-operator">!</span><span class="ruby-identifier">template_objects</span>[<span class="ruby-identifier">name</span>].<span class="ruby-identifier">nil?</span>
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+          
+      <div class="method">
+        <div class="title">
+                      <a name="method-i-layout"></a>
+            <b>layout</b>()          
+        </div>
+
+                  <div class="description">
+                      </div>
+        
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('layout_source')"
+                 id="l_method-i-layout_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="layout_source">
+<pre>
+  <span class="ruby-comment"># File actionpack/lib/action_dispatch/testing/test_response.rb, line 34</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">layout</span>
+  <span class="ruby-constant">ActiveSupport</span><span class="ruby-operator">::</span><span class="ruby-constant">Deprecation</span>.<span class="ruby-identifier">warn</span>(<span class="ruby-string">&quot;response.layout has been deprecated. Use template.layout instead&quot;</span>, <span class="ruby-identifier">caller</span>)
+  <span class="ruby-ivar">@template</span>.<span class="ruby-identifier">layout</span>
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+          
+      <div class="method">
+        <div class="title">
+                      <a name="method-i-redirect_url_match-3F"></a>
+            <b>redirect_url_match?</b>(pattern)          
+        </div>
+
+                  <div class="description">
+                      </div>
+        
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('redirect_url_match-3F_source')"
+                 id="l_method-i-redirect_url_match-3F_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="redirect_url_match-3F_source">
+<pre>
+  <span class="ruby-comment"># File actionpack/lib/action_dispatch/testing/test_response.rb, line 44</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">redirect_url_match?</span>(<span class="ruby-identifier">pattern</span>)
+  <span class="ruby-operator">::</span><span class="ruby-constant">ActiveSupport</span><span class="ruby-operator">::</span><span class="ruby-constant">Deprecation</span>.<span class="ruby-identifier">warn</span>(<span class="ruby-string">&quot;response.redirect_url_match? is deprecated. Use assert_match(/foo/, response.redirect_url) instead&quot;</span>, <span class="ruby-identifier">caller</span>)
+  <span class="ruby-keyword">return</span> <span class="ruby-keyword">false</span> <span class="ruby-keyword">if</span> <span class="ruby-identifier">redirect_url</span>.<span class="ruby-identifier">nil?</span>
+  <span class="ruby-identifier">p</span> = <span class="ruby-constant">Regexp</span>.<span class="ruby-identifier">new</span>(<span class="ruby-identifier">pattern</span>) <span class="ruby-keyword">if</span> <span class="ruby-identifier">pattern</span>.<span class="ruby-identifier">class</span> <span class="ruby-operator">==</span> <span class="ruby-constant">String</span>
+  <span class="ruby-identifier">p</span> = <span class="ruby-identifier">pattern</span> <span class="ruby-keyword">if</span> <span class="ruby-identifier">pattern</span>.<span class="ruby-identifier">class</span> <span class="ruby-operator">==</span> <span class="ruby-constant">Regexp</span>
+  <span class="ruby-keyword">return</span> <span class="ruby-keyword">false</span> <span class="ruby-keyword">if</span> <span class="ruby-identifier">p</span>.<span class="ruby-identifier">nil?</span>
+  <span class="ruby-identifier">p</span>.<span class="ruby-identifier">match</span>(<span class="ruby-identifier">redirect_url</span>) <span class="ruby-operator">!=</span> <span class="ruby-keyword">nil</span>
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+          
+      <div class="method">
+        <div class="title">
+                      <a name="method-i-redirected_to"></a>
+            <b>redirected_to</b>()          
+        </div>
+
+                  <div class="description">
+                      </div>
+        
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('redirected_to_source')"
+                 id="l_method-i-redirected_to_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="redirected_to_source">
+<pre>
+  <span class="ruby-comment"># File actionpack/lib/action_dispatch/testing/test_response.rb, line 39</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">redirected_to</span>
+  <span class="ruby-operator">::</span><span class="ruby-constant">ActiveSupport</span><span class="ruby-operator">::</span><span class="ruby-constant">Deprecation</span>.<span class="ruby-identifier">warn</span>(<span class="ruby-string">&quot;response.redirected_to is deprecated. Use response.redirect_url instead&quot;</span>, <span class="ruby-identifier">caller</span>)
+  <span class="ruby-identifier">redirect_url</span>
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+          
+      <div class="method">
+        <div class="title">
+                      <a name="method-i-rendered"></a>
+            <b>rendered</b>()          
+        </div>
+
+                  <div class="description">
+            <p>Returns the template of the file which was used to render this response (or
+nil)</p>          </div>
+        
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('rendered_source')"
+                 id="l_method-i-rendered_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="rendered_source">
+<pre>
+  <span class="ruby-comment"># File actionpack/lib/action_dispatch/testing/test_response.rb, line 55</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">rendered</span>
+  <span class="ruby-constant">ActiveSupport</span><span class="ruby-operator">::</span><span class="ruby-constant">Deprecation</span>.<span class="ruby-identifier">warn</span>(<span class="ruby-string">&quot;response.rendered has been deprecated. Use template.rendered instead&quot;</span>, <span class="ruby-identifier">caller</span>)
+  <span class="ruby-ivar">@template</span>.<span class="ruby-identifier">instance_variable_get</span>(<span class="ruby-value">:@_rendered</span>)
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+          
+      <div class="method">
+        <div class="title">
+                      <a name="method-i-session"></a>
+            <b>session</b>()          
+        </div>
+
+                  <div class="description">
+                      </div>
+        
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('session_source')"
+                 id="l_method-i-session_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="session_source">
+<pre>
+  <span class="ruby-comment"># File actionpack/lib/action_dispatch/testing/test_response.rb, line 24</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">session</span>
+  <span class="ruby-constant">ActiveSupport</span><span class="ruby-operator">::</span><span class="ruby-constant">Deprecation</span>.<span class="ruby-identifier">warn</span>(<span class="ruby-string">&quot;response.session has been deprecated. Use request.session instead&quot;</span>, <span class="ruby-identifier">caller</span>)
+  <span class="ruby-ivar">@request</span>.<span class="ruby-identifier">session</span>
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+          
+      <div class="method">
+        <div class="title">
+                      <a name="method-i-template"></a>
+            <b>template</b>()          
+        </div>
+
+                  <div class="description">
+                      </div>
+        
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('template_source')"
+                 id="l_method-i-template_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="template_source">
+<pre>
+  <span class="ruby-comment"># File actionpack/lib/action_dispatch/testing/test_response.rb, line 18</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">template</span>
+  <span class="ruby-constant">ActiveSupport</span><span class="ruby-operator">::</span><span class="ruby-constant">Deprecation</span>.<span class="ruby-identifier">warn</span>(<span class="ruby-string">&quot;response.template has been deprecated. Use controller.template instead&quot;</span>, <span class="ruby-identifier">caller</span>)
+  <span class="ruby-ivar">@template</span>
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+          
+      <div class="method">
+        <div class="title">
+                      <a name="method-i-template_objects"></a>
+            <b>template_objects</b>()          
+        </div>
+
+                  <div class="description">
+            <p>A shortcut to the template.assigns</p>          </div>
+        
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('template_objects_source')"
+                 id="l_method-i-template_objects_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="template_objects_source">
+<pre>
+  <span class="ruby-comment"># File actionpack/lib/action_dispatch/testing/test_response.rb, line 91</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">template_objects</span>
+  <span class="ruby-constant">ActiveSupport</span><span class="ruby-operator">::</span><span class="ruby-constant">Deprecation</span>.<span class="ruby-identifier">warn</span>(<span class="ruby-string">&quot;response.template_objects has been deprecated. Use template.assigns instead&quot;</span>, <span class="ruby-identifier">caller</span>)
+  <span class="ruby-ivar">@template</span>.<span class="ruby-identifier">assigns</span> <span class="ruby-operator">||</span> {}
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+              </div>
+  </div>
+  </body>
+</html>

@@ -1,0 +1,66 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>3 Conditional GET support</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v4.1.16/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="conditional-get-support">3 Conditional GET support</h3>
+<p>Conditional GETs are a feature of the HTTP specification that provide a way for web servers to tell browsers that the response to a GET request hasn't changed since the last request and can be safely pulled from the browser cache.</p>
+<p>They work by using the <code>HTTP_IF_NONE_MATCH</code> and <code>HTTP_IF_MODIFIED_SINCE</code> headers to pass back and forth both a unique content identifier and the timestamp of when the content was last changed. If the browser makes a request where the content identifier (etag) or last modified since timestamp matches the server's version then the server only needs to send back an empty response with a not modified status.</p>
+<p>It is the server's (i.e. our) responsibility to look for a last modified timestamp and the if-none-match header and determine whether or not to send back the full response. With conditional-get support in Rails this is a pretty easy task:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class ProductsController &lt; ApplicationController
+
+  def show
+    @product = Product.find(params[:id])
+
+    # If the request is stale according to the given timestamp and etag value
+    # (i.e. it needs to be processed again) then execute this block
+    if stale?(last_modified: @product.updated_at.utc, etag: @product.cache_key)
+      respond_to do |wants|
+        # ... normal response processing
+      end
+    end
+
+    # If the request is fresh (i.e. it's not modified) then you don't need to do
+    # anything. The default render checks for this using the parameters
+    # used in the previous call to stale? and will automatically send a
+    # :not_modified. So that's it, you're done.
+  end
+end
+
+</pre>
+</div>
+<p>Instead of an options hash, you can also simply pass in a model, Rails will use the <code>updated_at</code> and <code>cache_key</code> methods for setting <code>last_modified</code> and <code>etag</code>:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class ProductsController &lt; ApplicationController
+  def show
+    @product = Product.find(params[:id])
+    respond_with(@product) if stale?(@product)
+  end
+end
+
+</pre>
+</div>
+<p>If you don't have any special response processing and are using the default rendering mechanism (i.e. you're not using respond_to or calling render yourself) then you've got an easy helper in fresh_when:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class ProductsController &lt; ApplicationController
+
+  # This will automatically send back a :not_modified if the request is fresh,
+  # and will render the default template (product.*) if it's stale.
+
+  def show
+    @product = Product.find(params[:id])
+    fresh_when last_modified: @product.published_at.utc, etag: @product
+  end
+end
+
+</pre>
+</div>
+</body>
+</html>

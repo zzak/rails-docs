@@ -1,0 +1,57 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>1 Upgrading to Rails 3</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v6.0.6.1/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="upgrading-to-rails-3"><a class="anchorlink" href="#upgrading-to-rails-3">1 Upgrading to Rails 3</a></h3>
+<p>If you're upgrading an existing application, it's a great idea to have good test coverage before going in. You should also first upgrade to Rails 2.3.5 and make sure your application still runs as expected before attempting to update to Rails 3. Then take heed of the following changes:</p>
+
+<h4 id="rails-3-requires-at-least-ruby-1-8-7"><a class="anchorlink" href="#rails-3-requires-at-least-ruby-1-8-7">1.1 Rails 3 requires at least Ruby 1.8.7</a></h4>
+
+<p>Rails 3.0 requires Ruby 1.8.7 or higher. Support for all of the previous Ruby versions has been dropped officially and you should upgrade as early as possible. Rails 3.0 is also compatible with Ruby 1.9.2.</p>
+
+<div class="info"><p>Note that Ruby 1.8.7 p248 and p249 have marshalling bugs that crash Rails 3.0. Ruby Enterprise Edition have these fixed since release 1.8.7-2010.02 though. On the 1.9 front, Ruby 1.9.1 is not usable because it outright segfaults on Rails 3.0, so if you want to use Rails 3 with 1.9.x jump on 1.9.2 for smooth sailing.</p></div>
+
+<h4 id="rails-application-object"><a class="anchorlink" href="#rails-application-object">1.2 Rails Application object</a></h4>
+
+<p>As part of the groundwork for supporting running multiple Rails applications in the same process, Rails 3 introduces the concept of an Application object. An application object holds all the application specific configurations and is very similar in nature to <code>config/environment.rb</code> from the previous versions of Rails.</p>
+
+<p>Each Rails application now must have a corresponding application object. The application object is defined in <code>config/application.rb</code>. If you're upgrading an existing application to Rails 3, you must add this file and move the appropriate configurations from <code>config/environment.rb</code> to <code>config/application.rb</code>.</p>
+
+<h4 id="script-replaced-by-script-rails"><a class="anchorlink" href="#script-replaced-by-script-rails">1.3 script/* replaced by script/rails</a></h4>
+
+<p>The new <code>script/rails</code> replaces all the scripts that used to be in the <code>script</code> directory. You do not run <code>script/rails</code> directly though, the <code>rails</code> command detects it is being invoked in the root of a Rails application and runs the script for you. Intended usage is:</p>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+$ rails console                      # instead of script/console
+$ rails g scaffold post title:string # instead of script/generate scaffold post title:string
+
+</pre>
+</div>
+<p>Run <code>rails --help</code> for a list of all the options.</p>
+
+<h4 id="dependencies-and-config-gem"><a class="anchorlink" href="#dependencies-and-config-gem">1.4 Dependencies and config.gem</a></h4>
+
+<p>The <code>config.gem</code> method is gone and has been replaced by using <code>bundler</code> and a <code>Gemfile</code>, see <a href="#vendoring-gems">Vendoring Gems</a> below.</p>
+
+<h4 id="upgrade-process"><a class="anchorlink" href="#upgrade-process">1.5 Upgrade Process</a></h4>
+
+<p>To help with the upgrade process, a plugin named <a href="https://github.com/rails/rails_upgrade">Rails Upgrade</a> has been created to automate part of it.</p>
+
+<p>Simply install the plugin, then run <code>rake rails:upgrade:check</code> to check your app for pieces that need to be updated (with links to information on how to update them). It also offers a task to generate a <code>Gemfile</code> based on your current <code>config.gem</code> calls and a task to generate a new routes file from your current one. To get the plugin, simply run the following:</p>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+$ ruby script/plugin install git://github.com/rails/rails_upgrade.git
+
+</pre>
+</div>
+<p>You can see an example of how that works at <a href="http://omgbloglol.com/post/364624593/rails-upgrade-is-now-an-official-plugin">Rails Upgrade is now an Official Plugin</a></p>
+
+<p>Aside from Rails Upgrade tool, if you need more help, there are people on IRC and <a href="https://discuss.rubyonrails.org/c/rubyonrails-talk">rubyonrails-talk</a> that are probably doing the same thing, possibly hitting the same issues. Be sure to blog your own experiences when upgrading so others can benefit from your knowledge!</p>
+</body>
+</html>

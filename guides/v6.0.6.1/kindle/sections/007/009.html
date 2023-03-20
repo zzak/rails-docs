@@ -1,0 +1,22 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>10 Readonly Objects</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v6.0.6.1/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="readonly-objects"><a class="anchorlink" href="#readonly-objects">10 Readonly Objects</a></h3>
+<p>Active Record provides the <code>readonly</code> method on a relation to explicitly disallow modification of any of the returned objects. Any attempt to alter a readonly record will not succeed, raising an <code>ActiveRecord::ReadOnlyRecord</code> exception.</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+client = Client.readonly.first
+client.visits += 1
+client.save
+
+</pre>
+</div>
+<p>As <code>client</code> is explicitly set to be a readonly object, the above code will raise an <code>ActiveRecord::ReadOnlyRecord</code> exception when calling <code>client.save</code> with an updated value of <em>visits</em>.</p>
+</body>
+</html>

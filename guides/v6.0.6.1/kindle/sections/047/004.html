@@ -1,0 +1,73 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>5 Action Pack</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v6.0.6.1/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="action-pack"><a class="anchorlink" href="#action-pack">5 Action Pack</a></h3>
+<p>Please refer to the <a href="https://github.com/rails/rails/blob/6-0-stable/actionpack/CHANGELOG.md">Changelog</a> for detailed changes.</p>
+
+<h4 id="action-pack-removals"><a class="anchorlink" href="#action-pack-removals">5.1 Removals</a></h4>
+<ul>
+<li>  Remove deprecated <code>fragment_cache_key</code> helper in favor of <code>combined_fragment_cache_key</code>.
+(<a href="https://github.com/rails/rails/commit/e70d3df7c9b05c129b0fdcca57f66eca316c5cfc">Commit</a>)</li>
+<li>  Remove deprecated methods in <code>ActionDispatch::TestResponse</code>:
+<code>#success?</code> in favor of <code>#successful?</code>, <code>#missing?</code> in favor of <code>#not_found?</code>,
+<code>#error?</code> in favor of <code>#server_error?</code>.
+(<a href="https://github.com/rails/rails/commit/13ddc92e079e59a0b894e31bf5bb4fdecbd235d1">Commit</a>)</li>
+</ul>
+<h4 id="action-pack-deprecations"><a class="anchorlink" href="#action-pack-deprecations">5.2 Deprecations</a></h4>
+<ul>
+<li>  Deprecate <code>ActionDispatch::Http::ParameterFilter</code> in favor of <code>ActiveSupport::ParameterFilter</code>.
+(<a href="https://github.com/rails/rails/pull/34039">Pull Request</a>)</li>
+<li>  Deprecate controller level <code>force_ssl</code> in favor of <code>config.force_ssl</code>.
+(<a href="https://github.com/rails/rails/pull/32277">Pull Request</a>)</li>
+</ul>
+<h4 id="action-pack-notable-changes"><a class="anchorlink" href="#action-pack-notable-changes">5.3 Notable changes</a></h4>
+<ul>
+<li>  Change <code>ActionDispatch::Response#content_type</code> returning Content-Type
+header as it is.
+(<a href="https://github.com/rails/rails/pull/36034">Pull Request</a>)</li>
+<li>  Raise an <code>ArgumentError</code> if a resource param contains a colon.
+(<a href="https://github.com/rails/rails/pull/35236">Pull Request</a>)</li>
+<li>  Allow <code>ActionDispatch::SystemTestCase.driven_by</code> to be called with a block
+to define specific browser capabilities.
+(<a href="https://github.com/rails/rails/pull/35081">Pull Request</a>)</li>
+<li>  Add <code>ActionDispatch::HostAuthorization</code> middleware that guards against DNS rebinding
+attacks.
+(<a href="https://github.com/rails/rails/pull/33145">Pull Request</a>)</li>
+<li>  Allow the use of <code>parsed_body</code> in <code>ActionController::TestCase</code>.
+(<a href="https://github.com/rails/rails/pull/34717">Pull Request</a>)</li>
+<li>  Raise an <code>ArgumentError</code> when multiple root routes exists in the same context
+without <code>as:</code> naming specifications.
+(<a href="https://github.com/rails/rails/pull/34494">Pull Request</a>)</li>
+<li>  Allow the use of <code>#rescue_from</code> for handling parameter parsing errors.
+(<a href="https://github.com/rails/rails/pull/34341">Pull Request</a>)</li>
+<li>  Add <code>ActionController::Parameters#each_value</code> for iterating through parameters.
+(<a href="https://github.com/rails/rails/pull/33979">Pull Request</a>)</li>
+<li>  Encode Content-Disposition filenames on <code>send_data</code> and <code>send_file</code>.
+(<a href="https://github.com/rails/rails/pull/33829">Pull Request</a>)</li>
+<li>  Expose <code>ActionController::Parameters#each_key</code>.
+(<a href="https://github.com/rails/rails/pull/33758">Pull Request</a>)</li>
+<li>  Add purpose metadata to signed/encrypted cookies to prevent copying the value of
+cookies into one another.
+(<a href="https://github.com/rails/rails/pull/32937">Pull Request</a>)</li>
+<li>  Raise <code>ActionController::RespondToMismatchError</code> for conflicting <code>respond_to</code> invocations.
+(<a href="https://github.com/rails/rails/pull/33446">Pull Request</a>)</li>
+<li>  Add an explicit error page for when a template is missing for a request format.
+(<a href="https://github.com/rails/rails/pull/29286">Pull Request</a>)</li>
+<li>  Introduce <code>ActionDispatch::DebugExceptions.register_interceptor</code>, a way to hook into
+DebugExceptions and process the exception, before being rendered.
+(<a href="https://github.com/rails/rails/pull/23868">Pull Request</a>)</li>
+<li>  Output only one Content-Security-Policy nonce header value per request.
+(<a href="https://github.com/rails/rails/pull/32602">Pull Request</a>)</li>
+<li>  Add a module specifically for the Rails default headers configuration
+that can be explicitly included in controllers.
+(<a href="https://github.com/rails/rails/pull/32484">Pull Request</a>)</li>
+<li>  Add <code>#dig</code> to <code>ActionDispatch::Request::Session</code>.
+(<a href="https://github.com/rails/rails/pull/32446">Pull Request</a>)</li>
+</ul>
+</body>
+</html>

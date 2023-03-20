@@ -1,0 +1,97 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>8 Setup and Teardown</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v4.1.16/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="setup-and-teardown">8 Setup and Teardown</h3>
+<p>If you would like to run a block of code before the start of each test and another block of code after the end of each test you have two special callbacks for your rescue. Let's take note of this by looking at an example for our functional test in <code>Posts</code> controller:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+require 'test_helper'
+
+class PostsControllerTest &lt; ActionController::TestCase
+
+  # called before every single test
+  def setup
+    @post = posts(:one)
+  end
+
+  # called after every single test
+  def teardown
+    # as we are re-initializing @post before every test
+    # setting it to nil here is not essential but I hope
+    # you understand how you can use the teardown method
+    @post = nil
+  end
+
+  test "should show post" do
+    get :show, id: @post.id
+    assert_response :success
+  end
+
+  test "should destroy post" do
+    assert_difference('Post.count', -1) do
+      delete :destroy, id: @post.id
+    end
+
+    assert_redirected_to posts_path
+  end
+
+end
+
+</pre>
+</div>
+<p>Above, the <code>setup</code> method is called before each test and so <code>@post</code> is available for each of the tests. Rails implements <code>setup</code> and <code>teardown</code> as <code>ActiveSupport::Callbacks</code>. Which essentially means you need not only use <code>setup</code> and <code>teardown</code> as methods in your tests. You could specify them by using:</p>
+<ul>
+<li>a block</li>
+<li>a method (like in the earlier example)</li>
+<li>a method name as a symbol</li>
+<li>a lambda</li>
+</ul>
+<p>Let's see the earlier example by specifying <code>setup</code> callback by specifying a method name as a symbol:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+require 'test_helper'
+
+class PostsControllerTest &lt; ActionController::TestCase
+
+  # called before every single test
+  setup :initialize_post
+
+  # called after every single test
+  def teardown
+    @post = nil
+  end
+
+  test "should show post" do
+    get :show, id: @post.id
+    assert_response :success
+  end
+
+  test "should update post" do
+    patch :update, id: @post.id, post: {}
+    assert_redirected_to post_path(assigns(:post))
+  end
+
+  test "should destroy post" do
+    assert_difference('Post.count', -1) do
+      delete :destroy, id: @post.id
+    end
+
+    assert_redirected_to posts_path
+  end
+
+  private
+
+    def initialize_post
+      @post = posts(:one)
+    end
+end
+
+</pre>
+</div>
+</body>
+</html>

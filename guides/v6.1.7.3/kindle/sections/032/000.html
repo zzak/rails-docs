@@ -1,0 +1,65 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>1 Introduction</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v6.1.7.3/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="introduction"><a class="anchorlink" href="#introduction">1 Introduction</a></h3>
+<div class="info"><p>This guide documents autoloading in <code>classic</code> mode, which is the traditional one. If you'd like to read about <code>zeitwerk</code> mode instead, the new one in Rails 6, please check <a href="autoloading_and_reloading_constants.html">Autoloading and Reloading Constants (Zeitwerk Mode)</a>.</p></div>
+
+<p>Ruby on Rails allows applications to be written as if their code was preloaded.</p>
+
+<p>In a normal Ruby program classes need to load their dependencies:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="nb">require</span> <span class="s2">"application_controller"</span>
+<span class="nb">require</span> <span class="s2">"post"</span>
+
+<span class="k">class</span> <span class="nc">PostsController</span> <span class="o">&lt;</span> <span class="no">ApplicationController</span>
+  <span class="k">def</span> <span class="nf">index</span>
+    <span class="vi">@posts</span> <span class="o">=</span> <span class="no">Post</span><span class="p">.</span><span class="nf">all</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-c4445c3b52935ef723a9d87a2e43bb0a">require "application_controller"
+require "post"
+
+class PostsController &lt; ApplicationController
+  def index
+    @posts = Post.all
+  end
+end
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-c4445c3b52935ef723a9d87a2e43bb0a">Copy</button>
+</div>
+<p>Our Rubyist instinct quickly sees some redundancy in there: If classes were
+defined in files matching their name, couldn't their loading be automated
+somehow? We could save scanning the file for dependencies, which is brittle.</p>
+
+<p>Moreover, <code>Kernel#require</code> loads files once, but development is much more smooth
+if code gets refreshed when it changes without restarting the server. It would
+be nice to be able to use <code>Kernel#load</code> in development, and <code>Kernel#require</code> in
+production.</p>
+
+<p>Indeed, those features are provided by Ruby on Rails, where we just write</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">PostsController</span> <span class="o">&lt;</span> <span class="no">ApplicationController</span>
+  <span class="k">def</span> <span class="nf">index</span>
+    <span class="vi">@posts</span> <span class="o">=</span> <span class="no">Post</span><span class="p">.</span><span class="nf">all</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-09f0484cdfd4e4700b1007f21b6ce3c5">class PostsController &lt; ApplicationController
+  def index
+    @posts = Post.all
+  end
+end
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-09f0484cdfd4e4700b1007f21b6ce3c5">Copy</button>
+</div>
+<p>This guide documents how that works.</p>
+</body>
+</html>

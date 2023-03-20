@@ -1,0 +1,233 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html 
+     PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+  <head>
+    <title>Module: AbstractController::Callbacks::ClassMethods</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <link rel="stylesheet" href="../../../rdoc-style.css" type="text/css" media="screen" />
+
+    <script language="JavaScript" type="text/javascript">
+    // <![CDATA[
+
+        function toggleSource( id )
+        {
+          var elem
+          var link
+
+          if( document.getElementById )
+          {
+            elem = document.getElementById( id )
+            link = document.getElementById( "l_" + id )
+          }
+          else if ( document.all )
+          {
+            elem = eval( "document.all." + id )
+            link = eval( "document.all.l_" + id )
+          }
+          else
+            return false;
+
+          if( elem.style.display == "block" )
+          {
+            elem.style.display = "none"
+            link.innerHTML = "show source"
+          }
+          else
+          {
+            elem.style.display = "block"
+            link.innerHTML = "hide source"
+          }
+        }
+
+        function openCode( url )
+        {
+          window.open( url, "SOURCE_CODE", "resizable=yes,scrollbars=yes,toolbar=no,status=no,height=480,width=750" ).focus();
+        }
+      // ]]>
+    </script>
+  </head>
+
+  <body>
+    <table width="100%" border='0' cellpadding='0' cellspacing='0' class='banner'>
+    <tr><td>Ruby on Rails v3.0.9</td></tr>
+    <tr>
+  <td class="file-title"><span class="file-title-prefix">Module</span><br />AbstractController::Callbacks::ClassMethods</td>
+  <td align="right">
+    <table cellspacing="0" cellpadding="2">
+      <tr valign="top">
+        <td>In:</td>
+        <td>
+<a href="../../../files/actionpack/lib/abstract_controller/callbacks_rb.html">actionpack/lib/abstract_controller/callbacks.rb</a>:
+        </td>
+      </tr>
+         </table>
+        </td>
+        </tr>
+      </table>
+  <div id="bodyContent">
+  <div id="content">
+
+  <div class="description"></div>
+
+
+  <div class="sectiontitle">Methods</div>
+  <ul>
+                <li><a href="#method-i-_insert_callbacks">_insert_callbacks</a></li>
+                <li><a href="#method-i-_normalize_callback_options">_normalize_callback_options</a></li>
+                <li><a href="#method-i-skip_filter">skip_filter</a></li>
+      </ul>
+
+
+
+
+                        
+    <div class="sectiontitle">
+      Public      Instance      methods
+    </div>
+
+          
+      <div class="method">
+        <div class="title">
+                      <a name="method-i-_insert_callbacks"></a>
+            <b>_insert_callbacks</b>(callbacks, block)          
+        </div>
+
+                  <div class="description">
+            <p>Take callback names and an optional callback proc, normalize them, then
+call the block with each callback. This allows us to abstract the
+normalization across several methods that use it.</p>
+
+<h4>Parameters</h4>
+<ul><li>
+<p><tt>callbacks</tt> - An array of callbacks, with an optional options hash
+as the last parameter.</p>
+</li><li>
+<p><tt>block</tt>    - A proc that should be added to the callbacks.</p>
+</li></ul>
+
+<h4>Block Parameters</h4>
+<ul><li>
+<p><tt>name</tt>     - The callback to be added</p>
+</li><li>
+<p><tt>options</tt>  - A hash of options to be used when adding the callback</p>
+</li></ul>          </div>
+        
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('_insert_callbacks_source')"
+                 id="l_method-i-_insert_callbacks_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="_insert_callbacks_source">
+<pre>
+  <span class="ruby-comment"># File actionpack/lib/abstract_controller/callbacks.rb, line 69</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">_insert_callbacks</span>(<span class="ruby-identifier">callbacks</span>, <span class="ruby-identifier">block</span>)
+  <span class="ruby-identifier">options</span> = <span class="ruby-identifier">callbacks</span>.<span class="ruby-identifier">last</span>.<span class="ruby-identifier">is_a?</span>(<span class="ruby-constant">Hash</span>) <span class="ruby-operator">?</span> <span class="ruby-identifier">callbacks</span>.<span class="ruby-identifier">pop</span> <span class="ruby-operator">:</span> {}
+  <span class="ruby-identifier">_normalize_callback_options</span>(<span class="ruby-identifier">options</span>)
+  <span class="ruby-identifier">callbacks</span>.<span class="ruby-identifier">push</span>(<span class="ruby-identifier">block</span>) <span class="ruby-keyword">if</span> <span class="ruby-identifier">block</span>
+  <span class="ruby-identifier">callbacks</span>.<span class="ruby-identifier">each</span> <span class="ruby-keyword">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">callback</span><span class="ruby-operator">|</span>
+    <span class="ruby-keyword">yield</span> <span class="ruby-identifier">callback</span>, <span class="ruby-identifier">options</span>
+  <span class="ruby-keyword">end</span>
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+          
+      <div class="method">
+        <div class="title">
+                      <a name="method-i-_normalize_callback_options"></a>
+            <b>_normalize_callback_options</b>(options)          
+        </div>
+
+                  <div class="description">
+            <p>If :only or :except are used, convert the options into the primitive form
+(:per_key) used by <a
+href="../../ActiveSupport/Callbacks.html">ActiveSupport::Callbacks</a>. The
+basic idea is that :only =&gt; :index gets converted to :if =&gt; proc {|c|
+c.action_name == “index” }, but that the proc is only evaluated once
+per action for the lifetime of a <a href="../../Rails.html">Rails</a>
+process.</p>
+
+<h4>Options</h4>
+<ul><li>
+<p><tt>only</tt>   - The callback should be run only for this action</p>
+</li><li>
+<p>&lt;tt&gt;except&lt;tt&gt;  - The callback should be run for all actions
+except this action</p>
+</li></ul>          </div>
+        
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('_normalize_callback_options_source')"
+                 id="l_method-i-_normalize_callback_options_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="_normalize_callback_options_source">
+<pre>
+  <span class="ruby-comment"># File actionpack/lib/abstract_controller/callbacks.rb, line 33</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">_normalize_callback_options</span>(<span class="ruby-identifier">options</span>)
+  <span class="ruby-keyword">if</span> <span class="ruby-identifier">only</span> = <span class="ruby-identifier">options</span>[<span class="ruby-value">:only</span>]
+    <span class="ruby-identifier">only</span> = <span class="ruby-constant">Array</span>(<span class="ruby-identifier">only</span>).<span class="ruby-identifier">map</span> {<span class="ruby-operator">|</span><span class="ruby-identifier">o</span><span class="ruby-operator">|</span> <span class="ruby-node">&quot;action_name == '#{o}'&quot;</span>}.<span class="ruby-identifier">join</span>(<span class="ruby-string">&quot; || &quot;</span>)
+    <span class="ruby-identifier">options</span>[<span class="ruby-value">:per_key</span>] = {<span class="ruby-value">:if</span> =<span class="ruby-operator">&gt;</span> <span class="ruby-identifier">only</span>}
+  <span class="ruby-keyword">end</span>
+  <span class="ruby-keyword">if</span> <span class="ruby-identifier">except</span> = <span class="ruby-identifier">options</span>[<span class="ruby-value">:except</span>]
+    <span class="ruby-identifier">except</span> = <span class="ruby-constant">Array</span>(<span class="ruby-identifier">except</span>).<span class="ruby-identifier">map</span> {<span class="ruby-operator">|</span><span class="ruby-identifier">e</span><span class="ruby-operator">|</span> <span class="ruby-node">&quot;action_name == '#{e}'&quot;</span>}.<span class="ruby-identifier">join</span>(<span class="ruby-string">&quot; || &quot;</span>)
+    <span class="ruby-identifier">options</span>[<span class="ruby-value">:per_key</span>] = {<span class="ruby-value">:unless</span> =<span class="ruby-operator">&gt;</span> <span class="ruby-identifier">except</span>}
+  <span class="ruby-keyword">end</span>
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+          
+      <div class="method">
+        <div class="title">
+                      <a name="method-i-skip_filter"></a>
+            <b>skip_filter</b>(*names, &blk)          
+        </div>
+
+                  <div class="description">
+            <p>Skip before, after, and around filters matching any of the names</p>
+
+<h4>Parameters</h4>
+<ul><li>
+<p><tt>names</tt> - A list of valid names that could be used for callbacks.
+Note that skipping uses Ruby equality, so it’s impossible to skip a
+callback defined using an anonymous proc using <a
+href="ClassMethods.html#method-i-skip_filter">skip_filter</a></p>
+</li></ul>          </div>
+        
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('skip_filter_source')"
+                 id="l_method-i-skip_filter_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="skip_filter_source">
+<pre>
+  <span class="ruby-comment"># File actionpack/lib/abstract_controller/callbacks.rb, line 51</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">skip_filter</span>(*<span class="ruby-identifier">names</span>, &amp;<span class="ruby-identifier">blk</span>)
+  <span class="ruby-identifier">skip_before_filter</span>(*<span class="ruby-identifier">names</span>)
+  <span class="ruby-identifier">skip_after_filter</span>(*<span class="ruby-identifier">names</span>)
+  <span class="ruby-identifier">skip_around_filter</span>(*<span class="ruby-identifier">names</span>)
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+              </div>
+  </div>
+  </body>
+</html>

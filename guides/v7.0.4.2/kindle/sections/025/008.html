@@ -1,0 +1,253 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>9 HTTP Security Headers</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v7.0.4.2/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="http-security-headers"><a class="anchorlink" href="#http-security-headers">9 HTTP Security Headers</a></h3>
+<p>Every HTTP response from your Rails application receives the following default security headers.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">config</span><span class="p">.</span><span class="nf">action_dispatch</span><span class="p">.</span><span class="nf">default_headers</span> <span class="o">=</span> <span class="p">{</span>
+  <span class="s1">'X-Frame-Options'</span> <span class="o">=&gt;</span> <span class="s1">'SAMEORIGIN'</span><span class="p">,</span>
+  <span class="s1">'X-XSS-Protection'</span> <span class="o">=&gt;</span> <span class="s1">'0'</span><span class="p">,</span>
+  <span class="s1">'X-Content-Type-Options'</span> <span class="o">=&gt;</span> <span class="s1">'nosniff'</span><span class="p">,</span>
+  <span class="s1">'X-Download-Options'</span> <span class="o">=&gt;</span> <span class="s1">'noopen'</span><span class="p">,</span>
+  <span class="s1">'X-Permitted-Cross-Domain-Policies'</span> <span class="o">=&gt;</span> <span class="s1">'none'</span><span class="p">,</span>
+  <span class="s1">'Referrer-Policy'</span> <span class="o">=&gt;</span> <span class="s1">'strict-origin-when-cross-origin'</span>
+<span class="p">}</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="config.action_dispatch.default_headers = {
+  'X-Frame-Options' =&gt; 'SAMEORIGIN',
+  'X-XSS-Protection' =&gt; '0',
+  'X-Content-Type-Options' =&gt; 'nosniff',
+  'X-Download-Options' =&gt; 'noopen',
+  'X-Permitted-Cross-Domain-Policies' =&gt; 'none',
+  'Referrer-Policy' =&gt; 'strict-origin-when-cross-origin'
+}
+">Copy</button>
+</div>
+<p>You can configure default headers in <code>config/application.rb</code>.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">config</span><span class="p">.</span><span class="nf">action_dispatch</span><span class="p">.</span><span class="nf">default_headers</span> <span class="o">=</span> <span class="p">{</span>
+  <span class="s1">'Header-Name'</span> <span class="o">=&gt;</span> <span class="s1">'Header-Value'</span><span class="p">,</span>
+  <span class="s1">'X-Frame-Options'</span> <span class="o">=&gt;</span> <span class="s1">'DENY'</span>
+<span class="p">}</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="config.action_dispatch.default_headers = {
+  'Header-Name' =&gt; 'Header-Value',
+  'X-Frame-Options' =&gt; 'DENY'
+}
+">Copy</button>
+</div>
+<p>Or you can remove them.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">config</span><span class="p">.</span><span class="nf">action_dispatch</span><span class="p">.</span><span class="nf">default_headers</span><span class="p">.</span><span class="nf">clear</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="config.action_dispatch.default_headers.clear
+">Copy</button>
+</div>
+<p>Here is a list of common headers:</p>
+<ul>
+<li>
+<strong>X-Frame-Options:</strong> <em><code>SAMEORIGIN</code> in Rails by default</em> - allow framing on same domain. Set it to 'DENY' to deny framing at all or remove this header completely if you want to allow framing on all websites.</li>
+<li>
+<strong>X-XSS-Protection:</strong> <em><code>0</code> in Rails by default</em> - <a href="https://owasp.org/www-project-secure-headers/#x-xss-protection">deprecated legacy header</a>, set to '0' to disable problematic legacy XSS auditors.</li>
+<li>
+<strong>X-Content-Type-Options:</strong> <em><code>nosniff</code> in Rails by default</em> - stops the browser from guessing the MIME type of a file.</li>
+<li>
+<strong>X-Content-Security-Policy:</strong> <a href="https://w3c.github.io/webappsec-csp/">A powerful mechanism for controlling which sites certain content types can be loaded from</a>
+</li>
+<li>
+<strong>Access-Control-Allow-Origin:</strong> Used to control which sites are allowed to bypass same origin policies and send cross-origin requests.</li>
+<li>
+<strong>Strict-Transport-Security:</strong> <a href="https://en.wikipedia.org/wiki/HTTP_Strict_Transport_Security">Used to control if the browser is allowed to only access a site over a secure connection</a>
+</li>
+</ul>
+<h4 id="content-security-policy-header"><a class="anchorlink" href="#content-security-policy-header">9.1 <code>Content-Security-Policy</code> Header</a></h4>
+
+<p>To help protect against XSS and injection attacks, it is recommended to define a
+<a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Security-Policy"><code>Content-Security-Policy</code></a>
+response header for your application. Rails provides a DSL that allows you to
+configure the header.</p>
+
+<p>Define the security policy in the appropriate initializer:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="c1"># config/initializers/content_security_policy.rb</span>
+<span class="no">Rails</span><span class="p">.</span><span class="nf">application</span><span class="p">.</span><span class="nf">config</span><span class="p">.</span><span class="nf">content_security_policy</span> <span class="k">do</span> <span class="o">|</span><span class="n">policy</span><span class="o">|</span>
+  <span class="n">policy</span><span class="p">.</span><span class="nf">default_src</span> <span class="ss">:self</span><span class="p">,</span> <span class="ss">:https</span>
+  <span class="n">policy</span><span class="p">.</span><span class="nf">font_src</span>    <span class="ss">:self</span><span class="p">,</span> <span class="ss">:https</span><span class="p">,</span> <span class="ss">:data</span>
+  <span class="n">policy</span><span class="p">.</span><span class="nf">img_src</span>     <span class="ss">:self</span><span class="p">,</span> <span class="ss">:https</span><span class="p">,</span> <span class="ss">:data</span>
+  <span class="n">policy</span><span class="p">.</span><span class="nf">object_src</span>  <span class="ss">:none</span>
+  <span class="n">policy</span><span class="p">.</span><span class="nf">script_src</span>  <span class="ss">:self</span><span class="p">,</span> <span class="ss">:https</span>
+  <span class="n">policy</span><span class="p">.</span><span class="nf">style_src</span>   <span class="ss">:self</span><span class="p">,</span> <span class="ss">:https</span>
+  <span class="c1"># Specify URI for violation reports</span>
+  <span class="n">policy</span><span class="p">.</span><span class="nf">report_uri</span> <span class="s2">"/csp-violation-report-endpoint"</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='# config/initializers/content_security_policy.rb
+Rails.application.config.content_security_policy do |policy|
+  policy.default_src :self, :https
+  policy.font_src    :self, :https, :data
+  policy.img_src     :self, :https, :data
+  policy.object_src  :none
+  policy.script_src  :self, :https
+  policy.style_src   :self, :https
+  # Specify URI for violation reports
+  policy.report_uri "/csp-violation-report-endpoint"
+end
+'>Copy</button>
+</div>
+<p>The globally configured policy can be overridden on a per-resource basis:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">PostsController</span> <span class="o">&lt;</span> <span class="no">ApplicationController</span>
+  <span class="n">content_security_policy</span> <span class="k">do</span> <span class="o">|</span><span class="n">policy</span><span class="o">|</span>
+    <span class="n">policy</span><span class="p">.</span><span class="nf">upgrade_insecure_requests</span> <span class="kp">true</span>
+    <span class="n">policy</span><span class="p">.</span><span class="nf">base_uri</span> <span class="s2">"https://www.example.com"</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='class PostsController &lt; ApplicationController
+  content_security_policy do |policy|
+    policy.upgrade_insecure_requests true
+    policy.base_uri "https://www.example.com"
+  end
+end
+'>Copy</button>
+</div>
+<p>Or it can be disabled:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">LegacyPagesController</span> <span class="o">&lt;</span> <span class="no">ApplicationController</span>
+  <span class="n">content_security_policy</span> <span class="kp">false</span><span class="p">,</span> <span class="ss">only: :index</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="class LegacyPagesController &lt; ApplicationController
+  content_security_policy false, only: :index
+end
+">Copy</button>
+</div>
+<p>Use lambdas to inject per-request values, such as account subdomains in a
+multi-tenant application:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">PostsController</span> <span class="o">&lt;</span> <span class="no">ApplicationController</span>
+  <span class="n">content_security_policy</span> <span class="k">do</span> <span class="o">|</span><span class="n">policy</span><span class="o">|</span>
+    <span class="n">policy</span><span class="p">.</span><span class="nf">base_uri</span> <span class="ss">:self</span><span class="p">,</span> <span class="o">-&gt;</span> <span class="p">{</span> <span class="s2">"https://</span><span class="si">#{</span><span class="n">current_user</span><span class="p">.</span><span class="nf">domain</span><span class="si">}</span><span class="s2">.example.com"</span> <span class="p">}</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='class PostsController &lt; ApplicationController
+  content_security_policy do |policy|
+    policy.base_uri :self, -&gt; { "https://#{current_user.domain}.example.com" }
+  end
+end
+'>Copy</button>
+</div>
+<h5 id="reporting-violations"><a class="anchorlink" href="#reporting-violations">9.1.1 Reporting Violations</a></h5>
+
+<p>Enable the
+<a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Security-Policy/report-uri"><code>report-uri</code></a>
+directive to report violations to the specified URI:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="no">Rails</span><span class="p">.</span><span class="nf">application</span><span class="p">.</span><span class="nf">config</span><span class="p">.</span><span class="nf">content_security_policy</span> <span class="k">do</span> <span class="o">|</span><span class="n">policy</span><span class="o">|</span>
+  <span class="n">policy</span><span class="p">.</span><span class="nf">report_uri</span> <span class="s2">"/csp-violation-report-endpoint"</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='Rails.application.config.content_security_policy do |policy|
+  policy.report_uri "/csp-violation-report-endpoint"
+end
+'>Copy</button>
+</div>
+<p>When migrating legacy content, you might want to report violations without
+enforcing the policy. Set the
+<a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Security-Policy-Report-Only"><code>Content-Security-Policy-Report-Only</code></a>
+response header to only report violations:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="no">Rails</span><span class="p">.</span><span class="nf">application</span><span class="p">.</span><span class="nf">config</span><span class="p">.</span><span class="nf">content_security_policy_report_only</span> <span class="o">=</span> <span class="kp">true</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="Rails.application.config.content_security_policy_report_only = true
+">Copy</button>
+</div>
+<p>Or override it in a controller:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">PostsController</span> <span class="o">&lt;</span> <span class="no">ApplicationController</span>
+  <span class="n">content_security_policy_report_only</span> <span class="ss">only: :index</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="class PostsController &lt; ApplicationController
+  content_security_policy_report_only only: :index
+end
+">Copy</button>
+</div>
+<h5 id="adding-a-nonce"><a class="anchorlink" href="#adding-a-nonce">9.1.2 Adding a Nonce</a></h5>
+
+<p>If you are considering <code>'unsafe-inline'</code>, consider using nonces instead. <a href="https://www.w3.org/TR/CSP3/#security-nonces">Nonces
+provide a substantial improvement</a>
+over <code>'unsafe-inline'</code> when implementing a Content Security Policy on top
+of existing code.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="c1"># config/initializers/content_security_policy.rb</span>
+<span class="no">Rails</span><span class="p">.</span><span class="nf">application</span><span class="p">.</span><span class="nf">config</span><span class="p">.</span><span class="nf">content_security_policy</span> <span class="k">do</span> <span class="o">|</span><span class="n">policy</span><span class="o">|</span>
+  <span class="n">policy</span><span class="p">.</span><span class="nf">script_src</span> <span class="ss">:self</span><span class="p">,</span> <span class="ss">:https</span>
+<span class="k">end</span>
+
+<span class="no">Rails</span><span class="p">.</span><span class="nf">application</span><span class="p">.</span><span class="nf">config</span><span class="p">.</span><span class="nf">content_security_policy_nonce_generator</span> <span class="o">=</span> <span class="o">-&gt;</span> <span class="n">request</span> <span class="p">{</span> <span class="no">SecureRandom</span><span class="p">.</span><span class="nf">base64</span><span class="p">(</span><span class="mi">16</span><span class="p">)</span> <span class="p">}</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="# config/initializers/content_security_policy.rb
+Rails.application.config.content_security_policy do |policy|
+  policy.script_src :self, :https
+end
+
+Rails.application.config.content_security_policy_nonce_generator = -&gt; request { SecureRandom.base64(16) }
+">Copy</button>
+</div>
+<p>Then you can add an automatic nonce value by passing <code>nonce: true</code>
+as part of <code>html_options</code>. Example:</p>
+
+<div class="code_container">
+<pre><code class="highlight erb"><span class="cp">&lt;%=</span> <span class="n">javascript_tag</span> <span class="ss">nonce: </span><span class="kp">true</span> <span class="k">do</span> <span class="cp">-%&gt;</span>
+  alert('Hello, World!');
+<span class="cp">&lt;%</span> <span class="k">end</span> <span class="cp">-%&gt;</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="&lt;%= javascript_tag nonce: true do -%&gt;
+  alert('Hello, World!');
+&lt;% end -%&gt;
+">Copy</button>
+</div>
+<p>The same works with <code>javascript_include_tag</code>:</p>
+
+<div class="code_container">
+<pre><code class="highlight erb"><span class="cp">&lt;%=</span> <span class="n">javascript_include_tag</span> <span class="s2">"script"</span><span class="p">,</span> <span class="ss">nonce: </span><span class="kp">true</span> <span class="cp">%&gt;</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='&lt;%= javascript_include_tag "script", nonce: true %&gt;
+'>Copy</button>
+</div>
+<p>Use <a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActionView/Helpers/CspHelper.html#method-i-csp_meta_tag"><code>csp_meta_tag</code></a>
+helper to create a meta tag "csp-nonce" with the per-session nonce value
+for allowing inline <code>&lt;script&gt;</code> tags.</p>
+
+<div class="code_container">
+<pre><code class="highlight erb"><span class="nt">&lt;head&gt;</span>
+  <span class="cp">&lt;%=</span> <span class="n">csp_meta_tag</span> <span class="cp">%&gt;</span>
+<span class="nt">&lt;/head&gt;</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="&lt;head&gt;
+  &lt;%= csp_meta_tag %&gt;
+&lt;/head&gt;
+">Copy</button>
+</div>
+<p>This is used by the Rails UJS helper to create dynamically
+loaded inline <code>&lt;script&gt;</code> elements.</p>
+</body>
+</html>

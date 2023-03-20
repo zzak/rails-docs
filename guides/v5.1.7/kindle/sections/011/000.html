@@ -1,0 +1,229 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>1 Dealing with Basic Forms</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v5.1.7/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="dealing-with-basic-forms">1 Dealing with Basic Forms</h3>
+<p>The most basic form helper is <code>form_tag</code>.</p>
+
+<div class="code_container">
+<pre class="brush: ruby; html-script: true; gutter: false; toolbar: false">
+&lt;%= form_tag do %&gt;
+  Form contents
+&lt;% end %&gt;
+
+</pre>
+</div>
+<p>When called without arguments like this, it creates a <code>&lt;form&gt;</code> tag which, when submitted, will POST to the current page. For instance, assuming the current page is <code>/home/index</code>, the generated HTML will look like this (some line breaks added for readability):</p>
+
+<div class="code_container">
+<pre class="brush: xml; gutter: false; toolbar: false">
+&lt;form accept-charset="UTF-8" action="/" method="post"&gt;
+  &lt;input name="utf8" type="hidden" value="&amp;#x2713;" /&gt;
+  &lt;input name="authenticity_token" type="hidden" value="J7CBxfHalt49OSHp27hblqK20c9PgwJ108nDHX/8Cts=" /&gt;
+  Form contents
+&lt;/form&gt;
+
+</pre>
+</div>
+<p>You'll notice that the HTML contains an <code>input</code> element with type <code>hidden</code>. This <code>input</code> is important, because the form cannot be successfully submitted without it. The hidden input element with the name <code>utf8</code> enforces browsers to properly respect your form's character encoding and is generated for all forms whether their action is "GET" or "POST".</p>
+
+<p>The second input element with the name <code>authenticity_token</code> is a security feature of Rails called <strong>cross-site request forgery protection</strong>, and form helpers generate it for every non-GET form (provided that this security feature is enabled). You can read more about this in the <a href="security.html#cross-site-request-forgery-csrf">Security Guide</a>.</p>
+
+<h4 id="a-generic-search-form">1.1 A Generic Search Form</h4>
+
+<p>One of the most basic forms you see on the web is a search form. This form contains:</p>
+<ul>
+<li>a form element with "GET" method,</li>
+<li>a label for the input,</li>
+<li>a text input element, and</li>
+<li>a submit element.</li>
+</ul>
+<p>To create this form you will use <code>form_tag</code>, <code>label_tag</code>, <code>text_field_tag</code>, and <code>submit_tag</code>, respectively. Like this:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; html-script: true; gutter: false; toolbar: false">
+&lt;%= form_tag("/search", method: "get") do %&gt;
+  &lt;%= label_tag(:q, "Search for:") %&gt;
+  &lt;%= text_field_tag(:q) %&gt;
+  &lt;%= submit_tag("Search") %&gt;
+&lt;% end %&gt;
+
+</pre>
+</div>
+<p>This will generate the following HTML:</p>
+
+<div class="code_container">
+<pre class="brush: xml; gutter: false; toolbar: false">
+&lt;form accept-charset="UTF-8" action="/search" method="get"&gt;
+  &lt;input name="utf8" type="hidden" value="&amp;#x2713;" /&gt;
+  &lt;label for="q"&gt;Search for:&lt;/label&gt;
+  &lt;input id="q" name="q" type="text" /&gt;
+  &lt;input name="commit" type="submit" value="Search" /&gt;
+&lt;/form&gt;
+
+</pre>
+</div>
+<div class="info"><p>For every form input, an ID attribute is generated from its name (<code>"q"</code> in above example). These IDs can be very useful for CSS styling or manipulation of form controls with JavaScript.</p></div>
+
+<p>Besides <code>text_field_tag</code> and <code>submit_tag</code>, there is a similar helper for <em>every</em> form control in HTML.</p>
+
+<div class="warning"><p>Always use "GET" as the method for search forms. This allows users to bookmark a specific search and get back to it. More generally Rails encourages you to use the right HTTP verb for an action.</p></div>
+
+<h4 id="multiple-hashes-in-form-helper-calls">1.2 Multiple Hashes in Form Helper Calls</h4>
+
+<p>The <code>form_tag</code> helper accepts 2 arguments: the path for the action and an options hash. This hash specifies the method of form submission and HTML options such as the form element's class.</p>
+
+<p>As with the <code>link_to</code> helper, the path argument doesn't have to be a string; it can be a hash of URL parameters recognizable by Rails' routing mechanism, which will turn the hash into a valid URL. However, since both arguments to <code>form_tag</code> are hashes, you can easily run into a problem if you would like to specify both. For instance, let's say you write this:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+form_tag(controller: "people", action: "search", method: "get", class: "nifty_form")
+# =&gt; '&lt;form accept-charset="UTF-8" action="/people/search?method=get&amp;class=nifty_form" method="post"&gt;'
+
+</pre>
+</div>
+<p>Here, <code>method</code> and <code>class</code> are appended to the query string of the generated URL because even though you mean to write two hashes, you really only specified one. So you need to tell Ruby which is which by delimiting the first hash (or both) with curly brackets. This will generate the HTML you expect:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+form_tag({controller: "people", action: "search"}, method: "get", class: "nifty_form")
+# =&gt; '&lt;form accept-charset="UTF-8" action="/people/search" method="get" class="nifty_form"&gt;'
+
+</pre>
+</div>
+<h4 id="helpers-for-generating-form-elements">1.3 Helpers for Generating Form Elements</h4>
+
+<p>Rails provides a series of helpers for generating form elements such as
+checkboxes, text fields, and radio buttons. These basic helpers, with names
+ending in <code>_tag</code> (such as <code>text_field_tag</code> and <code>check_box_tag</code>), generate just a
+single <code>&lt;input&gt;</code> element. The first parameter to these is always the name of the
+input. When the form is submitted, the name will be passed along with the form
+data, and will make its way to the <code>params</code> in the controller with the
+value entered by the user for that field. For example, if the form contains
+<code>&lt;%= text_field_tag(:query) %&gt;</code>, then you would be able to get the value of this
+field in the controller with <code>params[:query]</code>.</p>
+
+<p>When naming inputs, Rails uses certain conventions that make it possible to submit parameters with non-scalar values such as arrays or hashes, which will also be accessible in <code>params</code>. You can read more about them in <a href="#understanding-parameter-naming-conventions">chapter 7 of this guide</a>. For details on the precise usage of these helpers, please refer to the <a href="http://api.rubyonrails.org/v5.1.7/classes/ActionView/Helpers/FormTagHelper.html">API documentation</a>.</p>
+
+<h5 id="checkboxes">1.3.1 Checkboxes</h5>
+
+<p>Checkboxes are form controls that give the user a set of options they can enable or disable:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; html-script: true; gutter: false; toolbar: false">
+&lt;%= check_box_tag(:pet_dog) %&gt;
+&lt;%= label_tag(:pet_dog, "I own a dog") %&gt;
+&lt;%= check_box_tag(:pet_cat) %&gt;
+&lt;%= label_tag(:pet_cat, "I own a cat") %&gt;
+
+</pre>
+</div>
+<p>This generates the following:</p>
+
+<div class="code_container">
+<pre class="brush: xml; gutter: false; toolbar: false">
+&lt;input id="pet_dog" name="pet_dog" type="checkbox" value="1" /&gt;
+&lt;label for="pet_dog"&gt;I own a dog&lt;/label&gt;
+&lt;input id="pet_cat" name="pet_cat" type="checkbox" value="1" /&gt;
+&lt;label for="pet_cat"&gt;I own a cat&lt;/label&gt;
+
+</pre>
+</div>
+<p>The first parameter to <code>check_box_tag</code>, of course, is the name of the input. The second parameter, naturally, is the value of the input. This value will be included in the form data (and be present in <code>params</code>) when the checkbox is checked.</p>
+
+<h5 id="radio-buttons">1.3.2 Radio Buttons</h5>
+
+<p>Radio buttons, while similar to checkboxes, are controls that specify a set of options in which they are mutually exclusive (i.e., the user can only pick one):</p>
+
+<div class="code_container">
+<pre class="brush: ruby; html-script: true; gutter: false; toolbar: false">
+&lt;%= radio_button_tag(:age, "child") %&gt;
+&lt;%= label_tag(:age_child, "I am younger than 21") %&gt;
+&lt;%= radio_button_tag(:age, "adult") %&gt;
+&lt;%= label_tag(:age_adult, "I'm over 21") %&gt;
+
+</pre>
+</div>
+<p>Output:</p>
+
+<div class="code_container">
+<pre class="brush: xml; gutter: false; toolbar: false">
+&lt;input id="age_child" name="age" type="radio" value="child" /&gt;
+&lt;label for="age_child"&gt;I am younger than 21&lt;/label&gt;
+&lt;input id="age_adult" name="age" type="radio" value="adult" /&gt;
+&lt;label for="age_adult"&gt;I'm over 21&lt;/label&gt;
+
+</pre>
+</div>
+<p>As with <code>check_box_tag</code>, the second parameter to <code>radio_button_tag</code> is the value of the input. Because these two radio buttons share the same name (<code>age</code>), the user will only be able to select one of them, and <code>params[:age]</code> will contain either <code>"child"</code> or <code>"adult"</code>.</p>
+
+<div class="note"><p>Always use labels for checkbox and radio buttons. They associate text with a specific option and,
+by expanding the clickable region,
+make it easier for users to click the inputs.</p></div>
+
+<h4 id="other-helpers-of-interest">1.4 Other Helpers of Interest</h4>
+
+<p>Other form controls worth mentioning are textareas, password fields,
+hidden fields, search fields, telephone fields, date fields, time fields,
+color fields, datetime-local fields, month fields, week fields,
+URL fields, email fields, number fields and range fields:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; html-script: true; gutter: false; toolbar: false">
+&lt;%= text_area_tag(:message, "Hi, nice site", size: "24x6") %&gt;
+&lt;%= password_field_tag(:password) %&gt;
+&lt;%= hidden_field_tag(:parent_id, "5") %&gt;
+&lt;%= search_field(:user, :name) %&gt;
+&lt;%= telephone_field(:user, :phone) %&gt;
+&lt;%= date_field(:user, :born_on) %&gt;
+&lt;%= datetime_local_field(:user, :graduation_day) %&gt;
+&lt;%= month_field(:user, :birthday_month) %&gt;
+&lt;%= week_field(:user, :birthday_week) %&gt;
+&lt;%= url_field(:user, :homepage) %&gt;
+&lt;%= email_field(:user, :address) %&gt;
+&lt;%= color_field(:user, :favorite_color) %&gt;
+&lt;%= time_field(:task, :started_at) %&gt;
+&lt;%= number_field(:product, :price, in: 1.0..20.0, step: 0.5) %&gt;
+&lt;%= range_field(:product, :discount, in: 1..100) %&gt;
+
+</pre>
+</div>
+<p>Output:</p>
+
+<div class="code_container">
+<pre class="brush: xml; gutter: false; toolbar: false">
+&lt;textarea id="message" name="message" cols="24" rows="6"&gt;Hi, nice site&lt;/textarea&gt;
+&lt;input id="password" name="password" type="password" /&gt;
+&lt;input id="parent_id" name="parent_id" type="hidden" value="5" /&gt;
+&lt;input id="user_name" name="user[name]" type="search" /&gt;
+&lt;input id="user_phone" name="user[phone]" type="tel" /&gt;
+&lt;input id="user_born_on" name="user[born_on]" type="date" /&gt;
+&lt;input id="user_graduation_day" name="user[graduation_day]" type="datetime-local" /&gt;
+&lt;input id="user_birthday_month" name="user[birthday_month]" type="month" /&gt;
+&lt;input id="user_birthday_week" name="user[birthday_week]" type="week" /&gt;
+&lt;input id="user_homepage" name="user[homepage]" type="url" /&gt;
+&lt;input id="user_address" name="user[address]" type="email" /&gt;
+&lt;input id="user_favorite_color" name="user[favorite_color]" type="color" value="#000000" /&gt;
+&lt;input id="task_started_at" name="task[started_at]" type="time" /&gt;
+&lt;input id="product_price" max="20.0" min="1.0" name="product[price]" step="0.5" type="number" /&gt;
+&lt;input id="product_discount" max="100" min="1" name="product[discount]" type="range" /&gt;
+
+</pre>
+</div>
+<p>Hidden inputs are not shown to the user but instead hold data like any textual input. Values inside them can be changed with JavaScript.</p>
+
+<div class="warning"><p>The search, telephone, date, time, color, datetime, datetime-local,
+month, week, URL, email, number and range inputs are HTML5 controls.
+If you require your app to have a consistent experience in older browsers,
+you will need an HTML5 polyfill (provided by CSS and/or JavaScript).
+There is definitely <a href="https://github.com/Modernizr/Modernizr/wiki/HTML5-Cross-Browser-Polyfills">no shortage of solutions for this</a>, although a popular tool at the moment is
+<a href="https://modernizr.com/">Modernizr</a>, which provides a simple way to add functionality based on the presence of
+detected HTML5 features.</p></div>
+
+<div class="info"><p>If you're using password input fields (for any purpose), you might want to configure your application to prevent those parameters from being logged. You can learn about this in the <a href="security.html#logging">Security Guide</a>.</p></div>
+</body>
+</html>

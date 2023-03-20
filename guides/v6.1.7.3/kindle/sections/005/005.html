@@ -1,0 +1,23 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>6 Halting Execution</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v6.1.7.3/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="halting-execution"><a class="anchorlink" href="#halting-execution">6 Halting Execution</a></h3>
+<p>As you start registering new callbacks for your models, they will be queued for execution. This queue will include all your model's validations, the registered callbacks, and the database operation to be executed.</p>
+
+<p>The whole callback chain is wrapped in a transaction. If any callback raises an exception, the execution chain gets halted and a ROLLBACK is issued. To intentionally stop a chain use:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="kp">throw</span> <span class="ss">:abort</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-ca853c2948396b4764e9219ec3c6f2dc">throw :abort
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-ca853c2948396b4764e9219ec3c6f2dc">Copy</button>
+</div>
+<div class="warning"><p>Any exception that is not <code>ActiveRecord::Rollback</code> or <code>ActiveRecord::RecordInvalid</code> will be re-raised by Rails after the callback chain is halted. Raising an exception other than <code>ActiveRecord::Rollback</code> or <code>ActiveRecord::RecordInvalid</code> may break code that does not expect methods like <code>save</code> and <code>update</code> (which normally try to return <code>true</code> or <code>false</code>) to raise an exception.</p></div>
+</body>
+</html>

@@ -1,0 +1,38 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>4 Using manual connection switching</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v6.1.7.3/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="using-manual-connection-switching"><a class="anchorlink" href="#using-manual-connection-switching">4 Using manual connection switching</a></h3>
+<p>There are some cases where you may want your application to connect to a writer or a replica
+and the automatic connection switching isn't adequate. For example, you may know that for a
+particular request you always want to send the request to a replica, even when you are in a
+POST request path.</p>
+
+<p>To do this Rails provides a <code>connected_to</code> method that will switch to the connection you
+need.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Base</span><span class="p">.</span><span class="nf">connected_to</span><span class="p">(</span><span class="ss">role: :reading</span><span class="p">)</span> <span class="k">do</span>
+  <span class="c1"># all code in this block will be connected to the reading role</span>
+<span class="k">end</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-45592dab57133ee7cb2eb09e20ee516a">ActiveRecord::Base.connected_to(role: :reading) do
+  # all code in this block will be connected to the reading role
+end
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-45592dab57133ee7cb2eb09e20ee516a">Copy</button>
+</div>
+<p>The "role" in the <code>connected_to</code> call looks up the connections that are connected on that
+connection handler (or role). The <code>reading</code> connection handler will hold all the connections
+that were connected via <code>connects_to</code> with the role name of <code>reading</code>.</p>
+
+<p>Note that <code>connected_to</code> with a role will look up an existing connection and switch
+using the connection specification name. This means that if you pass an unknown role
+like <code>connected_to(role: :nonexistent)</code> you will get an error that says
+<code>ActiveRecord::ConnectionNotEstablished (No connection pool for 'ActiveRecord::Base' found for the 'nonexistent' role.)</code></p>
+</body>
+</html>

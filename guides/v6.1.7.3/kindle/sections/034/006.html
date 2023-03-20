@@ -1,0 +1,106 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>7 Active Record</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v6.1.7.3/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="active-record"><a class="anchorlink" href="#active-record">7 Active Record</a></h3>
+<h4 id="sql-active-record"><a class="anchorlink" href="#sql-active-record">7.1 sql.active_record</a></h4>
+<table>
+<thead>
+<tr>
+<th>Key</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>:sql</code></td>
+<td>SQL statement</td>
+</tr>
+<tr>
+<td><code>:name</code></td>
+<td>Name of the operation</td>
+</tr>
+<tr>
+<td><code>:connection</code></td>
+<td>Connection object</td>
+</tr>
+<tr>
+<td><code>:binds</code></td>
+<td>Bind parameters</td>
+</tr>
+<tr>
+<td><code>:type_casted_binds</code></td>
+<td>Typecasted bind parameters</td>
+</tr>
+<tr>
+<td><code>:statement_name</code></td>
+<td>SQL Statement name</td>
+</tr>
+<tr>
+<td><code>:cached</code></td>
+<td>
+<code>true</code> is added when cached queries used</td>
+</tr>
+</tbody>
+</table>
+<div class="info"><p>The adapters will add their own data as well.</p></div>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="p">{</span>
+  <span class="ss">sql: </span><span class="s2">"SELECT </span><span class="se">\"</span><span class="s2">posts</span><span class="se">\"</span><span class="s2">.* FROM </span><span class="se">\"</span><span class="s2">posts</span><span class="se">\"</span><span class="s2"> "</span><span class="p">,</span>
+  <span class="ss">name: </span><span class="s2">"Post Load"</span><span class="p">,</span>
+  <span class="ss">connection: </span><span class="c1">#&lt;ActiveRecord::ConnectionAdapters::SQLite3Adapter:0x00007f9f7a838850&gt;,</span>
+  <span class="ss">binds: </span><span class="p">[</span><span class="c1">#&lt;ActiveModel::Attribute::WithCastValue:0x00007fe19d15dc00&gt;],</span>
+  <span class="ss">type_casted_binds: </span><span class="p">[</span><span class="mi">11</span><span class="p">],</span>
+  <span class="ss">statement_name: </span><span class="kp">nil</span>
+<span class="p">}</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-55615c80b1ef39fa061a28f1b46d3ad8">{
+  sql: "SELECT \"posts\".* FROM \"posts\" ",
+  name: "Post Load",
+  connection: #&lt;ActiveRecord::ConnectionAdapters::SQLite3Adapter:0x00007f9f7a838850&gt;,
+  binds: [#&lt;ActiveModel::Attribute::WithCastValue:0x00007fe19d15dc00&gt;],
+  type_casted_binds: [11],
+  statement_name: nil
+}
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-55615c80b1ef39fa061a28f1b46d3ad8">Copy</button>
+</div>
+<h4 id="instantiation-active-record"><a class="anchorlink" href="#instantiation-active-record">7.2 instantiation.active_record</a></h4>
+<table>
+<thead>
+<tr>
+<th>Key</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>:record_count</code></td>
+<td>Number of records that instantiated</td>
+</tr>
+<tr>
+<td><code>:class_name</code></td>
+<td>Record's class</td>
+</tr>
+</tbody>
+</table>
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="p">{</span>
+  <span class="ss">record_count: </span><span class="mi">1</span><span class="p">,</span>
+  <span class="ss">class_name: </span><span class="s2">"User"</span>
+<span class="p">}</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-98abba7781c0cfc3a3f691318b5aea90">{
+  record_count: 1,
+  class_name: "User"
+}
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-98abba7781c0cfc3a3f691318b5aea90">Copy</button>
+</div>
+</body>
+</html>

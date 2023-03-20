@@ -1,0 +1,49 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>6 Customizing Form Builders</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v4.1.16/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="customizing-form-builders">6 Customizing Form Builders</h3>
+<p>As mentioned previously the object yielded by <code>form_for</code> and <code>fields_for</code> is an instance of FormBuilder (or a subclass thereof). Form builders encapsulate the notion of displaying form elements for a single object. While you can of course write helpers for your forms in the usual way, you can also subclass FormBuilder and add the helpers there. For example</p>
+<div class="code_container">
+<pre class="brush: ruby; html-script: true; gutter: false; toolbar: false">
+&lt;%= form_for @person do |f| %&gt;
+  &lt;%= text_field_with_label f, :first_name %&gt;
+&lt;% end %&gt;
+
+</pre>
+</div>
+<p>can be replaced with</p>
+<div class="code_container">
+<pre class="brush: ruby; html-script: true; gutter: false; toolbar: false">
+&lt;%= form_for @person, builder: LabellingFormBuilder do |f| %&gt;
+  &lt;%= f.text_field :first_name %&gt;
+&lt;% end %&gt;
+
+</pre>
+</div>
+<p>by defining a LabellingFormBuilder class similar to the following:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class LabellingFormBuilder &lt; ActionView::Helpers::FormBuilder
+  def text_field(attribute, options={})
+    label(attribute) + super
+  end
+end
+
+</pre>
+</div>
+<p>If you reuse this frequently you could define a <code>labeled_form_for</code> helper that automatically applies the <code>builder: LabellingFormBuilder</code> option.</p>
+<p>The form builder used also determines what happens when you do</p>
+<div class="code_container">
+<pre class="brush: ruby; html-script: true; gutter: false; toolbar: false">
+&lt;%= render partial: f %&gt;
+
+</pre>
+</div>
+<p>If <code>f</code> is an instance of FormBuilder then this will render the <code>form</code> partial, setting the partial's object to the form builder. If the form builder is of class LabellingFormBuilder then the <code>labelling_form</code> partial would be rendered instead.</p>
+</body>
+</html>

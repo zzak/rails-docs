@@ -1,0 +1,857 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html 
+     PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+  <head>
+    <title>Module: ActionView::Helpers::NumberHelper</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <link rel="stylesheet" href="../../../rdoc-style.css" type="text/css" media="screen" />
+
+    <script language="JavaScript" type="text/javascript">
+    // <![CDATA[
+
+        function toggleSource( id )
+        {
+          var elem
+          var link
+
+          if( document.getElementById )
+          {
+            elem = document.getElementById( id )
+            link = document.getElementById( "l_" + id )
+          }
+          else if ( document.all )
+          {
+            elem = eval( "document.all." + id )
+            link = eval( "document.all.l_" + id )
+          }
+          else
+            return false;
+
+          if( elem.style.display == "block" )
+          {
+            elem.style.display = "none"
+            link.innerHTML = "show source"
+          }
+          else
+          {
+            elem.style.display = "block"
+            link.innerHTML = "hide source"
+          }
+        }
+
+        function openCode( url )
+        {
+          window.open( url, "SOURCE_CODE", "resizable=yes,scrollbars=yes,toolbar=no,status=no,height=480,width=750" ).focus();
+        }
+      // ]]>
+    </script>
+  </head>
+
+  <body>
+    <table width="100%" border='0' cellpadding='0' cellspacing='0' class='banner'>
+    <tr><td>Ruby on Rails v3.0.9</td></tr>
+    <tr>
+  <td class="file-title"><span class="file-title-prefix">Module</span><br />ActionView::Helpers::NumberHelper</td>
+  <td align="right">
+    <table cellspacing="0" cellpadding="2">
+      <tr valign="top">
+        <td>In:</td>
+        <td>
+<a href="../../../files/actionpack/lib/action_view/helpers/number_helper_rb.html">actionpack/lib/action_view/helpers/number_helper.rb</a>:
+        </td>
+      </tr>
+         </table>
+        </td>
+        </tr>
+      </table>
+  <div id="bodyContent">
+  <div id="content">
+
+  <div class="description">
+<p>Provides methods for converting numbers into formatted strings. Methods are
+provided for phone numbers, currency, percentage, precision, positional
+notation, file size and pretty printing.</p>
+
+<p>Most methods expect a <tt>number</tt> argument, and will return it
+unchanged if can’t be converted into a valid number.</p>
+</div>
+
+
+  <div class="sectiontitle">Methods</div>
+  <ul>
+                <li><a href="#method-i-number_to_currency">number_to_currency</a></li>
+                <li><a href="#method-i-number_to_human">number_to_human</a></li>
+                <li><a href="#method-i-number_to_human_size">number_to_human_size</a></li>
+                <li><a href="#method-i-number_to_percentage">number_to_percentage</a></li>
+                <li><a href="#method-i-number_to_phone">number_to_phone</a></li>
+                <li><a href="#method-i-number_with_delimiter">number_with_delimiter</a></li>
+                <li><a href="#method-i-number_with_precision">number_with_precision</a></li>
+      </ul>
+
+
+  <div class="sectiontitle">Constants</div>
+  <table border='0' cellpadding='5'>
+  <tr valign='top'>
+    <td class="attr-name">DEFAULT_CURRENCY_VALUES</td>
+    <td>=</td>
+    <td class="attr-value">{ :format => "%u%n", :negative_format => "-%u%n", :unit => "$", :separator => ".", :delimiter => ",",
+:precision => 2, :significant => false, :strip_insignificant_zeros => false }</td>
+  </tr>
+  <tr valign='top'>
+    <td class="attr-name">STORAGE_UNITS</td>
+    <td>=</td>
+    <td class="attr-value">[:byte, :kb, :mb, :gb, :tb].freeze</td>
+  </tr>
+  <tr valign='top'>
+    <td class="attr-name">DECIMAL_UNITS</td>
+    <td>=</td>
+    <td class="attr-value">{0 => :unit, 1 => :ten, 2 => :hundred, 3 => :thousand, 6 => :million, 9 => :billion, 12 => :trillion, 15 => :quadrillion,
+-1 => :deci, -2 => :centi, -3 => :mili, -6 => :micro, -9 => :nano, -12 => :pico, -15 => :femto}.freeze</td>
+  </tr>
+  </table>
+
+
+                        
+    <div class="sectiontitle">
+      Public      Instance      methods
+    </div>
+
+          
+      <div class="method">
+        <div class="title">
+                      <a name="method-i-number_to_currency"></a>
+            <b>number_to_currency</b>(number, options = {})          
+        </div>
+
+                  <div class="description">
+            <p>Formats a <tt>number</tt> into a currency string (e.g., $13.65). You can
+customize the format in the <tt>options</tt> hash.</p>
+
+<h4>Options</h4>
+<ul><li>
+<p><tt>:locale</tt>           - Sets the locale to be used for formatting
+(defaults to current locale).</p>
+</li><li>
+<p><tt>:precision</tt>        - Sets the level of precision (defaults to 2).</p>
+</li><li>
+<p><tt>:unit</tt>             - Sets the denomination of the currency
+(defaults to “$”).</p>
+</li><li>
+<p><tt>:separator</tt>        - Sets the separator between the units (defaults
+to “.”).</p>
+</li><li>
+<p><tt>:delimiter</tt>        - Sets the thousands delimiter (defaults to
+“,”).</p>
+</li><li>
+<p><tt>:format</tt>           - Sets the format for non-negative numbers
+(defaults to “%u%n”).</p>
+
+<pre>Fields are &lt;tt&gt;%u&lt;/tt&gt; for the currency, and &lt;tt&gt;%n&lt;/tt&gt;
+for the number.</pre>
+</li><li>
+<p><tt>:negative_format</tt>  - Sets the format for negative numbers (defaults
+to prepending</p>
+
+<pre>an hyphen to the formatted number given by &lt;tt&gt;:format&lt;/tt&gt;).
+Accepts the same fields than &lt;tt&gt;:format&lt;/tt&gt;, except
+&lt;tt&gt;%n&lt;/tt&gt; is here the absolute value of the number.</pre>
+</li></ul>
+
+<h4>Examples</h4>
+
+<pre>number_to_currency(1234567890.50)                    # =&gt; $1,234,567,890.50
+number_to_currency(1234567890.506)                   # =&gt; $1,234,567,890.51
+number_to_currency(1234567890.506, :precision =&gt; 3)  # =&gt; $1,234,567,890.506
+number_to_currency(1234567890.506, :locale =&gt; :fr)   # =&gt; 1 234 567 890,506 €
+
+number_to_currency(1234567890.50, :negative_format =&gt; &quot;(%u%n)&quot;)
+# =&gt; ($1,234,567,890.51)
+number_to_currency(1234567890.50, :unit =&gt; &quot;&amp;pound;&quot;, :separator =&gt; &quot;,&quot;, :delimiter =&gt; &quot;&quot;)
+# =&gt; &amp;pound;1234567890,50
+number_to_currency(1234567890.50, :unit =&gt; &quot;&amp;pound;&quot;, :separator =&gt; &quot;,&quot;, :delimiter =&gt; &quot;&quot;, :format =&gt; &quot;%n %u&quot;)
+# =&gt; 1234567890,50 &amp;pound;</pre>          </div>
+        
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('number_to_currency_source')"
+                 id="l_method-i-number_to_currency_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="number_to_currency_source">
+<pre>
+  <span class="ruby-comment"># File actionpack/lib/action_view/helpers/number_helper.rb, line 111</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">number_to_currency</span>(<span class="ruby-identifier">number</span>, <span class="ruby-identifier">options</span> = {})
+  <span class="ruby-keyword">return</span> <span class="ruby-keyword">nil</span> <span class="ruby-keyword">if</span> <span class="ruby-identifier">number</span>.<span class="ruby-identifier">nil?</span>
+
+  <span class="ruby-identifier">options</span>.<span class="ruby-identifier">symbolize_keys!</span>
+
+  <span class="ruby-identifier">defaults</span>  = <span class="ruby-constant">I18n</span>.<span class="ruby-identifier">translate</span>(<span class="ruby-value">:'number.format'</span>, <span class="ruby-value">:locale</span> =<span class="ruby-operator">&gt;</span> <span class="ruby-identifier">options</span>[<span class="ruby-value">:locale</span>], <span class="ruby-value">:default</span> =<span class="ruby-operator">&gt;</span> {})
+  <span class="ruby-identifier">currency</span>  = <span class="ruby-constant">I18n</span>.<span class="ruby-identifier">translate</span>(<span class="ruby-value">:'number.currency.format'</span>, <span class="ruby-value">:locale</span> =<span class="ruby-operator">&gt;</span> <span class="ruby-identifier">options</span>[<span class="ruby-value">:locale</span>], <span class="ruby-value">:default</span> =<span class="ruby-operator">&gt;</span> {})
+
+  <span class="ruby-identifier">defaults</span>  = <span class="ruby-constant">DEFAULT_CURRENCY_VALUES</span>.<span class="ruby-identifier">merge</span>(<span class="ruby-identifier">defaults</span>).<span class="ruby-identifier">merge!</span>(<span class="ruby-identifier">currency</span>)
+  <span class="ruby-identifier">defaults</span>[<span class="ruby-value">:negative_format</span>] = <span class="ruby-string">&quot;-&quot;</span> <span class="ruby-operator">+</span> <span class="ruby-identifier">options</span>[<span class="ruby-value">:format</span>] <span class="ruby-keyword">if</span> <span class="ruby-identifier">options</span>[<span class="ruby-value">:format</span>]
+  <span class="ruby-identifier">options</span>   = <span class="ruby-identifier">defaults</span>.<span class="ruby-identifier">merge!</span>(<span class="ruby-identifier">options</span>)
+
+  <span class="ruby-identifier">unit</span>      = <span class="ruby-identifier">options</span>.<span class="ruby-identifier">delete</span>(<span class="ruby-value">:unit</span>)
+  <span class="ruby-identifier">format</span>    = <span class="ruby-identifier">options</span>.<span class="ruby-identifier">delete</span>(<span class="ruby-value">:format</span>)
+
+  <span class="ruby-keyword">if</span> <span class="ruby-identifier">number</span>.<span class="ruby-identifier">to_f</span> <span class="ruby-operator">&lt;</span> <span class="ruby-value">0</span>
+    <span class="ruby-identifier">format</span> = <span class="ruby-identifier">options</span>.<span class="ruby-identifier">delete</span>(<span class="ruby-value">:negative_format</span>)
+    <span class="ruby-identifier">number</span> = <span class="ruby-identifier">number</span>.<span class="ruby-identifier">respond_to?</span>(<span class="ruby-string">&quot;abs&quot;</span>) <span class="ruby-operator">?</span> <span class="ruby-identifier">number</span>.<span class="ruby-identifier">abs</span> <span class="ruby-operator">:</span> <span class="ruby-identifier">number</span>.<span class="ruby-identifier">sub</span>(<span class="ruby-regexp">/^-/</span>, <span class="ruby-string">''</span>)
+  <span class="ruby-keyword">end</span>
+
+  <span class="ruby-keyword">begin</span>
+    <span class="ruby-identifier">value</span> = <span class="ruby-identifier">number_with_precision</span>(<span class="ruby-identifier">number</span>, <span class="ruby-identifier">options</span>.<span class="ruby-identifier">merge</span>(<span class="ruby-value">:raise</span> =<span class="ruby-operator">&gt;</span> <span class="ruby-keyword">true</span>))
+    <span class="ruby-identifier">format</span>.<span class="ruby-identifier">gsub</span>(<span class="ruby-regexp">/%n/</span>, <span class="ruby-identifier">value</span>).<span class="ruby-identifier">gsub</span>(<span class="ruby-regexp">/%u/</span>, <span class="ruby-identifier">unit</span>).<span class="ruby-identifier">html_safe</span>
+  <span class="ruby-keyword">rescue</span> <span class="ruby-constant">InvalidNumberError</span> =<span class="ruby-operator">&gt;</span> <span class="ruby-identifier">e</span>
+    <span class="ruby-keyword">if</span> <span class="ruby-identifier">options</span>[<span class="ruby-value">:raise</span>]
+      <span class="ruby-identifier">raise</span>
+    <span class="ruby-keyword">else</span>
+      <span class="ruby-identifier">formatted_number</span> = <span class="ruby-identifier">format</span>.<span class="ruby-identifier">gsub</span>(<span class="ruby-regexp">/%n/</span>, <span class="ruby-identifier">e</span>.<span class="ruby-identifier">number</span>).<span class="ruby-identifier">gsub</span>(<span class="ruby-regexp">/%u/</span>, <span class="ruby-identifier">unit</span>)
+      <span class="ruby-identifier">e</span>.<span class="ruby-identifier">number</span>.<span class="ruby-identifier">to_s</span>.<span class="ruby-identifier">html_safe?</span> <span class="ruby-operator">?</span> <span class="ruby-identifier">formatted_number</span>.<span class="ruby-identifier">html_safe</span> <span class="ruby-operator">:</span> <span class="ruby-identifier">formatted_number</span>
+    <span class="ruby-keyword">end</span>
+  <span class="ruby-keyword">end</span>
+
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+          
+      <div class="method">
+        <div class="title">
+                      <a name="method-i-number_to_human"></a>
+            <b>number_to_human</b>(number, options = {})          
+        </div>
+
+                  <div class="description">
+            <p>Pretty prints (formats and approximates) a number in a way it is more
+readable by humans (eg.: 1200000000 becomes “1.2 Billion”). This is
+useful for numbers that can get very large (and too hard to read).</p>
+
+<p>See <tt><a
+href="NumberHelper.html#method-i-number_to_human_size">number_to_human_size</a></tt>
+if you want to print a file size.</p>
+
+<p>You can also define you own unit-quantifier names if you want to use other
+decimal units (eg.: 1500 becomes “1.5 kilometers”, 0.150 becomes “150
+mililiters”, etc). You may define a wide range of unit quantifiers, even
+fractional ones (centi, deci, mili, etc).</p>
+
+<h4>Options</h4>
+<ul><li>
+<p><tt>:locale</tt>     - Sets the locale to be used for formatting (defaults
+to current locale).</p>
+</li><li>
+<p><tt>:precision</tt>  - Sets the precision of the number (defaults to 3).</p>
+</li><li>
+<p><tt>:significant</tt>  - If <tt>true</tt>, precision will be the # of
+significant_digits. If <tt>false</tt>, the # of fractional digits (defaults
+to <tt>true</tt>)</p>
+</li><li>
+<p><tt>:separator</tt>  - Sets the separator between the fractional and
+integer digits (defaults to “.”).</p>
+</li><li>
+<p><tt>:delimiter</tt>  - Sets the thousands delimiter (defaults to “”).</p>
+</li><li>
+<p><tt>:strip_insignificant_zeros</tt>  - If <tt>true</tt> removes
+insignificant zeros after the decimal separator (defaults to <tt>true</tt>)</p>
+</li><li>
+<p><tt>:units</tt> - A <a href="../../Hash.html">Hash</a> of unit quantifier
+names. Or a string containing an i18n scope where to find this hash. It
+might have the following keys:</p>
+<ul><li>
+<p><b>integers</b>: <tt>:unit</tt>, <tt>:ten</tt>, <tt>:hundred</tt>,
+<tt>:thousand</tt>,  <tt>:million</tt>,  <tt>:billion</tt>,
+<tt>:trillion</tt>, <tt>:quadrillion</tt></p>
+</li><li>
+<p><b>fractionals</b>: <tt>:deci</tt>, <tt>:centi</tt>, <tt>:mili</tt>,
+<tt>:micro</tt>, <tt>:nano</tt>, <tt>:pico</tt>, <tt>:femto</tt></p>
+</li></ul>
+</li><li>
+<p><tt>:format</tt> - Sets the format of the output string (defaults to “%n
+%u”). The field types are:</p>
+
+<pre>%u  The quantifier (ex.: 'thousand')
+%n  The number</pre>
+</li></ul>
+
+<h4>Examples</h4>
+
+<pre>number_to_human(123)                                          # =&gt; &quot;123&quot;
+number_to_human(1234)                                         # =&gt; &quot;1.23 Thousand&quot;
+number_to_human(12345)                                        # =&gt; &quot;12.3 Thousand&quot;
+number_to_human(1234567)                                      # =&gt; &quot;1.23 Million&quot;
+number_to_human(1234567890)                                   # =&gt; &quot;1.23 Billion&quot;
+number_to_human(1234567890123)                                # =&gt; &quot;1.23 Trillion&quot;
+number_to_human(1234567890123456)                             # =&gt; &quot;1.23 Quadrillion&quot;
+number_to_human(1234567890123456789)                          # =&gt; &quot;1230 Quadrillion&quot;
+number_to_human(489939, :precision =&gt; 2)                      # =&gt; &quot;490 Thousand&quot;
+number_to_human(489939, :precision =&gt; 4)                      # =&gt; &quot;489.9 Thousand&quot;
+number_to_human(1234567, :precision =&gt; 4,
+                         :significant =&gt; false)               # =&gt; &quot;1.2346 Million&quot;
+number_to_human(1234567, :precision =&gt; 1,
+                         :separator =&gt; ',',
+                         :significant =&gt; false)               # =&gt; &quot;1,2 Million&quot;</pre>
+
+<p>Unsignificant zeros after the decimal separator are stripped out by default
+(set <tt>:strip_insignificant_zeros</tt> to <tt>false</tt> to change that):</p>
+
+<pre>number_to_human(12345012345, :significant_digits =&gt; 6)       # =&gt; &quot;12.345 Billion&quot;
+number_to_human(500000000, :precision=&gt;5)                    # =&gt; &quot;500 Million&quot;</pre>
+
+<h4>Custom Unit Quantifiers</h4>
+
+<p>You can also use your own custom unit quantifiers:</p>
+
+<pre>number_to_human(500000, :units =&gt; {:unit =&gt; &quot;ml&quot;, :thousand =&gt; &quot;lt&quot;})  # =&gt; &quot;500 lt&quot;</pre>
+
+<p>If in your <a href="../../I18n.html">I18n</a> locale you have:</p>
+
+<pre>distance:
+  centi:
+    one: &quot;centimeter&quot;
+    other: &quot;centimeters&quot;
+  unit:
+    one: &quot;meter&quot;
+    other: &quot;meters&quot;
+  thousand:
+    one: &quot;kilometer&quot;
+    other: &quot;kilometers&quot;
+  billion: &quot;gazilion-distance&quot;</pre>
+
+<p>Then you could do:</p>
+
+<pre>number_to_human(543934, :units =&gt; :distance)                              # =&gt; &quot;544 kilometers&quot;
+number_to_human(54393498, :units =&gt; :distance)                            # =&gt; &quot;54400 kilometers&quot;
+number_to_human(54393498000, :units =&gt; :distance)                         # =&gt; &quot;54.4 gazilion-distance&quot;
+number_to_human(343, :units =&gt; :distance, :precision =&gt; 1)                # =&gt; &quot;300 meters&quot;
+number_to_human(1, :units =&gt; :distance)                                   # =&gt; &quot;1 meter&quot;
+number_to_human(0.34, :units =&gt; :distance)                                # =&gt; &quot;34 centimeters&quot;</pre>          </div>
+        
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('number_to_human_source')"
+                 id="l_method-i-number_to_human_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="number_to_human_source">
+<pre>
+  <span class="ruby-comment"># File actionpack/lib/action_view/helpers/number_helper.rb, line 441</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">number_to_human</span>(<span class="ruby-identifier">number</span>, <span class="ruby-identifier">options</span> = {})
+  <span class="ruby-identifier">options</span>.<span class="ruby-identifier">symbolize_keys!</span>
+
+  <span class="ruby-identifier">number</span> = <span class="ruby-keyword">begin</span>
+    <span class="ruby-constant">Float</span>(<span class="ruby-identifier">number</span>)
+  <span class="ruby-keyword">rescue</span> <span class="ruby-constant">ArgumentError</span>, <span class="ruby-constant">TypeError</span>
+    <span class="ruby-keyword">if</span> <span class="ruby-identifier">options</span>[<span class="ruby-value">:raise</span>]
+      <span class="ruby-identifier">raise</span> <span class="ruby-constant">InvalidNumberError</span>, <span class="ruby-identifier">number</span>
+    <span class="ruby-keyword">else</span>
+      <span class="ruby-keyword">return</span> <span class="ruby-identifier">number</span>
+    <span class="ruby-keyword">end</span>
+  <span class="ruby-keyword">end</span>
+
+  <span class="ruby-identifier">defaults</span> = <span class="ruby-constant">I18n</span>.<span class="ruby-identifier">translate</span>(<span class="ruby-value">:'number.format'</span>, <span class="ruby-value">:locale</span> =<span class="ruby-operator">&gt;</span> <span class="ruby-identifier">options</span>[<span class="ruby-value">:locale</span>], <span class="ruby-value">:default</span> =<span class="ruby-operator">&gt;</span> {})
+  <span class="ruby-identifier">human</span>    = <span class="ruby-constant">I18n</span>.<span class="ruby-identifier">translate</span>(<span class="ruby-value">:'number.human.format'</span>, <span class="ruby-value">:locale</span> =<span class="ruby-operator">&gt;</span> <span class="ruby-identifier">options</span>[<span class="ruby-value">:locale</span>], <span class="ruby-value">:default</span> =<span class="ruby-operator">&gt;</span> {})
+  <span class="ruby-identifier">defaults</span> = <span class="ruby-identifier">defaults</span>.<span class="ruby-identifier">merge</span>(<span class="ruby-identifier">human</span>)
+
+  <span class="ruby-identifier">options</span> = <span class="ruby-identifier">options</span>.<span class="ruby-identifier">reverse_merge</span>(<span class="ruby-identifier">defaults</span>)
+  <span class="ruby-comment">#for backwards compatibility with those that didn't add strip_insignificant_zeros to their locale files</span>
+  <span class="ruby-identifier">options</span>[<span class="ruby-value">:strip_insignificant_zeros</span>] = <span class="ruby-keyword">true</span> <span class="ruby-keyword">if</span> <span class="ruby-keyword">not</span> <span class="ruby-identifier">options</span>.<span class="ruby-identifier">key?</span>(<span class="ruby-value">:strip_insignificant_zeros</span>)
+
+  <span class="ruby-identifier">units</span> = <span class="ruby-identifier">options</span>.<span class="ruby-identifier">delete</span> <span class="ruby-value">:units</span>
+  <span class="ruby-identifier">unit_exponents</span> = <span class="ruby-keyword">case</span> <span class="ruby-identifier">units</span>
+  <span class="ruby-keyword">when</span> <span class="ruby-constant">Hash</span>
+    <span class="ruby-identifier">units</span>
+  <span class="ruby-keyword">when</span> <span class="ruby-constant">String</span>, <span class="ruby-constant">Symbol</span>
+    <span class="ruby-constant">I18n</span>.<span class="ruby-identifier">translate</span>(<span class="ruby-value">:&quot;#{units}&quot;</span>, <span class="ruby-value">:locale</span> =<span class="ruby-operator">&gt;</span> <span class="ruby-identifier">options</span>[<span class="ruby-value">:locale</span>], <span class="ruby-value">:raise</span> =<span class="ruby-operator">&gt;</span> <span class="ruby-keyword">true</span>)
+  <span class="ruby-keyword">when</span> <span class="ruby-keyword">nil</span>
+    <span class="ruby-constant">I18n</span>.<span class="ruby-identifier">translate</span>(<span class="ruby-value">:&quot;number.human.decimal_units.units&quot;</span>, <span class="ruby-value">:locale</span> =<span class="ruby-operator">&gt;</span> <span class="ruby-identifier">options</span>[<span class="ruby-value">:locale</span>], <span class="ruby-value">:raise</span> =<span class="ruby-operator">&gt;</span> <span class="ruby-keyword">true</span>)
+  <span class="ruby-keyword">else</span>
+    <span class="ruby-identifier">raise</span> <span class="ruby-constant">ArgumentError</span>, <span class="ruby-string">&quot;:units must be a Hash or String translation scope.&quot;</span>
+  <span class="ruby-keyword">end</span>.<span class="ruby-identifier">keys</span>.<span class="ruby-identifier">map</span>{<span class="ruby-operator">|</span><span class="ruby-identifier">e_name</span><span class="ruby-operator">|</span> <span class="ruby-constant">DECIMAL_UNITS</span>.<span class="ruby-identifier">invert</span>[<span class="ruby-identifier">e_name</span>] }.<span class="ruby-identifier">sort_by</span>{<span class="ruby-operator">|</span><span class="ruby-identifier">e</span><span class="ruby-operator">|</span> <span class="ruby-operator">-</span><span class="ruby-identifier">e</span>}
+
+  <span class="ruby-identifier">number_exponent</span> = <span class="ruby-identifier">number</span> <span class="ruby-operator">!=</span> <span class="ruby-value">0</span> <span class="ruby-operator">?</span> <span class="ruby-constant">Math</span>.<span class="ruby-identifier">log10</span>(<span class="ruby-identifier">number</span>.<span class="ruby-identifier">abs</span>).<span class="ruby-identifier">floor</span> <span class="ruby-operator">:</span> <span class="ruby-value">0</span>
+  <span class="ruby-identifier">display_exponent</span> = <span class="ruby-identifier">unit_exponents</span>.<span class="ruby-identifier">find</span>{ <span class="ruby-operator">|</span><span class="ruby-identifier">e</span><span class="ruby-operator">|</span> <span class="ruby-identifier">number_exponent</span> <span class="ruby-operator">&gt;=</span> <span class="ruby-identifier">e</span> } <span class="ruby-operator">||</span> <span class="ruby-value">0</span>
+  <span class="ruby-identifier">number</span>  <span class="ruby-operator">/=</span> <span class="ruby-value">10</span> <span class="ruby-operator">**</span> <span class="ruby-identifier">display_exponent</span>
+
+  <span class="ruby-identifier">unit</span> = <span class="ruby-keyword">case</span> <span class="ruby-identifier">units</span>
+  <span class="ruby-keyword">when</span> <span class="ruby-constant">Hash</span>
+    <span class="ruby-identifier">units</span>[<span class="ruby-constant">DECIMAL_UNITS</span>[<span class="ruby-identifier">display_exponent</span>]]
+  <span class="ruby-keyword">when</span> <span class="ruby-constant">String</span>, <span class="ruby-constant">Symbol</span>
+    <span class="ruby-constant">I18n</span>.<span class="ruby-identifier">translate</span>(<span class="ruby-value">:&quot;#{units}.#{DECIMAL_UNITS[display_exponent]}&quot;</span>, <span class="ruby-value">:locale</span> =<span class="ruby-operator">&gt;</span> <span class="ruby-identifier">options</span>[<span class="ruby-value">:locale</span>], <span class="ruby-value">:count</span> =<span class="ruby-operator">&gt;</span> <span class="ruby-identifier">number</span>.<span class="ruby-identifier">to_i</span>)
+  <span class="ruby-keyword">else</span>
+    <span class="ruby-constant">I18n</span>.<span class="ruby-identifier">translate</span>(<span class="ruby-value">:&quot;number.human.decimal_units.units.#{DECIMAL_UNITS[display_exponent]}&quot;</span>, <span class="ruby-value">:locale</span> =<span class="ruby-operator">&gt;</span> <span class="ruby-identifier">options</span>[<span class="ruby-value">:locale</span>], <span class="ruby-value">:count</span> =<span class="ruby-operator">&gt;</span> <span class="ruby-identifier">number</span>.<span class="ruby-identifier">to_i</span>)
+  <span class="ruby-keyword">end</span>
+
+  <span class="ruby-identifier">decimal_format</span> = <span class="ruby-identifier">options</span>[<span class="ruby-value">:format</span>] <span class="ruby-operator">||</span> <span class="ruby-constant">I18n</span>.<span class="ruby-identifier">translate</span>(<span class="ruby-value">:'number.human.decimal_units.format'</span>, <span class="ruby-value">:locale</span> =<span class="ruby-operator">&gt;</span> <span class="ruby-identifier">options</span>[<span class="ruby-value">:locale</span>], <span class="ruby-value">:default</span> =<span class="ruby-operator">&gt;</span> <span class="ruby-string">&quot;%n %u&quot;</span>)
+  <span class="ruby-identifier">formatted_number</span> = <span class="ruby-identifier">number_with_precision</span>(<span class="ruby-identifier">number</span>, <span class="ruby-identifier">options</span>)
+  <span class="ruby-identifier">decimal_format</span>.<span class="ruby-identifier">gsub</span>(<span class="ruby-regexp">/%n/</span>, <span class="ruby-identifier">formatted_number</span>).<span class="ruby-identifier">gsub</span>(<span class="ruby-regexp">/%u/</span>, <span class="ruby-identifier">unit</span>).<span class="ruby-identifier">strip</span>.<span class="ruby-identifier">html_safe</span>
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+          
+      <div class="method">
+        <div class="title">
+                      <a name="method-i-number_to_human_size"></a>
+            <b>number_to_human_size</b>(number, options = {})          
+        </div>
+
+                  <div class="description">
+            <p>Formats the bytes in <tt>number</tt> into a more understandable
+representation (e.g., giving it 1500 yields 1.5 KB). This method is useful
+for reporting file sizes to users. You can customize the format in the
+<tt>options</tt> hash.</p>
+
+<p>See <tt><a
+href="NumberHelper.html#method-i-number_to_human">number_to_human</a></tt>
+if you want to pretty-print a generic number.</p>
+
+<h4>Options</h4>
+<ul><li>
+<p><tt>:locale</tt>     - Sets the locale to be used for formatting (defaults
+to current locale).</p>
+</li><li>
+<p><tt>:precision</tt>  - Sets the precision of the number (defaults to 3).</p>
+</li><li>
+<p><tt>:significant</tt>  - If <tt>true</tt>, precision will be the # of
+significant_digits. If <tt>false</tt>, the # of fractional digits (defaults
+to <tt>true</tt>)</p>
+</li><li>
+<p><tt>:separator</tt>  - Sets the separator between the fractional and
+integer digits (defaults to “.”).</p>
+</li><li>
+<p><tt>:delimiter</tt>  - Sets the thousands delimiter (defaults to “”).</p>
+</li><li>
+<p><tt>:strip_insignificant_zeros</tt>  - If <tt>true</tt> removes
+insignificant zeros after the decimal separator (defaults to <tt>true</tt>)</p>
+</li></ul>
+
+<h4>Examples</h4>
+
+<pre>number_to_human_size(123)                                          # =&gt; 123 Bytes
+number_to_human_size(1234)                                         # =&gt; 1.21 KB
+number_to_human_size(12345)                                        # =&gt; 12.1 KB
+number_to_human_size(1234567)                                      # =&gt; 1.18 MB
+number_to_human_size(1234567890)                                   # =&gt; 1.15 GB
+number_to_human_size(1234567890123)                                # =&gt; 1.12 TB
+number_to_human_size(1234567, :precision =&gt; 2)                     # =&gt; 1.2 MB
+number_to_human_size(483989, :precision =&gt; 2)                      # =&gt; 470 KB
+number_to_human_size(1234567, :precision =&gt; 2, :separator =&gt; ',')  # =&gt; 1,2 MB</pre>
+
+<p>Non-significant zeros after the fractional separator are stripped out by
+default (set <tt>:strip_insignificant_zeros</tt> to <tt>false</tt> to
+change that):</p>
+
+<pre>number_to_human_size(1234567890123, :precision =&gt; 5)        # =&gt; &quot;1.1229 TB&quot;
+number_to_human_size(524288000, :precision=&gt;5)              # =&gt; &quot;500 MB&quot;</pre>          </div>
+        
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('number_to_human_size_source')"
+                 id="l_method-i-number_to_human_size_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="number_to_human_size_source">
+<pre>
+  <span class="ruby-comment"># File actionpack/lib/action_view/helpers/number_helper.rb, line 324</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">number_to_human_size</span>(<span class="ruby-identifier">number</span>, <span class="ruby-identifier">options</span> = {})
+  <span class="ruby-identifier">options</span>.<span class="ruby-identifier">symbolize_keys!</span>
+
+  <span class="ruby-identifier">number</span> = <span class="ruby-keyword">begin</span>
+    <span class="ruby-constant">Float</span>(<span class="ruby-identifier">number</span>)
+  <span class="ruby-keyword">rescue</span> <span class="ruby-constant">ArgumentError</span>, <span class="ruby-constant">TypeError</span>
+    <span class="ruby-keyword">if</span> <span class="ruby-identifier">options</span>[<span class="ruby-value">:raise</span>]
+      <span class="ruby-identifier">raise</span> <span class="ruby-constant">InvalidNumberError</span>, <span class="ruby-identifier">number</span>
+    <span class="ruby-keyword">else</span>
+      <span class="ruby-keyword">return</span> <span class="ruby-identifier">number</span>
+    <span class="ruby-keyword">end</span>
+  <span class="ruby-keyword">end</span>
+
+  <span class="ruby-identifier">defaults</span> = <span class="ruby-constant">I18n</span>.<span class="ruby-identifier">translate</span>(<span class="ruby-value">:'number.format'</span>, <span class="ruby-value">:locale</span> =<span class="ruby-operator">&gt;</span> <span class="ruby-identifier">options</span>[<span class="ruby-value">:locale</span>], <span class="ruby-value">:default</span> =<span class="ruby-operator">&gt;</span> {})
+  <span class="ruby-identifier">human</span>    = <span class="ruby-constant">I18n</span>.<span class="ruby-identifier">translate</span>(<span class="ruby-value">:'number.human.format'</span>, <span class="ruby-value">:locale</span> =<span class="ruby-operator">&gt;</span> <span class="ruby-identifier">options</span>[<span class="ruby-value">:locale</span>], <span class="ruby-value">:default</span> =<span class="ruby-operator">&gt;</span> {})
+  <span class="ruby-identifier">defaults</span> = <span class="ruby-identifier">defaults</span>.<span class="ruby-identifier">merge</span>(<span class="ruby-identifier">human</span>)
+
+  <span class="ruby-identifier">options</span> = <span class="ruby-identifier">options</span>.<span class="ruby-identifier">reverse_merge</span>(<span class="ruby-identifier">defaults</span>)
+  <span class="ruby-comment">#for backwards compatibility with those that didn't add strip_insignificant_zeros to their locale files</span>
+  <span class="ruby-identifier">options</span>[<span class="ruby-value">:strip_insignificant_zeros</span>] = <span class="ruby-keyword">true</span> <span class="ruby-keyword">if</span> <span class="ruby-keyword">not</span> <span class="ruby-identifier">options</span>.<span class="ruby-identifier">key?</span>(<span class="ruby-value">:strip_insignificant_zeros</span>)
+
+  <span class="ruby-identifier">storage_units_format</span> = <span class="ruby-constant">I18n</span>.<span class="ruby-identifier">translate</span>(<span class="ruby-value">:'number.human.storage_units.format'</span>, <span class="ruby-value">:locale</span> =<span class="ruby-operator">&gt;</span> <span class="ruby-identifier">options</span>[<span class="ruby-value">:locale</span>], <span class="ruby-value">:raise</span> =<span class="ruby-operator">&gt;</span> <span class="ruby-keyword">true</span>)
+
+  <span class="ruby-keyword">if</span> <span class="ruby-identifier">number</span>.<span class="ruby-identifier">to_i</span> <span class="ruby-operator">&lt;</span> <span class="ruby-value">1024</span>
+    <span class="ruby-identifier">unit</span> = <span class="ruby-constant">I18n</span>.<span class="ruby-identifier">translate</span>(<span class="ruby-value">:'number.human.storage_units.units.byte'</span>, <span class="ruby-value">:locale</span> =<span class="ruby-operator">&gt;</span> <span class="ruby-identifier">options</span>[<span class="ruby-value">:locale</span>], <span class="ruby-value">:count</span> =<span class="ruby-operator">&gt;</span> <span class="ruby-identifier">number</span>.<span class="ruby-identifier">to_i</span>, <span class="ruby-value">:raise</span> =<span class="ruby-operator">&gt;</span> <span class="ruby-keyword">true</span>)
+    <span class="ruby-identifier">storage_units_format</span>.<span class="ruby-identifier">gsub</span>(<span class="ruby-regexp">/%n/</span>, <span class="ruby-identifier">number</span>.<span class="ruby-identifier">to_i</span>.<span class="ruby-identifier">to_s</span>).<span class="ruby-identifier">gsub</span>(<span class="ruby-regexp">/%u/</span>, <span class="ruby-identifier">unit</span>).<span class="ruby-identifier">html_safe</span>
+  <span class="ruby-keyword">else</span>
+    <span class="ruby-identifier">max_exp</span>  = <span class="ruby-constant">STORAGE_UNITS</span>.<span class="ruby-identifier">size</span> <span class="ruby-operator">-</span> <span class="ruby-value">1</span>
+    <span class="ruby-identifier">exponent</span> = (<span class="ruby-constant">Math</span>.<span class="ruby-identifier">log</span>(<span class="ruby-identifier">number</span>) <span class="ruby-operator">/</span> <span class="ruby-constant">Math</span>.<span class="ruby-identifier">log</span>(<span class="ruby-value">1024</span>)).<span class="ruby-identifier">to_i</span> <span class="ruby-comment"># Convert to base 1024</span>
+    <span class="ruby-identifier">exponent</span> = <span class="ruby-identifier">max_exp</span> <span class="ruby-keyword">if</span> <span class="ruby-identifier">exponent</span> <span class="ruby-operator">&gt;</span> <span class="ruby-identifier">max_exp</span> <span class="ruby-comment"># we need this to avoid overflow for the highest unit</span>
+    <span class="ruby-identifier">number</span>  <span class="ruby-operator">/=</span> <span class="ruby-value">1024</span> <span class="ruby-operator">**</span> <span class="ruby-identifier">exponent</span>
+
+    <span class="ruby-identifier">unit_key</span> = <span class="ruby-constant">STORAGE_UNITS</span>[<span class="ruby-identifier">exponent</span>]
+    <span class="ruby-identifier">unit</span> = <span class="ruby-constant">I18n</span>.<span class="ruby-identifier">translate</span>(<span class="ruby-value">:&quot;number.human.storage_units.units.#{unit_key}&quot;</span>, <span class="ruby-value">:locale</span> =<span class="ruby-operator">&gt;</span> <span class="ruby-identifier">options</span>[<span class="ruby-value">:locale</span>], <span class="ruby-value">:count</span> =<span class="ruby-operator">&gt;</span> <span class="ruby-identifier">number</span>, <span class="ruby-value">:raise</span> =<span class="ruby-operator">&gt;</span> <span class="ruby-keyword">true</span>)
+
+    <span class="ruby-identifier">formatted_number</span> = <span class="ruby-identifier">number_with_precision</span>(<span class="ruby-identifier">number</span>, <span class="ruby-identifier">options</span>)
+    <span class="ruby-identifier">storage_units_format</span>.<span class="ruby-identifier">gsub</span>(<span class="ruby-regexp">/%n/</span>, <span class="ruby-identifier">formatted_number</span>).<span class="ruby-identifier">gsub</span>(<span class="ruby-regexp">/%u/</span>, <span class="ruby-identifier">unit</span>).<span class="ruby-identifier">html_safe</span>
+  <span class="ruby-keyword">end</span>
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+          
+      <div class="method">
+        <div class="title">
+                      <a name="method-i-number_to_percentage"></a>
+            <b>number_to_percentage</b>(number, options = {})          
+        </div>
+
+                  <div class="description">
+            <p>Formats a <tt>number</tt> as a percentage string (e.g., 65%). You can
+customize the format in the <tt>options</tt> hash.</p>
+
+<h4>Options</h4>
+<ul><li>
+<p><tt>:locale</tt>     - Sets the locale to be used for formatting (defaults
+to current locale).</p>
+</li><li>
+<p><tt>:precision</tt>  - Sets the precision of the number (defaults to 3).</p>
+</li><li>
+<p><tt>:significant</tt>  - If <tt>true</tt>, precision will be the # of
+significant_digits. If <tt>false</tt>, the # of fractional digits (defaults
+to <tt>false</tt>)</p>
+</li><li>
+<p><tt>:separator</tt>  - Sets the separator between the fractional and
+integer digits (defaults to “.”).</p>
+</li><li>
+<p><tt>:delimiter</tt>  - Sets the thousands delimiter (defaults to “”).</p>
+</li><li>
+<p><tt>:strip_insignificant_zeros</tt>  - If <tt>true</tt> removes
+insignificant zeros after the decimal separator (defaults to
+<tt>false</tt>)</p>
+</li></ul>
+
+<h4>Examples</h4>
+
+<pre>number_to_percentage(100)                                        # =&gt; 100.000%
+number_to_percentage(100, :precision =&gt; 0)                       # =&gt; 100%
+number_to_percentage(1000, :delimiter =&gt; '.', :separator =&gt; ',') # =&gt; 1.000,000%
+number_to_percentage(302.24398923423, :precision =&gt; 5)           # =&gt; 302.24399%
+number_to_percentage(1000, :locale =&gt; :fr)                       # =&gt; 1 000,000%</pre>          </div>
+        
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('number_to_percentage_source')"
+                 id="l_method-i-number_to_percentage_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="number_to_percentage_source">
+<pre>
+  <span class="ruby-comment"># File actionpack/lib/action_view/helpers/number_helper.rb, line 162</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">number_to_percentage</span>(<span class="ruby-identifier">number</span>, <span class="ruby-identifier">options</span> = {})
+  <span class="ruby-keyword">return</span> <span class="ruby-keyword">nil</span> <span class="ruby-keyword">if</span> <span class="ruby-identifier">number</span>.<span class="ruby-identifier">nil?</span>
+
+  <span class="ruby-identifier">options</span>.<span class="ruby-identifier">symbolize_keys!</span>
+
+  <span class="ruby-identifier">defaults</span>   = <span class="ruby-constant">I18n</span>.<span class="ruby-identifier">translate</span>(<span class="ruby-value">:'number.format'</span>, <span class="ruby-value">:locale</span> =<span class="ruby-operator">&gt;</span> <span class="ruby-identifier">options</span>[<span class="ruby-value">:locale</span>], <span class="ruby-value">:default</span> =<span class="ruby-operator">&gt;</span> {})
+  <span class="ruby-identifier">percentage</span> = <span class="ruby-constant">I18n</span>.<span class="ruby-identifier">translate</span>(<span class="ruby-value">:'number.percentage.format'</span>, <span class="ruby-value">:locale</span> =<span class="ruby-operator">&gt;</span> <span class="ruby-identifier">options</span>[<span class="ruby-value">:locale</span>], <span class="ruby-value">:default</span> =<span class="ruby-operator">&gt;</span> {})
+  <span class="ruby-identifier">defaults</span>  = <span class="ruby-identifier">defaults</span>.<span class="ruby-identifier">merge</span>(<span class="ruby-identifier">percentage</span>)
+
+  <span class="ruby-identifier">options</span> = <span class="ruby-identifier">options</span>.<span class="ruby-identifier">reverse_merge</span>(<span class="ruby-identifier">defaults</span>)
+
+  <span class="ruby-keyword">begin</span>
+    <span class="ruby-node">&quot;#{number_with_precision(number, options.merge(:raise =&gt; true))}%&quot;</span>.<span class="ruby-identifier">html_safe</span>
+  <span class="ruby-keyword">rescue</span> <span class="ruby-constant">InvalidNumberError</span> =<span class="ruby-operator">&gt;</span> <span class="ruby-identifier">e</span>
+    <span class="ruby-keyword">if</span> <span class="ruby-identifier">options</span>[<span class="ruby-value">:raise</span>]
+      <span class="ruby-identifier">raise</span>
+    <span class="ruby-keyword">else</span>
+      <span class="ruby-identifier">e</span>.<span class="ruby-identifier">number</span>.<span class="ruby-identifier">to_s</span>.<span class="ruby-identifier">html_safe?</span> <span class="ruby-operator">?</span> <span class="ruby-node">&quot;#{e.number}%&quot;</span>.<span class="ruby-identifier">html_safe</span> <span class="ruby-operator">:</span> <span class="ruby-node">&quot;#{e.number}%&quot;</span>
+    <span class="ruby-keyword">end</span>
+  <span class="ruby-keyword">end</span>
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+          
+      <div class="method">
+        <div class="title">
+                      <a name="method-i-number_to_phone"></a>
+            <b>number_to_phone</b>(number, options = {})          
+        </div>
+
+                  <div class="description">
+            <p>Formats a <tt>number</tt> into a US phone number (e.g., (555) 123-9876).
+You can customize the format in the <tt>options</tt> hash.</p>
+
+<h4>Options</h4>
+<ul><li>
+<p><tt>:area_code</tt>  - Adds parentheses around the area code.</p>
+</li><li>
+<p><tt>:delimiter</tt>  - Specifies the delimiter to use (defaults to
+“-”).</p>
+</li><li>
+<p><tt>:extension</tt>  - Specifies an extension to add to the end of the
+generated number.</p>
+</li><li>
+<p><tt>:country_code</tt>  - Sets the country code for the phone number.</p>
+</li></ul>
+
+<h4>Examples</h4>
+
+<pre>number_to_phone(5551234)                                           # =&gt; 555-1234
+number_to_phone(1235551234)                                        # =&gt; 123-555-1234
+number_to_phone(1235551234, :area_code =&gt; true)                    # =&gt; (123) 555-1234
+number_to_phone(1235551234, :delimiter =&gt; &quot; &quot;)                     # =&gt; 123 555 1234
+number_to_phone(1235551234, :area_code =&gt; true, :extension =&gt; 555) # =&gt; (123) 555-1234 x 555
+number_to_phone(1235551234, :country_code =&gt; 1)                    # =&gt; +1-123-555-1234
+
+number_to_phone(1235551234, :country_code =&gt; 1, :extension =&gt; 1343, :delimiter =&gt; &quot;.&quot;)
+=&gt; +1.123.555.1234 x 1343</pre>          </div>
+        
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('number_to_phone_source')"
+                 id="l_method-i-number_to_phone_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="number_to_phone_source">
+<pre>
+  <span class="ruby-comment"># File actionpack/lib/action_view/helpers/number_helper.rb, line 49</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">number_to_phone</span>(<span class="ruby-identifier">number</span>, <span class="ruby-identifier">options</span> = {})
+  <span class="ruby-keyword">return</span> <span class="ruby-keyword">nil</span> <span class="ruby-keyword">if</span> <span class="ruby-identifier">number</span>.<span class="ruby-identifier">nil?</span>
+
+  <span class="ruby-keyword">begin</span>
+    <span class="ruby-constant">Float</span>(<span class="ruby-identifier">number</span>)
+    <span class="ruby-identifier">is_number_html_safe</span> = <span class="ruby-keyword">true</span>
+  <span class="ruby-keyword">rescue</span> <span class="ruby-constant">ArgumentError</span>, <span class="ruby-constant">TypeError</span>
+    <span class="ruby-keyword">if</span> <span class="ruby-identifier">options</span>[<span class="ruby-value">:raise</span>]
+      <span class="ruby-identifier">raise</span> <span class="ruby-constant">InvalidNumberError</span>, <span class="ruby-identifier">number</span>
+    <span class="ruby-keyword">else</span>
+      <span class="ruby-identifier">is_number_html_safe</span> = <span class="ruby-identifier">number</span>.<span class="ruby-identifier">to_s</span>.<span class="ruby-identifier">html_safe?</span>
+    <span class="ruby-keyword">end</span>
+  <span class="ruby-keyword">end</span>
+
+  <span class="ruby-identifier">number</span>       = <span class="ruby-identifier">number</span>.<span class="ruby-identifier">to_s</span>.<span class="ruby-identifier">strip</span>
+  <span class="ruby-identifier">options</span>      = <span class="ruby-identifier">options</span>.<span class="ruby-identifier">symbolize_keys</span>
+  <span class="ruby-identifier">area_code</span>    = <span class="ruby-identifier">options</span>[<span class="ruby-value">:area_code</span>] <span class="ruby-operator">||</span> <span class="ruby-keyword">nil</span>
+  <span class="ruby-identifier">delimiter</span>    = <span class="ruby-identifier">options</span>[<span class="ruby-value">:delimiter</span>] <span class="ruby-operator">||</span> <span class="ruby-string">&quot;-&quot;</span>
+  <span class="ruby-identifier">extension</span>    = <span class="ruby-identifier">options</span>[<span class="ruby-value">:extension</span>].<span class="ruby-identifier">to_s</span>.<span class="ruby-identifier">strip</span> <span class="ruby-operator">||</span> <span class="ruby-keyword">nil</span>
+  <span class="ruby-identifier">country_code</span> = <span class="ruby-identifier">options</span>[<span class="ruby-value">:country_code</span>] <span class="ruby-operator">||</span> <span class="ruby-keyword">nil</span>
+
+  <span class="ruby-identifier">str</span> = <span class="ruby-string">&quot;&quot;</span>
+  <span class="ruby-identifier">str</span> <span class="ruby-operator">&lt;&lt;</span> <span class="ruby-node">&quot;+#{country_code}#{delimiter}&quot;</span> <span class="ruby-keyword">unless</span> <span class="ruby-identifier">country_code</span>.<span class="ruby-identifier">blank?</span>
+  <span class="ruby-identifier">str</span> <span class="ruby-operator">&lt;&lt;</span> <span class="ruby-keyword">if</span> <span class="ruby-identifier">area_code</span>
+    <span class="ruby-identifier">number</span>.<span class="ruby-identifier">gsub!</span>(<span class="ruby-regexp">/([0-9]{1,3})([0-9]{3})([0-9]{4}$)/</span>,<span class="ruby-node">&quot;(\\1) \\2#{delimiter}\\3&quot;</span>)
+  <span class="ruby-keyword">else</span>
+    <span class="ruby-identifier">number</span>.<span class="ruby-identifier">gsub!</span>(<span class="ruby-regexp">/([0-9]{0,3})([0-9]{3})([0-9]{4})$/</span>,<span class="ruby-node">&quot;\\1#{delimiter}\\2#{delimiter}\\3&quot;</span>)
+    <span class="ruby-identifier">number</span>.<span class="ruby-identifier">starts_with?</span>(<span class="ruby-string">'-'</span>) <span class="ruby-operator">?</span> <span class="ruby-identifier">number</span>.<span class="ruby-identifier">slice!</span>(<span class="ruby-value">1</span><span class="ruby-operator">..</span><span class="ruby-value">-1</span>) <span class="ruby-operator">:</span> <span class="ruby-identifier">number</span>
+  <span class="ruby-keyword">end</span>
+  <span class="ruby-identifier">str</span> <span class="ruby-operator">&lt;&lt;</span> <span class="ruby-node">&quot; x #{extension}&quot;</span> <span class="ruby-keyword">unless</span> <span class="ruby-identifier">extension</span>.<span class="ruby-identifier">blank?</span>
+  <span class="ruby-identifier">is_number_html_safe</span> <span class="ruby-operator">?</span> <span class="ruby-identifier">str</span>.<span class="ruby-identifier">html_safe</span> <span class="ruby-operator">:</span> <span class="ruby-identifier">str</span>
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+          
+      <div class="method">
+        <div class="title">
+                      <a name="method-i-number_with_delimiter"></a>
+            <b>number_with_delimiter</b>(number, options = {})          
+        </div>
+
+                  <div class="description">
+            <p>Formats a <tt>number</tt> with grouped thousands using <tt>delimiter</tt>
+(e.g., 12,324). You can customize the format in the <tt>options</tt> hash.</p>
+
+<h4>Options</h4>
+<ul><li>
+<p><tt>:locale</tt>     - Sets the locale to be used for formatting (defaults
+to current locale).</p>
+</li><li>
+<p><tt>:delimiter</tt>  - Sets the thousands delimiter (defaults to “,”).</p>
+</li><li>
+<p><tt>:separator</tt>  - Sets the separator between the fractional and
+integer digits (defaults to “.”).</p>
+</li></ul>
+
+<h4>Examples</h4>
+
+<pre>number_with_delimiter(12345678)                        # =&gt; 12,345,678
+number_with_delimiter(12345678.05)                     # =&gt; 12,345,678.05
+number_with_delimiter(12345678, :delimiter =&gt; &quot;.&quot;)     # =&gt; 12.345.678
+number_with_delimiter(12345678, :separator =&gt; &quot;,&quot;)     # =&gt; 12,345,678
+number_with_delimiter(12345678.05, :locale =&gt; :fr)     # =&gt; 12 345 678,05
+number_with_delimiter(98765432.98, :delimiter =&gt; &quot; &quot;, :separator =&gt; &quot;,&quot;)
+# =&gt; 98 765 432,98</pre>          </div>
+        
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('number_with_delimiter_source')"
+                 id="l_method-i-number_with_delimiter_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="number_with_delimiter_source">
+<pre>
+  <span class="ruby-comment"># File actionpack/lib/action_view/helpers/number_helper.rb, line 200</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">number_with_delimiter</span>(<span class="ruby-identifier">number</span>, <span class="ruby-identifier">options</span> = {})
+  <span class="ruby-identifier">options</span>.<span class="ruby-identifier">symbolize_keys!</span>
+
+  <span class="ruby-keyword">begin</span>
+    <span class="ruby-constant">Float</span>(<span class="ruby-identifier">number</span>)
+  <span class="ruby-keyword">rescue</span> <span class="ruby-constant">ArgumentError</span>, <span class="ruby-constant">TypeError</span>
+    <span class="ruby-keyword">if</span> <span class="ruby-identifier">options</span>[<span class="ruby-value">:raise</span>]
+      <span class="ruby-identifier">raise</span> <span class="ruby-constant">InvalidNumberError</span>, <span class="ruby-identifier">number</span>
+    <span class="ruby-keyword">else</span>
+      <span class="ruby-keyword">return</span> <span class="ruby-identifier">number</span>
+    <span class="ruby-keyword">end</span>
+  <span class="ruby-keyword">end</span>
+
+  <span class="ruby-identifier">defaults</span> = <span class="ruby-constant">I18n</span>.<span class="ruby-identifier">translate</span>(<span class="ruby-value">:'number.format'</span>, <span class="ruby-value">:locale</span> =<span class="ruby-operator">&gt;</span> <span class="ruby-identifier">options</span>[<span class="ruby-value">:locale</span>], <span class="ruby-value">:default</span> =<span class="ruby-operator">&gt;</span> {})
+  <span class="ruby-identifier">options</span> = <span class="ruby-identifier">options</span>.<span class="ruby-identifier">reverse_merge</span>(<span class="ruby-identifier">defaults</span>)
+
+  <span class="ruby-identifier">parts</span> = <span class="ruby-identifier">number</span>.<span class="ruby-identifier">to_s</span>.<span class="ruby-identifier">to_str</span>.<span class="ruby-identifier">split</span>(<span class="ruby-string">'.'</span>)
+  <span class="ruby-identifier">parts</span>[<span class="ruby-value">0</span>].<span class="ruby-identifier">gsub!</span>(<span class="ruby-regexp">/(\d)(?=(\d\d\d)+(?!\d))/</span>, <span class="ruby-node">&quot;\\1#{options[:delimiter]}&quot;</span>)
+  <span class="ruby-identifier">parts</span>.<span class="ruby-identifier">join</span>(<span class="ruby-identifier">options</span>[<span class="ruby-value">:separator</span>]).<span class="ruby-identifier">html_safe</span>
+
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+          
+      <div class="method">
+        <div class="title">
+                      <a name="method-i-number_with_precision"></a>
+            <b>number_with_precision</b>(number, options = {})          
+        </div>
+
+                  <div class="description">
+            <p>Formats a <tt>number</tt> with the specified level of <tt>:precision</tt>
+(e.g., 112.32 has a precision of 2 if <tt>:significant</tt> is
+<tt>false</tt>, and 5 if <tt>:significant</tt> is <tt>true</tt>). You can
+customize the format in the <tt>options</tt> hash.</p>
+
+<h4>Options</h4>
+<ul><li>
+<p><tt>:locale</tt>     - Sets the locale to be used for formatting (defaults
+to current locale).</p>
+</li><li>
+<p><tt>:precision</tt>  - Sets the precision of the number (defaults to 3).</p>
+</li><li>
+<p><tt>:significant</tt>  - If <tt>true</tt>, precision will be the # of
+significant_digits. If <tt>false</tt>, the # of fractional digits (defaults
+to <tt>false</tt>)</p>
+</li><li>
+<p><tt>:separator</tt>  - Sets the separator between the fractional and
+integer digits (defaults to “.”).</p>
+</li><li>
+<p><tt>:delimiter</tt>  - Sets the thousands delimiter (defaults to “”).</p>
+</li><li>
+<p><tt>:strip_insignificant_zeros</tt>  - If <tt>true</tt> removes
+insignificant zeros after the decimal separator (defaults to
+<tt>false</tt>)</p>
+</li></ul>
+
+<h4>Examples</h4>
+
+<pre>number_with_precision(111.2345)                                            # =&gt; 111.235
+number_with_precision(111.2345, :precision =&gt; 2)                           # =&gt; 111.23
+number_with_precision(13, :precision =&gt; 5)                                 # =&gt; 13.00000
+number_with_precision(389.32314, :precision =&gt; 0)                          # =&gt; 389
+number_with_precision(111.2345, :significant =&gt; true)                      # =&gt; 111
+number_with_precision(111.2345, :precision =&gt; 1, :significant =&gt; true)     # =&gt; 100
+number_with_precision(13, :precision =&gt; 5, :significant =&gt; true)           # =&gt; 13.000
+number_with_precision(111.234, :locale =&gt; :fr)                             # =&gt; 111,234
+number_with_precision(13, :precision =&gt; 5, :significant =&gt; true, strip_insignificant_zeros =&gt; true)
+# =&gt; 13
+number_with_precision(389.32314, :precision =&gt; 4, :significant =&gt; true)    # =&gt; 389.3
+number_with_precision(1111.2345, :precision =&gt; 2, :separator =&gt; ',', :delimiter =&gt; '.')
+# =&gt; 1.111,23</pre>          </div>
+        
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('number_with_precision_source')"
+                 id="l_method-i-number_with_precision_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="number_with_precision_source">
+<pre>
+  <span class="ruby-comment"># File actionpack/lib/action_view/helpers/number_helper.rb, line 248</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">number_with_precision</span>(<span class="ruby-identifier">number</span>, <span class="ruby-identifier">options</span> = {})
+  <span class="ruby-identifier">options</span>.<span class="ruby-identifier">symbolize_keys!</span>
+
+  <span class="ruby-identifier">number</span> = <span class="ruby-keyword">begin</span>
+    <span class="ruby-constant">Float</span>(<span class="ruby-identifier">number</span>)
+  <span class="ruby-keyword">rescue</span> <span class="ruby-constant">ArgumentError</span>, <span class="ruby-constant">TypeError</span>
+    <span class="ruby-keyword">if</span> <span class="ruby-identifier">options</span>[<span class="ruby-value">:raise</span>]
+      <span class="ruby-identifier">raise</span> <span class="ruby-constant">InvalidNumberError</span>, <span class="ruby-identifier">number</span>
+    <span class="ruby-keyword">else</span>
+      <span class="ruby-keyword">return</span> <span class="ruby-identifier">number</span>
+    <span class="ruby-keyword">end</span>
+  <span class="ruby-keyword">end</span>
+
+  <span class="ruby-identifier">defaults</span>           = <span class="ruby-constant">I18n</span>.<span class="ruby-identifier">translate</span>(<span class="ruby-value">:'number.format'</span>, <span class="ruby-value">:locale</span> =<span class="ruby-operator">&gt;</span> <span class="ruby-identifier">options</span>[<span class="ruby-value">:locale</span>], <span class="ruby-value">:default</span> =<span class="ruby-operator">&gt;</span> {})
+  <span class="ruby-identifier">precision_defaults</span> = <span class="ruby-constant">I18n</span>.<span class="ruby-identifier">translate</span>(<span class="ruby-value">:'number.precision.format'</span>, <span class="ruby-value">:locale</span> =<span class="ruby-operator">&gt;</span> <span class="ruby-identifier">options</span>[<span class="ruby-value">:locale</span>], <span class="ruby-value">:default</span> =<span class="ruby-operator">&gt;</span> {})
+  <span class="ruby-identifier">defaults</span>           = <span class="ruby-identifier">defaults</span>.<span class="ruby-identifier">merge</span>(<span class="ruby-identifier">precision_defaults</span>)
+
+  <span class="ruby-identifier">options</span> = <span class="ruby-identifier">options</span>.<span class="ruby-identifier">reverse_merge</span>(<span class="ruby-identifier">defaults</span>)  <span class="ruby-comment"># Allow the user to unset default values: Eg.: :significant =&gt; false</span>
+  <span class="ruby-identifier">precision</span> = <span class="ruby-identifier">options</span>.<span class="ruby-identifier">delete</span> <span class="ruby-value">:precision</span>
+  <span class="ruby-identifier">significant</span> = <span class="ruby-identifier">options</span>.<span class="ruby-identifier">delete</span> <span class="ruby-value">:significant</span>
+  <span class="ruby-identifier">strip_insignificant_zeros</span> = <span class="ruby-identifier">options</span>.<span class="ruby-identifier">delete</span> <span class="ruby-value">:strip_insignificant_zeros</span>
+
+  <span class="ruby-keyword">if</span> <span class="ruby-identifier">significant</span> <span class="ruby-keyword">and</span> <span class="ruby-identifier">precision</span> <span class="ruby-operator">&gt;</span> <span class="ruby-value">0</span>
+    <span class="ruby-keyword">if</span> <span class="ruby-identifier">number</span> <span class="ruby-operator">==</span> <span class="ruby-value">0</span>
+      <span class="ruby-identifier">digits</span>, <span class="ruby-identifier">rounded_number</span> = <span class="ruby-value">1</span>, <span class="ruby-value">0</span>
+    <span class="ruby-keyword">else</span>
+      <span class="ruby-identifier">digits</span> = (<span class="ruby-constant">Math</span>.<span class="ruby-identifier">log10</span>(<span class="ruby-identifier">number</span>.<span class="ruby-identifier">abs</span>) <span class="ruby-operator">+</span> <span class="ruby-value">1</span>).<span class="ruby-identifier">floor</span>
+      <span class="ruby-identifier">rounded_number</span> = (<span class="ruby-constant">BigDecimal</span>.<span class="ruby-identifier">new</span>(<span class="ruby-identifier">number</span>.<span class="ruby-identifier">to_s</span>) <span class="ruby-operator">/</span> <span class="ruby-constant">BigDecimal</span>.<span class="ruby-identifier">new</span>((<span class="ruby-value">10</span> <span class="ruby-operator">**</span> (<span class="ruby-identifier">digits</span> <span class="ruby-operator">-</span> <span class="ruby-identifier">precision</span>)).<span class="ruby-identifier">to_f</span>.<span class="ruby-identifier">to_s</span>)).<span class="ruby-identifier">round</span>.<span class="ruby-identifier">to_f</span> * <span class="ruby-value">10</span> <span class="ruby-operator">**</span> (<span class="ruby-identifier">digits</span> <span class="ruby-operator">-</span> <span class="ruby-identifier">precision</span>)
+      <span class="ruby-identifier">digits</span> = (<span class="ruby-constant">Math</span>.<span class="ruby-identifier">log10</span>(<span class="ruby-identifier">rounded_number</span>.<span class="ruby-identifier">abs</span>) <span class="ruby-operator">+</span> <span class="ruby-value">1</span>).<span class="ruby-identifier">floor</span> <span class="ruby-comment"># After rounding, the number of digits may have changed</span>
+    <span class="ruby-keyword">end</span>
+    <span class="ruby-identifier">precision</span> = <span class="ruby-identifier">precision</span> <span class="ruby-operator">-</span> <span class="ruby-identifier">digits</span>
+    <span class="ruby-identifier">precision</span> = <span class="ruby-identifier">precision</span> <span class="ruby-operator">&gt;</span> <span class="ruby-value">0</span> <span class="ruby-operator">?</span> <span class="ruby-identifier">precision</span> <span class="ruby-operator">:</span> <span class="ruby-value">0</span>  <span class="ruby-comment">#don't let it be negative</span>
+  <span class="ruby-keyword">else</span>
+    <span class="ruby-identifier">rounded_number</span> = <span class="ruby-constant">BigDecimal</span>.<span class="ruby-identifier">new</span>(<span class="ruby-identifier">number</span>.<span class="ruby-identifier">to_s</span>).<span class="ruby-identifier">round</span>(<span class="ruby-identifier">precision</span>).<span class="ruby-identifier">to_f</span>
+  <span class="ruby-keyword">end</span>
+  <span class="ruby-identifier">formatted_number</span> = <span class="ruby-identifier">number_with_delimiter</span>(<span class="ruby-node">&quot;%01.#{precision}f&quot;</span> <span class="ruby-operator">%</span> <span class="ruby-identifier">rounded_number</span>, <span class="ruby-identifier">options</span>)
+  <span class="ruby-keyword">if</span> <span class="ruby-identifier">strip_insignificant_zeros</span>
+    <span class="ruby-identifier">escaped_separator</span> = <span class="ruby-constant">Regexp</span>.<span class="ruby-identifier">escape</span>(<span class="ruby-identifier">options</span>[<span class="ruby-value">:separator</span>])
+    <span class="ruby-identifier">formatted_number</span>.<span class="ruby-identifier">sub</span>(<span class="ruby-node">/(#{escaped_separator})(\d*[1-9])?0+\z/</span>, <span class="ruby-string">'\1\2'</span>).<span class="ruby-identifier">sub</span>(<span class="ruby-node">/#{escaped_separator}\z/</span>, <span class="ruby-string">''</span>).<span class="ruby-identifier">html_safe</span>
+  <span class="ruby-keyword">else</span>
+    <span class="ruby-identifier">formatted_number</span>
+  <span class="ruby-keyword">end</span>
+
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+              </div>
+  </div>
+  </body>
+</html>

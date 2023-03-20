@@ -1,0 +1,90 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>11 Locking Records for Update</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v4.0.13/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="locking-records-for-update">11 Locking Records for Update</h3>
+<p>Locking is helpful for preventing race conditions when updating records in the database and ensuring atomic updates.</p>
+<p>Active Record provides two locking mechanisms:</p>
+<ul>
+<li>Optimistic Locking</li>
+<li>Pessimistic Locking</li>
+</ul>
+<h4 id="optimistic-locking">11.1 Optimistic Locking</h4>
+<p>Optimistic locking allows multiple users to access the same record for edits, and assumes a minimum of conflicts with the data. It does this by checking whether another process has made changes to a record since it was opened. An <code>ActiveRecord::StaleObjectError</code> exception is thrown if that has occurred and the update is ignored.</p>
+<p><strong>Optimistic locking column</strong></p>
+<p>In order to use optimistic locking, the table needs to have a column called <code>lock_version</code> of type integer. Each time the record is updated, Active Record increments the <code>lock_version</code> column. If an update request is made with a lower value in the <code>lock_version</code> field than is currently in the <code>lock_version</code> column in the database, the update request will fail with an <code>ActiveRecord::StaleObjectError</code>. Example:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+c1 = Client.find(1)
+c2 = Client.find(1)
+
+c1.first_name = "Michael"
+c1.save
+
+c2.name = "should fail"
+c2.save # Raises an ActiveRecord::StaleObjectError
+
+</pre>
+</div>
+<p>You're then responsible for dealing with the conflict by rescuing the exception and either rolling back, merging, or otherwise apply the business logic needed to resolve the conflict.</p>
+<p>This behavior can be turned off by setting <code>ActiveRecord::Base.lock_optimistically = false</code>.</p>
+<p>To override the name of the <code>lock_version</code> column, <code>ActiveRecord::Base</code> provides a class attribute called <code>locking_column</code>:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class Client &lt; ActiveRecord::Base
+  self.locking_column = :lock_client_column
+end
+
+</pre>
+</div>
+<h4 id="pessimistic-locking">11.2 Pessimistic Locking</h4>
+<p>Pessimistic locking uses a locking mechanism provided by the underlying database. Using <code>lock</code> when building a relation obtains an exclusive lock on the selected rows. Relations using <code>lock</code> are usually wrapped inside a transaction for preventing deadlock conditions.</p>
+<p>For example:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+Item.transaction do
+  i = Item.lock.first
+  i.name = 'Jones'
+  i.save
+end
+
+</pre>
+</div>
+<p>The above session produces the following SQL for a MySQL backend:</p>
+<div class="code_container">
+<pre class="brush: sql; gutter: false; toolbar: false">
+SQL (0.2ms)   BEGIN
+Item Load (0.3ms)   SELECT * FROM `items` LIMIT 1 FOR UPDATE
+Item Update (0.4ms)   UPDATE `items` SET `updated_at` = '2009-02-07 18:05:56', `name` = 'Jones' WHERE `id` = 1
+SQL (0.8ms)   COMMIT
+
+</pre>
+</div>
+<p>You can also pass raw SQL to the <code>lock</code> method for allowing different types of locks. For example, MySQL has an expression called <code>LOCK IN SHARE MODE</code> where you can lock a record but still allow other queries to read it. To specify this expression just pass it in as the lock option:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+Item.transaction do
+  i = Item.lock("LOCK IN SHARE MODE").find(1)
+  i.increment!(:views)
+end
+
+</pre>
+</div>
+<p>If you already have an instance of your model, you can start a transaction and acquire the lock in one go using the following code:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+item = Item.first
+item.with_lock do
+  # This block is called within a transaction,
+  # item is already locked.
+  item.increment!(:views)
+end
+
+</pre>
+</div>
+</body>
+</html>

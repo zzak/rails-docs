@@ -1,0 +1,41 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>9 Active Model</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v5.0.7.2/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="active-model">9 Active Model</h3>
+<p>Please refer to the <a href="https://github.com/rails/rails/blob/4-2-stable/activemodel/CHANGELOG.md">Changelog</a> for detailed changes.</p>
+
+<h4 id="active-model-removals">9.1 Removals</h4>
+<ul>
+<li>  Removed deprecated <code>Validator#setup</code> without replacement.
+(<a href="https://github.com/rails/rails/pull/10716">Pull Request</a>)</li>
+</ul>
+<h4 id="active-model-deprecations">9.2 Deprecations</h4>
+<ul>
+<li>  Deprecated <code>reset_#{attribute}</code> in favor of <code>restore_#{attribute}</code>.
+(<a href="https://github.com/rails/rails/pull/16180">Pull Request</a>)</li>
+<li>  Deprecated <code>ActiveModel::Dirty#reset_changes</code> in favor of
+<code>clear_changes_information</code>.
+(<a href="https://github.com/rails/rails/pull/16180">Pull Request</a>)</li>
+</ul>
+<h4 id="active-model-notable-changes">9.3 Notable changes</h4>
+<ul>
+<li>  Introduced <code>validate</code> as an alias for <code>valid?</code>.
+(<a href="https://github.com/rails/rails/pull/14456">Pull Request</a>)</li>
+<li>  Introduced the <code>restore_attributes</code> method in <code>ActiveModel::Dirty</code> to restore
+the changed (dirty) attributes to their previous values.
+(Pull Request <a href="https://github.com/rails/rails/pull/14861">1</a>,
+<a href="https://github.com/rails/rails/pull/16180">2</a>)</li>
+<li>  <code>has_secure_password</code> no longer disallows blank passwords (i.e. passwords
+that contains only spaces) by default.
+(<a href="https://github.com/rails/rails/pull/16412">Pull Request</a>)</li>
+<li>  <code>has_secure_password</code> now verifies that the given password is less than 72
+characters if validations are enabled.
+(<a href="https://github.com/rails/rails/pull/15708">Pull Request</a>)</li>
+</ul>
+</body>
+</html>

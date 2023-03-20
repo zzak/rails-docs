@@ -1,0 +1,161 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>2 Loading Rails</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v4.0.13/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="loading-rails">2 Loading Rails</h3>
+<p>The next line in <code>config/application.rb</code> is:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+require 'rails/all'
+
+</pre>
+</div>
+<h4 id="railties-lib-rails-all-rb">2.1 <code>railties/lib/rails/all.rb</code>
+</h4>
+<p>This file is responsible for requiring all the individual frameworks of Rails:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+require "rails"
+
+%w(
+    active_record
+    action_controller
+    action_mailer
+    rails/test_unit
+    sprockets
+).each do |framework|
+  begin
+    require "#{framework}/railtie"
+  rescue LoadError
+  end
+end
+
+</pre>
+</div>
+<p>This is where all the Rails frameworks are loaded and thus made
+available to the application. We won't go into detail of what happens
+inside each of those frameworks, but you're encouraged to try and
+explore them on your own.</p>
+<p>For now, just keep in mind that common functionality like Rails engines,
+I18n and Rails configuration are all being defined here.</p>
+<h4 id="back-to-config-environment-rb">2.2 Back to <code>config/environment.rb</code>
+</h4>
+<p>When <code>config/application.rb</code> has finished loading Rails, and defined
+the application namespace, we go back to <code>config/environment.rb</code>,
+where the application is initialized. For example, if the application was called
+<code>Blog</code>, here we would find <code>Blog::Application.initialize!</code>, which is
+defined in <code>rails/application.rb</code></p>
+<h4 id="railties-lib-rails-application-rb">2.3 <code>railties/lib/rails/application.rb</code>
+</h4>
+<p>The <code>initialize!</code> method looks like this:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+def initialize!(group=:default) #:nodoc:
+  raise "Application has been already initialized." if @initialized
+  run_initializers(group, self)
+  @initialized = true
+  self
+end
+
+</pre>
+</div>
+<p>As you can see, you can only initialize an app once. This is also where the initializers are run.</p>
+<div class="todo"><p>review this</p></div>
+<p>The initializers code itself is tricky. What Rails is doing here is it
+traverses all the class ancestors looking for an <code>initializers</code> method,
+sorting them and running them. For example, the <code>Engine</code> class will make
+all the engines available by providing the <code>initializers</code> method.</p>
+<p>After this is done we go back to <code>Rack::Server</code></p>
+<h4 id="loading-rails-rack-lib-rack-server-rb">2.4 Rack: lib/rack/server.rb</h4>
+<p>Last time we left when the <code>app</code> method was being defined:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+def app
+  @app ||= begin
+    if !::File.exist? options[:config]
+      abort "configuration #{options[:config]} not found"
+    end
+
+    app, options = Rack::Builder.parse_file(self.options[:config], opt_parser)
+    self.options.merge! options
+    app
+  end
+end
+
+</pre>
+</div>
+<p>At this point <code>app</code> is the Rails app itself (a middleware), and what
+happens next is Rack will call all the provided middlewares:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+def build_app(app)
+  middleware[options[:environment]].reverse_each do |middleware|
+    middleware = middleware.call(self) if middleware.respond_to?(:call)
+    next unless middleware
+    klass = middleware.shift
+    app = klass.new(app, *middleware)
+  end
+  app
+end
+
+</pre>
+</div>
+<p>Remember, <code>build_app</code> was called (by wrapped_app) in the last line of <code>Server#start</code>.
+Here's how it looked like when we left:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+server.run wrapped_app, options, &amp;blk
+
+</pre>
+</div>
+<p>At this point, the implementation of <code>server.run</code> will depend on the
+server you're using. For example, if you were using Mongrel, here's what
+the <code>run</code> method would look like:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+def self.run(app, options={})
+  server = ::Mongrel::HttpServer.new(
+    options[:Host]           || '0.0.0.0',
+    options[:Port]           || 8080,
+    options[:num_processors] || 950,
+    options[:throttle]       || 0,
+    options[:timeout]        || 60)
+  # Acts like Rack::URLMap, utilizing Mongrel's own path finding methods.
+  # Use is similar to #run, replacing the app argument with a hash of
+  # { path=&gt;app, ... } or an instance of Rack::URLMap.
+  if options[:map]
+    if app.is_a? Hash
+      app.each do |path, appl|
+        path = '/'+path unless path[0] == ?/
+        server.register(path, Rack::Handler::Mongrel.new(appl))
+      end
+    elsif app.is_a? URLMap
+      app.instance_variable_get(:@mapping).each do |(host, path, appl)|
+       next if !host.nil? &amp;&amp; !options[:Host].nil? &amp;&amp; options[:Host] != host
+       path = '/'+path unless path[0] == ?/
+       server.register(path, Rack::Handler::Mongrel.new(appl))
+      end
+    else
+      raise ArgumentError, "first argument should be a Hash or URLMap"
+    end
+  else
+    server.register('/', Rack::Handler::Mongrel.new(app))
+  end
+  yield server  if block_given?
+  server.run.join
+end
+
+</pre>
+</div>
+<p>We won't dig into the server configuration itself, but this is
+the last piece of our journey in the Rails initialization process.</p>
+<p>This high level overview will help you understand when your code is
+executed and how, and overall become a better Rails developer. If you
+still want to know more, the Rails source code itself is probably the
+best place to go next.</p>
+</body>
+</html>

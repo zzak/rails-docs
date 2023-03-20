@@ -1,0 +1,87 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>5 Single Table Inheritance (STI)</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v7.0.4.2/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="single-table-inheritance-sti"><a class="anchorlink" href="#single-table-inheritance-sti">5 Single Table Inheritance (STI)</a></h3>
+<p>Sometimes, you may want to share fields and behavior between different models.
+Let's say we have Car, Motorcycle, and Bicycle models. We will want to share
+the <code>color</code> and <code>price</code> fields and some methods for all of them, but having some
+specific behavior for each, and separated controllers too.</p>
+
+<p>First, let's generate the base Vehicle model:</p>
+
+<div class="code_container">
+<pre><code class="highlight console"><span class="gp">$</span><span class="w"> </span><span class="nb">bin/rails </span>generate model vehicle <span class="nb">type</span>:string color:string price:decimal<span class="o">{</span>10.2<span class="o">}</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="bin/rails generate model vehicle type:string color:string price:decimal{10.2}
+">Copy</button>
+</div>
+<p>Did you note we are adding a "type" field? Since all models will be saved in a
+single database table, Rails will save in this column the name of the model that
+is being saved. In our example, this can be "Car", "Motorcycle" or "Bicycle."
+STI won't work without a "type" field in the table.</p>
+
+<p>Next, we will generate the Car model that inherits from Vehicle. For this,
+we can use the <code>--parent=PARENT</code> option, which will generate a model that
+inherits from the specified parent and without equivalent migration (since the
+table already exists).</p>
+
+<p>For example, to generate the Car model:</p>
+
+<div class="code_container">
+<pre><code class="highlight console"><span class="gp">$</span><span class="w"> </span><span class="nb">bin/rails </span>generate model car <span class="nt">--parent</span><span class="o">=</span>Vehicle
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="bin/rails generate model car --parent=Vehicle
+">Copy</button>
+</div>
+<p>The generated model will look like this:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">Car</span> <span class="o">&lt;</span> <span class="no">Vehicle</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="class Car &lt; Vehicle
+end
+">Copy</button>
+</div>
+<p>This means that all behavior added to Vehicle is available for Car too, as
+associations, public methods, etc.</p>
+
+<p>Creating a car will save it in the <code>vehicles</code> table with "Car" as the <code>type</code> field:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="no">Car</span><span class="p">.</span><span class="nf">create</span><span class="p">(</span><span class="ss">color: </span><span class="s1">'Red'</span><span class="p">,</span> <span class="ss">price: </span><span class="mi">10000</span><span class="p">)</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="Car.create(color: 'Red', price: 10000)
+">Copy</button>
+</div>
+<p>will generate the following SQL:</p>
+
+<div class="code_container">
+<pre><code class="highlight sql"><span class="k">INSERT</span> <span class="k">INTO</span> <span class="nv">"vehicles"</span> <span class="p">(</span><span class="nv">"type"</span><span class="p">,</span> <span class="nv">"color"</span><span class="p">,</span> <span class="nv">"price"</span><span class="p">)</span> <span class="k">VALUES</span> <span class="p">(</span><span class="s1">'Car'</span><span class="p">,</span> <span class="s1">'Red'</span><span class="p">,</span> <span class="mi">10000</span><span class="p">)</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="INSERT INTO &quot;vehicles&quot; (&quot;type&quot;, &quot;color&quot;, &quot;price&quot;) VALUES ('Car', 'Red', 10000)
+">Copy</button>
+</div>
+<p>Querying car records will search only for vehicles that are cars:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="no">Car</span><span class="p">.</span><span class="nf">all</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="Car.all
+">Copy</button>
+</div>
+<p>will run a query like:</p>
+
+<div class="code_container">
+<pre><code class="highlight sql"><span class="k">SELECT</span> <span class="nv">"vehicles"</span><span class="p">.</span><span class="o">*</span> <span class="k">FROM</span> <span class="nv">"vehicles"</span> <span class="k">WHERE</span> <span class="nv">"vehicles"</span><span class="p">.</span><span class="nv">"type"</span> <span class="k">IN</span> <span class="p">(</span><span class="s1">'Car'</span><span class="p">)</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="SELECT &quot;vehicles&quot;.* FROM &quot;vehicles&quot; WHERE &quot;vehicles&quot;.&quot;type&quot; IN ('Car')
+">Copy</button>
+</div>
+</body>
+</html>

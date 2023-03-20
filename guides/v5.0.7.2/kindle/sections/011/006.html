@@ -1,0 +1,161 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>7 Understanding Parameter Naming Conventions</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v5.0.7.2/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="understanding-parameter-naming-conventions">7 Understanding Parameter Naming Conventions</h3>
+<p>As you've seen in the previous sections, values from forms can be at the top level of the <code>params</code> hash or nested in another hash. For example, in a standard <code>create</code>
+action for a Person model, <code>params[:person]</code> would usually be a hash of all the attributes for the person to create. The <code>params</code> hash can also contain arrays, arrays of hashes and so on.</p>
+
+<p>Fundamentally HTML forms don't know about any sort of structured data, all they generate is name-value pairs, where pairs are just plain strings. The arrays and hashes you see in your application are the result of some parameter naming conventions that Rails uses.</p>
+
+<h4 id="basic-structures">7.1 Basic Structures</h4>
+
+<p>The two basic structures are arrays and hashes. Hashes mirror the syntax used for accessing the value in <code>params</code>. For example, if a form contains:</p>
+
+<div class="code_container">
+<pre class="brush: xml; gutter: false; toolbar: false">
+&lt;input id="person_name" name="person[name]" type="text" value="Henry"/&gt;
+
+</pre>
+</div>
+<p>the <code>params</code> hash will contain</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+{'person' =&gt; {'name' =&gt; 'Henry'}}
+
+</pre>
+</div>
+<p>and <code>params[:person][:name]</code> will retrieve the submitted value in the controller.</p>
+
+<p>Hashes can be nested as many levels as required, for example:</p>
+
+<div class="code_container">
+<pre class="brush: xml; gutter: false; toolbar: false">
+&lt;input id="person_address_city" name="person[address][city]" type="text" value="New York"/&gt;
+
+</pre>
+</div>
+<p>will result in the <code>params</code> hash being</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+{'person' =&gt; {'address' =&gt; {'city' =&gt; 'New York'}}}
+
+</pre>
+</div>
+<p>Normally Rails ignores duplicate parameter names. If the parameter name contains an empty set of square brackets <code>[]</code> then they will be accumulated in an array. If you wanted users to be able to input multiple phone numbers, you could place this in the form:</p>
+
+<div class="code_container">
+<pre class="brush: xml; gutter: false; toolbar: false">
+&lt;input name="person[phone_number][]" type="text"/&gt;
+&lt;input name="person[phone_number][]" type="text"/&gt;
+&lt;input name="person[phone_number][]" type="text"/&gt;
+
+</pre>
+</div>
+<p>This would result in <code>params[:person][:phone_number]</code> being an array containing the inputted phone numbers.</p>
+
+<h4 id="combining-them">7.2 Combining Them</h4>
+
+<p>We can mix and match these two concepts. One element of a hash might be an array as in the previous example, or you can have an array of hashes. For example, a form might let you create any number of addresses by repeating the following form fragment</p>
+
+<div class="code_container">
+<pre class="brush: xml; gutter: false; toolbar: false">
+&lt;input name="addresses[][line1]" type="text"/&gt;
+&lt;input name="addresses[][line2]" type="text"/&gt;
+&lt;input name="addresses[][city]" type="text"/&gt;
+
+</pre>
+</div>
+<p>This would result in <code>params[:addresses]</code> being an array of hashes with keys <code>line1</code>, <code>line2</code> and <code>city</code>. Rails decides to start accumulating values in a new hash whenever it encounters an input name that already exists in the current hash.</p>
+
+<p>There's a restriction, however, while hashes can be nested arbitrarily, only one level of "arrayness" is allowed. Arrays can usually be replaced by hashes; for example, instead of having an array of model objects, one can have a hash of model objects keyed by their id, an array index or some other parameter.</p>
+
+<div class="warning"><p>Array parameters do not play well with the <code>check_box</code> helper. According to the HTML specification unchecked checkboxes submit no value. However it is often convenient for a checkbox to always submit a value. The <code>check_box</code> helper fakes this by creating an auxiliary hidden input with the same name. If the checkbox is unchecked only the hidden input is submitted and if it is checked then both are submitted but the value submitted by the checkbox takes precedence. When working with array parameters this duplicate submission will confuse Rails since duplicate input names are how it decides when to start a new array element. It is preferable to either use <code>check_box_tag</code> or to use hashes instead of arrays.</p></div>
+
+<h4 id="using-form-helpers">7.3 Using Form Helpers</h4>
+
+<p>The previous sections did not use the Rails form helpers at all. While you can craft the input names yourself and pass them directly to helpers such as <code>text_field_tag</code> Rails also provides higher level support. The two tools at your disposal here are the name parameter to <code>form_for</code> and <code>fields_for</code> and the <code>:index</code> option that helpers take.</p>
+
+<p>You might want to render a form with a set of edit fields for each of a person's addresses. For example:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; html-script: true; gutter: false; toolbar: false">
+&lt;%= form_for @person do |person_form| %&gt;
+  &lt;%= person_form.text_field :name %&gt;
+  &lt;% @person.addresses.each do |address| %&gt;
+    &lt;%= person_form.fields_for address, index: address.id do |address_form|%&gt;
+      &lt;%= address_form.text_field :city %&gt;
+    &lt;% end %&gt;
+  &lt;% end %&gt;
+&lt;% end %&gt;
+
+</pre>
+</div>
+<p>Assuming the person had two addresses, with ids 23 and 45 this would create output similar to this:</p>
+
+<div class="code_container">
+<pre class="brush: xml; gutter: false; toolbar: false">
+&lt;form accept-charset="UTF-8" action="/people/1" class="edit_person" id="edit_person_1" method="post"&gt;
+  &lt;input id="person_name" name="person[name]" type="text" /&gt;
+  &lt;input id="person_address_23_city" name="person[address][23][city]" type="text" /&gt;
+  &lt;input id="person_address_45_city" name="person[address][45][city]" type="text" /&gt;
+&lt;/form&gt;
+
+</pre>
+</div>
+<p>This will result in a <code>params</code> hash that looks like</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+{'person' =&gt; {'name' =&gt; 'Bob', 'address' =&gt; {'23' =&gt; {'city' =&gt; 'Paris'}, '45' =&gt; {'city' =&gt; 'London'}}}}
+
+</pre>
+</div>
+<p>Rails knows that all these inputs should be part of the person hash because you
+called <code>fields_for</code> on the first form builder. By specifying an <code>:index</code> option
+you're telling Rails that instead of naming the inputs <code>person[address][city]</code>
+it should insert that index surrounded by [] between the address and the city.
+This is often useful as it is then easy to locate which Address record
+should be modified. You can pass numbers with some other significance,
+strings or even <code>nil</code> (which will result in an array parameter being created).</p>
+
+<p>To create more intricate nestings, you can specify the first part of the input
+name (<code>person[address]</code> in the previous example) explicitly:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; html-script: true; gutter: false; toolbar: false">
+&lt;%= fields_for 'person[address][primary]', address, index: address do |address_form| %&gt;
+  &lt;%= address_form.text_field :city %&gt;
+&lt;% end %&gt;
+
+</pre>
+</div>
+<p>will create inputs like</p>
+
+<div class="code_container">
+<pre class="brush: xml; gutter: false; toolbar: false">
+&lt;input id="person_address_primary_1_city" name="person[address][primary][1][city]" type="text" value="bologna" /&gt;
+
+</pre>
+</div>
+<p>As a general rule the final input name is the concatenation of the name given to <code>fields_for</code>/<code>form_for</code>, the index value and the name of the attribute. You can also pass an <code>:index</code> option directly to helpers such as <code>text_field</code>, but it is usually less repetitive to specify this at the form builder level rather than on individual input controls.</p>
+
+<p>As a shortcut you can append [] to the name and omit the <code>:index</code> option. This is the same as specifying <code>index: address</code> so</p>
+
+<div class="code_container">
+<pre class="brush: ruby; html-script: true; gutter: false; toolbar: false">
+&lt;%= fields_for 'person[address][primary][]', address do |address_form| %&gt;
+  &lt;%= address_form.text_field :city %&gt;
+&lt;% end %&gt;
+
+</pre>
+</div>
+<p>produces exactly the same output as the previous example.</p>
+</body>
+</html>

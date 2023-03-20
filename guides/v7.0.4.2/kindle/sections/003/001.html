@@ -1,0 +1,327 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>2 Creating a Migration</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v7.0.4.2/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="creating-a-migration"><a class="anchorlink" href="#creating-a-migration">2 Creating a Migration</a></h3>
+<h4 id="creating-a-standalone-migration"><a class="anchorlink" href="#creating-a-standalone-migration">2.1 Creating a Standalone Migration</a></h4>
+
+<p>Migrations are stored as files in the <code>db/migrate</code> directory, one for each
+migration class. The name of the file is of the form
+<code>YYYYMMDDHHMMSS_create_products.rb</code>, that is to say a UTC timestamp
+identifying the migration followed by an underscore followed by the name
+of the migration. The name of the migration class (CamelCased version)
+should match the latter part of the file name. For example
+<code>20080906120000_create_products.rb</code> should define class <code>CreateProducts</code> and
+<code>20080906120001_add_details_to_products.rb</code> should define
+<code>AddDetailsToProducts</code>. Rails uses this timestamp to determine which migration
+should be run and in what order, so if you're copying a migration from another
+application or generate a file yourself, be aware of its position in the order.</p>
+
+<p>Of course, calculating timestamps is no fun, so Active Record provides a
+generator to handle making it for you:</p>
+
+<div class="code_container">
+<pre><code class="highlight console"><span class="gp">$</span><span class="w"> </span><span class="nb">bin/rails </span>generate migration AddPartNumberToProducts
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="bin/rails generate migration AddPartNumberToProducts
+">Copy</button>
+</div>
+<p>This will create an appropriately named empty migration:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">AddPartNumberToProducts</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Migration</span><span class="p">[</span><span class="mf">7.0</span><span class="p">]</span>
+  <span class="k">def</span> <span class="nf">change</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="class AddPartNumberToProducts &lt; ActiveRecord::Migration[7.0]
+  def change
+  end
+end
+">Copy</button>
+</div>
+<p>This generator can do much more than append a timestamp to the file name.
+Based on naming conventions and additional (optional) arguments it can
+also start fleshing out the migration.</p>
+
+<p>If the migration name is of the form "AddColumnToTable" or
+"RemoveColumnFromTable" and is followed by a list of column names and
+types then a migration containing the appropriate <a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveRecord/ConnectionAdapters/SchemaStatements.html#method-i-add_column"><code>add_column</code></a> and
+<a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveRecord/ConnectionAdapters/SchemaStatements.html#method-i-remove_column"><code>remove_column</code></a> statements will be created.</p>
+
+<div class="code_container">
+<pre><code class="highlight console"><span class="gp">$</span><span class="w"> </span><span class="nb">bin/rails </span>generate migration AddPartNumberToProducts part_number:string
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="bin/rails generate migration AddPartNumberToProducts part_number:string
+">Copy</button>
+</div>
+<p>will generate</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">AddPartNumberToProducts</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Migration</span><span class="p">[</span><span class="mf">7.0</span><span class="p">]</span>
+  <span class="k">def</span> <span class="nf">change</span>
+    <span class="n">add_column</span> <span class="ss">:products</span><span class="p">,</span> <span class="ss">:part_number</span><span class="p">,</span> <span class="ss">:string</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="class AddPartNumberToProducts &lt; ActiveRecord::Migration[7.0]
+  def change
+    add_column :products, :part_number, :string
+  end
+end
+">Copy</button>
+</div>
+<p>If you'd like to add an index on the new column, you can do that as well.</p>
+
+<div class="code_container">
+<pre><code class="highlight console"><span class="gp">$</span><span class="w"> </span><span class="nb">bin/rails </span>generate migration AddPartNumberToProducts part_number:string:index
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="bin/rails generate migration AddPartNumberToProducts part_number:string:index
+">Copy</button>
+</div>
+<p>will generate the appropriate <code>add_column</code> and <a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveRecord/ConnectionAdapters/SchemaStatements.html#method-i-add_index"><code>add_index</code></a> statements:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">AddPartNumberToProducts</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Migration</span><span class="p">[</span><span class="mf">7.0</span><span class="p">]</span>
+  <span class="k">def</span> <span class="nf">change</span>
+    <span class="n">add_column</span> <span class="ss">:products</span><span class="p">,</span> <span class="ss">:part_number</span><span class="p">,</span> <span class="ss">:string</span>
+    <span class="n">add_index</span> <span class="ss">:products</span><span class="p">,</span> <span class="ss">:part_number</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="class AddPartNumberToProducts &lt; ActiveRecord::Migration[7.0]
+  def change
+    add_column :products, :part_number, :string
+    add_index :products, :part_number
+  end
+end
+">Copy</button>
+</div>
+<p>Similarly, you can generate a migration to remove a column from the command line:</p>
+
+<div class="code_container">
+<pre><code class="highlight console"><span class="gp">$</span><span class="w"> </span><span class="nb">bin/rails </span>generate migration RemovePartNumberFromProducts part_number:string
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="bin/rails generate migration RemovePartNumberFromProducts part_number:string
+">Copy</button>
+</div>
+<p>generates</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">RemovePartNumberFromProducts</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Migration</span><span class="p">[</span><span class="mf">7.0</span><span class="p">]</span>
+  <span class="k">def</span> <span class="nf">change</span>
+    <span class="n">remove_column</span> <span class="ss">:products</span><span class="p">,</span> <span class="ss">:part_number</span><span class="p">,</span> <span class="ss">:string</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="class RemovePartNumberFromProducts &lt; ActiveRecord::Migration[7.0]
+  def change
+    remove_column :products, :part_number, :string
+  end
+end
+">Copy</button>
+</div>
+<p>You are not limited to one magically generated column. For example:</p>
+
+<div class="code_container">
+<pre><code class="highlight console"><span class="gp">$</span><span class="w"> </span><span class="nb">bin/rails </span>generate migration AddDetailsToProducts part_number:string price:decimal
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="bin/rails generate migration AddDetailsToProducts part_number:string price:decimal
+">Copy</button>
+</div>
+<p>generates</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">AddDetailsToProducts</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Migration</span><span class="p">[</span><span class="mf">7.0</span><span class="p">]</span>
+  <span class="k">def</span> <span class="nf">change</span>
+    <span class="n">add_column</span> <span class="ss">:products</span><span class="p">,</span> <span class="ss">:part_number</span><span class="p">,</span> <span class="ss">:string</span>
+    <span class="n">add_column</span> <span class="ss">:products</span><span class="p">,</span> <span class="ss">:price</span><span class="p">,</span> <span class="ss">:decimal</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="class AddDetailsToProducts &lt; ActiveRecord::Migration[7.0]
+  def change
+    add_column :products, :part_number, :string
+    add_column :products, :price, :decimal
+  end
+end
+">Copy</button>
+</div>
+<p>If the migration name is of the form "CreateXXX" and is
+followed by a list of column names and types then a migration creating the table
+XXX with the columns listed will be generated. For example:</p>
+
+<div class="code_container">
+<pre><code class="highlight console"><span class="gp">$</span><span class="w"> </span><span class="nb">bin/rails </span>generate migration CreateProducts name:string part_number:string
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="bin/rails generate migration CreateProducts name:string part_number:string
+">Copy</button>
+</div>
+<p>generates</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">CreateProducts</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Migration</span><span class="p">[</span><span class="mf">7.0</span><span class="p">]</span>
+  <span class="k">def</span> <span class="nf">change</span>
+    <span class="n">create_table</span> <span class="ss">:products</span> <span class="k">do</span> <span class="o">|</span><span class="n">t</span><span class="o">|</span>
+      <span class="n">t</span><span class="p">.</span><span class="nf">string</span> <span class="ss">:name</span>
+      <span class="n">t</span><span class="p">.</span><span class="nf">string</span> <span class="ss">:part_number</span>
+
+      <span class="n">t</span><span class="p">.</span><span class="nf">timestamps</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="class CreateProducts &lt; ActiveRecord::Migration[7.0]
+  def change
+    create_table :products do |t|
+      t.string :name
+      t.string :part_number
+
+      t.timestamps
+    end
+  end
+end
+">Copy</button>
+</div>
+<p>As always, what has been generated for you is just a starting point. You can add
+or remove from it as you see fit by editing the
+<code>db/migrate/YYYYMMDDHHMMSS_add_details_to_products.rb</code> file.</p>
+
+<p>Also, the generator accepts column type as <code>references</code> (also available as
+<code>belongs_to</code>). For example,</p>
+
+<div class="code_container">
+<pre><code class="highlight console"><span class="gp">$</span><span class="w"> </span><span class="nb">bin/rails </span>generate migration AddUserRefToProducts user:references
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="bin/rails generate migration AddUserRefToProducts user:references
+">Copy</button>
+</div>
+<p>generates the following <a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveRecord/ConnectionAdapters/SchemaStatements.html#method-i-add_reference"><code>add_reference</code></a> call:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">AddUserRefToProducts</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Migration</span><span class="p">[</span><span class="mf">7.0</span><span class="p">]</span>
+  <span class="k">def</span> <span class="nf">change</span>
+    <span class="n">add_reference</span> <span class="ss">:products</span><span class="p">,</span> <span class="ss">:user</span><span class="p">,</span> <span class="ss">foreign_key: </span><span class="kp">true</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="class AddUserRefToProducts &lt; ActiveRecord::Migration[7.0]
+  def change
+    add_reference :products, :user, foreign_key: true
+  end
+end
+">Copy</button>
+</div>
+<p>This migration will create a <code>user_id</code> column. <a href="#references">References</a> are a
+shorthand for creating columns, indexes, foreign keys, or even polymorphic
+association columns.</p>
+
+<p>There is also a generator which will produce join tables if <code>JoinTable</code> is part of the name:</p>
+
+<div class="code_container">
+<pre><code class="highlight console"><span class="gp">$</span><span class="w"> </span><span class="nb">bin/rails </span>generate migration CreateJoinTableCustomerProduct customer product
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="bin/rails generate migration CreateJoinTableCustomerProduct customer product
+">Copy</button>
+</div>
+<p>will produce the following migration:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">CreateJoinTableCustomerProduct</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Migration</span><span class="p">[</span><span class="mf">7.0</span><span class="p">]</span>
+  <span class="k">def</span> <span class="nf">change</span>
+    <span class="n">create_join_table</span> <span class="ss">:customers</span><span class="p">,</span> <span class="ss">:products</span> <span class="k">do</span> <span class="o">|</span><span class="n">t</span><span class="o">|</span>
+      <span class="c1"># t.index [:customer_id, :product_id]</span>
+      <span class="c1"># t.index [:product_id, :customer_id]</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="class CreateJoinTableCustomerProduct &lt; ActiveRecord::Migration[7.0]
+  def change
+    create_join_table :customers, :products do |t|
+      # t.index [:customer_id, :product_id]
+      # t.index [:product_id, :customer_id]
+    end
+  end
+end
+">Copy</button>
+</div>
+<h4 id="model-generators"><a class="anchorlink" href="#model-generators">2.2 Model Generators</a></h4>
+
+<p>The model, resource, and scaffold generators will create migrations appropriate for adding
+a new model. This migration will already contain instructions for creating the
+relevant table. If you tell Rails what columns you want, then statements for
+adding these columns will also be created. For example, running:</p>
+
+<div class="code_container">
+<pre><code class="highlight console"><span class="gp">$</span><span class="w"> </span><span class="nb">bin/rails </span>generate model Product name:string description:text
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="bin/rails generate model Product name:string description:text
+">Copy</button>
+</div>
+<p>will create a migration that looks like this</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">CreateProducts</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Migration</span><span class="p">[</span><span class="mf">7.0</span><span class="p">]</span>
+  <span class="k">def</span> <span class="nf">change</span>
+    <span class="n">create_table</span> <span class="ss">:products</span> <span class="k">do</span> <span class="o">|</span><span class="n">t</span><span class="o">|</span>
+      <span class="n">t</span><span class="p">.</span><span class="nf">string</span> <span class="ss">:name</span>
+      <span class="n">t</span><span class="p">.</span><span class="nf">text</span> <span class="ss">:description</span>
+
+      <span class="n">t</span><span class="p">.</span><span class="nf">timestamps</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="class CreateProducts &lt; ActiveRecord::Migration[7.0]
+  def change
+    create_table :products do |t|
+      t.string :name
+      t.text :description
+
+      t.timestamps
+    end
+  end
+end
+">Copy</button>
+</div>
+<p>You can append as many column name/type pairs as you want.</p>
+
+<h4 id="passing-modifiers"><a class="anchorlink" href="#passing-modifiers">2.3 Passing Modifiers</a></h4>
+
+<p>Some commonly used <a href="#column-modifiers">type modifiers</a> can be passed directly on
+the command line. They are enclosed by curly braces and follow the field type:</p>
+
+<p>For instance, running:</p>
+
+<div class="code_container">
+<pre><code class="highlight console"><span class="gp">$</span><span class="w"> </span><span class="nb">bin/rails </span>generate migration AddDetailsToProducts <span class="s1">'price:decimal{5,2}'</span> supplier:references<span class="o">{</span>polymorphic<span class="o">}</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="bin/rails generate migration AddDetailsToProducts 'price:decimal{5,2}' supplier:references{polymorphic}
+">Copy</button>
+</div>
+<p>will produce a migration that looks like this</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">AddDetailsToProducts</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Migration</span><span class="p">[</span><span class="mf">7.0</span><span class="p">]</span>
+  <span class="k">def</span> <span class="nf">change</span>
+    <span class="n">add_column</span> <span class="ss">:products</span><span class="p">,</span> <span class="ss">:price</span><span class="p">,</span> <span class="ss">:decimal</span><span class="p">,</span> <span class="ss">precision: </span><span class="mi">5</span><span class="p">,</span> <span class="ss">scale: </span><span class="mi">2</span>
+    <span class="n">add_reference</span> <span class="ss">:products</span><span class="p">,</span> <span class="ss">:supplier</span><span class="p">,</span> <span class="ss">polymorphic: </span><span class="kp">true</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="class AddDetailsToProducts &lt; ActiveRecord::Migration[7.0]
+  def change
+    add_column :products, :price, :decimal, precision: 5, scale: 2
+    add_reference :products, :supplier, polymorphic: true
+  end
+end
+">Copy</button>
+</div>
+<div class="info"><p>Have a look at the generators help output for further details.</p></div>
+</body>
+</html>

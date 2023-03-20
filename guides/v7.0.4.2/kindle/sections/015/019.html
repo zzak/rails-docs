@@ -1,0 +1,40 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>20 Extensions to LoadError</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v7.0.4.2/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="extensions-to-loaderror"><a class="anchorlink" href="#extensions-to-loaderror">20 Extensions to <code>LoadError</code></a></h3>
+<p>Active Support adds <a href="https://api.rubyonrails.org/v7.0.4.2/classes/LoadError.html#method-i-is_missing-3F"><code>is_missing?</code></a> to <code>LoadError</code>.</p>
+
+<p>Given a path name <code>is_missing?</code> tests whether the exception was raised due to that particular file (except perhaps for the ".rb" extension).</p>
+
+<p>For example, when an action of <code>ArticlesController</code> is called Rails tries to load <code>articles_helper.rb</code>, but that file may not exist. That's fine, the helper module is not mandatory so Rails silences a load error. But it could be the case that the helper module does exist and in turn requires another library that is missing. In that case Rails must reraise the exception. The method <code>is_missing?</code> provides a way to distinguish both cases:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">def</span> <span class="nf">default_helper_module!</span>
+  <span class="n">module_name</span> <span class="o">=</span> <span class="nb">name</span><span class="p">.</span><span class="nf">delete_suffix</span><span class="p">(</span><span class="s2">"Controller"</span><span class="p">)</span>
+  <span class="n">module_path</span> <span class="o">=</span> <span class="n">module_name</span><span class="p">.</span><span class="nf">underscore</span>
+  <span class="n">helper</span> <span class="n">module_path</span>
+<span class="k">rescue</span> <span class="no">LoadError</span> <span class="o">=&gt;</span> <span class="n">e</span>
+  <span class="k">raise</span> <span class="n">e</span> <span class="k">unless</span> <span class="n">e</span><span class="p">.</span><span class="nf">is_missing?</span> <span class="s2">"helpers/</span><span class="si">#{</span><span class="n">module_path</span><span class="si">}</span><span class="s2">_helper"</span>
+<span class="k">rescue</span> <span class="no">NameError</span> <span class="o">=&gt;</span> <span class="n">e</span>
+  <span class="k">raise</span> <span class="n">e</span> <span class="k">unless</span> <span class="n">e</span><span class="p">.</span><span class="nf">missing_name?</span> <span class="s2">"</span><span class="si">#{</span><span class="n">module_name</span><span class="si">}</span><span class="s2">Helper"</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='def default_helper_module!
+  module_name = name.delete_suffix("Controller")
+  module_path = module_name.underscore
+  helper module_path
+rescue LoadError =&gt; e
+  raise e unless e.is_missing? "helpers/#{module_path}_helper"
+rescue NameError =&gt; e
+  raise e unless e.missing_name? "#{module_name}Helper"
+end
+'>Copy</button>
+</div>
+<div class="note"><p>Defined in <code><a href="https://github.com/rails/rails/tree/v7.0.4.2/activesupport/lib/active_support/core_ext/load_error.rb">active_support/core_ext/load_error.rb</a></code>.</p></div>
+</body>
+</html>

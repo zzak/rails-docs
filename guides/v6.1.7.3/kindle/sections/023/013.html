@@ -1,0 +1,231 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>14 Testing Action Cable</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v6.1.7.3/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="testing-action-cable"><a class="anchorlink" href="#testing-action-cable">14 Testing Action Cable</a></h3>
+<p>Since Action Cable is used at different levels inside your application,
+you'll need to test both the channels, connection classes themselves, and that other
+entities broadcast correct messages.</p>
+
+<h4 id="connection-test-case"><a class="anchorlink" href="#connection-test-case">14.1 Connection Test Case</a></h4>
+
+<p>By default, when you generate new Rails application with Action Cable, a test for the base connection class (<code>ApplicationCable::Connection</code>) is generated as well under <code>test/channels/application_cable</code> directory.</p>
+
+<p>Connection tests aim to check whether a connection's identifiers get assigned properly
+or that any improper connection requests are rejected. Here is an example:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">ApplicationCable::ConnectionTest</span> <span class="o">&lt;</span> <span class="no">ActionCable</span><span class="o">::</span><span class="no">Connection</span><span class="o">::</span><span class="no">TestCase</span>
+  <span class="nb">test</span> <span class="s2">"connects with params"</span> <span class="k">do</span>
+    <span class="c1"># Simulate a connection opening by calling the `connect` method</span>
+    <span class="n">connect</span> <span class="ss">params: </span><span class="p">{</span> <span class="ss">user_id: </span><span class="mi">42</span> <span class="p">}</span>
+
+    <span class="c1"># You can access the Connection object via `connection` in tests</span>
+    <span class="n">assert_equal</span> <span class="n">connection</span><span class="p">.</span><span class="nf">user_id</span><span class="p">,</span> <span class="s2">"42"</span>
+  <span class="k">end</span>
+
+  <span class="nb">test</span> <span class="s2">"rejects connection without params"</span> <span class="k">do</span>
+    <span class="c1"># Use `assert_reject_connection` matcher to verify that</span>
+    <span class="c1"># connection is rejected</span>
+    <span class="n">assert_reject_connection</span> <span class="p">{</span> <span class="n">connect</span> <span class="p">}</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-9342d12ecefe2f44f3f79a20ffaa2910">class ApplicationCable::ConnectionTest &lt; ActionCable::Connection::TestCase
+  test "connects with params" do
+    # Simulate a connection opening by calling the `connect` method
+    connect params: { user_id: 42 }
+
+    # You can access the Connection object via `connection` in tests
+    assert_equal connection.user_id, "42"
+  end
+
+  test "rejects connection without params" do
+    # Use `assert_reject_connection` matcher to verify that
+    # connection is rejected
+    assert_reject_connection { connect }
+  end
+end
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-9342d12ecefe2f44f3f79a20ffaa2910">Copy</button>
+</div>
+<p>You can also specify request cookies the same way you do in integration tests:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="nb">test</span> <span class="s2">"connects with cookies"</span> <span class="k">do</span>
+  <span class="n">cookies</span><span class="p">.</span><span class="nf">signed</span><span class="p">[</span><span class="ss">:user_id</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"42"</span>
+
+  <span class="n">connect</span>
+
+  <span class="n">assert_equal</span> <span class="n">connection</span><span class="p">.</span><span class="nf">user_id</span><span class="p">,</span> <span class="s2">"42"</span>
+<span class="k">end</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-26c40f733407368bef6002ba9e3a107c">test "connects with cookies" do
+  cookies.signed[:user_id] = "42"
+
+  connect
+
+  assert_equal connection.user_id, "42"
+end
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-26c40f733407368bef6002ba9e3a107c">Copy</button>
+</div>
+<p>See the API documentation for <a href="https://api.rubyonrails.org/v6.1.7.3/classes/ActionCable/Connection/TestCase.html"><code>ActionCable::Connection::TestCase</code></a> for more information.</p>
+
+<h4 id="channel-test-case"><a class="anchorlink" href="#channel-test-case">14.2 Channel Test Case</a></h4>
+
+<p>By default, when you generate a channel, an associated test will be generated as well
+under the <code>test/channels</code> directory. Here's an example test with a chat channel:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="nb">require</span> <span class="s2">"test_helper"</span>
+
+<span class="k">class</span> <span class="nc">ChatChannelTest</span> <span class="o">&lt;</span> <span class="no">ActionCable</span><span class="o">::</span><span class="no">Channel</span><span class="o">::</span><span class="no">TestCase</span>
+  <span class="nb">test</span> <span class="s2">"subscribes and stream for room"</span> <span class="k">do</span>
+    <span class="c1"># Simulate a subscription creation by calling `subscribe`</span>
+    <span class="n">subscribe</span> <span class="ss">room: </span><span class="s2">"15"</span>
+
+    <span class="c1"># You can access the Channel object via `subscription` in tests</span>
+    <span class="n">assert</span> <span class="n">subscription</span><span class="p">.</span><span class="nf">confirmed?</span>
+    <span class="n">assert_has_stream</span> <span class="s2">"chat_15"</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-1a330d8c2ababdf6226323749a1ff7ca">require "test_helper"
+
+class ChatChannelTest &lt; ActionCable::Channel::TestCase
+  test "subscribes and stream for room" do
+    # Simulate a subscription creation by calling `subscribe`
+    subscribe room: "15"
+
+    # You can access the Channel object via `subscription` in tests
+    assert subscription.confirmed?
+    assert_has_stream "chat_15"
+  end
+end
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-1a330d8c2ababdf6226323749a1ff7ca">Copy</button>
+</div>
+<p>This test is pretty simple and only asserts that the channel subscribes the connection to a particular stream.</p>
+
+<p>You can also specify the underlying connection identifiers. Here's an example test with a web notifications channel:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="nb">require</span> <span class="s2">"test_helper"</span>
+
+<span class="k">class</span> <span class="nc">WebNotificationsChannelTest</span> <span class="o">&lt;</span> <span class="no">ActionCable</span><span class="o">::</span><span class="no">Channel</span><span class="o">::</span><span class="no">TestCase</span>
+  <span class="nb">test</span> <span class="s2">"subscribes and stream for user"</span> <span class="k">do</span>
+    <span class="n">stub_connection</span> <span class="ss">current_user: </span><span class="n">users</span><span class="p">(</span><span class="ss">:john</span><span class="p">)</span>
+
+    <span class="n">subscribe</span>
+
+    <span class="n">assert_has_stream_for</span> <span class="n">users</span><span class="p">(</span><span class="ss">:john</span><span class="p">)</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-d76deee0d3bcdb47bdcb6c929576aed5">require "test_helper"
+
+class WebNotificationsChannelTest &lt; ActionCable::Channel::TestCase
+  test "subscribes and stream for user" do
+    stub_connection current_user: users(:john)
+
+    subscribe
+
+    assert_has_stream_for users(:john)
+  end
+end
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-d76deee0d3bcdb47bdcb6c929576aed5">Copy</button>
+</div>
+<p>See the API documentation for <a href="https://api.rubyonrails.org/v6.1.7.3/classes/ActionCable/Channel/TestCase.html"><code>ActionCable::Channel::TestCase</code></a> for more information.</p>
+
+<h4 id="custom-assertions-and-testing-broadcasts-inside-other-components"><a class="anchorlink" href="#custom-assertions-and-testing-broadcasts-inside-other-components">14.3 Custom Assertions And Testing Broadcasts Inside Other Components</a></h4>
+
+<p>Action Cable ships with a bunch of custom assertions that can be used to lessen the verbosity of tests. For a full list of available assertions, see the API documentation for <a href="https://api.rubyonrails.org/v6.1.7.3/classes/ActionCable/TestHelper.html"><code>ActionCable::TestHelper</code></a>.</p>
+
+<p>It's a good practice to ensure that the correct message has been broadcasted inside other components (e.g. inside your controllers). This is precisely where
+the custom assertions provided by Action Cable are pretty useful. For instance,
+within a model:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="nb">require</span> <span class="s2">"test_helper"</span>
+
+<span class="k">class</span> <span class="nc">ProductTest</span> <span class="o">&lt;</span> <span class="no">ActionCable</span><span class="o">::</span><span class="no">TestCase</span>
+  <span class="nb">test</span> <span class="s2">"broadcast status after charge"</span> <span class="k">do</span>
+    <span class="n">assert_broadcast_on</span><span class="p">(</span><span class="s2">"products:</span><span class="si">#{</span><span class="n">product</span><span class="p">.</span><span class="nf">id</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span> <span class="ss">type: </span><span class="s2">"charged"</span><span class="p">)</span> <span class="k">do</span>
+      <span class="n">product</span><span class="p">.</span><span class="nf">charge</span><span class="p">(</span><span class="n">account</span><span class="p">)</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-177c052bce0dd49066ec22bd150243a1">require "test_helper"
+
+class ProductTest &lt; ActionCable::TestCase
+  test "broadcast status after charge" do
+    assert_broadcast_on("products:#{product.id}", type: "charged") do
+      product.charge(account)
+    end
+  end
+end
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-177c052bce0dd49066ec22bd150243a1">Copy</button>
+</div>
+<p>If you want to test the broadcasting made with <code>Channel.broadcast_to</code>, you should use
+<code>Channel.broadcasting_for</code> to generate an underlying stream name:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="c1"># app/jobs/chat_relay_job.rb</span>
+<span class="k">class</span> <span class="nc">ChatRelayJob</span> <span class="o">&lt;</span> <span class="no">ApplicationJob</span>
+  <span class="k">def</span> <span class="nf">perform_later</span><span class="p">(</span><span class="n">room</span><span class="p">,</span> <span class="n">message</span><span class="p">)</span>
+    <span class="no">ChatChannel</span><span class="p">.</span><span class="nf">broadcast_to</span> <span class="n">room</span><span class="p">,</span> <span class="ss">text: </span><span class="n">message</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-b1f5e77b80515f996a7bdcffc6a44b97"># app/jobs/chat_relay_job.rb
+class ChatRelayJob &lt; ApplicationJob
+  def perform_later(room, message)
+    ChatChannel.broadcast_to room, text: message
+  end
+end
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-b1f5e77b80515f996a7bdcffc6a44b97">Copy</button>
+</div>
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="c1"># test/jobs/chat_relay_job_test.rb</span>
+<span class="nb">require</span> <span class="s2">"test_helper"</span>
+
+<span class="k">class</span> <span class="nc">ChatRelayJobTest</span> <span class="o">&lt;</span> <span class="no">ActiveJob</span><span class="o">::</span><span class="no">TestCase</span>
+  <span class="kp">include</span> <span class="no">ActionCable</span><span class="o">::</span><span class="no">TestHelper</span>
+
+  <span class="nb">test</span> <span class="s2">"broadcast message to room"</span> <span class="k">do</span>
+    <span class="n">room</span> <span class="o">=</span> <span class="n">rooms</span><span class="p">(</span><span class="ss">:all</span><span class="p">)</span>
+
+    <span class="n">assert_broadcast_on</span><span class="p">(</span><span class="no">ChatChannel</span><span class="p">.</span><span class="nf">broadcasting_for</span><span class="p">(</span><span class="n">room</span><span class="p">),</span> <span class="ss">text: </span><span class="s2">"Hi!"</span><span class="p">)</span> <span class="k">do</span>
+      <span class="no">ChatRelayJob</span><span class="p">.</span><span class="nf">perform_now</span><span class="p">(</span><span class="n">room</span><span class="p">,</span> <span class="s2">"Hi!"</span><span class="p">)</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-367ad2ff61d65f10564143cd1126d17a"># test/jobs/chat_relay_job_test.rb
+require "test_helper"
+
+class ChatRelayJobTest &lt; ActiveJob::TestCase
+  include ActionCable::TestHelper
+
+  test "broadcast message to room" do
+    room = rooms(:all)
+
+    assert_broadcast_on(ChatChannel.broadcasting_for(room), text: "Hi!") do
+      ChatRelayJob.perform_now(room, "Hi!")
+    end
+  end
+end
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-367ad2ff61d65f10564143cd1126d17a">Copy</button>
+</div>
+</body>
+</html>

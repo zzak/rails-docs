@@ -1,0 +1,631 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>3 Writing a Migration</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v7.0.4.2/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="writing-a-migration"><a class="anchorlink" href="#writing-a-migration">3 Writing a Migration</a></h3>
+<p>Once you have created your migration using one of the generators it's time to
+get to work!</p>
+
+<h4 id="creating-a-table"><a class="anchorlink" href="#creating-a-table">3.1 Creating a Table</a></h4>
+
+<p>The <a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveRecord/ConnectionAdapters/SchemaStatements.html#method-i-create_table"><code>create_table</code></a> method is one of the most fundamental, but most of the time,
+will be generated for you from using a model, resource, or scaffold generator. A typical
+use would be</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">create_table</span> <span class="ss">:products</span> <span class="k">do</span> <span class="o">|</span><span class="n">t</span><span class="o">|</span>
+  <span class="n">t</span><span class="p">.</span><span class="nf">string</span> <span class="ss">:name</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="create_table :products do |t|
+  t.string :name
+end
+">Copy</button>
+</div>
+<p>which creates a <code>products</code> table with a column called <code>name</code>.</p>
+
+<p>By default, <code>create_table</code> will create a primary key called <code>id</code>. You can change
+the name of the primary key with the <code>:primary_key</code> option  or, if you don't
+want a primary key at all, you can pass the option <code>id: false</code>. If you need to
+pass database specific options you can place an SQL fragment in the <code>:options</code>
+option. For example:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">create_table</span> <span class="ss">:products</span><span class="p">,</span> <span class="ss">options: </span><span class="s2">"ENGINE=BLACKHOLE"</span> <span class="k">do</span> <span class="o">|</span><span class="n">t</span><span class="o">|</span>
+  <span class="n">t</span><span class="p">.</span><span class="nf">string</span> <span class="ss">:name</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">false</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='create_table :products, options: "ENGINE=BLACKHOLE" do |t|
+  t.string :name, null: false
+end
+'>Copy</button>
+</div>
+<p>will append <code>ENGINE=BLACKHOLE</code> to the SQL statement used to create the table.</p>
+
+<p>An index can be created on the columns created within the <code>create_table</code> block
+by passing true or an options hash to the <code>:index</code> option:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">create_table</span> <span class="ss">:users</span> <span class="k">do</span> <span class="o">|</span><span class="n">t</span><span class="o">|</span>
+  <span class="n">t</span><span class="p">.</span><span class="nf">string</span> <span class="ss">:name</span><span class="p">,</span> <span class="ss">index: </span><span class="kp">true</span>
+  <span class="n">t</span><span class="p">.</span><span class="nf">string</span> <span class="ss">:email</span><span class="p">,</span> <span class="ss">index: </span><span class="p">{</span> <span class="ss">unique: </span><span class="kp">true</span><span class="p">,</span> <span class="ss">name: </span><span class="s1">'unique_emails'</span> <span class="p">}</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="create_table :users do |t|
+  t.string :name, index: true
+  t.string :email, index: { unique: true, name: 'unique_emails' }
+end
+">Copy</button>
+</div>
+<p>Also you can pass the <code>:comment</code> option with any description for the table
+that will be stored in database itself and can be viewed with database administration
+tools, such as MySQL Workbench or PgAdmin III. It's highly recommended to specify
+comments in migrations for applications with large databases as it helps people
+to understand data model and generate documentation.
+Currently only the MySQL and PostgreSQL adapters support comments.</p>
+
+<h4 id="creating-a-join-table"><a class="anchorlink" href="#creating-a-join-table">3.2 Creating a Join Table</a></h4>
+
+<p>The migration method <a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveRecord/ConnectionAdapters/SchemaStatements.html#method-i-create_join_table"><code>create_join_table</code></a> creates an HABTM (has and belongs to
+many) join table. A typical use would be:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">create_join_table</span> <span class="ss">:products</span><span class="p">,</span> <span class="ss">:categories</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="create_join_table :products, :categories
+">Copy</button>
+</div>
+<p>which creates a <code>categories_products</code> table with two columns called
+<code>category_id</code> and <code>product_id</code>. These columns have the option <code>:null</code> set to
+<code>false</code> by default. This can be overridden by specifying the <code>:column_options</code>
+option:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">create_join_table</span> <span class="ss">:products</span><span class="p">,</span> <span class="ss">:categories</span><span class="p">,</span> <span class="ss">column_options: </span><span class="p">{</span> <span class="ss">null: </span><span class="kp">true</span> <span class="p">}</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="create_join_table :products, :categories, column_options: { null: true }
+">Copy</button>
+</div>
+<p>By default, the name of the join table comes from the union of the first two
+arguments provided to create_join_table, in alphabetical order.
+To customize the name of the table, provide a <code>:table_name</code> option:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">create_join_table</span> <span class="ss">:products</span><span class="p">,</span> <span class="ss">:categories</span><span class="p">,</span> <span class="ss">table_name: :categorization</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="create_join_table :products, :categories, table_name: :categorization
+">Copy</button>
+</div>
+<p>creates a <code>categorization</code> table.</p>
+
+<p><code>create_join_table</code> also accepts a block, which you can use to add indices
+(which are not created by default) or additional columns:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">create_join_table</span> <span class="ss">:products</span><span class="p">,</span> <span class="ss">:categories</span> <span class="k">do</span> <span class="o">|</span><span class="n">t</span><span class="o">|</span>
+  <span class="n">t</span><span class="p">.</span><span class="nf">index</span> <span class="ss">:product_id</span>
+  <span class="n">t</span><span class="p">.</span><span class="nf">index</span> <span class="ss">:category_id</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="create_join_table :products, :categories do |t|
+  t.index :product_id
+  t.index :category_id
+end
+">Copy</button>
+</div>
+<h4 id="changing-tables"><a class="anchorlink" href="#changing-tables">3.3 Changing Tables</a></h4>
+
+<p>A close cousin of <code>create_table</code> is <a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveRecord/ConnectionAdapters/SchemaStatements.html#method-i-change_table"><code>change_table</code></a>, used for changing existing
+tables. It is used in a similar fashion to <code>create_table</code> but the object
+yielded to the block knows more tricks. For example:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">change_table</span> <span class="ss">:products</span> <span class="k">do</span> <span class="o">|</span><span class="n">t</span><span class="o">|</span>
+  <span class="n">t</span><span class="p">.</span><span class="nf">remove</span> <span class="ss">:description</span><span class="p">,</span> <span class="ss">:name</span>
+  <span class="n">t</span><span class="p">.</span><span class="nf">string</span> <span class="ss">:part_number</span>
+  <span class="n">t</span><span class="p">.</span><span class="nf">index</span> <span class="ss">:part_number</span>
+  <span class="n">t</span><span class="p">.</span><span class="nf">rename</span> <span class="ss">:upccode</span><span class="p">,</span> <span class="ss">:upc_code</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="change_table :products do |t|
+  t.remove :description, :name
+  t.string :part_number
+  t.index :part_number
+  t.rename :upccode, :upc_code
+end
+">Copy</button>
+</div>
+<p>removes the <code>description</code> and <code>name</code> columns, creates a <code>part_number</code> string
+column and adds an index on it. Finally it renames the <code>upccode</code> column.</p>
+
+<h4 id="changing-columns"><a class="anchorlink" href="#changing-columns">3.4 Changing Columns</a></h4>
+
+<p>Like the <code>remove_column</code> and <code>add_column</code> Rails provides the <a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveRecord/ConnectionAdapters/SchemaStatements.html#method-i-change_column"><code>change_column</code></a>
+migration method.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">change_column</span> <span class="ss">:products</span><span class="p">,</span> <span class="ss">:part_number</span><span class="p">,</span> <span class="ss">:text</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="change_column :products, :part_number, :text
+">Copy</button>
+</div>
+<p>This changes the column <code>part_number</code> on products table to be a <code>:text</code> field.
+Note that <code>change_column</code> command is irreversible.</p>
+
+<p>Besides <code>change_column</code>, the <a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveRecord/ConnectionAdapters/SchemaStatements.html#method-i-change_column_null"><code>change_column_null</code></a> and <a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveRecord/ConnectionAdapters/SchemaStatements.html#method-i-change_column_default"><code>change_column_default</code></a>
+methods are used specifically to change a not null constraint and default
+values of a column.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">change_column_null</span> <span class="ss">:products</span><span class="p">,</span> <span class="ss">:name</span><span class="p">,</span> <span class="kp">false</span>
+<span class="n">change_column_default</span> <span class="ss">:products</span><span class="p">,</span> <span class="ss">:approved</span><span class="p">,</span> <span class="ss">from: </span><span class="kp">true</span><span class="p">,</span> <span class="ss">to: </span><span class="kp">false</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="change_column_null :products, :name, false
+change_column_default :products, :approved, from: true, to: false
+">Copy</button>
+</div>
+<p>This sets <code>:name</code> field on products to a <code>NOT NULL</code> column and the default
+value of the <code>:approved</code> field from true to false.</p>
+
+<div class="note"><p>You could also write the above <code>change_column_default</code> migration as
+<code>change_column_default :products, :approved, false</code>, but unlike the previous
+example, this would make your migration irreversible.</p></div>
+
+<h4 id="column-modifiers"><a class="anchorlink" href="#column-modifiers">3.5 Column Modifiers</a></h4>
+
+<p>Column modifiers can be applied when creating or changing a column:</p>
+<ul>
+<li>
+<code>comment</code>      Adds a comment for the column.</li>
+<li>
+<code>collation</code>    Specifies the collation for a <code>string</code> or <code>text</code> column.</li>
+<li>
+<code>default</code>      Allows to set a default value on the column. Note that if you
+are using a dynamic value (such as a date), the default will only be calculated
+the first time (i.e. on the date the migration is applied). Use <code>nil</code> for <code>NULL</code>.</li>
+<li>
+<code>limit</code>        Sets the maximum number of characters for a <code>string</code> column
+and the maximum number of bytes for <code>text/binary/integer</code> columns.</li>
+<li>
+<code>null</code>         Allows or disallows <code>NULL</code> values in the column.</li>
+<li>
+<code>precision</code>    Specifies the precision for <code>decimal/numeric/datetime/time</code> columns.</li>
+<li>
+<code>scale</code>        Specifies the scale for the <code>decimal</code> and <code>numeric</code> columns,
+representing the number of digits after the decimal point.</li>
+</ul>
+<div class="note"><p>For <code>add_column</code> or <code>change_column</code> there is no option for adding indexes.
+They need to be added separately using <code>add_index</code>.</p></div>
+
+<p>Some adapters may support additional options; see the adapter specific API docs
+for further information.</p>
+
+<div class="note"><p><code>null</code> and <code>default</code> cannot be specified via command line.</p></div>
+
+<h4 id="references"><a class="anchorlink" href="#references">3.6 References</a></h4>
+
+<p>The <code>add_reference</code> method allows the creation of an appropriately named column.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">add_reference</span> <span class="ss">:users</span><span class="p">,</span> <span class="ss">:role</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="add_reference :users, :role
+">Copy</button>
+</div>
+<p>This migration will create a <code>role_id</code> column in the users table. It creates an
+index for this column as well, unless explicitly told not with the
+<code>index: false</code> option:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">add_reference</span> <span class="ss">:users</span><span class="p">,</span> <span class="ss">:role</span><span class="p">,</span> <span class="ss">index: </span><span class="kp">false</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="add_reference :users, :role, index: false
+">Copy</button>
+</div>
+<p>The method <code>add_belongs_to</code> is an alias of <code>add_reference</code>.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">add_belongs_to</span> <span class="ss">:taggings</span><span class="p">,</span> <span class="ss">:taggable</span><span class="p">,</span> <span class="ss">polymorphic: </span><span class="kp">true</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="add_belongs_to :taggings, :taggable, polymorphic: true
+">Copy</button>
+</div>
+<p>The polymorphic option will create two columns on the taggings table which can
+be used for polymorphic associations: <code>taggable_type</code> and <code>taggable_id</code>.</p>
+
+<p>A foreign key can be created with the <code>foreign_key</code> option.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">add_reference</span> <span class="ss">:users</span><span class="p">,</span> <span class="ss">:role</span><span class="p">,</span> <span class="ss">foreign_key: </span><span class="kp">true</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="add_reference :users, :role, foreign_key: true
+">Copy</button>
+</div>
+<p>For more <code>add_reference</code> options, visit the <a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveRecord/ConnectionAdapters/SchemaStatements.html#method-i-add_reference">API documentation</a>.</p>
+
+<p>References can also be removed:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">remove_reference</span> <span class="ss">:products</span><span class="p">,</span> <span class="ss">:user</span><span class="p">,</span> <span class="ss">foreign_key: </span><span class="kp">true</span><span class="p">,</span> <span class="ss">index: </span><span class="kp">false</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="remove_reference :products, :user, foreign_key: true, index: false
+">Copy</button>
+</div>
+<h4 id="foreign-keys"><a class="anchorlink" href="#foreign-keys">3.7 Foreign Keys</a></h4>
+
+<p>While it's not required you might want to add foreign key constraints to
+<a href="#active-record-and-referential-integrity">guarantee referential integrity</a>.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">add_foreign_key</span> <span class="ss">:articles</span><span class="p">,</span> <span class="ss">:authors</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="add_foreign_key :articles, :authors
+">Copy</button>
+</div>
+<p>This <a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveRecord/ConnectionAdapters/SchemaStatements.html#method-i-add_foreign_key"><code>add_foreign_key</code></a> call adds a new constraint to the <code>articles</code> table.
+The constraint guarantees that a row in the <code>authors</code> table exists where
+the <code>id</code> column matches the <code>articles.author_id</code>.</p>
+
+<p>If the <code>from_table</code> column name cannot be derived from the <code>to_table</code> name,
+you can use the <code>:column</code> option. Use the <code>:primary_key</code> option if the
+referenced primary key is not <code>:id</code>.</p>
+
+<p>For example, to add a foreign key on <code>articles.reviewer</code> referencing <code>authors.email</code>:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">add_foreign_key</span> <span class="ss">:articles</span><span class="p">,</span> <span class="ss">:authors</span><span class="p">,</span> <span class="ss">column: :reviewer</span><span class="p">,</span> <span class="ss">primary_key: :email</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="add_foreign_key :articles, :authors, column: :reviewer, primary_key: :email
+">Copy</button>
+</div>
+<p><code>add_foreign_key</code> also supports options such as <code>name</code>, <code>on_delete</code>,
+<code>if_not_exists</code>, <code>validate</code>, and <code>deferrable</code>.</p>
+
+<div class="note"><p>Active Record only supports single column foreign keys. <code>execute</code> and
+<code>structure.sql</code> are required to use composite foreign keys. See
+<a href="#schema-dumping-and-you">Schema Dumping and You</a>.</p></div>
+
+<p>Foreign keys can also be removed:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="c1"># let Active Record figure out the column name</span>
+<span class="n">remove_foreign_key</span> <span class="ss">:accounts</span><span class="p">,</span> <span class="ss">:branches</span>
+
+<span class="c1"># remove foreign key for a specific column</span>
+<span class="n">remove_foreign_key</span> <span class="ss">:accounts</span><span class="p">,</span> <span class="ss">column: :owner_id</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="# let Active Record figure out the column name
+remove_foreign_key :accounts, :branches
+
+# remove foreign key for a specific column
+remove_foreign_key :accounts, column: :owner_id
+">Copy</button>
+</div>
+<h4 id="when-helpers-aren-t-enough"><a class="anchorlink" href="#when-helpers-aren-t-enough">3.8 When Helpers aren't Enough</a></h4>
+
+<p>If the helpers provided by Active Record aren't enough you can use the <a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveRecord/ConnectionAdapters/DatabaseStatements.html#method-i-execute"><code>execute</code></a>
+method to execute arbitrary SQL:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="no">Product</span><span class="p">.</span><span class="nf">connection</span><span class="p">.</span><span class="nf">execute</span><span class="p">(</span><span class="s2">"UPDATE products SET price = 'free' WHERE 1=1"</span><span class="p">)</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="Product.connection.execute(&quot;UPDATE products SET price = 'free' WHERE 1=1&quot;)
+">Copy</button>
+</div>
+<p>For more details and examples of individual methods, check the API documentation.
+In particular the documentation for
+<a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveRecord/ConnectionAdapters/SchemaStatements.html"><code>ActiveRecord::ConnectionAdapters::SchemaStatements</code></a>
+(which provides the methods available in the <code>change</code>, <code>up</code> and <code>down</code> methods),
+<a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveRecord/ConnectionAdapters/TableDefinition.html"><code>ActiveRecord::ConnectionAdapters::TableDefinition</code></a>
+(which provides the methods available on the object yielded by <code>create_table</code>)
+and
+<a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveRecord/ConnectionAdapters/Table.html"><code>ActiveRecord::ConnectionAdapters::Table</code></a>
+(which provides the methods available on the object yielded by <code>change_table</code>).</p>
+
+<h4 id="using-the-change-method"><a class="anchorlink" href="#using-the-change-method">3.9 Using the <code>change</code> Method</a></h4>
+
+<p>The <code>change</code> method is the primary way of writing migrations. It works for the
+majority of cases in which Active Record knows how to reverse a migration's
+actions automatically. Below are some of the actions that <code>change</code> supports:</p>
+<ul>
+<li><a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveRecord/ConnectionAdapters/SchemaStatements.html#method-i-add_column"><code>add_column</code></a></li>
+<li><a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveRecord/ConnectionAdapters/SchemaStatements.html#method-i-add_foreign_key"><code>add_foreign_key</code></a></li>
+<li><a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveRecord/ConnectionAdapters/SchemaStatements.html#method-i-add_index"><code>add_index</code></a></li>
+<li><a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveRecord/ConnectionAdapters/SchemaStatements.html#method-i-add_reference"><code>add_reference</code></a></li>
+<li><a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveRecord/ConnectionAdapters/SchemaStatements.html#method-i-add_timestamps"><code>add_timestamps</code></a></li>
+<li>
+<a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveRecord/ConnectionAdapters/SchemaStatements.html#method-i-change_column_comment"><code>change_column_comment</code></a> (must supply a <code>:from</code> and <code>:to</code> option)</li>
+<li>
+<a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveRecord/ConnectionAdapters/SchemaStatements.html#method-i-change_column_default"><code>change_column_default</code></a> (must supply a <code>:from</code> and <code>:to</code> option)</li>
+<li><a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveRecord/ConnectionAdapters/SchemaStatements.html#method-i-change_column_null"><code>change_column_null</code></a></li>
+<li>
+<a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveRecord/ConnectionAdapters/SchemaStatements.html#method-i-change_table_comment"><code>change_table_comment</code></a> (must supply a <code>:from</code> and <code>:to</code> option)</li>
+<li><a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveRecord/ConnectionAdapters/SchemaStatements.html#method-i-create_join_table"><code>create_join_table</code></a></li>
+<li><a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveRecord/ConnectionAdapters/SchemaStatements.html#method-i-create_table"><code>create_table</code></a></li>
+<li><code>disable_extension</code></li>
+<li><a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveRecord/ConnectionAdapters/SchemaStatements.html#method-i-drop_join_table"><code>drop_join_table</code></a></li>
+<li>
+<a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveRecord/ConnectionAdapters/SchemaStatements.html#method-i-drop_table"><code>drop_table</code></a> (must supply a block)</li>
+<li><code>enable_extension</code></li>
+<li>
+<a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveRecord/ConnectionAdapters/SchemaStatements.html#method-i-remove_column"><code>remove_column</code></a> (must supply a type)</li>
+<li>
+<a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveRecord/ConnectionAdapters/SchemaStatements.html#method-i-remove_foreign_key"><code>remove_foreign_key</code></a> (must supply a second table)</li>
+<li><a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveRecord/ConnectionAdapters/SchemaStatements.html#method-i-remove_index"><code>remove_index</code></a></li>
+<li><a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveRecord/ConnectionAdapters/SchemaStatements.html#method-i-remove_reference"><code>remove_reference</code></a></li>
+<li><a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveRecord/ConnectionAdapters/SchemaStatements.html#method-i-remove_timestamps"><code>remove_timestamps</code></a></li>
+<li><a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveRecord/ConnectionAdapters/SchemaStatements.html#method-i-rename_column"><code>rename_column</code></a></li>
+<li><a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveRecord/ConnectionAdapters/SchemaStatements.html#method-i-rename_index"><code>rename_index</code></a></li>
+<li><a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveRecord/ConnectionAdapters/SchemaStatements.html#method-i-rename_table"><code>rename_table</code></a></li>
+</ul>
+<p><a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveRecord/ConnectionAdapters/SchemaStatements.html#method-i-change_table"><code>change_table</code></a> is also reversible, as long as the block does not call <code>change</code>,
+<code>change_default</code> or <code>remove</code>.</p>
+
+<p><code>remove_column</code> is reversible if you supply the column type as the third
+argument. Provide the original column options too, otherwise Rails can't
+recreate the column exactly when rolling back:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">remove_column</span> <span class="ss">:posts</span><span class="p">,</span> <span class="ss">:slug</span><span class="p">,</span> <span class="ss">:string</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">false</span><span class="p">,</span> <span class="ss">default: </span><span class="s1">''</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="remove_column :posts, :slug, :string, null: false, default: ''
+">Copy</button>
+</div>
+<p>If you're going to need to use any other methods, you should use <code>reversible</code>
+or write the <code>up</code> and <code>down</code> methods instead of using the <code>change</code> method.</p>
+
+<h4 id="using-reversible"><a class="anchorlink" href="#using-reversible">3.10 Using <code>reversible</code></a></h4>
+
+<p>Complex migrations may require processing that Active Record doesn't know how
+to reverse. You can use <a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveRecord/Migration.html#method-i-reversible"><code>reversible</code></a> to specify what to do when running a
+migration and what else to do when reverting it. For example:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">ExampleMigration</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Migration</span><span class="p">[</span><span class="mf">7.0</span><span class="p">]</span>
+  <span class="k">def</span> <span class="nf">change</span>
+    <span class="n">create_table</span> <span class="ss">:distributors</span> <span class="k">do</span> <span class="o">|</span><span class="n">t</span><span class="o">|</span>
+      <span class="n">t</span><span class="p">.</span><span class="nf">string</span> <span class="ss">:zipcode</span>
+    <span class="k">end</span>
+
+    <span class="n">reversible</span> <span class="k">do</span> <span class="o">|</span><span class="n">dir</span><span class="o">|</span>
+      <span class="n">dir</span><span class="p">.</span><span class="nf">up</span> <span class="k">do</span>
+        <span class="c1"># add a CHECK constraint</span>
+        <span class="n">execute</span> <span class="o">&lt;&lt;-</span><span class="no">SQL</span><span class="sh">
+          ALTER TABLE distributors
+            ADD CONSTRAINT zipchk
+              CHECK (char_length(zipcode) = 5) NO INHERIT;
+</span><span class="no">        SQL</span>
+      <span class="k">end</span>
+      <span class="n">dir</span><span class="p">.</span><span class="nf">down</span> <span class="k">do</span>
+        <span class="n">execute</span> <span class="o">&lt;&lt;-</span><span class="no">SQL</span><span class="sh">
+          ALTER TABLE distributors
+            DROP CONSTRAINT zipchk
+</span><span class="no">        SQL</span>
+      <span class="k">end</span>
+    <span class="k">end</span>
+
+    <span class="n">add_column</span> <span class="ss">:users</span><span class="p">,</span> <span class="ss">:home_page_url</span><span class="p">,</span> <span class="ss">:string</span>
+    <span class="n">rename_column</span> <span class="ss">:users</span><span class="p">,</span> <span class="ss">:email</span><span class="p">,</span> <span class="ss">:email_address</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="class ExampleMigration &lt; ActiveRecord::Migration[7.0]
+  def change
+    create_table :distributors do |t|
+      t.string :zipcode
+    end
+
+    reversible do |dir|
+      dir.up do
+        # add a CHECK constraint
+        execute &lt;&lt;-SQL
+          ALTER TABLE distributors
+            ADD CONSTRAINT zipchk
+              CHECK (char_length(zipcode) = 5) NO INHERIT;
+        SQL
+      end
+      dir.down do
+        execute &lt;&lt;-SQL
+          ALTER TABLE distributors
+            DROP CONSTRAINT zipchk
+        SQL
+      end
+    end
+
+    add_column :users, :home_page_url, :string
+    rename_column :users, :email, :email_address
+  end
+end
+">Copy</button>
+</div>
+<p>Using <code>reversible</code> will ensure that the instructions are executed in the
+right order too. If the previous example migration is reverted,
+the <code>down</code> block will be run after the <code>home_page_url</code> column is removed and
+right before the table <code>distributors</code> is dropped.</p>
+
+<p>Sometimes your migration will do something which is just plain irreversible; for
+example, it might destroy some data. In such cases, you can raise
+<code>ActiveRecord::IrreversibleMigration</code> in your <code>down</code> block. If someone tries
+to revert your migration, an error message will be displayed saying that it
+can't be done.</p>
+
+<h4 id="using-the-up-down-methods"><a class="anchorlink" href="#using-the-up-down-methods">3.11 Using the <code>up</code>/<code>down</code> Methods</a></h4>
+
+<p>You can also use the old style of migration using <code>up</code> and <code>down</code> methods
+instead of the <code>change</code> method.
+The <code>up</code> method should describe the transformation you'd like to make to your
+schema, and the <code>down</code> method of your migration should revert the
+transformations done by the <code>up</code> method. In other words, the database schema
+should be unchanged if you do an <code>up</code> followed by a <code>down</code>. For example, if you
+create a table in the <code>up</code> method, you should drop it in the <code>down</code> method. It
+is wise to perform the transformations in precisely the reverse order they were
+made in the <code>up</code> method. The example in the <code>reversible</code> section is equivalent to:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">ExampleMigration</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Migration</span><span class="p">[</span><span class="mf">7.0</span><span class="p">]</span>
+  <span class="k">def</span> <span class="nf">up</span>
+    <span class="n">create_table</span> <span class="ss">:distributors</span> <span class="k">do</span> <span class="o">|</span><span class="n">t</span><span class="o">|</span>
+      <span class="n">t</span><span class="p">.</span><span class="nf">string</span> <span class="ss">:zipcode</span>
+    <span class="k">end</span>
+
+    <span class="c1"># add a CHECK constraint</span>
+    <span class="n">execute</span> <span class="o">&lt;&lt;-</span><span class="no">SQL</span><span class="sh">
+      ALTER TABLE distributors
+        ADD CONSTRAINT zipchk
+        CHECK (char_length(zipcode) = 5);
+</span><span class="no">    SQL</span>
+
+    <span class="n">add_column</span> <span class="ss">:users</span><span class="p">,</span> <span class="ss">:home_page_url</span><span class="p">,</span> <span class="ss">:string</span>
+    <span class="n">rename_column</span> <span class="ss">:users</span><span class="p">,</span> <span class="ss">:email</span><span class="p">,</span> <span class="ss">:email_address</span>
+  <span class="k">end</span>
+
+  <span class="k">def</span> <span class="nf">down</span>
+    <span class="n">rename_column</span> <span class="ss">:users</span><span class="p">,</span> <span class="ss">:email_address</span><span class="p">,</span> <span class="ss">:email</span>
+    <span class="n">remove_column</span> <span class="ss">:users</span><span class="p">,</span> <span class="ss">:home_page_url</span>
+
+    <span class="n">execute</span> <span class="o">&lt;&lt;-</span><span class="no">SQL</span><span class="sh">
+      ALTER TABLE distributors
+        DROP CONSTRAINT zipchk
+</span><span class="no">    SQL</span>
+
+    <span class="n">drop_table</span> <span class="ss">:distributors</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="class ExampleMigration &lt; ActiveRecord::Migration[7.0]
+  def up
+    create_table :distributors do |t|
+      t.string :zipcode
+    end
+
+    # add a CHECK constraint
+    execute &lt;&lt;-SQL
+      ALTER TABLE distributors
+        ADD CONSTRAINT zipchk
+        CHECK (char_length(zipcode) = 5);
+    SQL
+
+    add_column :users, :home_page_url, :string
+    rename_column :users, :email, :email_address
+  end
+
+  def down
+    rename_column :users, :email_address, :email
+    remove_column :users, :home_page_url
+
+    execute &lt;&lt;-SQL
+      ALTER TABLE distributors
+        DROP CONSTRAINT zipchk
+    SQL
+
+    drop_table :distributors
+  end
+end
+">Copy</button>
+</div>
+<p>If your migration is irreversible, you should raise
+<code>ActiveRecord::IrreversibleMigration</code> from your <code>down</code> method. If someone tries
+to revert your migration, an error message will be displayed saying that it
+can't be done.</p>
+
+<h4 id="reverting-previous-migrations"><a class="anchorlink" href="#reverting-previous-migrations">3.12 Reverting Previous Migrations</a></h4>
+
+<p>You can use Active Record's ability to rollback migrations using the <a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveRecord/Migration.html#method-i-revert"><code>revert</code></a> method:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="nb">require_relative</span> <span class="s2">"20121212123456_example_migration"</span>
+
+<span class="k">class</span> <span class="nc">FixupExampleMigration</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Migration</span><span class="p">[</span><span class="mf">7.0</span><span class="p">]</span>
+  <span class="k">def</span> <span class="nf">change</span>
+    <span class="n">revert</span> <span class="no">ExampleMigration</span>
+
+    <span class="n">create_table</span><span class="p">(</span><span class="ss">:apples</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">t</span><span class="o">|</span>
+      <span class="n">t</span><span class="p">.</span><span class="nf">string</span> <span class="ss">:variety</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='require_relative "20121212123456_example_migration"
+
+class FixupExampleMigration &lt; ActiveRecord::Migration[7.0]
+  def change
+    revert ExampleMigration
+
+    create_table(:apples) do |t|
+      t.string :variety
+    end
+  end
+end
+'>Copy</button>
+</div>
+<p>The <code>revert</code> method also accepts a block of instructions to reverse.
+This could be useful to revert selected parts of previous migrations.
+For example, let's imagine that <code>ExampleMigration</code> is committed and it
+is later decided it would be best to use Active Record validations,
+in place of the <code>CHECK</code> constraint, to verify the zipcode.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">DontUseConstraintForZipcodeValidationMigration</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Migration</span><span class="p">[</span><span class="mf">7.0</span><span class="p">]</span>
+  <span class="k">def</span> <span class="nf">change</span>
+    <span class="n">revert</span> <span class="k">do</span>
+      <span class="c1"># copy-pasted code from ExampleMigration</span>
+      <span class="n">reversible</span> <span class="k">do</span> <span class="o">|</span><span class="n">dir</span><span class="o">|</span>
+        <span class="n">dir</span><span class="p">.</span><span class="nf">up</span> <span class="k">do</span>
+          <span class="c1"># add a CHECK constraint</span>
+          <span class="n">execute</span> <span class="o">&lt;&lt;-</span><span class="no">SQL</span><span class="sh">
+            ALTER TABLE distributors
+              ADD CONSTRAINT zipchk
+                CHECK (char_length(zipcode) = 5);
+</span><span class="no">          SQL</span>
+        <span class="k">end</span>
+        <span class="n">dir</span><span class="p">.</span><span class="nf">down</span> <span class="k">do</span>
+          <span class="n">execute</span> <span class="o">&lt;&lt;-</span><span class="no">SQL</span><span class="sh">
+            ALTER TABLE distributors
+              DROP CONSTRAINT zipchk
+</span><span class="no">          SQL</span>
+        <span class="k">end</span>
+      <span class="k">end</span>
+
+      <span class="c1"># The rest of the migration was ok</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="class DontUseConstraintForZipcodeValidationMigration &lt; ActiveRecord::Migration[7.0]
+  def change
+    revert do
+      # copy-pasted code from ExampleMigration
+      reversible do |dir|
+        dir.up do
+          # add a CHECK constraint
+          execute &lt;&lt;-SQL
+            ALTER TABLE distributors
+              ADD CONSTRAINT zipchk
+                CHECK (char_length(zipcode) = 5);
+          SQL
+        end
+        dir.down do
+          execute &lt;&lt;-SQL
+            ALTER TABLE distributors
+              DROP CONSTRAINT zipchk
+          SQL
+        end
+      end
+
+      # The rest of the migration was ok
+    end
+  end
+end
+">Copy</button>
+</div>
+<p>The same migration could also have been written without using <code>revert</code>
+but this would have involved a few more steps: reversing the order
+of <code>create_table</code> and <code>reversible</code>, replacing <code>create_table</code>
+by <code>drop_table</code>, and finally replacing <code>up</code> by <code>down</code> and vice-versa.
+This is all taken care of by <code>revert</code>.</p>
+</body>
+</html>

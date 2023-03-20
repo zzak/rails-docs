@@ -1,0 +1,68 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>9 Upgrading from Old Versions of Rails</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v4.1.16/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="upgrading-from-old-versions-of-rails">9 Upgrading from Old Versions of Rails</h3>
+<p>There are a few issues when upgrading from Rails 3.0 or Rails 2.x. The first is
+moving the files from <code>public/</code> to the new locations. See <a href="#asset-organization">Asset
+Organization</a> above for guidance on the correct locations
+for different file types.</p>
+<p>Next will be avoiding duplicate JavaScript files. Since jQuery is the default
+JavaScript library from Rails 3.1 onwards, you don't need to copy <code>jquery.js</code>
+into <code>app/assets</code> and it will be included automatically.</p>
+<p>The third is updating the various environment files with the correct default
+options.</p>
+<p>In <code>application.rb</code>:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+# Version of your assets, change this if you want to expire all your assets
+config.assets.version = '1.0'
+
+# Change the path that assets are served from config.assets.prefix = "/assets"
+
+</pre>
+</div>
+<p>In <code>development.rb</code>:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+# Expands the lines which load the assets
+config.assets.debug = true
+
+</pre>
+</div>
+<p>And in <code>production.rb</code>:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+# Choose the compressors to use (if any) config.assets.js_compressor  =
+# :uglifier config.assets.css_compressor = :yui
+
+# Don't fallback to assets pipeline if a precompiled asset is missed
+config.assets.compile = false
+
+# Generate digests for assets URLs. This is planned for deprecation.
+config.assets.digest = true
+
+# Precompile additional assets (application.js, application.css, and all
+# non-JS/CSS are already added) config.assets.precompile += %w( search.js )
+
+</pre>
+</div>
+<p>Rails 4 no longer sets default config values for Sprockets in <code>test.rb</code>, so
+<code>test.rb</code> now requires Sprockets configuration. The old defaults in the test
+environment are: <code>config.assets.compile = true</code>, <code>config.assets.compress =
+false</code>, <code>config.assets.debug = false</code> and <code>config.assets.digest = false</code>.</p>
+<p>The following should also be added to <code>Gemfile</code>:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+gem 'sass-rails',   "~&gt; 3.2.3"
+gem 'coffee-rails', "~&gt; 3.2.1"
+gem 'uglifier'
+
+</pre>
+</div>
+</body>
+</html>

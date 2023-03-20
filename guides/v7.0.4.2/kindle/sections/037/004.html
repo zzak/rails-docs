@@ -1,0 +1,109 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>5 Database Views</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v7.0.4.2/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="database-views"><a class="anchorlink" href="#database-views">5 Database Views</a></h3>
+<ul>
+<li><a href="https://www.postgresql.org/docs/current/static/sql-createview.html">view creation</a></li>
+</ul>
+<p>Imagine you need to work with a legacy database containing the following table:</p>
+
+<div class="code_container">
+<pre><code class="highlight plaintext">rails_pg_guide=# \d "TBL_ART"
+                                        Table "public.TBL_ART"
+   Column   |            Type             |                         Modifiers
+------------+-----------------------------+------------------------------------------------------------
+ INT_ID     | integer                     | not null default nextval('"TBL_ART_INT_ID_seq"'::regclass)
+ STR_TITLE  | character varying           |
+ STR_STAT   | character varying           | default 'draft'::character varying
+ DT_PUBL_AT | timestamp without time zone |
+ BL_ARCH    | boolean                     | default false
+Indexes:
+    "TBL_ART_pkey" PRIMARY KEY, btree ("INT_ID")
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="rails_pg_guide=# \d &quot;TBL_ART&quot;
+                                        Table &quot;public.TBL_ART&quot;
+   Column   |            Type             |                         Modifiers
+------------+-----------------------------+------------------------------------------------------------
+ INT_ID     | integer                     | not null default nextval('&quot;TBL_ART_INT_ID_seq&quot;'::regclass)
+ STR_TITLE  | character varying           |
+ STR_STAT   | character varying           | default 'draft'::character varying
+ DT_PUBL_AT | timestamp without time zone |
+ BL_ARCH    | boolean                     | default false
+Indexes:
+    &quot;TBL_ART_pkey&quot; PRIMARY KEY, btree (&quot;INT_ID&quot;)
+">Copy</button>
+</div>
+<p>This table does not follow the Rails conventions at all.
+Because simple PostgreSQL views are updateable by default,
+we can wrap it as follows:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="c1"># db/migrate/20131220144913_create_articles_view.rb</span>
+<span class="n">execute</span> <span class="o">&lt;&lt;-</span><span class="no">SQL</span><span class="sh">
+CREATE VIEW articles AS
+  SELECT "INT_ID" AS id,
+         "STR_TITLE" AS title,
+         "STR_STAT" AS status,
+         "DT_PUBL_AT" AS published_at,
+         "BL_ARCH" AS archived
+  FROM "TBL_ART"
+  WHERE "BL_ARCH" = 'f'
+</span><span class="no">  SQL</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="# db/migrate/20131220144913_create_articles_view.rb
+execute &lt;&lt;-SQL
+CREATE VIEW articles AS
+  SELECT &quot;INT_ID&quot; AS id,
+         &quot;STR_TITLE&quot; AS title,
+         &quot;STR_STAT&quot; AS status,
+         &quot;DT_PUBL_AT&quot; AS published_at,
+         &quot;BL_ARCH&quot; AS archived
+  FROM &quot;TBL_ART&quot;
+  WHERE &quot;BL_ARCH&quot; = 'f'
+  SQL
+">Copy</button>
+</div>
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="c1"># app/models/article.rb</span>
+<span class="k">class</span> <span class="nc">Article</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="nb">self</span><span class="p">.</span><span class="nf">primary_key</span> <span class="o">=</span> <span class="s2">"id"</span>
+  <span class="k">def</span> <span class="nf">archive!</span>
+    <span class="n">update_attribute</span> <span class="ss">:archived</span><span class="p">,</span> <span class="kp">true</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='# app/models/article.rb
+class Article &lt; ApplicationRecord
+  self.primary_key = "id"
+  def archive!
+    update_attribute :archived, true
+  end
+end
+'>Copy</button>
+</div>
+<div class="code_container">
+<pre><code class="highlight irb"><span class="gp">irb&gt;</span><span class="w"> </span><span class="n">first</span> <span class="o">=</span> <span class="no">Article</span><span class="p">.</span><span class="nf">create!</span> <span class="ss">title: </span><span class="s2">"Winter is coming"</span><span class="p">,</span> <span class="ss">status: </span><span class="s2">"published"</span><span class="p">,</span> <span class="ss">published_at: </span><span class="mi">1</span><span class="p">.</span><span class="nf">year</span><span class="p">.</span><span class="nf">ago</span>
+<span class="gp">irb&gt;</span><span class="w"> </span><span class="n">second</span> <span class="o">=</span> <span class="no">Article</span><span class="p">.</span><span class="nf">create!</span> <span class="ss">title: </span><span class="s2">"Brace yourself"</span><span class="p">,</span> <span class="ss">status: </span><span class="s2">"draft"</span><span class="p">,</span> <span class="ss">published_at: </span><span class="mi">1</span><span class="p">.</span><span class="nf">month</span><span class="p">.</span><span class="nf">ago</span>
+<span class="err">
+</span><span class="gp">irb&gt;</span><span class="w"> </span><span class="no">Article</span><span class="p">.</span><span class="nf">count</span>
+<span class="p">=&gt;</span> <span class="mi">2</span>
+<span class="gp">irb&gt;</span><span class="w"> </span><span class="n">first</span><span class="p">.</span><span class="nf">archive!</span>
+<span class="gp">irb&gt;</span><span class="w"> </span><span class="no">Article</span><span class="p">.</span><span class="nf">count</span>
+<span class="p">=&gt;</span> <span class="mi">1</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='first = Article.create! title: "Winter is coming", status: "published", published_at: 1.year.ago
+second = Article.create! title: "Brace yourself", status: "draft", published_at: 1.month.ago
+Article.count
+first.archive!
+Article.count
+'>Copy</button>
+</div>
+<div class="note"><p>This application only cares about non-archived <code>Articles</code>. A view also
+allows for conditions so we can exclude the archived <code>Articles</code> directly.</p></div>
+</body>
+</html>

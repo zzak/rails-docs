@@ -1,0 +1,57 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>8 Having</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v7.0.4.2/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="having"><a class="anchorlink" href="#having">8 Having</a></h3>
+<p>SQL uses the <code>HAVING</code> clause to specify conditions on the <code>GROUP BY</code> fields. You can add the <code>HAVING</code> clause to the SQL fired by the <code>Model.find</code> by adding the <a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveRecord/QueryMethods.html#method-i-having"><code>having</code></a> method to the find.</p>
+
+<p>For example:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="no">Order</span><span class="p">.</span><span class="nf">select</span><span class="p">(</span><span class="s2">"created_at, sum(total) as total_price"</span><span class="p">).</span>
+  <span class="nf">group</span><span class="p">(</span><span class="s2">"created_at"</span><span class="p">).</span><span class="nf">having</span><span class="p">(</span><span class="s2">"sum(total) &gt; ?"</span><span class="p">,</span> <span class="mi">200</span><span class="p">)</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='Order.select("created_at, sum(total) as total_price").
+  group("created_at").having("sum(total) &gt; ?", 200)
+'>Copy</button>
+</div>
+<p>The SQL that would be executed would be something like this:</p>
+
+<div class="code_container">
+<pre><code class="highlight sql"><span class="k">SELECT</span> <span class="n">created_at</span> <span class="k">as</span> <span class="n">ordered_date</span><span class="p">,</span> <span class="k">sum</span><span class="p">(</span><span class="n">total</span><span class="p">)</span> <span class="k">as</span> <span class="n">total_price</span>
+<span class="k">FROM</span> <span class="n">orders</span>
+<span class="k">GROUP</span> <span class="k">BY</span> <span class="n">created_at</span>
+<span class="k">HAVING</span> <span class="k">sum</span><span class="p">(</span><span class="n">total</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">200</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="SELECT created_at as ordered_date, sum(total) as total_price
+FROM orders
+GROUP BY created_at
+HAVING sum(total) &gt; 200
+">Copy</button>
+</div>
+<p>This returns the date and total price for each order object, grouped by the day they were ordered and where the total is more than $200.</p>
+
+<p>You would access the <code>total_price</code> for each order object returned like this:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">big_orders</span> <span class="o">=</span> <span class="no">Order</span><span class="p">.</span><span class="nf">select</span><span class="p">(</span><span class="s2">"created_at, sum(total) as total_price"</span><span class="p">)</span>
+                  <span class="p">.</span><span class="nf">group</span><span class="p">(</span><span class="s2">"created_at"</span><span class="p">)</span>
+                  <span class="p">.</span><span class="nf">having</span><span class="p">(</span><span class="s2">"sum(total) &gt; ?"</span><span class="p">,</span> <span class="mi">200</span><span class="p">)</span>
+
+<span class="n">big_orders</span><span class="p">[</span><span class="mi">0</span><span class="p">].</span><span class="nf">total_price</span>
+<span class="c1"># Returns the total price for the first Order object</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='big_orders = Order.select("created_at, sum(total) as total_price")
+                  .group("created_at")
+                  .having("sum(total) &gt; ?", 200)
+
+big_orders[0].total_price
+# Returns the total price for the first Order object
+'>Copy</button>
+</div>
+</body>
+</html>

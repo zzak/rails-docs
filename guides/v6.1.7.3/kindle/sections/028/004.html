@@ -1,0 +1,152 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>5 Customizing the Pipeline</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v6.1.7.3/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="customizing-the-pipeline"><a class="anchorlink" href="#customizing-the-pipeline">5 Customizing the Pipeline</a></h3>
+<h4 id="css-compression"><a class="anchorlink" href="#css-compression">5.1 CSS Compression</a></h4>
+
+<p>One of the options for compressing CSS is YUI. The <a href="https://yui.github.io/yuicompressor/css.html">YUI CSS
+compressor</a> provides
+minification.</p>
+
+<p>The following line enables YUI compression, and requires the <code>yui-compressor</code>
+gem.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">config</span><span class="p">.</span><span class="nf">assets</span><span class="p">.</span><span class="nf">css_compressor</span> <span class="o">=</span> <span class="ss">:yui</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-1f196f4f647141d3638c039f84a56063">config.assets.css_compressor = :yui
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-1f196f4f647141d3638c039f84a56063">Copy</button>
+</div>
+<p>The other option for compressing CSS if you have the sass-rails gem installed is</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">config</span><span class="p">.</span><span class="nf">assets</span><span class="p">.</span><span class="nf">css_compressor</span> <span class="o">=</span> <span class="ss">:sass</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-6c404191bf90f3a3208b736052975e5d">config.assets.css_compressor = :sass
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-6c404191bf90f3a3208b736052975e5d">Copy</button>
+</div>
+<h4 id="javascript-compression"><a class="anchorlink" href="#javascript-compression">5.2 JavaScript Compression</a></h4>
+
+<p>Possible options for JavaScript compression are <code>:closure</code>, <code>:uglifier</code> and
+<code>:yui</code>. These require the use of the <code>closure-compiler</code>, <code>uglifier</code> or
+<code>yui-compressor</code> gems, respectively.</p>
+
+<p>Take the <code>uglifier</code> gem, for example.
+This gem wraps <a href="https://github.com/mishoo/UglifyJS">UglifyJS</a> (written for
+NodeJS) in Ruby. It compresses your code by removing white space and comments,
+shortening local variable names, and performing other micro-optimizations such
+as changing <code>if</code> and <code>else</code> statements to ternary operators where possible.</p>
+
+<p>The following line invokes <code>uglifier</code> for JavaScript compression.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">config</span><span class="p">.</span><span class="nf">assets</span><span class="p">.</span><span class="nf">js_compressor</span> <span class="o">=</span> <span class="ss">:uglifier</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-d7f713762dba8f60dba06ac06585f563">config.assets.js_compressor = :uglifier
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-d7f713762dba8f60dba06ac06585f563">Copy</button>
+</div>
+<div class="note"><p>You will need an <a href="https://github.com/rails/execjs#readme">ExecJS</a>
+supported runtime in order to use <code>uglifier</code>. If you are using macOS or
+Windows you have a JavaScript runtime installed in your operating system.</p></div>
+
+<h4 id="gzipping-your-assets"><a class="anchorlink" href="#gzipping-your-assets">5.3 GZipping your assets</a></h4>
+
+<p>By default, gzipped version of compiled assets will be generated, along with
+the non-gzipped version of assets. Gzipped assets help reduce the transmission
+of data over the wire. You can configure this by setting the <code>gzip</code> flag.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">config</span><span class="p">.</span><span class="nf">assets</span><span class="p">.</span><span class="nf">gzip</span> <span class="o">=</span> <span class="kp">false</span> <span class="c1"># disable gzipped assets generation</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-ad164de77cbae261261d534888015d39">config.assets.gzip = false # disable gzipped assets generation
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-ad164de77cbae261261d534888015d39">Copy</button>
+</div>
+<p>Refer to your web server's documentation for instructions on how to serve gzipped assets.</p>
+
+<h4 id="using-your-own-compressor"><a class="anchorlink" href="#using-your-own-compressor">5.4 Using Your Own Compressor</a></h4>
+
+<p>The compressor config settings for CSS and JavaScript also take any object.
+This object must have a <code>compress</code> method that takes a string as the sole
+argument and it must return a string.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">Transformer</span>
+  <span class="k">def</span> <span class="nf">compress</span><span class="p">(</span><span class="n">string</span><span class="p">)</span>
+    <span class="n">do_something_returning_a_string</span><span class="p">(</span><span class="n">string</span><span class="p">)</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-58de64cd94bd908c27e3e1c7b9346d63">class Transformer
+  def compress(string)
+    do_something_returning_a_string(string)
+  end
+end
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-58de64cd94bd908c27e3e1c7b9346d63">Copy</button>
+</div>
+<p>To enable this, pass a new object to the config option in <code>application.rb</code>:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">config</span><span class="p">.</span><span class="nf">assets</span><span class="p">.</span><span class="nf">css_compressor</span> <span class="o">=</span> <span class="no">Transformer</span><span class="p">.</span><span class="nf">new</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-2e567b3e1bb52663bc5b765772fc0e1e">config.assets.css_compressor = Transformer.new
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-2e567b3e1bb52663bc5b765772fc0e1e">Copy</button>
+</div>
+<h4 id="changing-the-assets-path"><a class="anchorlink" href="#changing-the-assets-path">5.5 Changing the <em>assets</em> Path</a></h4>
+
+<p>The public path that Sprockets uses by default is <code>/assets</code>.</p>
+
+<p>This can be changed to something else:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">config</span><span class="p">.</span><span class="nf">assets</span><span class="p">.</span><span class="nf">prefix</span> <span class="o">=</span> <span class="s2">"/some_other_path"</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-7029495b428c7c03a4d50cbec90f6d81">config.assets.prefix = "/some_other_path"
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-7029495b428c7c03a4d50cbec90f6d81">Copy</button>
+</div>
+<p>This is a handy option if you are updating an older project that didn't use the
+asset pipeline and already uses this path or you wish to use this path for
+a new resource.</p>
+
+<h4 id="x-sendfile-headers"><a class="anchorlink" href="#x-sendfile-headers">5.6 X-Sendfile Headers</a></h4>
+
+<p>The X-Sendfile header is a directive to the web server to ignore the response
+from the application, and instead serve a specified file from disk. This option
+is off by default, but can be enabled if your server supports it. When enabled,
+this passes responsibility for serving the file to the web server, which is
+faster. Have a look at <a href="https://api.rubyonrails.org/v6.1.7.3/classes/ActionController/DataStreaming.html#method-i-send_file">send_file</a>
+on how to use this feature.</p>
+
+<p>Apache and NGINX support this option, which can be enabled in
+<code>config/environments/production.rb</code>:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="c1"># config.action_dispatch.x_sendfile_header = "X-Sendfile" # for Apache</span>
+<span class="c1"># config.action_dispatch.x_sendfile_header = 'X-Accel-Redirect' # for NGINX</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-6fa89e2388de654c3310346146d92bf1"># config.action_dispatch.x_sendfile_header = "X-Sendfile" # for Apache
+# config.action_dispatch.x_sendfile_header = 'X-Accel-Redirect' # for NGINX
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-6fa89e2388de654c3310346146d92bf1">Copy</button>
+</div>
+<div class="warning"><p>If you are upgrading an existing application and intend to use this
+option, take care to paste this configuration option only into <code>production.rb</code>
+and any other environments you define with production behavior (not
+<code>application.rb</code>).</p></div>
+
+<div class="info"><p>For further details have a look at the docs of your production web server:
+- <a href="https://tn123.org/mod_xsendfile/">Apache</a>
+- <a href="https://www.nginx.com/resources/wiki/start/topics/examples/xsendfile/">NGINX</a></p></div>
+</body>
+</html>

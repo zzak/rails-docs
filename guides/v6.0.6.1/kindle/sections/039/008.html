@@ -1,0 +1,35 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>9 Adding Command Line Arguments</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v6.0.6.1/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="adding-command-line-arguments"><a class="anchorlink" href="#adding-command-line-arguments">9 Adding Command Line Arguments</a></h3>
+<p>Rails generators can be easily modified to accept custom command line arguments. This functionality comes from <a href="https://www.rubydoc.info/github/erikhuda/thor/master/Thor/Base/ClassMethods#class_option-instance_method">Thor</a>:</p>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+class_option :scope, type: :string, default: 'read_products'
+
+</pre>
+</div>
+<p>Now our generator can be invoked as follows:</p>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+rails generate initializer --scope write_products
+
+</pre>
+</div>
+<p>The command line arguments are accessed through the <code>options</code> method inside the generator class. e.g:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+@scope = options['scope']
+
+</pre>
+</div>
+</body>
+</html>

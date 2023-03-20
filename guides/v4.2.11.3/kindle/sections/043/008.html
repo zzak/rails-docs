@@ -1,0 +1,111 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>9 Active Support</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v4.2.11.3/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="active-support">9 Active Support</h3>
+<p>Active Support now offers built-in memoization for Rails applications, the <code>each_with_object</code> method, prefix support on delegates, and various other new utility methods.</p>
+
+<h4 id="memoization">9.1 Memoization</h4>
+
+<p>Memoization is a pattern of initializing a method once and then stashing its value away for repeat use. You've probably used this pattern in your own applications:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+def full_name
+  @full_name ||= "#{first_name} #{last_name}"
+end
+
+</pre>
+</div>
+<p>Memoization lets you handle this task in a declarative fashion:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+extend ActiveSupport::Memoizable
+
+def full_name
+  "#{first_name} #{last_name}"
+end
+memoize :full_name
+
+</pre>
+</div>
+<p>Other features of memoization include <code>unmemoize</code>, <code>unmemoize_all</code>, and <code>memoize_all</code> to turn memoization on or off.</p>
+<ul>
+<li>Lead Contributor: <a href="http://joshpeek.com/">Josh Peek</a>
+</li>
+<li>More information:
+
+<ul>
+<li><a href="http://ryandaigle.com/articles/2008/7/16/what-s-new-in-edge-rails-memoization">What's New in Edge Rails: Easy Memoization</a></li>
+<li><a href="http://www.railway.at/articles/2008/09/20/a-guide-to-memoization">Memo-what? A Guide to Memoization</a></li>
+</ul>
+</li>
+</ul>
+<h4 id="each-with-object">9.2 each_with_object</h4>
+
+<p>The <code>each_with_object</code> method provides an alternative to <code>inject</code>, using a method backported from Ruby 1.9. It iterates over a collection, passing the current element and the memo into the block.</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+%w(foo bar).each_with_object({}) { |str, hsh| hsh[str] = str.upcase } # =&gt; {'foo' =&gt; 'FOO', 'bar' =&gt; 'BAR'}
+
+</pre>
+</div>
+<p>Lead Contributor: <a href="http://therealadam.com/">Adam Keys</a></p>
+
+<h4 id="delegates-with-prefixes">9.3 Delegates With Prefixes</h4>
+
+<p>If you delegate behavior from one class to another, you can now specify a prefix that will be used to identify the delegated methods. For example:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class Vendor &lt; ActiveRecord::Base
+  has_one :account
+  delegate :email, :password, :to =&gt; :account, :prefix =&gt; true
+end
+
+</pre>
+</div>
+<p>This will produce delegated methods <code>vendor#account_email</code> and <code>vendor#account_password</code>. You can also specify a custom prefix:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class Vendor &lt; ActiveRecord::Base
+  has_one :account
+  delegate :email, :password, :to =&gt; :account, :prefix =&gt; :owner
+end
+
+</pre>
+</div>
+<p>This will produce delegated methods <code>vendor#owner_email</code> and <code>vendor#owner_password</code>.</p>
+
+<p>Lead Contributor: <a href="http://workingwithrails.com/person/5830-daniel-schierbeck">Daniel Schierbeck</a></p>
+
+<h4 id="other-active-support-changes">9.4 Other Active Support Changes</h4>
+<ul>
+<li>Extensive updates to <code>ActiveSupport::Multibyte</code>, including Ruby 1.9 compatibility fixes.</li>
+<li>The addition of <code>ActiveSupport::Rescuable</code> allows any class to mix in the <code>rescue_from</code> syntax.</li>
+<li>
+<code>past?</code>, <code>today?</code> and <code>future?</code> for <code>Date</code> and <code>Time</code> classes to facilitate date/time comparisons.</li>
+<li>
+<code>Array#second</code> through <code>Array#fifth</code> as aliases for <code>Array#[1]</code> through <code>Array#[4]</code>
+</li>
+<li>
+<code>Enumerable#many?</code> to encapsulate <code>collection.size &gt; 1</code>
+</li>
+<li>
+<code>Inflector#parameterize</code> produces a URL-ready version of its input, for use in <code>to_param</code>.</li>
+<li>
+<code>Time#advance</code> recognizes fractional days and weeks, so you can do <code>1.7.weeks.ago</code>, <code>1.5.hours.since</code>, and so on.</li>
+<li>The included TzInfo library has been upgraded to version 0.3.12.</li>
+<li>
+<code>ActiveSupport::StringInquirer</code> gives you a pretty way to test for equality in strings: <code>ActiveSupport::StringInquirer.new("abc").abc? =&gt; true</code>
+</li>
+</ul>
+</body>
+</html>

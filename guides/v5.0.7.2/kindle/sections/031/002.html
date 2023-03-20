@@ -1,0 +1,118 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>3 Server-Side Components</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v5.0.7.2/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="server-side-components">3 Server-Side Components</h3>
+<h4 id="server-side-components-connections">3.1 Connections</h4>
+
+<p><em>Connections</em> form the foundation of the client-server relationship. For every
+WebSocket accepted by the server, a connection object is instantiated. This
+object becomes the parent of all the <em>channel subscriptions</em> that are created
+from there on. The connection itself does not deal with any specific application
+logic beyond authentication and authorization. The client of a WebSocket
+connection is called the connection <em>consumer</em>. An individual user will create
+one consumer-connection pair per browser tab, window, or device they have open.</p>
+
+<p>Connections are instances of <code>ApplicationCable::Connection</code>. In this class, you
+authorize the incoming connection, and proceed to establish it if the user can
+be identified.</p>
+
+<h5 id="connection-setup">3.1.1 Connection Setup</h5>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+# app/channels/application_cable/connection.rb
+module ApplicationCable
+  class Connection &lt; ActionCable::Connection::Base
+    identified_by :current_user
+
+    def connect
+      self.current_user = find_verified_user
+    end
+
+    protected
+      def find_verified_user
+        if current_user = User.find_by(id: cookies.signed[:user_id])
+          current_user
+        else
+          reject_unauthorized_connection
+        end
+      end
+  end
+end
+
+</pre>
+</div>
+<p>Here <code>identified_by</code> is a connection identifier that can be used to find the
+specific connection later. Note that anything marked as an identifier will automatically
+create a delegate by the same name on any channel instances created off the connection.</p>
+
+<p>This example relies on the fact that you will already have handled authentication of the user
+somewhere else in your application, and that a successful authentication sets a signed
+cookie with the user ID.</p>
+
+<p>The cookie is then automatically sent to the connection instance when a new connection
+is attempted, and you use that to set the <code>current_user</code>. By identifying the connection
+by this same current user, you're also ensuring that you can later retrieve all open
+connections by a given user (and potentially disconnect them all if the user is deleted
+or deauthorized).</p>
+
+<h4 id="channels">3.2 Channels</h4>
+
+<p>A <em>channel</em> encapsulates a logical unit of work, similar to what a controller does in a
+regular MVC setup. By default, Rails creates a parent <code>ApplicationCable::Channel</code> class
+for encapsulating shared logic between your channels.</p>
+
+<h5 id="parent-channel-setup">3.2.1 Parent Channel Setup</h5>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+# app/channels/application_cable/channel.rb
+module ApplicationCable
+  class Channel &lt; ActionCable::Channel::Base
+  end
+end
+
+</pre>
+</div>
+<p>Then you would create your own channel classes. For example, you could have a
+<code>ChatChannel</code> and an <code>AppearanceChannel</code>:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+# app/channels/chat_channel.rb
+class ChatChannel &lt; ApplicationCable::Channel
+end
+
+# app/channels/appearance_channel.rb
+class AppearanceChannel &lt; ApplicationCable::Channel
+end
+
+</pre>
+</div>
+<p>A consumer could then be subscribed to either or both of these channels.</p>
+
+<h5 id="channels-subscriptions">3.2.2 Subscriptions</h5>
+
+<p>Consumers subscribe to channels, acting as <em>subscribers</em>. Their connection is
+called a <em>subscription</em>. Produced messages are then routed to these channel
+subscriptions based on an identifier sent by the cable consumer.</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+# app/channels/chat_channel.rb
+class ChatChannel &lt; ApplicationCable::Channel
+  # Called when the consumer has successfully
+  # become a subscriber of this channel.
+  def subscribed
+  end
+end
+
+</pre>
+</div>
+</body>
+</html>

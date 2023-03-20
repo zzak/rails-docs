@@ -1,0 +1,96 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>3 Creating Generators with Generators</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v6.1.7.3/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="creating-generators-with-generators"><a class="anchorlink" href="#creating-generators-with-generators">3 Creating Generators with Generators</a></h3>
+<p>Generators themselves have a generator:</p>
+
+<div class="code_container">
+<pre><code class="highlight console"><span class="gp">$</span><span class="w"> </span><span class="nb">bin/rails </span>generate generator initializer
+<span class="go">      create  lib/generators/initializer
+      create  lib/generators/initializer/initializer_generator.rb
+      create  lib/generators/initializer/USAGE
+      create  lib/generators/initializer/templates
+      invoke  test_unit
+      create    test/lib/generators/initializer_generator_test.rb
+</span></code></pre>
+<textarea class="clipboard-content" id="clipboard-9273419b8dd0c492b96beec718aae213">bin/rails generate generator initializer
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-9273419b8dd0c492b96beec718aae213">Copy</button>
+</div>
+<p>This is the generator just created:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">InitializerGenerator</span> <span class="o">&lt;</span> <span class="no">Rails</span><span class="o">::</span><span class="no">Generators</span><span class="o">::</span><span class="no">NamedBase</span>
+  <span class="n">source_root</span> <span class="no">File</span><span class="p">.</span><span class="nf">expand_path</span><span class="p">(</span><span class="s1">'templates'</span><span class="p">,</span> <span class="n">__dir__</span><span class="p">)</span>
+<span class="k">end</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-c105b9770f5433e3aada12d04a41e1f9">class InitializerGenerator &lt; Rails::Generators::NamedBase
+  source_root File.expand_path('templates', __dir__)
+end
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-c105b9770f5433e3aada12d04a41e1f9">Copy</button>
+</div>
+<p>First, notice that we are inheriting from <code>Rails::Generators::NamedBase</code> instead of <code>Rails::Generators::Base</code>. This means that our generator expects at least one argument, which will be the name of the initializer, and will be available in our code in the variable <code>name</code>.</p>
+
+<p>We can see that by invoking the description of this new generator (don't forget to delete the old generator file):</p>
+
+<div class="code_container">
+<pre><code class="highlight console"><span class="gp">$</span><span class="w"> </span><span class="nb">bin/rails </span>generate initializer <span class="nt">--help</span>
+<span class="go">Usage:
+  bin/rails generate initializer NAME [options]
+</span></code></pre>
+<textarea class="clipboard-content" id="clipboard-741418ea79e2b4cb8b62de95ae0d0275">bin/rails generate initializer --help
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-741418ea79e2b4cb8b62de95ae0d0275">Copy</button>
+</div>
+<p>We can also see that our new generator has a class method called <code>source_root</code>. This method points to where our generator templates will be placed, if any, and by default it points to the created directory <code>lib/generators/initializer/templates</code>.</p>
+
+<p>In order to understand what a generator template means, let's create the file <code>lib/generators/initializer/templates/initializer.rb</code> with the following content:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="c1"># Add initialization content here</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-f8d2826995a55035cf19c3b1cc4258e5"># Add initialization content here
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-f8d2826995a55035cf19c3b1cc4258e5">Copy</button>
+</div>
+<p>And now let's change the generator to copy this template when invoked:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">InitializerGenerator</span> <span class="o">&lt;</span> <span class="no">Rails</span><span class="o">::</span><span class="no">Generators</span><span class="o">::</span><span class="no">NamedBase</span>
+  <span class="n">source_root</span> <span class="no">File</span><span class="p">.</span><span class="nf">expand_path</span><span class="p">(</span><span class="s1">'templates'</span><span class="p">,</span> <span class="n">__dir__</span><span class="p">)</span>
+
+  <span class="k">def</span> <span class="nf">copy_initializer_file</span>
+    <span class="n">copy_file</span> <span class="s2">"initializer.rb"</span><span class="p">,</span> <span class="s2">"config/initializers/</span><span class="si">#{</span><span class="n">file_name</span><span class="si">}</span><span class="s2">.rb"</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-261aa846c735f9039531ab12e3766028">class InitializerGenerator &lt; Rails::Generators::NamedBase
+  source_root File.expand_path('templates', __dir__)
+
+  def copy_initializer_file
+    copy_file "initializer.rb", "config/initializers/#{file_name}.rb"
+  end
+end
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-261aa846c735f9039531ab12e3766028">Copy</button>
+</div>
+<p>And let's execute our generator:</p>
+
+<div class="code_container">
+<pre><code class="highlight console"><span class="gp">$</span><span class="w"> </span><span class="nb">bin/rails </span>generate initializer core_extensions
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-1bd492c58926e7544f022ee8879297d6">bin/rails generate initializer core_extensions
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-1bd492c58926e7544f022ee8879297d6">Copy</button>
+</div>
+<p>We can see that now an initializer named core_extensions was created at <code>config/initializers/core_extensions.rb</code> with the contents of our template. That means that <code>copy_file</code> copied a file in our source root to the destination path we gave. The method <code>file_name</code> is automatically created when we inherit from <code>Rails::Generators::NamedBase</code>.</p>
+
+<p>The methods that are available for generators are covered in the <a href="#generator-methods">final section</a> of this guide.</p>
+</body>
+</html>

@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Rails::TestUnit::Runner</title>
+    <meta charset="UTF-8" />
+    <link rel="stylesheet" href="../../../css/reset.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="../../../css/main.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="../../../css/github.css" type="text/css" media="screen" />
+<script src="../../../js/jquery-1.3.2.min.js" type="text/javascript" charset="utf-8"></script>
+<script src="../../../js/main.js" type="text/javascript" charset="utf-8"></script>
+<script src="../../../js/highlight.pack.js" type="text/javascript" charset="utf-8"></script>
+
+
+    <meta property="og:title" value="Rails::TestUnit::Runner">
+
+  
+
+    <meta name="keywords" content="Rails::TestUnit::Runner class">
+  
+    <meta name="keywords" content="options, parse_options, rake_run, run, load_tests, compose_filter">
+  
+</head>
+
+<body>
+    <div class="banner">
+        
+            <span>Ruby on Rails 5.0.7.2</span><br />
+        
+        <h1>
+            <span class="type">Class</span>
+            Rails::TestUnit::Runner
+            
+                <span class="parent">&lt;
+                    
+                    <a href="../../Object.html">Object</a>
+                    
+                </span>
+            
+        </h1>
+        <ul class="files">
+            
+            <li><a href="../../../files/railties/lib/rails/test_unit/runner_rb.html">railties/lib/rails/test_unit/runner.rb</a></li>
+            
+        </ul>
+    </div>
+    <div id="bodyContent">
+        <div id="content">
+  
+
+
+  
+
+
+  
+  
+
+
+  
+
+
+  
+    <!-- Method ref -->
+    <div class="sectiontitle">Methods</div>
+    <dl class="methods">
+      
+        <dt>C</dt>
+        <dd>
+          <ul>
+            
+              
+              <li>
+                <a href="#method-c-compose_filter">compose_filter</a>
+              </li>
+            
+          </ul>
+        </dd>
+      
+        <dt>L</dt>
+        <dd>
+          <ul>
+            
+              
+              <li>
+                <a href="#method-c-load_tests">load_tests</a>
+              </li>
+            
+          </ul>
+        </dd>
+      
+        <dt>O</dt>
+        <dd>
+          <ul>
+            
+              
+              <li>
+                <a href="#method-c-options">options</a>
+              </li>
+            
+          </ul>
+        </dd>
+      
+        <dt>P</dt>
+        <dd>
+          <ul>
+            
+              
+              <li>
+                <a href="#method-c-parse_options">parse_options</a>
+              </li>
+            
+          </ul>
+        </dd>
+      
+        <dt>R</dt>
+        <dd>
+          <ul>
+            
+              
+              <li>
+                <a href="#method-c-rake_run">rake_run</a>,
+              </li>
+            
+              
+              <li>
+                <a href="#method-c-run">run</a>
+              </li>
+            
+          </ul>
+        </dd>
+      
+    </dl>
+  
+
+  
+
+
+
+  
+
+    
+
+    
+
+    
+
+
+    
+
+
+    <!-- Methods -->
+    
+      <div class="sectiontitle">Class Public methods</div>
+      
+        <div class="method">
+          <div class="title method-title" id="method-c-compose_filter">
+            
+              <b>compose_filter</b>(runnable, filter)
+            
+            <a href="../../../classes/Rails/TestUnit/Runner.html#method-c-compose_filter" name="method-c-compose_filter" class="permalink">Link</a>
+          </div>
+
+          
+            <div class="description">
+              
+            </div>
+          
+
+          
+
+          
+
+          
+            
+            <div class="sourcecode">
+              
+              <p class="source-link">
+                Source:
+                <a href="javascript:toggleSource('method-c-compose_filter_source')" id="l_method-c-compose_filter_source">show</a>
+                
+                  | <a href="https://github.com/rails/rails/blob/2eb63ff2ba35c92120e73bff5698f272cfd9f709/railties/lib/rails/test_unit/runner.rb#L50" target="_blank" class="github_url">on GitHub</a>
+                
+              </p>
+              <div id="method-c-compose_filter_source" class="dyn-source">
+                <pre><span class="ruby-comment"># File railties/lib/rails/test_unit/runner.rb, line 50</span>
+<span class="ruby-keyword">def</span> <span class="ruby-keyword ruby-title">compose_filter</span>(<span class="ruby-identifier">runnable</span>, <span class="ruby-identifier">filter</span>)
+  <span class="ruby-keyword">if</span> <span class="ruby-identifier">filters</span>.<span class="ruby-identifier">any?</span> { <span class="ruby-operator">|</span><span class="ruby-identifier">_</span>, <span class="ruby-identifier">lines</span><span class="ruby-operator">|</span> <span class="ruby-identifier">lines</span>.<span class="ruby-identifier">any?</span> }
+    <span class="ruby-constant">CompositeFilter</span>.<span class="ruby-identifier">new</span>(<span class="ruby-identifier">runnable</span>, <span class="ruby-identifier">filter</span>, <span class="ruby-identifier">filters</span>)
+  <span class="ruby-keyword">else</span>
+    <span class="ruby-identifier">filter</span>
+  <span class="ruby-keyword">end</span>
+<span class="ruby-keyword">end</span></pre>
+              </div>
+            </div>
+            
+          </div>
+        
+        <div class="method">
+          <div class="title method-title" id="method-c-load_tests">
+            
+              <b>load_tests</b>(argv)
+            
+            <a href="../../../classes/Rails/TestUnit/Runner.html#method-c-load_tests" name="method-c-load_tests" class="permalink">Link</a>
+          </div>
+
+          
+            <div class="description">
+              
+            </div>
+          
+
+          
+
+          
+
+          
+            
+            <div class="sourcecode">
+              
+              <p class="source-link">
+                Source:
+                <a href="javascript:toggleSource('method-c-load_tests_source')" id="l_method-c-load_tests_source">show</a>
+                
+                  | <a href="https://github.com/rails/rails/blob/2eb63ff2ba35c92120e73bff5698f272cfd9f709/railties/lib/rails/test_unit/runner.rb#L43" target="_blank" class="github_url">on GitHub</a>
+                
+              </p>
+              <div id="method-c-load_tests_source" class="dyn-source">
+                <pre><span class="ruby-comment"># File railties/lib/rails/test_unit/runner.rb, line 43</span>
+<span class="ruby-keyword">def</span> <span class="ruby-keyword ruby-title">load_tests</span>(<span class="ruby-identifier">argv</span>)
+  <span class="ruby-identifier">patterns</span> = <span class="ruby-identifier">extract_filters</span>(<span class="ruby-identifier">argv</span>)
+
+  <span class="ruby-identifier">tests</span> = <span class="ruby-constant">Rake</span><span class="ruby-operator">::</span><span class="ruby-constant">FileList</span>[<span class="ruby-identifier">patterns</span>.<span class="ruby-identifier">any?</span> <span class="ruby-operator">?</span> <span class="ruby-identifier">patterns</span> <span class="ruby-operator">:</span> <span class="ruby-string">&quot;test/**/*_test.rb&quot;</span>]
+  <span class="ruby-identifier">tests</span>.<span class="ruby-identifier">to_a</span>.<span class="ruby-identifier">each</span> { <span class="ruby-operator">|</span><span class="ruby-identifier">path</span><span class="ruby-operator">|</span> <span class="ruby-identifier">require</span> <span class="ruby-constant">File</span>.<span class="ruby-identifier">expand_path</span>(<span class="ruby-identifier">path</span>) }
+<span class="ruby-keyword">end</span></pre>
+              </div>
+            </div>
+            
+          </div>
+        
+        <div class="method">
+          <div class="title method-title" id="method-c-options">
+            
+              <b>options</b>(opts)
+            
+            <a href="../../../classes/Rails/TestUnit/Runner.html#method-c-options" name="method-c-options" class="permalink">Link</a>
+          </div>
+
+          
+            <div class="description">
+              
+            </div>
+          
+
+          
+
+          
+
+          
+            
+            <div class="sourcecode">
+              
+              <p class="source-link">
+                Source:
+                <a href="javascript:toggleSource('method-c-options_source')" id="l_method-c-options_source">show</a>
+                
+                  | <a href="https://github.com/rails/rails/blob/2eb63ff2ba35c92120e73bff5698f272cfd9f709/railties/lib/rails/test_unit/runner.rb#L13" target="_blank" class="github_url">on GitHub</a>
+                
+              </p>
+              <div id="method-c-options_source" class="dyn-source">
+                <pre><span class="ruby-comment"># File railties/lib/rails/test_unit/runner.rb, line 13</span>
+<span class="ruby-keyword">def</span> <span class="ruby-keyword ruby-title">options</span>(<span class="ruby-identifier">opts</span>)
+  <span class="ruby-identifier">opts</span>.<span class="ruby-identifier">on</span>(<span class="ruby-string">&quot;--warnings&quot;</span>, <span class="ruby-string">&quot;-w&quot;</span>, <span class="ruby-string">&quot;Run with Ruby warnings enabled&quot;</span>) {}
+  <span class="ruby-identifier">opts</span>.<span class="ruby-identifier">on</span>(<span class="ruby-string">&quot;--environment&quot;</span>, <span class="ruby-string">&quot;-e&quot;</span>, <span class="ruby-string">&quot;Run tests in the ENV environment&quot;</span>) {}
+<span class="ruby-keyword">end</span></pre>
+              </div>
+            </div>
+            
+          </div>
+        
+        <div class="method">
+          <div class="title method-title" id="method-c-parse_options">
+            
+              <b>parse_options</b>(argv)
+            
+            <a href="../../../classes/Rails/TestUnit/Runner.html#method-c-parse_options" name="method-c-parse_options" class="permalink">Link</a>
+          </div>
+
+          
+            <div class="description">
+              
+            </div>
+          
+
+          
+
+          
+
+          
+            
+            <div class="sourcecode">
+              
+              <p class="source-link">
+                Source:
+                <a href="javascript:toggleSource('method-c-parse_options_source')" id="l_method-c-parse_options_source">show</a>
+                
+                  | <a href="https://github.com/rails/rails/blob/2eb63ff2ba35c92120e73bff5698f272cfd9f709/railties/lib/rails/test_unit/runner.rb#L18" target="_blank" class="github_url">on GitHub</a>
+                
+              </p>
+              <div id="method-c-parse_options_source" class="dyn-source">
+                <pre><span class="ruby-comment"># File railties/lib/rails/test_unit/runner.rb, line 18</span>
+<span class="ruby-keyword">def</span> <span class="ruby-keyword ruby-title">parse_options</span>(<span class="ruby-identifier">argv</span>)
+  <span class="ruby-comment"># Perform manual parsing and cleanup since option parser raises on unknown options.</span>
+  <span class="ruby-identifier">env_index</span> = <span class="ruby-identifier">argv</span>.<span class="ruby-identifier">index</span>(<span class="ruby-string">&quot;--environment&quot;</span>) <span class="ruby-operator">||</span> <span class="ruby-identifier">argv</span>.<span class="ruby-identifier">index</span>(<span class="ruby-string">&quot;-e&quot;</span>)
+  <span class="ruby-keyword">if</span> <span class="ruby-identifier">env_index</span>
+    <span class="ruby-identifier">argv</span>.<span class="ruby-identifier">delete_at</span>(<span class="ruby-identifier">env_index</span>)
+    <span class="ruby-identifier">environment</span> = <span class="ruby-identifier">argv</span>.<span class="ruby-identifier">delete_at</span>(<span class="ruby-identifier">env_index</span>).<span class="ruby-identifier">strip</span>
+  <span class="ruby-keyword">end</span>
+  <span class="ruby-constant">ENV</span>[<span class="ruby-string">&quot;RAILS_ENV&quot;</span>] = <span class="ruby-identifier">environment</span> <span class="ruby-operator">||</span> <span class="ruby-string">&quot;test&quot;</span>
+
+  <span class="ruby-identifier">w_index</span> = <span class="ruby-identifier">argv</span>.<span class="ruby-identifier">index</span>(<span class="ruby-string">&quot;--warnings&quot;</span>) <span class="ruby-operator">||</span> <span class="ruby-identifier">argv</span>.<span class="ruby-identifier">index</span>(<span class="ruby-string">&quot;-w&quot;</span>)
+  <span class="ruby-identifier">$VERBOSE</span> = <span class="ruby-identifier">argv</span>.<span class="ruby-identifier">delete_at</span>(<span class="ruby-identifier">w_index</span>) <span class="ruby-keyword">if</span> <span class="ruby-identifier">w_index</span>
+<span class="ruby-keyword">end</span></pre>
+              </div>
+            </div>
+            
+          </div>
+        
+        <div class="method">
+          <div class="title method-title" id="method-c-rake_run">
+            
+              <b>rake_run</b>(argv = [])
+            
+            <a href="../../../classes/Rails/TestUnit/Runner.html#method-c-rake_run" name="method-c-rake_run" class="permalink">Link</a>
+          </div>
+
+          
+            <div class="description">
+              
+            </div>
+          
+
+          
+
+          
+
+          
+            
+            <div class="sourcecode">
+              
+              <p class="source-link">
+                Source:
+                <a href="javascript:toggleSource('method-c-rake_run_source')" id="l_method-c-rake_run_source">show</a>
+                
+                  | <a href="https://github.com/rails/rails/blob/2eb63ff2ba35c92120e73bff5698f272cfd9f709/railties/lib/rails/test_unit/runner.rb#L31" target="_blank" class="github_url">on GitHub</a>
+                
+              </p>
+              <div id="method-c-rake_run_source" class="dyn-source">
+                <pre><span class="ruby-comment"># File railties/lib/rails/test_unit/runner.rb, line 31</span>
+<span class="ruby-keyword">def</span> <span class="ruby-keyword ruby-title">rake_run</span>(<span class="ruby-identifier">argv</span> = [])
+  <span class="ruby-constant">ARGV</span>.<span class="ruby-identifier">replace</span> <span class="ruby-constant">Shellwords</span>.<span class="ruby-identifier">split</span>(<span class="ruby-constant">ENV</span>[<span class="ruby-string">&quot;TESTOPTS&quot;</span>] <span class="ruby-operator">||</span> <span class="ruby-string">&quot;&quot;</span>)
+
+  <span class="ruby-identifier">run</span>(<span class="ruby-identifier">argv</span>)
+<span class="ruby-keyword">end</span></pre>
+              </div>
+            </div>
+            
+          </div>
+        
+        <div class="method">
+          <div class="title method-title" id="method-c-run">
+            
+              <b>run</b>(argv = [])
+            
+            <a href="../../../classes/Rails/TestUnit/Runner.html#method-c-run" name="method-c-run" class="permalink">Link</a>
+          </div>
+
+          
+            <div class="description">
+              
+            </div>
+          
+
+          
+
+          
+
+          
+            
+            <div class="sourcecode">
+              
+              <p class="source-link">
+                Source:
+                <a href="javascript:toggleSource('method-c-run_source')" id="l_method-c-run_source">show</a>
+                
+                  | <a href="https://github.com/rails/rails/blob/2eb63ff2ba35c92120e73bff5698f272cfd9f709/railties/lib/rails/test_unit/runner.rb#L37" target="_blank" class="github_url">on GitHub</a>
+                
+              </p>
+              <div id="method-c-run_source" class="dyn-source">
+                <pre><span class="ruby-comment"># File railties/lib/rails/test_unit/runner.rb, line 37</span>
+<span class="ruby-keyword">def</span> <span class="ruby-keyword ruby-title">run</span>(<span class="ruby-identifier">argv</span> = [])
+  <span class="ruby-identifier">load_tests</span>(<span class="ruby-identifier">argv</span>)
+
+  <span class="ruby-identifier">require</span> <span class="ruby-string">&quot;active_support/testing/autorun&quot;</span>
+<span class="ruby-keyword">end</span></pre>
+              </div>
+            </div>
+            
+          </div>
+                        </div>
+
+    </div>
+  </body>
+</html>

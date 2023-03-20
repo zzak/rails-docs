@@ -1,0 +1,53 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>3 config.autoload_paths</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v7.0.4.2/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="config-autoload-paths"><a class="anchorlink" href="#config-autoload-paths">3 config.autoload_paths</a></h3>
+<p>We refer to the list of application directories whose contents are to be autoloaded and (optionally) reloaded as <em>autoload paths</em>. For example, <code>app/models</code>. Such directories represent the root namespace: <code>Object</code>.</p>
+
+<div class="info"><p>Autoload paths are called <em>root directories</em> in Zeitwerk documentation, but we'll stay with "autoload path" in this guide.</p></div>
+
+<p>Within an autoload path, file names must match the constants they define as documented <a href="https://github.com/fxn/zeitwerk#file-structure">here</a>.</p>
+
+<p>By default, the autoload paths of an application consist of all the subdirectories of <code>app</code> that exist when the application boots ---except for <code>assets</code>, <code>javascript</code>, and <code>views</code>--- plus the autoload paths of engines it might depend on.</p>
+
+<p>For example, if <code>UsersHelper</code> is implemented in <code>app/helpers/users_helper.rb</code>, the module is autoloadable, you do not need (and should not write) a <code>require</code> call for it:</p>
+
+<div class="code_container">
+<pre><code class="highlight console"><span class="gp">$</span><span class="w"> </span><span class="nb">bin/rails </span>runner <span class="s1">'p UsersHelper'</span>
+<span class="go">UsersHelper
+</span></code></pre>
+<button class="clipboard-button" data-clipboard-text="bin/rails runner 'p UsersHelper'
+">Copy</button>
+</div>
+<p>Rails adds custom directories under <code>app</code> to the autoload paths automatically. For example, if your application has <code>app/presenters</code>, you don't need to configure anything in order to autoload presenters; it works out of the box.</p>
+
+<p>The array of default autoload paths can be extended by pushing to <code>config.autoload_paths</code>, in <code>config/application.rb</code> or <code>config/environments/*.rb</code>. For example:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">module</span> <span class="nn">MyApplication</span>
+  <span class="k">class</span> <span class="nc">Application</span> <span class="o">&lt;</span> <span class="no">Rails</span><span class="o">::</span><span class="no">Application</span>
+    <span class="n">config</span><span class="p">.</span><span class="nf">autoload_paths</span> <span class="o">&lt;&lt;</span> <span class="s2">"</span><span class="si">#{</span><span class="n">root</span><span class="si">}</span><span class="s2">/extras"</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='module MyApplication
+  class Application &lt; Rails::Application
+    config.autoload_paths &lt;&lt; "#{root}/extras"
+  end
+end
+'>Copy</button>
+</div>
+<p>Also, engines can push in body of the engine class and in their own <code>config/environments/*.rb</code>.</p>
+
+<div class="warning"><p>Please do not mutate <code>ActiveSupport::Dependencies.autoload_paths</code>; the public interface to change autoload paths is <code>config.autoload_paths</code>.</p></div>
+
+<div class="warning"><p>You cannot autoload code in the autoload paths while the application boots. In particular, directly in <code>config/initializers/*.rb</code>. Please check <a href="#autoloading-when-the-application-boots"><em>Autoloading when the application boots</em></a> down below for valid ways to do that.</p></div>
+
+<p>The autoload paths are managed by the <code>Rails.autoloaders.main</code> autoloader.</p>
+</body>
+</html>

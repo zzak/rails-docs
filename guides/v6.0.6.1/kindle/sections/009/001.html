@@ -1,0 +1,35 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>2 Using Action View with Rails</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v6.0.6.1/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="using-action-view-with-rails"><a class="anchorlink" href="#using-action-view-with-rails">2 Using Action View with Rails</a></h3>
+<p>For each controller there is an associated directory in the <code>app/views</code> directory which holds the template files that make up the views associated with that controller. These files are used to display the view that results from each controller action.</p>
+
+<p>Let's take a look at what Rails does by default when creating a new resource using the scaffold generator:</p>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+$ rails generate scaffold article
+      [...]
+      invoke  scaffold_controller
+      create    app/controllers/articles_controller.rb
+      invoke    erb
+      create      app/views/articles
+      create      app/views/articles/index.html.erb
+      create      app/views/articles/edit.html.erb
+      create      app/views/articles/show.html.erb
+      create      app/views/articles/new.html.erb
+      create      app/views/articles/_form.html.erb
+      [...]
+
+</pre>
+</div>
+<p>There is a naming convention for views in Rails. Typically, the views share their name with the associated controller action, as you can see above.
+For example, the index controller action of the <code>articles_controller.rb</code> will use the <code>index.html.erb</code> view file in the <code>app/views/articles</code> directory.
+The complete HTML returned to the client is composed of a combination of this ERB file, a layout template that wraps it, and all the partials that the view may reference. Within this guide you will find more detailed documentation about each of these three components.</p>
+</body>
+</html>

@@ -1,0 +1,103 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>8 Extensions to Integer</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v7.0.4.2/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="extensions-to-integer"><a class="anchorlink" href="#extensions-to-integer">8 Extensions to <code>Integer</code></a></h3>
+<h4 id="multiple-of-questionmark"><a class="anchorlink" href="#multiple-of-questionmark">8.1 <code>multiple_of?</code></a></h4>
+
+<p>The method <a href="https://api.rubyonrails.org/v7.0.4.2/classes/Integer.html#method-i-multiple_of-3F"><code>multiple_of?</code></a> tests whether an integer is multiple of the argument:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="mi">2</span><span class="p">.</span><span class="nf">multiple_of?</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="c1"># =&gt; true</span>
+<span class="mi">1</span><span class="p">.</span><span class="nf">multiple_of?</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span> <span class="c1"># =&gt; false</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="2.multiple_of?(1) # =&gt; true
+1.multiple_of?(2) # =&gt; false
+">Copy</button>
+</div>
+<div class="note"><p>Defined in <code><a href="https://github.com/rails/rails/tree/v7.0.4.2/activesupport/lib/active_support/core_ext/integer/multiple.rb">active_support/core_ext/integer/multiple.rb</a></code>.</p></div>
+
+<h4 id="ordinal"><a class="anchorlink" href="#ordinal">8.2 <code>ordinal</code></a></h4>
+
+<p>The method <a href="https://api.rubyonrails.org/v7.0.4.2/classes/Integer.html#method-i-ordinal"><code>ordinal</code></a> returns the ordinal suffix string corresponding to the receiver integer:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="mi">1</span><span class="p">.</span><span class="nf">ordinal</span>    <span class="c1"># =&gt; "st"</span>
+<span class="mi">2</span><span class="p">.</span><span class="nf">ordinal</span>    <span class="c1"># =&gt; "nd"</span>
+<span class="mi">53</span><span class="p">.</span><span class="nf">ordinal</span>   <span class="c1"># =&gt; "rd"</span>
+<span class="mi">2009</span><span class="p">.</span><span class="nf">ordinal</span> <span class="c1"># =&gt; "th"</span>
+<span class="o">-</span><span class="mi">21</span><span class="p">.</span><span class="nf">ordinal</span>  <span class="c1"># =&gt; "st"</span>
+<span class="o">-</span><span class="mi">134</span><span class="p">.</span><span class="nf">ordinal</span> <span class="c1"># =&gt; "th"</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='1.ordinal    # =&gt; "st"
+2.ordinal    # =&gt; "nd"
+53.ordinal   # =&gt; "rd"
+2009.ordinal # =&gt; "th"
+-21.ordinal  # =&gt; "st"
+-134.ordinal # =&gt; "th"
+'>Copy</button>
+</div>
+<div class="note"><p>Defined in <code><a href="https://github.com/rails/rails/tree/v7.0.4.2/activesupport/lib/active_support/core_ext/integer/inflections.rb">active_support/core_ext/integer/inflections.rb</a></code>.</p></div>
+
+<h4 id="ordinalize"><a class="anchorlink" href="#ordinalize">8.3 <code>ordinalize</code></a></h4>
+
+<p>The method <a href="https://api.rubyonrails.org/v7.0.4.2/classes/Integer.html#method-i-ordinalize"><code>ordinalize</code></a> returns the ordinal string corresponding to the receiver integer. In comparison, note that the <code>ordinal</code> method returns <strong>only</strong> the suffix string.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="mi">1</span><span class="p">.</span><span class="nf">ordinalize</span>    <span class="c1"># =&gt; "1st"</span>
+<span class="mi">2</span><span class="p">.</span><span class="nf">ordinalize</span>    <span class="c1"># =&gt; "2nd"</span>
+<span class="mi">53</span><span class="p">.</span><span class="nf">ordinalize</span>   <span class="c1"># =&gt; "53rd"</span>
+<span class="mi">2009</span><span class="p">.</span><span class="nf">ordinalize</span> <span class="c1"># =&gt; "2009th"</span>
+<span class="o">-</span><span class="mi">21</span><span class="p">.</span><span class="nf">ordinalize</span>  <span class="c1"># =&gt; "-21st"</span>
+<span class="o">-</span><span class="mi">134</span><span class="p">.</span><span class="nf">ordinalize</span> <span class="c1"># =&gt; "-134th"</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='1.ordinalize    # =&gt; "1st"
+2.ordinalize    # =&gt; "2nd"
+53.ordinalize   # =&gt; "53rd"
+2009.ordinalize # =&gt; "2009th"
+-21.ordinalize  # =&gt; "-21st"
+-134.ordinalize # =&gt; "-134th"
+'>Copy</button>
+</div>
+<div class="note"><p>Defined in <code><a href="https://github.com/rails/rails/tree/v7.0.4.2/activesupport/lib/active_support/core_ext/integer/inflections.rb">active_support/core_ext/integer/inflections.rb</a></code>.</p></div>
+
+<h4 id="extensions-to-integer-time"><a class="anchorlink" href="#extensions-to-integer-time">8.4 Time</a></h4>
+
+<p>The following methods:</p>
+<ul>
+<li><a href="https://api.rubyonrails.org/v7.0.4.2/classes/Integer.html#method-i-months"><code>months</code></a></li>
+<li><a href="https://api.rubyonrails.org/v7.0.4.2/classes/Integer.html#method-i-years"><code>years</code></a></li>
+</ul>
+<p>enable time declarations and calculations, like <code>4.months + 5.years</code>. Their return values can also be added to or subtracted from Time objects.</p>
+
+<p>These methods can be combined with <a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveSupport/Duration.html#method-i-from_now"><code>from_now</code></a>, <a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveSupport/Duration.html#method-i-ago"><code>ago</code></a>, etc, for precise date calculations. For example:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="c1"># equivalent to Time.current.advance(months: 1)</span>
+<span class="mi">1</span><span class="p">.</span><span class="nf">month</span><span class="p">.</span><span class="nf">from_now</span>
+
+<span class="c1"># equivalent to Time.current.advance(years: 2)</span>
+<span class="mi">2</span><span class="p">.</span><span class="nf">years</span><span class="p">.</span><span class="nf">from_now</span>
+
+<span class="c1"># equivalent to Time.current.advance(months: 4, years: 5)</span>
+<span class="p">(</span><span class="mi">4</span><span class="p">.</span><span class="nf">months</span> <span class="o">+</span> <span class="mi">5</span><span class="p">.</span><span class="nf">years</span><span class="p">).</span><span class="nf">from_now</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="# equivalent to Time.current.advance(months: 1)
+1.month.from_now
+
+# equivalent to Time.current.advance(years: 2)
+2.years.from_now
+
+# equivalent to Time.current.advance(months: 4, years: 5)
+(4.months + 5.years).from_now
+">Copy</button>
+</div>
+<div class="warning"><p>For other durations please refer to the time extensions to <code>Numeric</code>.</p></div>
+
+<div class="note"><p>Defined in <code><a href="https://github.com/rails/rails/tree/v7.0.4.2/activesupport/lib/active_support/core_ext/integer/time.rb">active_support/core_ext/integer/time.rb</a></code>.</p></div>
+</body>
+</html>

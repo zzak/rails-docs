@@ -1,0 +1,122 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>11 Testing Your Mailers</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v5.1.7/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="testing-your-mailers">11 Testing Your Mailers</h3>
+<p>Testing mailer classes requires some specific tools to do a thorough job.</p>
+
+<h4 id="keeping-the-postman-in-check">11.1 Keeping the Postman in Check</h4>
+
+<p>Your mailer classes - like every other part of your Rails application - should be tested to ensure that they are working as expected.</p>
+
+<p>The goals of testing your mailer classes are to ensure that:</p>
+<ul>
+<li>emails are being processed (created and sent)</li>
+<li>the email content is correct (subject, sender, body, etc)</li>
+<li>the right emails are being sent at the right times</li>
+</ul>
+<h5 id="from-all-sides">11.1.1 From All Sides</h5>
+
+<p>There are two aspects of testing your mailer, the unit tests and the functional tests. In the unit tests, you run the mailer in isolation with tightly controlled inputs and compare the output to a known value (a fixture.) In the functional tests you don't so much test the minute details produced by the mailer; instead, we test that our controllers and models are using the mailer in the right way. You test to prove that the right email was sent at the right time.</p>
+
+<h4 id="unit-testing">11.2 Unit Testing</h4>
+
+<p>In order to test that your mailer is working as expected, you can use unit tests to compare the actual results of the mailer with pre-written examples of what should be produced.</p>
+
+<h5 id="revenge-of-the-fixtures">11.2.1 Revenge of the Fixtures</h5>
+
+<p>For the purposes of unit testing a mailer, fixtures are used to provide an example of how the output <em>should</em> look. Because these are example emails, and not Active Record data like the other fixtures, they are kept in their own subdirectory apart from the other fixtures. The name of the directory within <code>test/fixtures</code> directly corresponds to the name of the mailer. So, for a mailer named <code>UserMailer</code>, the fixtures should reside in <code>test/fixtures/user_mailer</code> directory.</p>
+
+<p>When you generated your mailer, the generator creates stub fixtures for each of the mailers actions. If you didn't use the generator, you'll have to create those files yourself.</p>
+
+<h5 id="the-basic-test-case">11.2.2 The Basic Test Case</h5>
+
+<p>Here's a unit test to test a mailer named <code>UserMailer</code> whose action <code>invite</code> is used to send an invitation to a friend. It is an adapted version of the base test created by the generator for an <code>invite</code> action.</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+require 'test_helper'
+
+class UserMailerTest &lt; ActionMailer::TestCase
+  test "invite" do
+    # Create the email and store it for further assertions
+    email = UserMailer.create_invite('me@example.com',
+                                     'friend@example.com', Time.now)
+
+    # Send the email, then test that it got queued
+    assert_emails 1 do
+      email.deliver_now
+    end
+
+    # Test the body of the sent email contains what we expect it to
+    assert_equal ['me@example.com'], email.from
+    assert_equal ['friend@example.com'], email.to
+    assert_equal 'You have been invited by me@example.com', email.subject
+    assert_equal read_fixture('invite').join, email.body.to_s
+  end
+end
+
+</pre>
+</div>
+<p>In the test we send the email and store the returned object in the <code>email</code>
+variable. We then ensure that it was sent (the first assert), then, in the
+second batch of assertions, we ensure that the email does indeed contain what we
+expect. The helper <code>read_fixture</code> is used to read in the content from this file.</p>
+
+<div class="note"><p><code>email.body.to_s</code> is present when there's only one (HTML or text) part present.
+If the mailer provides both, you can test your fixture against specific parts
+with <code>email.text_part.body.to_s</code> or <code>email.html_part.body.to_s</code>.</p></div>
+
+<p>Here's the content of the <code>invite</code> fixture:</p>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+Hi friend@example.com,
+
+You have been invited.
+
+Cheers!
+
+</pre>
+</div>
+<p>This is the right time to understand a little more about writing tests for your
+mailers. The line <code>ActionMailer::Base.delivery_method = :test</code> in
+<code>config/environments/test.rb</code> sets the delivery method to test mode so that
+email will not actually be delivered (useful to avoid spamming your users while
+testing) but instead it will be appended to an array
+(<code>ActionMailer::Base.deliveries</code>).</p>
+
+<div class="note"><p>The <code>ActionMailer::Base.deliveries</code> array is only reset automatically in
+<code>ActionMailer::TestCase</code> and <code>ActionDispatch::IntegrationTest</code> tests.
+If you want to have a clean slate outside these test cases, you can reset it
+manually with: <code>ActionMailer::Base.deliveries.clear</code></p></div>
+
+<h4 id="functional-testing">11.3 Functional Testing</h4>
+
+<p>Functional testing for mailers involves more than just checking that the email body, recipients and so forth are correct. In functional mail tests you call the mail deliver methods and check that the appropriate emails have been appended to the delivery list. It is fairly safe to assume that the deliver methods themselves do their job. You are probably more interested in whether your own business logic is sending emails when you expect them to go out. For example, you can check that the invite friend operation is sending an email appropriately:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+require 'test_helper'
+
+class UserControllerTest &lt; ActionDispatch::IntegrationTest
+  test "invite friend" do
+    assert_difference 'ActionMailer::Base.deliveries.size', +1 do
+      post invite_friend_url, params: { email: 'friend@example.com' }
+    end
+    invite_email = ActionMailer::Base.deliveries.last
+
+    assert_equal "You have been invited by me@example.com", invite_email.subject
+    assert_equal 'friend@example.com', invite_email.to[0]
+    assert_match(/Hi friend@example.com/, invite_email.body.to_s)
+  end
+end
+
+</pre>
+</div>
+</body>
+</html>

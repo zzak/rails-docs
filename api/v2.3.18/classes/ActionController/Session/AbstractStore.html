@@ -1,0 +1,219 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html 
+     PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+  <head>
+    <title>Class: ActionController::Session::AbstractStore</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <link rel="stylesheet" href="../../.././rdoc-style.css" type="text/css" media="screen" />
+
+    <script language="JavaScript" type="text/javascript">
+    // <![CDATA[
+
+        function toggleSource( id )
+        {
+          var elem
+          var link
+
+          if( document.getElementById )
+          {
+            elem = document.getElementById( id )
+            link = document.getElementById( "l_" + id )
+          }
+          else if ( document.all )
+          {
+            elem = eval( "document.all." + id )
+            link = eval( "document.all.l_" + id )
+          }
+          else
+            return false;
+
+          if( elem.style.display == "block" )
+          {
+            elem.style.display = "none"
+            link.innerHTML = "show source"
+          }
+          else
+          {
+            elem.style.display = "block"
+            link.innerHTML = "hide source"
+          }
+        }
+
+        function openCode( url )
+        {
+          window.open( url, "SOURCE_CODE", "resizable=yes,scrollbars=yes,toolbar=no,status=no,height=480,width=750" ).focus();
+        }
+      // ]]>
+    </script>
+  </head>
+
+  <body>
+  <table width="100%" border='0' cellpadding='0' cellspacing='0' class='banner'><tr>
+  <td class="file-title"><span class="file-title-prefix">Class</span><br />ActionController::Session::AbstractStore</td>
+  <td align="right">
+    <table cellspacing="0" cellpadding="2">
+      <tr valign="top">
+        <td>In:</td>
+        <td>
+<a href="../../../files/actionpack/lib/action_controller/session/abstract_store_rb.html">actionpack/lib/action_controller/session/abstract_store.rb</a>
+        </td>
+      </tr>
+    <tr>
+      <td>Parent:</td>
+      <td>
+        <a href="../../Object.html">
+Object
+         </a>
+     </td>
+   </tr>
+         </table>
+        </td>
+        </tr>
+      </table>
+ <!-- banner header -->
+
+  <div id="bodyContent">
+      <div id="content">
+
+
+
+
+  <div class="sectiontitle">Methods</div>
+  <ul>
+  <li><a href="#M001691">call</a></li>
+  <li><a href="#M001690">new</a></li>
+  </ul>
+
+<div class="sectiontitle">Included Modules</div>
+<ul>
+  <li><a href="AbstractStore/SessionUtils.html">SessionUtils</a></li>
+</ul>
+
+
+  <div class="sectiontitle">Classes and Modules</div>
+  Module <a href="AbstractStore/SessionUtils.html" class="link">ActionController::Session::AbstractStore::SessionUtils</a><br />
+Class <a href="AbstractStore/OptionsHash.html" class="link">ActionController::Session::AbstractStore::OptionsHash</a><br />
+Class <a href="AbstractStore/SessionHash.html" class="link">ActionController::Session::AbstractStore::SessionHash</a><br />
+
+
+  <div class="sectiontitle">Constants</div>
+  <table border='0' cellpadding='5'>
+  <tr valign='top'>
+    <td class="attr-name">ENV_SESSION_KEY</td>
+    <td>=</td>
+    <td class="attr-value">'rack.session'.freeze</td>
+  </tr>
+  <tr valign='top'>
+    <td class="attr-name">ENV_SESSION_OPTIONS_KEY</td>
+    <td>=</td>
+    <td class="attr-value">'rack.session.options'.freeze</td>
+  </tr>
+  <tr valign='top'>
+    <td class="attr-name">HTTP_COOKIE</td>
+    <td>=</td>
+    <td class="attr-value">'HTTP_COOKIE'.freeze</td>
+  </tr>
+  <tr valign='top'>
+    <td class="attr-name">SET_COOKIE</td>
+    <td>=</td>
+    <td class="attr-value">'Set-Cookie'.freeze</td>
+  </tr>
+  <tr valign='top'>
+    <td class="attr-name">DEFAULT_OPTIONS</td>
+    <td>=</td>
+    <td class="attr-value">{         :key =&gt;           '_session_id',         :path =&gt;          '/',         :domain =&gt;        nil,         :expire_after =&gt;  nil,         :secure =&gt;        false,         :httponly =&gt;      true,         :cookie_only =&gt;   true</td>
+  </tr>
+  </table>
+
+
+<div class="sectiontitle">Public Class methods</div>
+<div class="method">
+  <div class="title">
+    <a name="M001690"></a><b>new</b>(app, options = {})
+  </div>
+<div class="sourcecode">
+  <p class="source-link">[ <a href="javascript:toggleSource('M001690_source')" id="l_M001690_source">show source</a> ]</p>
+  <div id="M001690_source" class="dyn-source">
+<pre>
+     <span class="ruby-comment cmt"># File actionpack/lib/action_controller/session/abstract_store.rb, line 150</span>
+150:       <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">initialize</span>(<span class="ruby-identifier">app</span>, <span class="ruby-identifier">options</span> = {})
+151:         <span class="ruby-comment cmt"># Process legacy CGI options</span>
+152:         <span class="ruby-identifier">options</span> = <span class="ruby-identifier">options</span>.<span class="ruby-identifier">symbolize_keys</span>
+153:         <span class="ruby-keyword kw">if</span> <span class="ruby-identifier">options</span>.<span class="ruby-identifier">has_key?</span>(<span class="ruby-identifier">:session_path</span>)
+154:           <span class="ruby-constant">ActiveSupport</span><span class="ruby-operator">::</span><span class="ruby-constant">Deprecation</span>.<span class="ruby-identifier">warn</span> <span class="ruby-value str">&quot;Giving :session_path to SessionStore is deprecated, &quot;</span> <span class="ruby-operator">&lt;&lt;</span>
+155:             <span class="ruby-value str">&quot;please use :path instead&quot;</span>, <span class="ruby-identifier">caller</span>
+156:           <span class="ruby-identifier">options</span>[<span class="ruby-identifier">:path</span>] = <span class="ruby-identifier">options</span>.<span class="ruby-identifier">delete</span>(<span class="ruby-identifier">:session_path</span>)
+157:         <span class="ruby-keyword kw">end</span>
+158:         <span class="ruby-keyword kw">if</span> <span class="ruby-identifier">options</span>.<span class="ruby-identifier">has_key?</span>(<span class="ruby-identifier">:session_key</span>)
+159:           <span class="ruby-constant">ActiveSupport</span><span class="ruby-operator">::</span><span class="ruby-constant">Deprecation</span>.<span class="ruby-identifier">warn</span> <span class="ruby-value str">&quot;Giving :session_key to SessionStore is deprecated, &quot;</span> <span class="ruby-operator">&lt;&lt;</span>
+160:             <span class="ruby-value str">&quot;please use :key instead&quot;</span>, <span class="ruby-identifier">caller</span>
+161:           <span class="ruby-identifier">options</span>[<span class="ruby-identifier">:key</span>] = <span class="ruby-identifier">options</span>.<span class="ruby-identifier">delete</span>(<span class="ruby-identifier">:session_key</span>)
+162:         <span class="ruby-keyword kw">end</span>
+163:         <span class="ruby-keyword kw">if</span> <span class="ruby-identifier">options</span>.<span class="ruby-identifier">has_key?</span>(<span class="ruby-identifier">:session_http_only</span>)
+164:           <span class="ruby-constant">ActiveSupport</span><span class="ruby-operator">::</span><span class="ruby-constant">Deprecation</span>.<span class="ruby-identifier">warn</span> <span class="ruby-value str">&quot;Giving :session_http_only to SessionStore is deprecated, &quot;</span> <span class="ruby-operator">&lt;&lt;</span>
+165:             <span class="ruby-value str">&quot;please use :httponly instead&quot;</span>, <span class="ruby-identifier">caller</span>
+166:           <span class="ruby-identifier">options</span>[<span class="ruby-identifier">:httponly</span>] = <span class="ruby-identifier">options</span>.<span class="ruby-identifier">delete</span>(<span class="ruby-identifier">:session_http_only</span>)
+167:         <span class="ruby-keyword kw">end</span>
+168: 
+169:         <span class="ruby-ivar">@app</span> = <span class="ruby-identifier">app</span>
+170:         <span class="ruby-ivar">@default_options</span> = <span class="ruby-constant">DEFAULT_OPTIONS</span>.<span class="ruby-identifier">merge</span>(<span class="ruby-identifier">options</span>)
+171:         <span class="ruby-ivar">@key</span> = <span class="ruby-ivar">@default_options</span>[<span class="ruby-identifier">:key</span>]
+172:         <span class="ruby-ivar">@cookie_only</span> = <span class="ruby-ivar">@default_options</span>[<span class="ruby-identifier">:cookie_only</span>]
+173:       <span class="ruby-keyword kw">end</span>
+</pre>
+  </div>
+</div>
+</div>
+<div class="sectiontitle">Public Instance methods</div>
+<div class="method">
+  <div class="title">
+    <a name="M001691"></a><b>call</b>(env)
+  </div>
+<div class="sourcecode">
+  <p class="source-link">[ <a href="javascript:toggleSource('M001691_source')" id="l_M001691_source">show source</a> ]</p>
+  <div id="M001691_source" class="dyn-source">
+<pre>
+     <span class="ruby-comment cmt"># File actionpack/lib/action_controller/session/abstract_store.rb, line 175</span>
+175:       <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">call</span>(<span class="ruby-identifier">env</span>)
+176:         <span class="ruby-identifier">prepare!</span>(<span class="ruby-identifier">env</span>)
+177:         <span class="ruby-identifier">response</span> = <span class="ruby-ivar">@app</span>.<span class="ruby-identifier">call</span>(<span class="ruby-identifier">env</span>)
+178: 
+179:         <span class="ruby-identifier">session_data</span> = <span class="ruby-identifier">env</span>[<span class="ruby-constant">ENV_SESSION_KEY</span>]
+180:         <span class="ruby-identifier">options</span> = <span class="ruby-identifier">env</span>[<span class="ruby-constant">ENV_SESSION_OPTIONS_KEY</span>]
+181: 
+182:         <span class="ruby-keyword kw">if</span> <span class="ruby-operator">!</span><span class="ruby-identifier">session_data</span>.<span class="ruby-identifier">is_a?</span>(<span class="ruby-constant">AbstractStore</span><span class="ruby-operator">::</span><span class="ruby-constant">SessionHash</span>) <span class="ruby-operator">||</span> <span class="ruby-identifier">session_data</span>.<span class="ruby-identifier">loaded?</span> <span class="ruby-operator">||</span> <span class="ruby-identifier">options</span>[<span class="ruby-identifier">:expire_after</span>]
+183:           <span class="ruby-identifier">request</span> = <span class="ruby-constant">ActionController</span><span class="ruby-operator">::</span><span class="ruby-constant">Request</span>.<span class="ruby-identifier">new</span>(<span class="ruby-identifier">env</span>)
+184: 
+185:           <span class="ruby-keyword kw">return</span> <span class="ruby-identifier">response</span> <span class="ruby-keyword kw">if</span> (<span class="ruby-identifier">options</span>[<span class="ruby-identifier">:secure</span>] <span class="ruby-operator">&amp;&amp;</span> <span class="ruby-operator">!</span><span class="ruby-identifier">request</span>.<span class="ruby-identifier">ssl?</span>)
+186:         
+187:           <span class="ruby-identifier">session_data</span>.<span class="ruby-identifier">send</span>(<span class="ruby-identifier">:load!</span>) <span class="ruby-keyword kw">if</span> <span class="ruby-identifier">session_data</span>.<span class="ruby-identifier">is_a?</span>(<span class="ruby-constant">AbstractStore</span><span class="ruby-operator">::</span><span class="ruby-constant">SessionHash</span>) <span class="ruby-operator">&amp;&amp;</span> <span class="ruby-operator">!</span><span class="ruby-identifier">session_data</span>.<span class="ruby-identifier">loaded?</span>
+188: 
+189:           <span class="ruby-identifier">sid</span> = <span class="ruby-identifier">options</span>[<span class="ruby-identifier">:id</span>] <span class="ruby-operator">||</span> <span class="ruby-identifier">generate_sid</span>
+190: 
+191:           <span class="ruby-keyword kw">unless</span> <span class="ruby-identifier">set_session</span>(<span class="ruby-identifier">env</span>, <span class="ruby-identifier">sid</span>, <span class="ruby-identifier">session_data</span>.<span class="ruby-identifier">to_hash</span>)
+192:             <span class="ruby-keyword kw">return</span> <span class="ruby-identifier">response</span>
+193:           <span class="ruby-keyword kw">end</span>
+194: 
+195:           <span class="ruby-identifier">request_cookies</span> = <span class="ruby-identifier">env</span>[<span class="ruby-value str">&quot;rack.request.cookie_hash&quot;</span>]
+196: 
+197:           <span class="ruby-keyword kw">if</span> (<span class="ruby-identifier">request_cookies</span>.<span class="ruby-identifier">nil?</span> <span class="ruby-operator">||</span> <span class="ruby-identifier">request_cookies</span>[<span class="ruby-ivar">@key</span>] <span class="ruby-operator">!=</span> <span class="ruby-identifier">sid</span>) <span class="ruby-operator">||</span> <span class="ruby-identifier">options</span>[<span class="ruby-identifier">:expire_after</span>]
+198:             <span class="ruby-identifier">cookie</span> = {<span class="ruby-identifier">:value</span> =<span class="ruby-operator">&gt;</span> <span class="ruby-identifier">sid</span>}
+199:             <span class="ruby-identifier">cookie</span>[<span class="ruby-identifier">:expires</span>] = <span class="ruby-constant">Time</span>.<span class="ruby-identifier">now</span> <span class="ruby-operator">+</span> <span class="ruby-identifier">options</span>[<span class="ruby-identifier">:expire_after</span>] <span class="ruby-keyword kw">if</span> <span class="ruby-identifier">options</span>[<span class="ruby-identifier">:expire_after</span>]
+200:             <span class="ruby-constant">Rack</span><span class="ruby-operator">::</span><span class="ruby-constant">Utils</span>.<span class="ruby-identifier">set_cookie_header!</span>(<span class="ruby-identifier">response</span>[<span class="ruby-value">1</span>], <span class="ruby-ivar">@key</span>, <span class="ruby-identifier">cookie</span>.<span class="ruby-identifier">merge</span>(<span class="ruby-identifier">options</span>))
+201:           <span class="ruby-keyword kw">end</span>
+202:         <span class="ruby-keyword kw">end</span>
+203: 
+204:         <span class="ruby-identifier">response</span>
+205:       <span class="ruby-keyword kw">end</span>
+</pre>
+  </div>
+</div>
+</div>
+</div>
+
+  </div>
+
+    </body>
+</html>

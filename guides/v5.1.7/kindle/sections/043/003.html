@@ -1,0 +1,92 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>4 Action Pack</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v5.1.7/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="action-pack">4 Action Pack</h3>
+<p>Please refer to the
+<a href="https://github.com/rails/rails/blob/4-1-stable/actionpack/CHANGELOG.md">Changelog</a>
+for detailed changes.</p>
+
+<h4 id="action-pack-removals">4.1 Removals</h4>
+<ul>
+<li>Removed deprecated Rails application fallback for integration testing, set
+<code>ActionDispatch.test_app</code> instead.</li>
+<li>Removed deprecated <code>page_cache_extension</code> config.</li>
+<li>Removed deprecated <code>ActionController::RecordIdentifier</code>, use
+<code>ActionView::RecordIdentifier</code> instead.</li>
+<li>Removed deprecated constants from Action Controller:</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th style="text-align: left">Removed</th>
+<th style="text-align: left">Successor</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: left">ActionController::AbstractRequest</td>
+<td style="text-align: left">ActionDispatch::Request</td>
+</tr>
+<tr>
+<td style="text-align: left">ActionController::Request</td>
+<td style="text-align: left">ActionDispatch::Request</td>
+</tr>
+<tr>
+<td style="text-align: left">ActionController::AbstractResponse</td>
+<td style="text-align: left">ActionDispatch::Response</td>
+</tr>
+<tr>
+<td style="text-align: left">ActionController::Response</td>
+<td style="text-align: left">ActionDispatch::Response</td>
+</tr>
+<tr>
+<td style="text-align: left">ActionController::Routing</td>
+<td style="text-align: left">ActionDispatch::Routing</td>
+</tr>
+<tr>
+<td style="text-align: left">ActionController::Integration</td>
+<td style="text-align: left">ActionDispatch::Integration</td>
+</tr>
+<tr>
+<td style="text-align: left">ActionController::IntegrationTest</td>
+<td style="text-align: left">ActionDispatch::IntegrationTest</td>
+</tr>
+</tbody>
+</table>
+<h4 id="action-pack-notable-changes">4.2 Notable changes</h4>
+<ul>
+<li>
+<code>protect_from_forgery</code> also prevents cross-origin <code>&lt;script&gt;</code> tags.
+Update your tests to use <code>xhr :get, :foo, format: :js</code> instead of
+<code>get :foo, format: :js</code>.
+(<a href="https://github.com/rails/rails/pull/13345">Pull Request</a>)</li>
+<li>
+<code>#url_for</code> takes a hash with options inside an
+array. (<a href="https://github.com/rails/rails/pull/9599">Pull Request</a>)</li>
+<li>Added <code>session#fetch</code> method fetch behaves similarly to
+<a href="http://www.ruby-doc.org/core-1.9.3/Hash.html#method-i-fetch">Hash#fetch</a>,
+with the exception that the returned value is always saved into the
+session. (<a href="https://github.com/rails/rails/pull/12692">Pull Request</a>)</li>
+<li>Separated Action View completely from Action
+Pack. (<a href="https://github.com/rails/rails/pull/11032">Pull Request</a>)</li>
+<li>Log which keys were affected by deep
+munge. (<a href="https://github.com/rails/rails/pull/13813">Pull Request</a>)</li>
+<li>New config option <code>config.action_dispatch.perform_deep_munge</code> to opt out of
+params "deep munging" that was used to address security vulnerability
+CVE-2013-0155. (<a href="https://github.com/rails/rails/pull/13188">Pull Request</a>)</li>
+<li>New config option <code>config.action_dispatch.cookies_serializer</code> for specifying a
+serializer for the signed and encrypted cookie jars. (Pull Requests
+<a href="https://github.com/rails/rails/pull/13692">1</a>,
+<a href="https://github.com/rails/rails/pull/13945">2</a> /
+<a href="upgrading_ruby_on_rails.html#cookies-serializer">More Details</a>)</li>
+<li>Added <code>render :plain</code>, <code>render :html</code> and <code>render
+:body</code>. (<a href="https://github.com/rails/rails/pull/14062">Pull Request</a> /
+<a href="upgrading_ruby_on_rails.html#rendering-content-from-string">More Details</a>)</li>
+</ul>
+</body>
+</html>

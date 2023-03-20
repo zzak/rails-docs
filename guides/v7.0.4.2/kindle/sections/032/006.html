@@ -1,0 +1,120 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>7 Autoloading When the Application Boots</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v7.0.4.2/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="autoloading-when-the-application-boots"><a class="anchorlink" href="#autoloading-when-the-application-boots">7 Autoloading When the Application Boots</a></h3>
+<p>While booting, applications can autoload from the autoload once paths, which are managed by the <code>once</code> autoloader. Please check the section <a href="#config-autoload-once-paths"><code>config.autoload_once_paths</code></a> above.</p>
+
+<p>However, you cannot autoload from the autoload paths, which are managed by the <code>main</code> autoloader. This applies to code in <code>config/initializers</code> as well as application or engines initializers.</p>
+
+<p>Why? Initializers only run once, when the application boots. If you reboot the server, they run again in a new process, but reloading does not reboot the server, and initializers don't run again. Let's see the two main use cases.</p>
+
+<h4 id="use-case-1-during-boot-load-reloadable-code"><a class="anchorlink" href="#use-case-1-during-boot-load-reloadable-code">7.1 Use case 1: During boot, load reloadable code</a></h4>
+
+<h5 id="autoload-on-boot-and-on-each-reload"><a class="anchorlink" href="#autoload-on-boot-and-on-each-reload">7.1.1 Autoload on boot and on each reload</a></h5>
+
+<p>Let's imagine <code>ApiGateway</code> is a reloadable class from <code>app/services</code> managed by the <code>main</code> autoloader and you need to configure its endpoint while the application boots:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="c1"># config/initializers/api_gateway_setup.rb</span>
+<span class="no">ApiGateway</span><span class="p">.</span><span class="nf">endpoint</span> <span class="o">=</span> <span class="s2">"https://example.com"</span> <span class="c1"># DO NOT DO THIS</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='# config/initializers/api_gateway_setup.rb
+ApiGateway.endpoint = "https://example.com" # DO NOT DO THIS
+'>Copy</button>
+</div>
+<p>a reloaded <code>ApiGateway</code> would have a <code>nil</code> endpoint, because the code above does not run again.</p>
+
+<p>You can still set things up during boot, but you need to wrap them in a <code>to_prepare</code> block, which runs on boot, and after each reload:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="c1"># config/initializers/api_gateway_setup.rb</span>
+<span class="no">Rails</span><span class="p">.</span><span class="nf">application</span><span class="p">.</span><span class="nf">config</span><span class="p">.</span><span class="nf">to_prepare</span> <span class="k">do</span>
+  <span class="no">ApiGateway</span><span class="p">.</span><span class="nf">endpoint</span> <span class="o">=</span> <span class="s2">"https://example.com"</span> <span class="c1"># CORRECT</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='# config/initializers/api_gateway_setup.rb
+Rails.application.config.to_prepare do
+  ApiGateway.endpoint = "https://example.com" # CORRECT
+end
+'>Copy</button>
+</div>
+<div class="note"><p>For historical reasons, this callback may run twice. The code it executes must be idempotent.</p></div>
+
+<h5 id="autoload-on-boot-only"><a class="anchorlink" href="#autoload-on-boot-only">7.1.2 Autoload on boot only</a></h5>
+
+<p>Reloadable classes and modules can be autoloaded in <code>after_initialize</code> blocks too. These run on boot, but do not run again on reload. In some exceptional cases this may be what you want.</p>
+
+<p>Preflight checks are a use case for this:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="c1"># config/initializers/check_admin_presence.rb</span>
+<span class="no">Rails</span><span class="p">.</span><span class="nf">application</span><span class="p">.</span><span class="nf">config</span><span class="p">.</span><span class="nf">after_initialize</span> <span class="k">do</span>
+  <span class="k">unless</span> <span class="no">Role</span><span class="p">.</span><span class="nf">where</span><span class="p">(</span><span class="ss">name: </span><span class="s2">"admin"</span><span class="p">).</span><span class="nf">exists?</span>
+    <span class="nb">abort</span> <span class="s2">"The admin role is not present, please seed the database."</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='# config/initializers/check_admin_presence.rb
+Rails.application.config.after_initialize do
+  unless Role.where(name: "admin").exists?
+    abort "The admin role is not present, please seed the database."
+  end
+end
+'>Copy</button>
+</div>
+<h4 id="use-case-2-during-boot-load-code-that-remains-cached"><a class="anchorlink" href="#use-case-2-during-boot-load-code-that-remains-cached">7.2 Use case 2: During boot, load code that remains cached</a></h4>
+
+<p>Some configurations take a class or module object, and they store it in a place that is not reloaded.</p>
+
+<p>One example is middleware:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">config</span><span class="p">.</span><span class="nf">middleware</span><span class="p">.</span><span class="nf">use</span> <span class="no">MyApp</span><span class="o">::</span><span class="no">Middleware</span><span class="o">::</span><span class="no">Foo</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="config.middleware.use MyApp::Middleware::Foo
+">Copy</button>
+</div>
+<p>When you reload, the middleware stack is not affected, so, whatever object was stored in <code>MyApp::Middleware::Foo</code> at boot time remains there stale.</p>
+
+<p>Another example is Active Job serializers:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="c1"># config/initializers/custom_serializers.rb</span>
+<span class="no">Rails</span><span class="p">.</span><span class="nf">application</span><span class="p">.</span><span class="nf">config</span><span class="p">.</span><span class="nf">active_job</span><span class="p">.</span><span class="nf">custom_serializers</span> <span class="o">&lt;&lt;</span> <span class="no">MoneySerializer</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="# config/initializers/custom_serializers.rb
+Rails.application.config.active_job.custom_serializers &lt;&lt; MoneySerializer
+">Copy</button>
+</div>
+<p>Whatever <code>MoneySerializer</code> evaluates to during initialization gets pushed to the custom serializers. If that was reloadable, the initial object would be still within Active Job, not reflecting your changes.</p>
+
+<p>Yet another example are railties or engines decorating framework classes by including modules. For instance, <a href="https://github.com/hotwired/turbo-rails"><code>turbo-rails</code></a> decorates <code>ActiveRecord::Base</code> this way:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">initializer</span> <span class="s2">"turbo.broadcastable"</span> <span class="k">do</span>
+  <span class="no">ActiveSupport</span><span class="p">.</span><span class="nf">on_load</span><span class="p">(</span><span class="ss">:active_record</span><span class="p">)</span> <span class="k">do</span>
+    <span class="kp">include</span> <span class="no">Turbo</span><span class="o">::</span><span class="no">Broadcastable</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='initializer "turbo.broadcastable" do
+  ActiveSupport.on_load(:active_record) do
+    include Turbo::Broadcastable
+  end
+end
+'>Copy</button>
+</div>
+<p>That adds a module object to the ancestor chain of <code>ActiveRecord::Base</code>. Changes in <code>Turbo::Broadcastable</code> would have no effect if reloaded, the ancestor chain would still have the original one.</p>
+
+<p>Corollary: Those classes or modules <strong>cannot be reloadable</strong>.</p>
+
+<p>The easiest way to refer to those classes or modules during boot is to have them defined in a directory which does not belong to the autoload paths. For instance, <code>lib</code> is an idiomatic choice. It does not belong to the autoload paths by default, but it does belong to <code>$LOAD_PATH</code>. Just perform a regular <code>require</code> to load it.</p>
+
+<p>As noted above, another option is to have the directory that defines them in the autoload once paths and autoload. Please check the <a href="https://edgeguides.rubyonrails.org/autoloading_and_reloading_constants.html#config-autoload-once-paths">section about config.autoload_once_paths</a> for details.</p>
+</body>
+</html>

@@ -1,0 +1,69 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>9 Active Storage</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v6.0.6.1/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="active-storage"><a class="anchorlink" href="#active-storage">9 Active Storage</a></h3>
+<p>Please refer to the <a href="https://github.com/rails/rails/blob/6-0-stable/activestorage/CHANGELOG.md">Changelog</a> for detailed changes.</p>
+
+<h4 id="active-storage-removals"><a class="anchorlink" href="#active-storage-removals">9.1 Removals</a></h4>
+
+<h4 id="active-storage-deprecations"><a class="anchorlink" href="#active-storage-deprecations">9.2 Deprecations</a></h4>
+<ul>
+<li>  Deprecate  <code>config.active_storage.queue</code> in favor of <code>config.active_storage.queues.analysis</code>
+and <code>config.active_storage.queues.purge</code>.
+(<a href="https://github.com/rails/rails/pull/34838">Pull Request</a>)</li>
+<li>  Deprecate <code>ActiveStorage::Downloading</code> in favor of <code>ActiveStorage::Blob#open</code>.
+(<a href="https://github.com/rails/rails/commit/ee21b7c2eb64def8f00887a9fafbd77b85f464f1">Commit</a>)</li>
+<li>  Deprecate using <code>mini_magick</code> directly for generating image variants in favor of
+<code>image_processing</code>.
+(<a href="https://github.com/rails/rails/commit/697f4a93ad386f9fb7795f0ba68f815f16ebad0f">Commit</a>)</li>
+<li>  Deprecate <code>:combine_options</code> in Active Storage's ImageProcessing transformer
+without replacement.
+(<a href="https://github.com/rails/rails/commit/697f4a93ad386f9fb7795f0ba68f815f16ebad0f">Commit</a>)</li>
+</ul>
+<h4 id="active-storage-notable-changes"><a class="anchorlink" href="#active-storage-notable-changes">9.3 Notable changes</a></h4>
+<ul>
+<li>  Add support for generating BMP image variants.
+(<a href="https://github.com/rails/rails/pull/36051">Pull Request</a>)</li>
+<li>  Add support for generating TIFF image variants.
+(<a href="https://github.com/rails/rails/pull/34824">Pull Request</a>)</li>
+<li>  Add support for generating progressive JPEG image variants.
+(<a href="https://github.com/rails/rails/pull/34455">Pull Request</a>)</li>
+<li>  Add <code>ActiveStorage.routes_prefix</code> for configuring the Active Storage generated routes.
+(<a href="https://github.com/rails/rails/pull/33883">Pull Request</a>)</li>
+<li>  Generate a 404 Not Found response on <code>ActiveStorage::DiskController#show</code> when
+the requested file is missing from the disk service.
+(<a href="https://github.com/rails/rails/pull/33666">Pull Request</a>)</li>
+<li>  Raise <code>ActiveStorage::FileNotFoundError</code> when the requested file is missing for
+<code>ActiveStorage::Blob#download</code> and <code>ActiveStorage::Blob#open</code>.
+(<a href="https://github.com/rails/rails/pull/33666">Pull Request</a>)</li>
+<li>  Add a generic <code>ActiveStorage::Error</code> class that Active Storage exceptions inherit from.
+(<a href="https://github.com/rails/rails/commit/18425b837149bc0d50f8d5349e1091a623762d6b">Commit</a>)</li>
+<li>  Persist uploaded files assigned to a record to storage when the record
+is saved instead of immediately.
+(<a href="https://github.com/rails/rails/pull/33303">Pull Request</a>)</li>
+<li>  Optionally replace existing files instead of adding to them when assigning to
+a collection of attachments (as in <code>@user.update!(images: [ … ])</code>). Use
+<code>config.active_storage.replace_on_assign_to_many</code> to control this behavior.
+(<a href="https://github.com/rails/rails/pull/33303">Pull Request</a>,
+ <a href="https://github.com/rails/rails/pull/36716">Pull Request</a>)</li>
+<li>  Add the ability to reflect on defined attachments using the existing
+Active Record reflection mechanism.
+(<a href="https://github.com/rails/rails/pull/33018">Pull Request</a>)</li>
+<li>  Add <code>ActiveStorage::Blob#open</code>, which downloads a blob to a tempfile on disk
+and yields the tempfile.
+(<a href="https://github.com/rails/rails/commit/ee21b7c2eb64def8f00887a9fafbd77b85f464f1">Commit</a>)</li>
+<li>  Support streaming downloads from Google Cloud Storage. Require version 1.11+
+of the <code>google-cloud-storage</code> gem.
+(<a href="https://github.com/rails/rails/pull/32788">Pull Request</a>)</li>
+<li>  Use the <code>image_processing</code> gem for Active Storage variants. This replaces using
+<code>mini_magick</code> directly.
+(<a href="https://github.com/rails/rails/pull/32471">Pull Request</a>
+</li>
+</ul>
+</body>
+</html>

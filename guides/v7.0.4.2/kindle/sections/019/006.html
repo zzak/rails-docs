@@ -1,0 +1,34 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>7 Action Mailer</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v7.0.4.2/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="action-mailer"><a class="anchorlink" href="#action-mailer">7 Action Mailer</a></h3>
+<p>One of the most common jobs in a modern web application is sending emails outside
+of the request-response cycle, so the user doesn't have to wait on it. Active Job
+is integrated with Action Mailer so you can easily send emails asynchronously:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="c1"># If you want to send the email now use #deliver_now</span>
+<span class="no">UserMailer</span><span class="p">.</span><span class="nf">welcome</span><span class="p">(</span><span class="vi">@user</span><span class="p">).</span><span class="nf">deliver_now</span>
+
+<span class="c1"># If you want to send the email through Active Job use #deliver_later</span>
+<span class="no">UserMailer</span><span class="p">.</span><span class="nf">welcome</span><span class="p">(</span><span class="vi">@user</span><span class="p">).</span><span class="nf">deliver_later</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="# If you want to send the email now use #deliver_now
+UserMailer.welcome(@user).deliver_now
+
+# If you want to send the email through Active Job use #deliver_later
+UserMailer.welcome(@user).deliver_later
+">Copy</button>
+</div>
+<div class="note"><p>Using the asynchronous queue from a Rake task (for example, to
+send an email using <code>.deliver_later</code>) will generally not work because Rake will
+likely end, causing the in-process thread pool to be deleted, before any/all
+of the <code>.deliver_later</code> emails are processed. To avoid this problem, use
+<code>.deliver_now</code> or run a persistent queue in development.</p></div>
+</body>
+</html>

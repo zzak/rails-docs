@@ -1,0 +1,33 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>6 Assets Cache Store</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v5.2.8.1/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="assets-cache-store"><a class="anchorlink" href="#assets-cache-store">6 Assets Cache Store</a></h3>
+<p>By default, Sprockets caches assets in <code>tmp/cache/assets</code> in development
+and production environments. This can be changed as follows:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+config.assets.configure do |env|
+  env.cache = ActiveSupport::Cache.lookup_store(:memory_store,
+                                                { size: 32.megabytes })
+end
+
+</pre>
+</div>
+<p>To disable the assets cache store:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+config.assets.configure do |env|
+  env.cache = ActiveSupport::Cache.lookup_store(:null_store)
+end
+
+</pre>
+</div>
+</body>
+</html>

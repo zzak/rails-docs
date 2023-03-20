@@ -1,0 +1,73 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>17 Understanding The Method Chaining</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v5.2.8.1/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="understanding-the-method-chaining"><a class="anchorlink" href="#understanding-the-method-chaining">17 Understanding The Method Chaining</a></h3>
+<p>The Active Record pattern implements <a href="https://en.wikipedia.org/wiki/Method_chaining">Method Chaining</a>,
+which allow us to use multiple Active Record methods together in a simple and straightforward way.</p>
+
+<p>You can chain methods in a statement when the previous method called returns an
+<code>ActiveRecord::Relation</code>, like <code>all</code>, <code>where</code>, and <code>joins</code>. Methods that return
+a single object (see <a href="#retrieving-a-single-object">Retrieving a Single Object Section</a>)
+have to be at the end of the statement.</p>
+
+<p>There are some examples below. This guide won't cover all the possibilities, just a few as examples.
+When an Active Record method is called, the query is not immediately generated and sent to the database,
+this just happens when the data is actually needed. So each example below generates a single query.</p>
+
+<h4 id="retrieving-filtered-data-from-multiple-tables"><a class="anchorlink" href="#retrieving-filtered-data-from-multiple-tables">17.1 Retrieving filtered data from multiple tables</a></h4>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+Person
+  .select('people.id, people.name, comments.text')
+  .joins(:comments)
+  .where('comments.created_at &gt; ?', 1.week.ago)
+
+</pre>
+</div>
+<p>The result should be something like this:</p>
+
+<div class="code_container">
+<pre class="brush: sql; gutter: false; toolbar: false">
+SELECT people.id, people.name, comments.text
+FROM people
+INNER JOIN comments
+  ON comments.person_id = people.id
+WHERE comments.created_at &gt; '2015-01-01'
+
+</pre>
+</div>
+<h4 id="retrieving-specific-data-from-multiple-tables"><a class="anchorlink" href="#retrieving-specific-data-from-multiple-tables">17.2 Retrieving specific data from multiple tables</a></h4>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+Person
+  .select('people.id, people.name, companies.name')
+  .joins(:company)
+  .find_by('people.name' =&gt; 'John') # this should be the last
+
+</pre>
+</div>
+<p>The above should generate:</p>
+
+<div class="code_container">
+<pre class="brush: sql; gutter: false; toolbar: false">
+SELECT people.id, people.name, companies.name
+FROM people
+INNER JOIN companies
+  ON companies.person_id = people.id
+WHERE people.name = 'John'
+LIMIT 1
+
+</pre>
+</div>
+<div class="note"><p>Note that if a query matches multiple records, <code>find_by</code> will
+fetch only the first one and ignore the others (see the <code>LIMIT 1</code>
+statement above).</p></div>
+</body>
+</html>

@@ -1,0 +1,218 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>7 Active Record</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v6.0.6.1/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="active-record"><a class="anchorlink" href="#active-record">7 Active Record</a></h3>
+<p>Please refer to the <a href="https://github.com/rails/rails/blob/5-0-stable/activerecord/CHANGELOG.md">Changelog</a> for detailed changes.</p>
+
+<h4 id="active-record-removals"><a class="anchorlink" href="#active-record-removals">7.1 Removals</a></h4>
+<ul>
+<li>  Removed deprecated behavior allowing nested arrays to be passed as query
+values. (<a href="https://github.com/rails/rails/pull/17919">Pull Request</a>)</li>
+<li>  Removed deprecated <code>ActiveRecord::Tasks::DatabaseTasks#load_schema</code>. This
+method was replaced by <code>ActiveRecord::Tasks::DatabaseTasks#load_schema_for</code>.
+(<a href="https://github.com/rails/rails/commit/ad783136d747f73329350b9bb5a5e17c8f8800da">commit</a>)</li>
+<li>  Removed deprecated <code>serialized_attributes</code>.
+(<a href="https://github.com/rails/rails/commit/82043ab53cb186d59b1b3be06122861758f814b2">commit</a>)</li>
+<li>  Removed deprecated automatic counter caches on <code>has_many :through</code>.
+(<a href="https://github.com/rails/rails/commit/87c8ce340c6c83342df988df247e9035393ed7a0">commit</a>)</li>
+<li>  Removed deprecated <code>sanitize_sql_hash_for_conditions</code>.
+(<a href="https://github.com/rails/rails/commit/3a59dd212315ebb9bae8338b98af259ac00bbef3">commit</a>)</li>
+<li>  Removed deprecated <code>Reflection#source_macro</code>.
+(<a href="https://github.com/rails/rails/commit/ede8c199a85cfbb6457d5630ec1e285e5ec49313">commit</a>)</li>
+<li>  Removed deprecated <code>symbolized_base_class</code> and <code>symbolized_sti_name</code>.
+(<a href="https://github.com/rails/rails/commit/9013e28e52eba3a6ffcede26f85df48d264b8951">commit</a>)</li>
+<li>  Removed deprecated <code>ActiveRecord::Base.disable_implicit_join_references=</code>.
+(<a href="https://github.com/rails/rails/commit/0fbd1fc888ffb8cbe1191193bf86933110693dfc">commit</a>)</li>
+<li>  Removed deprecated access to connection specification using a string accessor.
+(<a href="https://github.com/rails/rails/commit/efdc20f36ccc37afbb2705eb9acca76dd8aabd4f">commit</a>)</li>
+<li>  Removed deprecated support to preload instance-dependent associations.
+(<a href="https://github.com/rails/rails/commit/4ed97979d14c5e92eb212b1a629da0a214084078">commit</a>)</li>
+<li>  Removed deprecated support for PostgreSQL ranges with exclusive lower bounds.
+(<a href="https://github.com/rails/rails/commit/a076256d63f64d194b8f634890527a5ed2651115">commit</a>)</li>
+<li>  Removed deprecation when modifying a relation with cached Arel.
+This raises an <code>ImmutableRelation</code> error instead.
+(<a href="https://github.com/rails/rails/commit/3ae98181433dda1b5e19910e107494762512a86c">commit</a>)</li>
+<li>  Removed <code>ActiveRecord::Serialization::XmlSerializer</code> from core. This feature
+has been extracted into the
+<a href="https://github.com/rails/activemodel-serializers-xml">activemodel-serializers-xml</a>
+gem. (<a href="https://github.com/rails/rails/pull/21161">Pull Request</a>)</li>
+<li>  Removed support for the legacy <code>mysql</code> database adapter from core. Most users should
+be able to use <code>mysql2</code>. It will be converted to a separate gem when we find someone
+to maintain it. (<a href="https://github.com/rails/rails/pull/22642">Pull Request 1</a>,
+<a href="https://github.com/rails/rails/pull/22715">Pull Request 2</a>)</li>
+<li>  Removed support for the <code>protected_attributes</code> gem.
+(<a href="https://github.com/rails/rails/commit/f4fbc0301021f13ae05c8e941c8efc4ae351fdf9">commit</a>)</li>
+<li>  Removed support for PostgreSQL versions below 9.1.
+(<a href="https://github.com/rails/rails/pull/23434">Pull Request</a>)</li>
+<li>  Removed support for <code>activerecord-deprecated_finders</code> gem.
+(<a href="https://github.com/rails/rails/commit/78dab2a8569408658542e462a957ea5a35aa4679">commit</a>)</li>
+<li>  Removed <code>ActiveRecord::ConnectionAdapters::Column::TRUE_VALUES</code> constant.
+(<a href="https://github.com/rails/rails/commit/a502703c3d2151d4d3b421b29fefdac5ad05df61">commit</a>)</li>
+</ul>
+<h4 id="active-record-deprecations"><a class="anchorlink" href="#active-record-deprecations">7.2 Deprecations</a></h4>
+<ul>
+<li>  Deprecated passing a class as a value in a query. Users should pass strings
+instead. (<a href="https://github.com/rails/rails/pull/17916">Pull Request</a>)</li>
+<li>  Deprecated returning <code>false</code> as a way to halt Active Record callback
+chains. The recommended way is to
+<code>throw(:abort)</code>. (<a href="https://github.com/rails/rails/pull/17227">Pull Request</a>)</li>
+<li>  Deprecated <code>ActiveRecord::Base.errors_in_transactional_callbacks=</code>.
+(<a href="https://github.com/rails/rails/commit/07d3d402341e81ada0214f2cb2be1da69eadfe72">commit</a>)</li>
+<li>  Deprecated <code>Relation#uniq</code> use <code>Relation#distinct</code> instead.
+(<a href="https://github.com/rails/rails/commit/adfab2dcf4003ca564d78d4425566dd2d9cd8b4f">commit</a>)</li>
+<li>  Deprecated the PostgreSQL <code>:point</code> type in favor of a new one which will return
+<code>Point</code> objects instead of an <code>Array</code>
+(<a href="https://github.com/rails/rails/pull/20448">Pull Request</a>)</li>
+<li>  Deprecated force association reload by passing a truthy argument to
+association method.
+(<a href="https://github.com/rails/rails/pull/20888">Pull Request</a>)</li>
+<li>  Deprecated the keys for association <code>restrict_dependent_destroy</code> errors in favor
+of new key names.
+(<a href="https://github.com/rails/rails/pull/20668">Pull Request</a>)</li>
+<li>  Synchronize behavior of <code>#tables</code>.
+(<a href="https://github.com/rails/rails/pull/21601">Pull Request</a>)</li>
+<li>  Deprecated <code>SchemaCache#tables</code>, <code>SchemaCache#table_exists?</code> and
+<code>SchemaCache#clear_table_cache!</code> in favor of their new data source
+counterparts.
+(<a href="https://github.com/rails/rails/pull/21715">Pull Request</a>)</li>
+<li>  Deprecated <code>connection.tables</code> on the SQLite3 and MySQL adapters.
+(<a href="https://github.com/rails/rails/pull/21601">Pull Request</a>)</li>
+<li>  Deprecated passing arguments to <code>#tables</code> - the <code>#tables</code> method of some
+adapters (mysql2, sqlite3) would return both tables and views while others
+(postgresql) just return tables. To make their behavior consistent,
+<code>#tables</code> will return only tables in the future.
+(<a href="https://github.com/rails/rails/pull/21601">Pull Request</a>)</li>
+<li>  Deprecated <code>table_exists?</code> - The <code>#table_exists?</code> method would check both
+tables and views. To make their behavior consistent with <code>#tables</code>,
+<code>#table_exists?</code> will check only tables in the future.
+(<a href="https://github.com/rails/rails/pull/21601">Pull Request</a>)</li>
+<li>  Deprecate sending the <code>offset</code> argument to <code>find_nth</code>. Please use the
+<code>offset</code> method on relation instead.
+(<a href="https://github.com/rails/rails/pull/22053">Pull Request</a>)</li>
+<li>  Deprecated <code>{insert|update|delete}_sql</code> in <code>DatabaseStatements</code>.
+Use the <code>{insert|update|delete}</code> public methods instead.
+(<a href="https://github.com/rails/rails/pull/23086">Pull Request</a>)</li>
+<li>  Deprecated <code>use_transactional_fixtures</code> in favor of
+<code>use_transactional_tests</code> for more clarity.
+(<a href="https://github.com/rails/rails/pull/19282">Pull Request</a>)</li>
+<li>  Deprecated passing a column to <code>ActiveRecord::Connection#quote</code>.
+(<a href="https://github.com/rails/rails/commit/7bb620869725ad6de603f6a5393ee17df13aa96c">commit</a>)</li>
+<li>  Added an option <code>end</code> to <code>find_in_batches</code> that complements the <code>start</code>
+parameter to specify where to stop batch processing.
+(<a href="https://github.com/rails/rails/pull/12257">Pull Request</a>)</li>
+</ul>
+<h4 id="active-record-notable-changes"><a class="anchorlink" href="#active-record-notable-changes">7.3 Notable changes</a></h4>
+<ul>
+<li>  Added a <code>foreign_key</code> option to <code>references</code> while creating the table.
+(<a href="https://github.com/rails/rails/commit/99a6f9e60ea55924b44f894a16f8de0162cf2702">commit</a>)</li>
+<li>  New attributes
+API. (<a href="https://github.com/rails/rails/commit/8c752c7ac739d5a86d4136ab1e9d0142c4041e58">commit</a>)</li>
+<li>  Added <code>:_prefix</code>/<code>:_suffix</code> option to <code>enum</code> definition.
+(<a href="https://github.com/rails/rails/pull/19813">Pull Request</a>,
+ <a href="https://github.com/rails/rails/pull/20999">Pull Request</a>)</li>
+<li>  Added <code>#cache_key</code> to <code>ActiveRecord::Relation</code>.
+(<a href="https://github.com/rails/rails/pull/20884">Pull Request</a>)</li>
+<li>  Changed the default <code>null</code> value for <code>timestamps</code> to <code>false</code>.
+(<a href="https://github.com/rails/rails/commit/a939506f297b667291480f26fa32a373a18ae06a">commit</a>)</li>
+<li>  Added <code>ActiveRecord::SecureToken</code> in order to encapsulate generation of
+unique tokens for attributes in a model using <code>SecureRandom</code>.
+(<a href="https://github.com/rails/rails/pull/18217">Pull Request</a>)</li>
+<li>  Added <code>:if_exists</code> option for <code>drop_table</code>.
+(<a href="https://github.com/rails/rails/pull/18597">Pull Request</a>)</li>
+<li>  Added <code>ActiveRecord::Base#accessed_fields</code>, which can be used to quickly
+discover which fields were read from a model when you are looking to only
+select the data you need from the database.
+(<a href="https://github.com/rails/rails/commit/be9b68038e83a617eb38c26147659162e4ac3d2c">commit</a>)</li>
+<li>  Added the <code>#or</code> method on <code>ActiveRecord::Relation</code>, allowing use of the OR
+operator to combine WHERE or HAVING clauses.
+(<a href="https://github.com/rails/rails/commit/b0b37942d729b6bdcd2e3178eda7fa1de203b3d0">commit</a>)</li>
+<li>  Added <code>ActiveRecord::Base.suppress</code> to prevent the receiver from being saved
+during the given block.
+(<a href="https://github.com/rails/rails/pull/18910">Pull Request</a>)</li>
+<li>  <code>belongs_to</code> will now trigger a validation error by default if the
+association is not present. You can turn this off on a per-association basis
+with <code>optional: true</code>. Also deprecate <code>required</code> option in favor of <code>optional</code>
+for <code>belongs_to</code>.
+(<a href="https://github.com/rails/rails/pull/18937">Pull Request</a>)</li>
+<li>  Added <code>config.active_record.dump_schemas</code> to configure the behavior of
+<code>db:structure:dump</code>.
+(<a href="https://github.com/rails/rails/pull/19347">Pull Request</a>)</li>
+<li>  Added <code>config.active_record.warn_on_records_fetched_greater_than</code> option.
+(<a href="https://github.com/rails/rails/pull/18846">Pull Request</a>)</li>
+<li>  Added a native JSON data type support in MySQL.
+(<a href="https://github.com/rails/rails/pull/21110">Pull Request</a>)</li>
+<li>  Added support for dropping indexes concurrently in PostgreSQL.
+(<a href="https://github.com/rails/rails/pull/21317">Pull Request</a>)</li>
+<li>  Added <code>#views</code> and <code>#view_exists?</code> methods on connection adapters.
+(<a href="https://github.com/rails/rails/pull/21609">Pull Request</a>)</li>
+<li>  Added <code>ActiveRecord::Base.ignored_columns</code> to make some columns
+invisible from Active Record.
+(<a href="https://github.com/rails/rails/pull/21720">Pull Request</a>)</li>
+<li>  Added <code>connection.data_sources</code> and <code>connection.data_source_exists?</code>.
+These methods determine what relations can be used to back Active Record
+models (usually tables and views).
+(<a href="https://github.com/rails/rails/pull/21715">Pull Request</a>)</li>
+<li>  Allow fixtures files to set the model class in the YAML file itself.
+(<a href="https://github.com/rails/rails/pull/20574">Pull Request</a>)</li>
+<li>  Added ability to default to <code>uuid</code> as primary key when generating database
+migrations. (<a href="https://github.com/rails/rails/pull/21762">Pull Request</a>)</li>
+<li>  Added <code>ActiveRecord::Relation#left_joins</code> and
+<code>ActiveRecord::Relation#left_outer_joins</code>.
+(<a href="https://github.com/rails/rails/pull/12071">Pull Request</a>)</li>
+<li>  Added <code>after_{create,update,delete}_commit</code> callbacks.
+(<a href="https://github.com/rails/rails/pull/22516">Pull Request</a>)</li>
+<li>  Version the API presented to migration classes, so we can change parameter
+defaults without breaking existing migrations, or forcing them to be
+rewritten through a deprecation cycle.
+(<a href="https://github.com/rails/rails/pull/21538">Pull Request</a>)</li>
+<li>  <code>ApplicationRecord</code> is a new superclass for all app models, analogous to app
+controllers subclassing <code>ApplicationController</code> instead of
+<code>ActionController::Base</code>. This gives apps a single spot to configure app-wide
+model behavior.
+(<a href="https://github.com/rails/rails/pull/22567">Pull Request</a>)</li>
+<li>  Added ActiveRecord <code>#second_to_last</code> and <code>#third_to_last</code> methods.
+(<a href="https://github.com/rails/rails/pull/23583">Pull Request</a>)</li>
+<li>  Added ability to annotate database objects (tables, columns, indexes)
+with comments stored in database metadata for PostgreSQL &amp; MySQL.
+(<a href="https://github.com/rails/rails/pull/22911">Pull Request</a>)</li>
+<li>  Added prepared statements support to <code>mysql2</code> adapter, for mysql2 0.4.4+,
+Previously this was only supported on the deprecated <code>mysql</code> legacy adapter.
+To enable, set <code>prepared_statements: true</code> in <code>config/database.yml</code>.
+(<a href="https://github.com/rails/rails/pull/23461">Pull Request</a>)</li>
+<li>  Added ability to call <code>ActionRecord::Relation#update</code> on relation objects
+which will run validations on callbacks on all objects in the relation.
+(<a href="https://github.com/rails/rails/pull/11898">Pull Request</a>)</li>
+<li>  Added <code>:touch</code> option to the <code>save</code> method so that records can be saved without
+updating timestamps.
+(<a href="https://github.com/rails/rails/pull/18225">Pull Request</a>)</li>
+<li>  Added expression indexes and operator classes support for PostgreSQL.
+(<a href="https://github.com/rails/rails/commit/edc2b7718725016e988089b5fb6d6fb9d6e16882">commit</a>)</li>
+<li>  Added <code>:index_errors</code> option to add indexes to errors of nested attributes.
+(<a href="https://github.com/rails/rails/pull/19686">Pull Request</a>)</li>
+<li>  Added support for bidirectional destroy dependencies.
+(<a href="https://github.com/rails/rails/pull/18548">Pull Request</a>)</li>
+<li>  Added support for <code>after_commit</code> callbacks in transactional tests.
+(<a href="https://github.com/rails/rails/pull/18458">Pull Request</a>)</li>
+<li>  Added <code>foreign_key_exists?</code> method to see if a foreign key exists on a table
+or not.
+(<a href="https://github.com/rails/rails/pull/18662">Pull Request</a>)</li>
+<li>  Added <code>:time</code> option to <code>touch</code> method to touch records with different time
+than the current time.
+(<a href="https://github.com/rails/rails/pull/18956">Pull Request</a>)</li>
+<li>
+  Change transaction callbacks to not swallow errors.
+Before this change any errors raised inside a transaction callback
+were getting rescued and printed in the logs, unless you used
+the (newly deprecated) <code>raise_in_transactional_callbacks = true</code> option.
+Now these errors are not rescued anymore and just bubble up, matching the
+behavior of other callbacks.
+(<a href="https://github.com/rails/rails/commit/07d3d402341e81ada0214f2cb2be1da69eadfe72">commit</a>)
+</li>
+</ul>
+</body>
+</html>

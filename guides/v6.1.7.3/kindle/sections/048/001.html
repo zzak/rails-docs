@@ -1,0 +1,31 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>2 Major Features</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v6.1.7.3/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="major-features"><a class="anchorlink" href="#major-features">2 Major Features</a></h3>
+<h4 id="per-database-connection-switching"><a class="anchorlink" href="#per-database-connection-switching">2.1 Per-database Connection Switching</a></h4>
+
+<p>Rails 6.1 provides you with the ability to <a href="https://github.com/rails/rails/pull/40370">switch connections per-database</a>. In 6.0 if you switched to the <code>reading</code> role then all database connections also switched to the reading role. Now in 6.1 if you set <code>legacy_connection_handling</code> to <code>false</code> in your configuration, Rails will allow you to switch connections for a single database by calling <code>connected_to</code> on the corresponding abstract class.</p>
+
+<h4 id="horizontal-sharding"><a class="anchorlink" href="#horizontal-sharding">2.2 Horizontal Sharding</a></h4>
+
+<p>Rails 6.0 provided the ability to functionally partition (multiple partitions, different schemas) your database but wasn't able to support horizontal sharding (same schema, multiple partitions). Rails wasn't able to support horizontal sharding because models in Active Record could only have one connection per-role per-class. This is now fixed and <a href="https://github.com/rails/rails/pull/38531">horizontal sharding</a> with Rails is available.</p>
+
+<h4 id="strict-loading-associations"><a class="anchorlink" href="#strict-loading-associations">2.3 Strict Loading Associations</a></h4>
+
+<p><a href="https://github.com/rails/rails/pull/37400">Strict loading associations</a> allows you to ensure that all
+your associations are loaded eagerly and stop N+1's before they happen.</p>
+
+<h4 id="delegated-types"><a class="anchorlink" href="#delegated-types">2.4 Delegated Types</a></h4>
+
+<p><a href="https://github.com/rails/rails/pull/39341">Delegated Types</a> is an alternative to single-table inheritance. This is helpful for representing class hierarchies allowing the superclass to be a concrete class that is represented by its own table. Each subclass has its own table for additional attributes.</p>
+
+<h4 id="destroy-associations-async"><a class="anchorlink" href="#destroy-associations-async">2.5 Destroy Associations Async</a></h4>
+
+<p><a href="https://github.com/rails/rails/pull/40157">Destroy associations async</a> adds the ability for applications to <code>destroy</code> associations in a background job. This can help you avoid timeouts and other performance issues in your application when destroying data.</p>
+</body>
+</html>

@@ -1,0 +1,82 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>10 Exceptions</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v6.1.7.3/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="exceptions"><a class="anchorlink" href="#exceptions">10 Exceptions</a></h3>
+<p>Active Job provides a way to catch exceptions raised during the execution of the
+job:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">GuestsCleanupJob</span> <span class="o">&lt;</span> <span class="no">ApplicationJob</span>
+  <span class="n">queue_as</span> <span class="ss">:default</span>
+
+  <span class="n">rescue_from</span><span class="p">(</span><span class="no">ActiveRecord</span><span class="o">::</span><span class="no">RecordNotFound</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">exception</span><span class="o">|</span>
+    <span class="c1"># Do something with the exception</span>
+  <span class="k">end</span>
+
+  <span class="k">def</span> <span class="nf">perform</span>
+    <span class="c1"># Do something later</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-ec322313086ca249ba9de1c1041ae427">class GuestsCleanupJob &lt; ApplicationJob
+  queue_as :default
+
+  rescue_from(ActiveRecord::RecordNotFound) do |exception|
+    # Do something with the exception
+  end
+
+  def perform
+    # Do something later
+  end
+end
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-ec322313086ca249ba9de1c1041ae427">Copy</button>
+</div>
+<p>If an exception from a job is not rescued, then the job is referred to as "failed".</p>
+
+<h4 id="retrying-or-discarding-failed-jobs"><a class="anchorlink" href="#retrying-or-discarding-failed-jobs">10.1 Retrying or Discarding failed jobs</a></h4>
+
+<p>A failed job will not be retried, unless configured otherwise.</p>
+
+<p>It's also possible to retry or discard a job if an exception is raised during execution.
+For example:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">RemoteServiceJob</span> <span class="o">&lt;</span> <span class="no">ApplicationJob</span>
+  <span class="n">retry_on</span> <span class="no">CustomAppException</span> <span class="c1"># defaults to 3s wait, 5 attempts</span>
+
+  <span class="n">discard_on</span> <span class="no">ActiveJob</span><span class="o">::</span><span class="no">DeserializationError</span>
+
+  <span class="k">def</span> <span class="nf">perform</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">)</span>
+    <span class="c1"># Might raise CustomAppException or ActiveJob::DeserializationError</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-1cb6727a4054f09ce569956ef8a02b49">class RemoteServiceJob &lt; ApplicationJob
+  retry_on CustomAppException # defaults to 3s wait, 5 attempts
+
+  discard_on ActiveJob::DeserializationError
+
+  def perform(*args)
+    # Might raise CustomAppException or ActiveJob::DeserializationError
+  end
+end
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-1cb6727a4054f09ce569956ef8a02b49">Copy</button>
+</div>
+<p>To get more details see the API Documentation for <a href="https://api.rubyonrails.org/v6.1.7.3/classes/ActiveJob/Exceptions/ClassMethods.html">ActiveJob::Exceptions</a>.</p>
+
+<h4 id="deserialization"><a class="anchorlink" href="#deserialization">10.2 Deserialization</a></h4>
+
+<p>GlobalID allows serializing full Active Record objects passed to <code>#perform</code>.</p>
+
+<p>If a passed record is deleted after the job is enqueued but before the <code>#perform</code>
+method is called Active Job will raise an <code>ActiveJob::DeserializationError</code>
+exception.</p>
+</body>
+</html>

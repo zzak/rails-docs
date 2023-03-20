@@ -1,0 +1,461 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>7 Adding a Second Model</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v6.1.7.3/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="adding-a-second-model"><a class="anchorlink" href="#adding-a-second-model">7 Adding a Second Model</a></h3>
+<p>It's time to add a second model to the application. The second model will handle
+comments on articles.</p>
+
+<h4 id="adding-a-second-model-generating-a-model"><a class="anchorlink" href="#adding-a-second-model-generating-a-model">7.1 Generating a Model</a></h4>
+
+<p>We're going to see the same generator that we used before when creating
+the <code>Article</code> model. This time we'll create a <code>Comment</code> model to hold a
+reference to an article. Run this command in your terminal:</p>
+
+<div class="code_container">
+<pre><code class="highlight console"><span class="gp">$</span><span class="w"> </span><span class="nb">bin/rails </span>generate model Comment commenter:string body:text article:references
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-e5f84e79850356cdcfab0f45b6aa788b">bin/rails generate model Comment commenter:string body:text article:references
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-e5f84e79850356cdcfab0f45b6aa788b">Copy</button>
+</div>
+<p>This command will generate four files:</p>
+<table>
+<thead>
+<tr>
+<th>File</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>db/migrate/20140120201010_create_comments.rb</td>
+<td>Migration to create the comments table in your database (your name will include a different timestamp)</td>
+</tr>
+<tr>
+<td>app/models/comment.rb</td>
+<td>The Comment model</td>
+</tr>
+<tr>
+<td>test/models/comment_test.rb</td>
+<td>Testing harness for the comment model</td>
+</tr>
+<tr>
+<td>test/fixtures/comments.yml</td>
+<td>Sample comments for use in testing</td>
+</tr>
+</tbody>
+</table>
+<p>First, take a look at <code>app/models/comment.rb</code>:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">Comment</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="n">belongs_to</span> <span class="ss">:article</span>
+<span class="k">end</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-6d24d144ca28ae24f89471349186d6b6">class Comment &lt; ApplicationRecord
+  belongs_to :article
+end
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-6d24d144ca28ae24f89471349186d6b6">Copy</button>
+</div>
+<p>This is very similar to the <code>Article</code> model that you saw earlier. The difference
+is the line <code>belongs_to :article</code>, which sets up an Active Record <em>association</em>.
+You'll learn a little about associations in the next section of this guide.</p>
+
+<p>The (<code>:references</code>) keyword used in the bash command is a special data type for models.
+It creates a new column on your database table with the provided model name appended with an <code>_id</code>
+that can hold integer values. To get a better understanding, analyze the
+<code>db/schema.rb</code> file after running the migration.</p>
+
+<p>In addition to the model, Rails has also made a migration to create the
+corresponding database table:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">CreateComments</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Migration</span><span class="p">[</span><span class="mf">6.0</span><span class="p">]</span>
+  <span class="k">def</span> <span class="nf">change</span>
+    <span class="n">create_table</span> <span class="ss">:comments</span> <span class="k">do</span> <span class="o">|</span><span class="n">t</span><span class="o">|</span>
+      <span class="n">t</span><span class="p">.</span><span class="nf">string</span> <span class="ss">:commenter</span>
+      <span class="n">t</span><span class="p">.</span><span class="nf">text</span> <span class="ss">:body</span>
+      <span class="n">t</span><span class="p">.</span><span class="nf">references</span> <span class="ss">:article</span><span class="p">,</span> <span class="ss">null: </span><span class="kp">false</span><span class="p">,</span> <span class="ss">foreign_key: </span><span class="kp">true</span>
+
+      <span class="n">t</span><span class="p">.</span><span class="nf">timestamps</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-b03979c597c5fd227c4a65510af00b0b">class CreateComments &lt; ActiveRecord::Migration[6.0]
+  def change
+    create_table :comments do |t|
+      t.string :commenter
+      t.text :body
+      t.references :article, null: false, foreign_key: true
+
+      t.timestamps
+    end
+  end
+end
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-b03979c597c5fd227c4a65510af00b0b">Copy</button>
+</div>
+<p>The <code>t.references</code> line creates an integer column called <code>article_id</code>, an index
+for it, and a foreign key constraint that points to the <code>id</code> column of the <code>articles</code>
+table. Go ahead and run the migration:</p>
+
+<div class="code_container">
+<pre><code class="highlight console"><span class="gp">$</span><span class="w"> </span><span class="nb">bin/rails </span>db:migrate
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-c99f56547aeb30ffb64e4e6ea655fb85">bin/rails db:migrate
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-c99f56547aeb30ffb64e4e6ea655fb85">Copy</button>
+</div>
+<p>Rails is smart enough to only execute the migrations that have not already been
+run against the current database, so in this case you will just see:</p>
+
+<div class="code_container">
+<pre><code class="highlight plaintext">==  CreateComments: migrating =================================================
+-- create_table(:comments)
+   -&gt; 0.0115s
+==  CreateComments: migrated (0.0119s) ========================================
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-60fc69aef7671b3aae1d65252ecd7590">==  CreateComments: migrating =================================================
+-- create_table(:comments)
+   -&gt; 0.0115s
+==  CreateComments: migrated (0.0119s) ========================================
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-60fc69aef7671b3aae1d65252ecd7590">Copy</button>
+</div>
+<h4 id="associating-models"><a class="anchorlink" href="#associating-models">7.2 Associating Models</a></h4>
+
+<p>Active Record associations let you easily declare the relationship between two
+models. In the case of comments and articles, you could write out the
+relationships this way:</p>
+<ul>
+<li>Each comment belongs to one article.</li>
+<li>One article can have many comments.</li>
+</ul>
+<p>In fact, this is very close to the syntax that Rails uses to declare this
+association. You've already seen the line of code inside the <code>Comment</code> model
+(app/models/comment.rb) that makes each comment belong to an Article:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">Comment</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="n">belongs_to</span> <span class="ss">:article</span>
+<span class="k">end</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-7cccc779a6479c5825ff06a09b0a270f">class Comment &lt; ApplicationRecord
+  belongs_to :article
+end
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-7cccc779a6479c5825ff06a09b0a270f">Copy</button>
+</div>
+<p>You'll need to edit <code>app/models/article.rb</code> to add the other side of the
+association:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">Article</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="n">has_many</span> <span class="ss">:comments</span>
+
+  <span class="n">validates</span> <span class="ss">:title</span><span class="p">,</span> <span class="ss">presence: </span><span class="kp">true</span>
+  <span class="n">validates</span> <span class="ss">:body</span><span class="p">,</span> <span class="ss">presence: </span><span class="kp">true</span><span class="p">,</span> <span class="ss">length: </span><span class="p">{</span> <span class="ss">minimum: </span><span class="mi">10</span> <span class="p">}</span>
+<span class="k">end</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-8017e56623ee5e10eba19db6bf81bd06">class Article &lt; ApplicationRecord
+  has_many :comments
+
+  validates :title, presence: true
+  validates :body, presence: true, length: { minimum: 10 }
+end
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-8017e56623ee5e10eba19db6bf81bd06">Copy</button>
+</div>
+<p>These two declarations enable a good bit of automatic behavior. For example, if
+you have an instance variable <code>@article</code> containing an article, you can retrieve
+all the comments belonging to that article as an array using
+<code>@article.comments</code>.</p>
+
+<div class="info"><p>For more information on Active Record associations, see the <a href="association_basics.html">Active Record
+Associations</a> guide.</p></div>
+
+<h4 id="adding-a-route-for-comments"><a class="anchorlink" href="#adding-a-route-for-comments">7.3 Adding a Route for Comments</a></h4>
+
+<p>As with the <code>welcome</code> controller, we will need to add a route so that Rails
+knows where we would like to navigate to see <code>comments</code>. Open up the
+<code>config/routes.rb</code> file again, and edit it as follows:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="no">Rails</span><span class="p">.</span><span class="nf">application</span><span class="p">.</span><span class="nf">routes</span><span class="p">.</span><span class="nf">draw</span> <span class="k">do</span>
+  <span class="n">root</span> <span class="s2">"articles#index"</span>
+
+  <span class="n">resources</span> <span class="ss">:articles</span> <span class="k">do</span>
+    <span class="n">resources</span> <span class="ss">:comments</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-96fd2d77d62067535c6cc8255915394c">Rails.application.routes.draw do
+  root "articles#index"
+
+  resources :articles do
+    resources :comments
+  end
+end
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-96fd2d77d62067535c6cc8255915394c">Copy</button>
+</div>
+<p>This creates <code>comments</code> as a <em>nested resource</em> within <code>articles</code>. This is
+another part of capturing the hierarchical relationship that exists between
+articles and comments.</p>
+
+<div class="info"><p>For more information on routing, see the <a href="routing.html">Rails Routing</a>
+guide.</p></div>
+
+<h4 id="generating-a-controller"><a class="anchorlink" href="#generating-a-controller">7.4 Generating a Controller</a></h4>
+
+<p>With the model in hand, you can turn your attention to creating a matching
+controller. Again, we'll use the same generator we used before:</p>
+
+<div class="code_container">
+<pre><code class="highlight console"><span class="gp">$</span><span class="w"> </span><span class="nb">bin/rails </span>generate controller Comments
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-86452d15ac775e82cff215358d27c210">bin/rails generate controller Comments
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-86452d15ac775e82cff215358d27c210">Copy</button>
+</div>
+<p>This creates four files and one empty directory:</p>
+<table>
+<thead>
+<tr>
+<th>File/Directory</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>app/controllers/comments_controller.rb</td>
+<td>The Comments controller</td>
+</tr>
+<tr>
+<td>app/views/comments/</td>
+<td>Views of the controller are stored here</td>
+</tr>
+<tr>
+<td>test/controllers/comments_controller_test.rb</td>
+<td>The test for the controller</td>
+</tr>
+<tr>
+<td>app/helpers/comments_helper.rb</td>
+<td>A view helper file</td>
+</tr>
+<tr>
+<td>app/assets/stylesheets/comments.scss</td>
+<td>Cascading style sheet for the controller</td>
+</tr>
+</tbody>
+</table>
+<p>Like with any blog, our readers will create their comments directly after
+reading the article, and once they have added their comment, will be sent back
+to the article show page to see their comment now listed. Due to this, our
+<code>CommentsController</code> is there to provide a method to create comments and delete
+spam comments when they arrive.</p>
+
+<p>So first, we'll wire up the Article show template
+(<code>app/views/articles/show.html.erb</code>) to let us make a new comment:</p>
+
+<div class="code_container">
+<pre><code class="highlight erb"><span class="nt">&lt;h1&gt;</span><span class="cp">&lt;%=</span> <span class="vi">@article</span><span class="p">.</span><span class="nf">title</span> <span class="cp">%&gt;</span><span class="nt">&lt;/h1&gt;</span>
+
+<span class="nt">&lt;p&gt;</span><span class="cp">&lt;%=</span> <span class="vi">@article</span><span class="p">.</span><span class="nf">body</span> <span class="cp">%&gt;</span><span class="nt">&lt;/p&gt;</span>
+
+<span class="nt">&lt;ul&gt;</span>
+  <span class="nt">&lt;li&gt;</span><span class="cp">&lt;%=</span> <span class="n">link_to</span> <span class="s2">"Edit"</span><span class="p">,</span> <span class="n">edit_article_path</span><span class="p">(</span><span class="vi">@article</span><span class="p">)</span> <span class="cp">%&gt;</span><span class="nt">&lt;/li&gt;</span>
+  <span class="nt">&lt;li&gt;</span><span class="cp">&lt;%=</span> <span class="n">link_to</span> <span class="s2">"Destroy"</span><span class="p">,</span> <span class="n">article_path</span><span class="p">(</span><span class="vi">@article</span><span class="p">),</span>
+                  <span class="ss">method: :delete</span><span class="p">,</span>
+                  <span class="ss">data: </span><span class="p">{</span> <span class="ss">confirm: </span><span class="s2">"Are you sure?"</span> <span class="p">}</span> <span class="cp">%&gt;</span><span class="nt">&lt;/li&gt;</span>
+<span class="nt">&lt;/ul&gt;</span>
+
+<span class="nt">&lt;h2&gt;</span>Add a comment:<span class="nt">&lt;/h2&gt;</span>
+<span class="cp">&lt;%=</span> <span class="n">form_with</span> <span class="ss">model: </span><span class="p">[</span> <span class="vi">@article</span><span class="p">,</span> <span class="vi">@article</span><span class="p">.</span><span class="nf">comments</span><span class="p">.</span><span class="nf">build</span> <span class="p">]</span> <span class="k">do</span> <span class="o">|</span><span class="n">form</span><span class="o">|</span> <span class="cp">%&gt;</span>
+  <span class="nt">&lt;p&gt;</span>
+    <span class="cp">&lt;%=</span> <span class="n">form</span><span class="p">.</span><span class="nf">label</span> <span class="ss">:commenter</span> <span class="cp">%&gt;</span><span class="nt">&lt;br&gt;</span>
+    <span class="cp">&lt;%=</span> <span class="n">form</span><span class="p">.</span><span class="nf">text_field</span> <span class="ss">:commenter</span> <span class="cp">%&gt;</span>
+  <span class="nt">&lt;/p&gt;</span>
+  <span class="nt">&lt;p&gt;</span>
+    <span class="cp">&lt;%=</span> <span class="n">form</span><span class="p">.</span><span class="nf">label</span> <span class="ss">:body</span> <span class="cp">%&gt;</span><span class="nt">&lt;br&gt;</span>
+    <span class="cp">&lt;%=</span> <span class="n">form</span><span class="p">.</span><span class="nf">text_area</span> <span class="ss">:body</span> <span class="cp">%&gt;</span>
+  <span class="nt">&lt;/p&gt;</span>
+  <span class="nt">&lt;p&gt;</span>
+    <span class="cp">&lt;%=</span> <span class="n">form</span><span class="p">.</span><span class="nf">submit</span> <span class="cp">%&gt;</span>
+  <span class="nt">&lt;/p&gt;</span>
+<span class="cp">&lt;%</span> <span class="k">end</span> <span class="cp">%&gt;</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-53ad5bcea2e19c5cbe1ae143e9b72e59">&lt;h1&gt;&lt;%= @article.title %&gt;&lt;/h1&gt;
+
+&lt;p&gt;&lt;%= @article.body %&gt;&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;%= link_to "Edit", edit_article_path(@article) %&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;%= link_to "Destroy", article_path(@article),
+                  method: :delete,
+                  data: { confirm: "Are you sure?" } %&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2&gt;Add a comment:&lt;/h2&gt;
+&lt;%= form_with model: [ @article, @article.comments.build ] do |form| %&gt;
+  &lt;p&gt;
+    &lt;%= form.label :commenter %&gt;&lt;br&gt;
+    &lt;%= form.text_field :commenter %&gt;
+  &lt;/p&gt;
+  &lt;p&gt;
+    &lt;%= form.label :body %&gt;&lt;br&gt;
+    &lt;%= form.text_area :body %&gt;
+  &lt;/p&gt;
+  &lt;p&gt;
+    &lt;%= form.submit %&gt;
+  &lt;/p&gt;
+&lt;% end %&gt;
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-53ad5bcea2e19c5cbe1ae143e9b72e59">Copy</button>
+</div>
+<p>This adds a form on the <code>Article</code> show page that creates a new comment by
+calling the <code>CommentsController</code> <code>create</code> action. The <code>form_with</code> call here uses
+an array, which will build a nested route, such as <code>/articles/1/comments</code>.</p>
+
+<p>Let's wire up the <code>create</code> in <code>app/controllers/comments_controller.rb</code>:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">CommentsController</span> <span class="o">&lt;</span> <span class="no">ApplicationController</span>
+  <span class="k">def</span> <span class="nf">create</span>
+    <span class="vi">@article</span> <span class="o">=</span> <span class="no">Article</span><span class="p">.</span><span class="nf">find</span><span class="p">(</span><span class="n">params</span><span class="p">[</span><span class="ss">:article_id</span><span class="p">])</span>
+    <span class="vi">@comment</span> <span class="o">=</span> <span class="vi">@article</span><span class="p">.</span><span class="nf">comments</span><span class="p">.</span><span class="nf">create</span><span class="p">(</span><span class="n">comment_params</span><span class="p">)</span>
+    <span class="n">redirect_to</span> <span class="n">article_path</span><span class="p">(</span><span class="vi">@article</span><span class="p">)</span>
+  <span class="k">end</span>
+
+  <span class="kp">private</span>
+    <span class="k">def</span> <span class="nf">comment_params</span>
+      <span class="n">params</span><span class="p">.</span><span class="nf">require</span><span class="p">(</span><span class="ss">:comment</span><span class="p">).</span><span class="nf">permit</span><span class="p">(</span><span class="ss">:commenter</span><span class="p">,</span> <span class="ss">:body</span><span class="p">)</span>
+    <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-2852e061b8b7e34b99db703422772457">class CommentsController &lt; ApplicationController
+  def create
+    @article = Article.find(params[:article_id])
+    @comment = @article.comments.create(comment_params)
+    redirect_to article_path(@article)
+  end
+
+  private
+    def comment_params
+      params.require(:comment).permit(:commenter, :body)
+    end
+end
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-2852e061b8b7e34b99db703422772457">Copy</button>
+</div>
+<p>You'll see a bit more complexity here than you did in the controller for
+articles. That's a side-effect of the nesting that you've set up. Each request
+for a comment has to keep track of the article to which the comment is attached,
+thus the initial call to the <code>find</code> method of the <code>Article</code> model to get the
+article in question.</p>
+
+<p>In addition, the code takes advantage of some of the methods available for an
+association. We use the <code>create</code> method on <code>@article.comments</code> to create and
+save the comment. This will automatically link the comment so that it belongs to
+that particular article.</p>
+
+<p>Once we have made the new comment, we send the user back to the original article
+using the <code>article_path(@article)</code> helper. As we have already seen, this calls
+the <code>show</code> action of the <code>ArticlesController</code> which in turn renders the
+<code>show.html.erb</code> template. This is where we want the comment to show, so let's
+add that to the <code>app/views/articles/show.html.erb</code>.</p>
+
+<div class="code_container">
+<pre><code class="highlight erb"><span class="nt">&lt;h1&gt;</span><span class="cp">&lt;%=</span> <span class="vi">@article</span><span class="p">.</span><span class="nf">title</span> <span class="cp">%&gt;</span><span class="nt">&lt;/h1&gt;</span>
+
+<span class="nt">&lt;p&gt;</span><span class="cp">&lt;%=</span> <span class="vi">@article</span><span class="p">.</span><span class="nf">body</span> <span class="cp">%&gt;</span><span class="nt">&lt;/p&gt;</span>
+
+<span class="nt">&lt;ul&gt;</span>
+  <span class="nt">&lt;li&gt;</span><span class="cp">&lt;%=</span> <span class="n">link_to</span> <span class="s2">"Edit"</span><span class="p">,</span> <span class="n">edit_article_path</span><span class="p">(</span><span class="vi">@article</span><span class="p">)</span> <span class="cp">%&gt;</span><span class="nt">&lt;/li&gt;</span>
+  <span class="nt">&lt;li&gt;</span><span class="cp">&lt;%=</span> <span class="n">link_to</span> <span class="s2">"Destroy"</span><span class="p">,</span> <span class="n">article_path</span><span class="p">(</span><span class="vi">@article</span><span class="p">),</span>
+                  <span class="ss">method: :delete</span><span class="p">,</span>
+                  <span class="ss">data: </span><span class="p">{</span> <span class="ss">confirm: </span><span class="s2">"Are you sure?"</span> <span class="p">}</span> <span class="cp">%&gt;</span><span class="nt">&lt;/li&gt;</span>
+<span class="nt">&lt;/ul&gt;</span>
+
+<span class="nt">&lt;h2&gt;</span>Comments<span class="nt">&lt;/h2&gt;</span>
+<span class="cp">&lt;%</span> <span class="vi">@article</span><span class="p">.</span><span class="nf">comments</span><span class="p">.</span><span class="nf">each</span> <span class="k">do</span> <span class="o">|</span><span class="n">comment</span><span class="o">|</span> <span class="cp">%&gt;</span>
+  <span class="nt">&lt;p&gt;</span>
+    <span class="nt">&lt;strong&gt;</span>Commenter:<span class="nt">&lt;/strong&gt;</span>
+    <span class="cp">&lt;%=</span> <span class="n">comment</span><span class="p">.</span><span class="nf">commenter</span> <span class="cp">%&gt;</span>
+  <span class="nt">&lt;/p&gt;</span>
+
+  <span class="nt">&lt;p&gt;</span>
+    <span class="nt">&lt;strong&gt;</span>Comment:<span class="nt">&lt;/strong&gt;</span>
+    <span class="cp">&lt;%=</span> <span class="n">comment</span><span class="p">.</span><span class="nf">body</span> <span class="cp">%&gt;</span>
+  <span class="nt">&lt;/p&gt;</span>
+<span class="cp">&lt;%</span> <span class="k">end</span> <span class="cp">%&gt;</span>
+
+<span class="nt">&lt;h2&gt;</span>Add a comment:<span class="nt">&lt;/h2&gt;</span>
+<span class="cp">&lt;%=</span> <span class="n">form_with</span> <span class="ss">model: </span><span class="p">[</span> <span class="vi">@article</span><span class="p">,</span> <span class="vi">@article</span><span class="p">.</span><span class="nf">comments</span><span class="p">.</span><span class="nf">build</span> <span class="p">]</span> <span class="k">do</span> <span class="o">|</span><span class="n">form</span><span class="o">|</span> <span class="cp">%&gt;</span>
+  <span class="nt">&lt;p&gt;</span>
+    <span class="cp">&lt;%=</span> <span class="n">form</span><span class="p">.</span><span class="nf">label</span> <span class="ss">:commenter</span> <span class="cp">%&gt;</span><span class="nt">&lt;br&gt;</span>
+    <span class="cp">&lt;%=</span> <span class="n">form</span><span class="p">.</span><span class="nf">text_field</span> <span class="ss">:commenter</span> <span class="cp">%&gt;</span>
+  <span class="nt">&lt;/p&gt;</span>
+  <span class="nt">&lt;p&gt;</span>
+    <span class="cp">&lt;%=</span> <span class="n">form</span><span class="p">.</span><span class="nf">label</span> <span class="ss">:body</span> <span class="cp">%&gt;</span><span class="nt">&lt;br&gt;</span>
+    <span class="cp">&lt;%=</span> <span class="n">form</span><span class="p">.</span><span class="nf">text_area</span> <span class="ss">:body</span> <span class="cp">%&gt;</span>
+  <span class="nt">&lt;/p&gt;</span>
+  <span class="nt">&lt;p&gt;</span>
+    <span class="cp">&lt;%=</span> <span class="n">form</span><span class="p">.</span><span class="nf">submit</span> <span class="cp">%&gt;</span>
+  <span class="nt">&lt;/p&gt;</span>
+<span class="cp">&lt;%</span> <span class="k">end</span> <span class="cp">%&gt;</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-8cbf9c936a30dbc2db673da36758d303">&lt;h1&gt;&lt;%= @article.title %&gt;&lt;/h1&gt;
+
+&lt;p&gt;&lt;%= @article.body %&gt;&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;%= link_to "Edit", edit_article_path(@article) %&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;%= link_to "Destroy", article_path(@article),
+                  method: :delete,
+                  data: { confirm: "Are you sure?" } %&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2&gt;Comments&lt;/h2&gt;
+&lt;% @article.comments.each do |comment| %&gt;
+  &lt;p&gt;
+    &lt;strong&gt;Commenter:&lt;/strong&gt;
+    &lt;%= comment.commenter %&gt;
+  &lt;/p&gt;
+
+  &lt;p&gt;
+    &lt;strong&gt;Comment:&lt;/strong&gt;
+    &lt;%= comment.body %&gt;
+  &lt;/p&gt;
+&lt;% end %&gt;
+
+&lt;h2&gt;Add a comment:&lt;/h2&gt;
+&lt;%= form_with model: [ @article, @article.comments.build ] do |form| %&gt;
+  &lt;p&gt;
+    &lt;%= form.label :commenter %&gt;&lt;br&gt;
+    &lt;%= form.text_field :commenter %&gt;
+  &lt;/p&gt;
+  &lt;p&gt;
+    &lt;%= form.label :body %&gt;&lt;br&gt;
+    &lt;%= form.text_area :body %&gt;
+  &lt;/p&gt;
+  &lt;p&gt;
+    &lt;%= form.submit %&gt;
+  &lt;/p&gt;
+&lt;% end %&gt;
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-8cbf9c936a30dbc2db673da36758d303">Copy</button>
+</div>
+<p>Now you can add articles and comments to your blog and have them show up in the
+right places.</p>
+
+<p><img src="/home/rails/v6.1.7.3/guides/output/kindle/images/getting_started/article_with_comments.png" alt="Article with Comments"></p>
+</body>
+</html>

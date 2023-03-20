@@ -1,0 +1,37 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>9 Old Migrations</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v6.1.7.3/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="old-migrations"><a class="anchorlink" href="#old-migrations">9 Old Migrations</a></h3>
+<p>The <code>db/schema.rb</code> or <code>db/structure.sql</code> is a snapshot of the current state of your
+database and is the authoritative source for rebuilding that database. This
+makes it possible to delete old migration files.</p>
+
+<p>When you delete migration files in the <code>db/migrate/</code> directory, any environment
+where <code>bin/rails db:migrate</code> was run when those files still existed will hold a reference
+to the migration timestamp specific to them inside an internal Rails database
+table named <code>schema_migrations</code>. This table is used to keep track of whether
+migrations have been executed in a specific environment.</p>
+
+<p>If you run the <code>bin/rails db:migrate:status</code> command, which displays the status
+(up or down) of each migration, you should see <code>********** NO FILE **********</code>
+displayed next to any deleted migration file which was once executed on a
+specific environment but can no longer be found in the <code>db/migrate/</code> directory.</p>
+
+<p>There's a caveat, though. Rake tasks to install migrations from engines are idempotent. Migrations present in the parent application due to a previous installation are skipped, and missing ones are copied with a new leading timestamp. If you deleted old engine migrations and ran the install task again, you'd get new files with new timestamps, and <code>db:migrate</code> would attempt to run them again.</p>
+
+<p>Thus, you generally want to preserve migrations coming from engines. They have a special comment like this:</p>
+
+<div class="code_container">
+<pre><code class="highlight plaintext"># This migration comes from blorgh (originally 20210621082949)
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-4fb3e47d823a9d598d4d6432cc989139"># This migration comes from blorgh (originally 20210621082949)
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-4fb3e47d823a9d598d4d6432cc989139">Copy</button>
+</div>
+</body>
+</html>

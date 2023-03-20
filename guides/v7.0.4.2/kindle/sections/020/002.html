@@ -1,0 +1,269 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>3 Attaching Files to Records</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v7.0.4.2/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="attaching-files-to-records"><a class="anchorlink" href="#attaching-files-to-records">3 Attaching Files to Records</a></h3>
+<h4 id="has-one-attached"><a class="anchorlink" href="#has-one-attached">3.1 <code>has_one_attached</code></a></h4>
+
+<p>The <a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveStorage/Attached/Model.html#method-i-has_one_attached"><code>has_one_attached</code></a> macro sets up a one-to-one mapping between records and
+files. Each record can have one file attached to it.</p>
+
+<p>For example, suppose your application has a <code>User</code> model. If you want each user to
+have an avatar, define the <code>User</code> model as follows:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">User</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="n">has_one_attached</span> <span class="ss">:avatar</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="class User &lt; ApplicationRecord
+  has_one_attached :avatar
+end
+">Copy</button>
+</div>
+<p>or if you are using Rails 6.0+, you can run a model generator command like this:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">bin</span><span class="o">/</span><span class="n">rails</span> <span class="n">generate</span> <span class="n">model</span> <span class="no">User</span> <span class="n">avatar</span><span class="ss">:attachment</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="bin/rails generate model User avatar:attachment
+">Copy</button>
+</div>
+<p>You can create a user with an avatar:</p>
+
+<div class="code_container">
+<pre><code class="highlight erb"><span class="cp">&lt;%=</span> <span class="n">form</span><span class="p">.</span><span class="nf">file_field</span> <span class="ss">:avatar</span> <span class="cp">%&gt;</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="&lt;%= form.file_field :avatar %&gt;
+">Copy</button>
+</div>
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">SignupController</span> <span class="o">&lt;</span> <span class="no">ApplicationController</span>
+  <span class="k">def</span> <span class="nf">create</span>
+    <span class="n">user</span> <span class="o">=</span> <span class="no">User</span><span class="p">.</span><span class="nf">create!</span><span class="p">(</span><span class="n">user_params</span><span class="p">)</span>
+    <span class="n">session</span><span class="p">[</span><span class="ss">:user_id</span><span class="p">]</span> <span class="o">=</span> <span class="n">user</span><span class="p">.</span><span class="nf">id</span>
+    <span class="n">redirect_to</span> <span class="n">root_path</span>
+  <span class="k">end</span>
+
+  <span class="kp">private</span>
+    <span class="k">def</span> <span class="nf">user_params</span>
+      <span class="n">params</span><span class="p">.</span><span class="nf">require</span><span class="p">(</span><span class="ss">:user</span><span class="p">).</span><span class="nf">permit</span><span class="p">(</span><span class="ss">:email_address</span><span class="p">,</span> <span class="ss">:password</span><span class="p">,</span> <span class="ss">:avatar</span><span class="p">)</span>
+    <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="class SignupController &lt; ApplicationController
+  def create
+    user = User.create!(user_params)
+    session[:user_id] = user.id
+    redirect_to root_path
+  end
+
+  private
+    def user_params
+      params.require(:user).permit(:email_address, :password, :avatar)
+    end
+end
+">Copy</button>
+</div>
+<p>Call <a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveStorage/Attached/One.html#method-i-attach"><code>avatar.attach</code></a> to attach an avatar to an existing user:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">user</span><span class="p">.</span><span class="nf">avatar</span><span class="p">.</span><span class="nf">attach</span><span class="p">(</span><span class="n">params</span><span class="p">[</span><span class="ss">:avatar</span><span class="p">])</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="user.avatar.attach(params[:avatar])
+">Copy</button>
+</div>
+<p>Call <a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveStorage/Attached/One.html#method-i-attached-3F"><code>avatar.attached?</code></a> to determine whether a particular user has an avatar:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">user</span><span class="p">.</span><span class="nf">avatar</span><span class="p">.</span><span class="nf">attached?</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="user.avatar.attached?
+">Copy</button>
+</div>
+<p>In some cases you might want to override a default service for a specific attachment.
+You can configure specific services per attachment using the <code>service</code> option:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">User</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="n">has_one_attached</span> <span class="ss">:avatar</span><span class="p">,</span> <span class="ss">service: :s3</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="class User &lt; ApplicationRecord
+  has_one_attached :avatar, service: :s3
+end
+">Copy</button>
+</div>
+<p>You can configure specific variants per attachment by calling the <code>variant</code> method on yielded attachable object:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">User</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="n">has_one_attached</span> <span class="ss">:avatar</span> <span class="k">do</span> <span class="o">|</span><span class="n">attachable</span><span class="o">|</span>
+    <span class="n">attachable</span><span class="p">.</span><span class="nf">variant</span> <span class="ss">:thumb</span><span class="p">,</span> <span class="ss">resize_to_limit: </span><span class="p">[</span><span class="mi">100</span><span class="p">,</span> <span class="mi">100</span><span class="p">]</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="class User &lt; ApplicationRecord
+  has_one_attached :avatar do |attachable|
+    attachable.variant :thumb, resize_to_limit: [100, 100]
+  end
+end
+">Copy</button>
+</div>
+<p>Call <code>avatar.variant(:thumb)</code> to get a thumb variant of an avatar:</p>
+
+<div class="code_container">
+<pre><code class="highlight erb"><span class="cp">&lt;%=</span> <span class="n">image_tag</span> <span class="n">user</span><span class="p">.</span><span class="nf">avatar</span><span class="p">.</span><span class="nf">variant</span><span class="p">(</span><span class="ss">:thumb</span><span class="p">)</span> <span class="cp">%&gt;</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="&lt;%= image_tag user.avatar.variant(:thumb) %&gt;
+">Copy</button>
+</div>
+<h4 id="has-many-attached"><a class="anchorlink" href="#has-many-attached">3.2 <code>has_many_attached</code></a></h4>
+
+<p>The <a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveStorage/Attached/Model.html#method-i-has_many_attached"><code>has_many_attached</code></a> macro sets up a one-to-many relationship between records
+and files. Each record can have many files attached to it.</p>
+
+<p>For example, suppose your application has a <code>Message</code> model. If you want each
+message to have many images, define the <code>Message</code> model as follows:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">Message</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="n">has_many_attached</span> <span class="ss">:images</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="class Message &lt; ApplicationRecord
+  has_many_attached :images
+end
+">Copy</button>
+</div>
+<p>or if you are using Rails 6.0+, you can run a model generator command like this:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">bin</span><span class="o">/</span><span class="n">rails</span> <span class="n">generate</span> <span class="n">model</span> <span class="no">Message</span> <span class="n">images</span><span class="ss">:attachments</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="bin/rails generate model Message images:attachments
+">Copy</button>
+</div>
+<p>You can create a message with images:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">MessagesController</span> <span class="o">&lt;</span> <span class="no">ApplicationController</span>
+  <span class="k">def</span> <span class="nf">create</span>
+    <span class="n">message</span> <span class="o">=</span> <span class="no">Message</span><span class="p">.</span><span class="nf">create!</span><span class="p">(</span><span class="n">message_params</span><span class="p">)</span>
+    <span class="n">redirect_to</span> <span class="n">message</span>
+  <span class="k">end</span>
+
+  <span class="kp">private</span>
+    <span class="k">def</span> <span class="nf">message_params</span>
+      <span class="n">params</span><span class="p">.</span><span class="nf">require</span><span class="p">(</span><span class="ss">:message</span><span class="p">).</span><span class="nf">permit</span><span class="p">(</span><span class="ss">:title</span><span class="p">,</span> <span class="ss">:content</span><span class="p">,</span> <span class="ss">images: </span><span class="p">[])</span>
+    <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="class MessagesController &lt; ApplicationController
+  def create
+    message = Message.create!(message_params)
+    redirect_to message
+  end
+
+  private
+    def message_params
+      params.require(:message).permit(:title, :content, images: [])
+    end
+end
+">Copy</button>
+</div>
+<p>Call <a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveStorage/Attached/Many.html#method-i-attach"><code>images.attach</code></a> to add new images to an existing message:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="vi">@message</span><span class="p">.</span><span class="nf">images</span><span class="p">.</span><span class="nf">attach</span><span class="p">(</span><span class="n">params</span><span class="p">[</span><span class="ss">:images</span><span class="p">])</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="@message.images.attach(params[:images])
+">Copy</button>
+</div>
+<p>Call <a href="https://api.rubyonrails.org/v7.0.4.2/classes/ActiveStorage/Attached/Many.html#method-i-attached-3F"><code>images.attached?</code></a> to determine whether a particular message has any images:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="vi">@message</span><span class="p">.</span><span class="nf">images</span><span class="p">.</span><span class="nf">attached?</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="@message.images.attached?
+">Copy</button>
+</div>
+<p>Overriding the default service is done the same way as <code>has_one_attached</code>, by using the <code>service</code> option:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">Message</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="n">has_many_attached</span> <span class="ss">:images</span><span class="p">,</span> <span class="ss">service: :s3</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="class Message &lt; ApplicationRecord
+  has_many_attached :images, service: :s3
+end
+">Copy</button>
+</div>
+<p>Configuring specific variants is done the same way as <code>has_one_attached</code>, by calling the <code>variant</code> method on the yielded attachable object:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">Message</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="n">has_many_attached</span> <span class="ss">:images</span> <span class="k">do</span> <span class="o">|</span><span class="n">attachable</span><span class="o">|</span>
+    <span class="n">attachable</span><span class="p">.</span><span class="nf">variant</span> <span class="ss">:thumb</span><span class="p">,</span> <span class="ss">resize_to_limit: </span><span class="p">[</span><span class="mi">100</span><span class="p">,</span> <span class="mi">100</span><span class="p">]</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="class Message &lt; ApplicationRecord
+  has_many_attached :images do |attachable|
+    attachable.variant :thumb, resize_to_limit: [100, 100]
+  end
+end
+">Copy</button>
+</div>
+<h4 id="attaching-file-io-objects"><a class="anchorlink" href="#attaching-file-io-objects">3.3 Attaching File/IO Objects</a></h4>
+
+<p>Sometimes you need to attach a file that doesn’t arrive via an HTTP request.
+For example, you may want to attach a file you generated on disk or downloaded
+from a user-submitted URL. You may also want to attach a fixture file in a
+model test. To do that, provide a Hash containing at least an open IO object
+and a filename:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="vi">@message</span><span class="p">.</span><span class="nf">images</span><span class="p">.</span><span class="nf">attach</span><span class="p">(</span><span class="ss">io: </span><span class="no">File</span><span class="p">.</span><span class="nf">open</span><span class="p">(</span><span class="s1">'/path/to/file'</span><span class="p">),</span> <span class="ss">filename: </span><span class="s1">'file.pdf'</span><span class="p">)</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="@message.images.attach(io: File.open('/path/to/file'), filename: 'file.pdf')
+">Copy</button>
+</div>
+<p>When possible, provide a content type as well. Active Storage attempts to
+determine a file’s content type from its data. It falls back to the content
+type you provide if it can’t do that.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="vi">@message</span><span class="p">.</span><span class="nf">images</span><span class="p">.</span><span class="nf">attach</span><span class="p">(</span><span class="ss">io: </span><span class="no">File</span><span class="p">.</span><span class="nf">open</span><span class="p">(</span><span class="s1">'/path/to/file'</span><span class="p">),</span> <span class="ss">filename: </span><span class="s1">'file.pdf'</span><span class="p">,</span> <span class="ss">content_type: </span><span class="s1">'application/pdf'</span><span class="p">)</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="@message.images.attach(io: File.open('/path/to/file'), filename: 'file.pdf', content_type: 'application/pdf')
+">Copy</button>
+</div>
+<p>You can bypass the content type inference from the data by passing in
+<code>identify: false</code> along with the <code>content_type</code>.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="vi">@message</span><span class="p">.</span><span class="nf">images</span><span class="p">.</span><span class="nf">attach</span><span class="p">(</span>
+  <span class="ss">io: </span><span class="no">File</span><span class="p">.</span><span class="nf">open</span><span class="p">(</span><span class="s1">'/path/to/file'</span><span class="p">),</span>
+  <span class="ss">filename: </span><span class="s1">'file.pdf'</span><span class="p">,</span>
+  <span class="ss">content_type: </span><span class="s1">'application/pdf'</span><span class="p">,</span>
+  <span class="ss">identify: </span><span class="kp">false</span>
+<span class="p">)</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="@message.images.attach(
+  io: File.open('/path/to/file'),
+  filename: 'file.pdf',
+  content_type: 'application/pdf',
+  identify: false
+)
+">Copy</button>
+</div>
+<p>If you don’t provide a content type and Active Storage can’t determine the
+file’s content type automatically, it defaults to application/octet-stream.</p>
+</body>
+</html>

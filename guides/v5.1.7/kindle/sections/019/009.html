@@ -1,0 +1,42 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>10 Environmental Security</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v5.1.7/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="environmental-security">10 Environmental Security</h3>
+<p>It is beyond the scope of this guide to inform you on how to secure your application code and environments. However, please secure your database configuration, e.g. <code>config/database.yml</code>, and your server-side secret, e.g. stored in <code>config/secrets.yml</code>. You may want to further restrict access, using environment-specific versions of these files and any others that may contain sensitive information.</p>
+
+<h4 id="custom-secrets">10.1 Custom secrets</h4>
+
+<p>Rails generates a <code>config/secrets.yml</code>. By default, this file contains the
+application's <code>secret_key_base</code>, but it could also be used to store other
+secrets such as access keys for external APIs.</p>
+
+<p>The secrets added to this file are accessible via <code>Rails.application.secrets</code>.
+For example, with the following <code>config/secrets.yml</code>:</p>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+development:
+  secret_key_base: 3b7cd727ee24e8444053437c36cc66c3
+  some_api_key: SOMEKEY
+
+</pre>
+</div>
+<p><code>Rails.application.secrets.some_api_key</code> returns <code>SOMEKEY</code> in the development
+environment.</p>
+
+<p>If you want an exception to be raised when some key is blank, use the bang
+version:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+Rails.application.secrets.some_api_key! # =&gt; raises KeyError: key not found: :some_api_key
+
+</pre>
+</div>
+</body>
+</html>

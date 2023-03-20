@@ -1,0 +1,26 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>6 Cross-Site Request Forgery (CSRF) token in Ajax</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v6.0.6.1/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="cross-site-request-forgery-csrf-token-in-ajax"><a class="anchorlink" href="#cross-site-request-forgery-csrf-token-in-ajax">6 Cross-Site Request Forgery (CSRF) token in Ajax</a></h3>
+<p>When using another library to make Ajax calls, it is necessary to add
+the security token as a default header for Ajax calls in your library. To get
+the token:</p>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+var token = document.getElementsByName('csrf-token')[0].content
+
+</pre>
+</div>
+<p>You can then submit this token as a X-CSRF-Token in your header for your
+Ajax requst.  You do not need to add a CSRF for GET requests, only non-GET
+requests.</p>
+
+<p>You can read more about about Cross-Site Request Forgery in <a href="https://guides.rubyonrails.org/security.html#cross-site-request-forgery-csrf">Security</a></p>
+</body>
+</html>

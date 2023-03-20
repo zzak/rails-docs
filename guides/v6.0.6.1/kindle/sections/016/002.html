@@ -1,0 +1,270 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>3 Configuration</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v6.0.6.1/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="configuration"><a class="anchorlink" href="#configuration">3 Configuration</a></h3>
+<h4 id="exim"><a class="anchorlink" href="#exim">3.1 Exim</a></h4>
+
+<p>Tell Action Mailbox to accept emails from an SMTP relay:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+# config/environments/production.rb
+config.action_mailbox.ingress = :relay
+
+</pre>
+</div>
+<p>Generate a strong password that Action Mailbox can use to authenticate requests to the relay ingress.</p>
+
+<p>Use <code>rails credentials:edit</code> to add the password to your application's encrypted credentials under
+<code>action_mailbox.ingress_password</code>, where Action Mailbox will automatically find it:</p>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+action_mailbox:
+  ingress_password: ...
+
+</pre>
+</div>
+<p>Alternatively, provide the password in the <code>RAILS_INBOUND_EMAIL_PASSWORD</code> environment variable.</p>
+
+<p>Configure Exim to pipe inbound emails to <code>bin/rails action_mailbox:ingress:exim</code>,
+providing the <code>URL</code> of the relay ingress and the <code>INGRESS_PASSWORD</code> you
+previously generated. If your application lived at <code>https://example.com</code>, the
+full command would look like this:</p>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+bin/rails action_mailbox:ingress:exim URL=https://example.com/rails/action_mailbox/relay/inbound_emails INGRESS_PASSWORD=...
+
+</pre>
+</div>
+<h4 id="mailgun"><a class="anchorlink" href="#mailgun">3.2 Mailgun</a></h4>
+
+<p>Give Action Mailbox your
+<a href="https://help.mailgun.com/hc/en-us/articles/203380100-Where-can-I-find-my-API-key-and-SMTP-credentials">Mailgun API key</a>
+so it can authenticate requests to the Mailgun ingress.</p>
+
+<p>Use <code>rails credentials:edit</code> to add your API key to your application's
+encrypted credentials under <code>action_mailbox.mailgun_api_key</code>,
+where Action Mailbox will automatically find it:</p>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+action_mailbox:
+  mailgun_api_key: ...
+
+</pre>
+</div>
+<p>Alternatively, provide your API key in the <code>MAILGUN_INGRESS_API_KEY</code> environment
+variable.</p>
+
+<p>Tell Action Mailbox to accept emails from Mailgun:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+# config/environments/production.rb
+config.action_mailbox.ingress = :mailgun
+
+</pre>
+</div>
+<p><a href="https://documentation.mailgun.com/en/latest/user_manual.html#receiving-forwarding-and-storing-messages">Configure Mailgun</a>
+to forward inbound emails to <code>/rails/action_mailbox/mailgun/inbound_emails/mime</code>.
+If your application lived at <code>https://example.com</code>, you would specify the
+fully-qualified URL <code>https://example.com/rails/action_mailbox/mailgun/inbound_emails/mime</code>.</p>
+
+<h4 id="mandrill"><a class="anchorlink" href="#mandrill">3.3 Mandrill</a></h4>
+
+<p>Give Action Mailbox your Mandrill API key so it can authenticate requests to
+the Mandrill ingress.</p>
+
+<p>Use <code>rails credentials:edit</code> to add your API key to your application's
+encrypted credentials under <code>action_mailbox.mandrill_api_key</code>,
+where Action Mailbox will automatically find it:</p>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+action_mailbox:
+  mandrill_api_key: ...
+
+</pre>
+</div>
+<p>Alternatively, provide your API key in the <code>MANDRILL_INGRESS_API_KEY</code>
+environment variable.</p>
+
+<p>Tell Action Mailbox to accept emails from Mandrill:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+# config/environments/production.rb
+config.action_mailbox.ingress = :mandrill
+
+</pre>
+</div>
+<p><a href="https://mandrill.zendesk.com/hc/en-us/articles/205583197-Inbound-Email-Processing-Overview">Configure Mandrill</a>
+to route inbound emails to <code>/rails/action_mailbox/mandrill/inbound_emails</code>.
+If your application lived at <code>https://example.com</code>, you would specify
+the fully-qualified URL <code>https://example.com/rails/action_mailbox/mandrill/inbound_emails</code>.</p>
+
+<h4 id="postfix"><a class="anchorlink" href="#postfix">3.4 Postfix</a></h4>
+
+<p>Tell Action Mailbox to accept emails from an SMTP relay:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+# config/environments/production.rb
+config.action_mailbox.ingress = :relay
+
+</pre>
+</div>
+<p>Generate a strong password that Action Mailbox can use to authenticate requests to the relay ingress.</p>
+
+<p>Use <code>rails credentials:edit</code> to add the password to your application's encrypted credentials under
+<code>action_mailbox.ingress_password</code>, where Action Mailbox will automatically find it:</p>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+action_mailbox:
+  ingress_password: ...
+
+</pre>
+</div>
+<p>Alternatively, provide the password in the <code>RAILS_INBOUND_EMAIL_PASSWORD</code> environment variable.</p>
+
+<p><a href="https://serverfault.com/questions/258469/how-to-configure-postfix-to-pipe-all-incoming-email-to-a-script">Configure Postfix</a>
+to pipe inbound emails to <code>bin/rails action_mailbox:ingress:postfix</code>, providing
+the <code>URL</code> of the Postfix ingress and the <code>INGRESS_PASSWORD</code> you previously
+generated. If your application lived at <code>https://example.com</code>, the full command
+would look like this:</p>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+$ bin/rails action_mailbox:ingress:postfix URL=https://example.com/rails/action_mailbox/relay/inbound_emails INGRESS_PASSWORD=...
+
+</pre>
+</div>
+<h4 id="postmark"><a class="anchorlink" href="#postmark">3.5 Postmark</a></h4>
+
+<p>Tell Action Mailbox to accept emails from Postmark:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+# config/environments/production.rb
+config.action_mailbox.ingress = :postmark
+
+</pre>
+</div>
+<p>Generate a strong password that Action Mailbox can use to authenticate
+requests to the Postmark ingress.</p>
+
+<p>Use <code>rails credentials:edit</code> to add the password to your application's
+encrypted credentials under <code>action_mailbox.ingress_password</code>,
+where Action Mailbox will automatically find it:</p>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+action_mailbox:
+  ingress_password: ...
+
+</pre>
+</div>
+<p>Alternatively, provide the password in the <code>RAILS_INBOUND_EMAIL_PASSWORD</code>
+environment variable.</p>
+
+<p><a href="https://postmarkapp.com/manual#configure-your-inbound-webhook-url">Configure Postmark inbound webhook</a>
+to forward inbound emails to <code>/rails/action_mailbox/postmark/inbound_emails</code> with the username <code>actionmailbox</code>
+and the password you previously generated. If your application lived at <code>https://example.com</code>, you would
+configure Postmark with the following fully-qualified URL:</p>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+https://actionmailbox:PASSWORD@example.com/rails/action_mailbox/postmark/inbound_emails
+
+</pre>
+</div>
+<div class="note"><p>When configuring your Postmark inbound webhook, be sure to check the box labeled <strong>"Include raw email content in JSON payload"</strong>.
+Action Mailbox needs the raw email content to work.</p></div>
+
+<h4 id="qmail"><a class="anchorlink" href="#qmail">3.6 Qmail</a></h4>
+
+<p>Tell Action Mailbox to accept emails from an SMTP relay:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+# config/environments/production.rb
+config.action_mailbox.ingress = :relay
+
+</pre>
+</div>
+<p>Generate a strong password that Action Mailbox can use to authenticate requests to the relay ingress.</p>
+
+<p>Use <code>rails credentials:edit</code> to add the password to your application's encrypted credentials under
+<code>action_mailbox.ingress_password</code>, where Action Mailbox will automatically find it:</p>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+action_mailbox:
+  ingress_password: ...
+
+</pre>
+</div>
+<p>Alternatively, provide the password in the <code>RAILS_INBOUND_EMAIL_PASSWORD</code> environment variable.</p>
+
+<p>Configure Qmail to pipe inbound emails to <code>bin/rails action_mailbox:ingress:qmail</code>,
+providing the <code>URL</code> of the relay ingress and the <code>INGRESS_PASSWORD</code> you
+previously generated. If your application lived at <code>https://example.com</code>, the
+full command would look like this:</p>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+bin/rails action_mailbox:ingress:qmail URL=https://example.com/rails/action_mailbox/relay/inbound_emails INGRESS_PASSWORD=...
+
+</pre>
+</div>
+<h4 id="sendgrid"><a class="anchorlink" href="#sendgrid">3.7 SendGrid</a></h4>
+
+<p>Tell Action Mailbox to accept emails from SendGrid:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+# config/environments/production.rb
+config.action_mailbox.ingress = :sendgrid
+
+</pre>
+</div>
+<p>Generate a strong password that Action Mailbox can use to authenticate
+requests to the SendGrid ingress.</p>
+
+<p>Use <code>rails credentials:edit</code> to add the password to your application's
+encrypted credentials under <code>action_mailbox.ingress_password</code>,
+where Action Mailbox will automatically find it:</p>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+action_mailbox:
+  ingress_password: ...
+
+</pre>
+</div>
+<p>Alternatively, provide the password in the <code>RAILS_INBOUND_EMAIL_PASSWORD</code>
+environment variable.</p>
+
+<p><a href="https://sendgrid.com/docs/for-developers/parsing-email/setting-up-the-inbound-parse-webhook/">Configure SendGrid Inbound Parse</a>
+to forward inbound emails to
+<code>/rails/action_mailbox/sendgrid/inbound_emails</code> with the username <code>actionmailbox</code>
+and the password you previously generated. If your application lived at <code>https://example.com</code>,
+you would configure SendGrid with the following URL:</p>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+https://actionmailbox:PASSWORD@example.com/rails/action_mailbox/sendgrid/inbound_emails
+
+</pre>
+</div>
+<div class="note"><p>When configuring your SendGrid Inbound Parse webhook, be sure to check the box labeled <strong>“Post the raw, full MIME message.”</strong> Action Mailbox needs the raw MIME message to work.</p></div>
+</body>
+</html>

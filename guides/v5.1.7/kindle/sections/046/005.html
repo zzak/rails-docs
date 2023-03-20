@@ -1,0 +1,164 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>6 Active Record</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v5.1.7/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="active-record">6 Active Record</h3>
+<ul>
+<li>
+Added a class method <code>pluralize_table_names</code> to singularize/pluralize table names of individual models. Previously this could only be set globally for all models through <code>ActiveRecord::Base.pluralize_table_names</code>.
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class User &lt; ActiveRecord::Base
+  self.pluralize_table_names = false
+end
+
+</pre>
+</div>
+</li>
+<li>
+Added block setting of attributes to singular associations. The block will get called after the instance is initialized.
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class User &lt; ActiveRecord::Base
+  has_one :account
+end
+
+user.build_account{ |a| a.credit_limit = 100.0 }
+
+</pre>
+</div>
+</li>
+<li>Added <code>ActiveRecord::Base.attribute_names</code> to return a list of attribute names. This will return an empty array if the model is abstract or the table does not exist.</li>
+<li>CSV Fixtures are deprecated and support will be removed in Rails 3.2.0.</li>
+<li>
+<code>ActiveRecord#new</code>, <code>ActiveRecord#create</code> and <code>ActiveRecord#update_attributes</code> all accept a second hash as an option that allows you to specify which role to consider when assigning attributes. This is built on top of Active Model's new mass assignment capabilities:
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class Post &lt; ActiveRecord::Base
+  attr_accessible :title
+  attr_accessible :title, :published_at, :as =&gt; :admin
+end
+
+Post.new(params[:post], :as =&gt; :admin)
+
+</pre>
+</div>
+</li>
+<li>
+<code>default_scope</code> can now take a block, lambda, or any other object which responds to call for lazy evaluation.</li>
+<li>Default scopes are now evaluated at the latest possible moment, to avoid problems where scopes would be created which would implicitly contain the default scope, which would then be impossible to get rid of via Model.unscoped.</li>
+<li>PostgreSQL adapter only supports PostgreSQL version 8.2 and higher.</li>
+<li>
+<code>ConnectionManagement</code> middleware is changed to clean up the connection pool after the rack body has been flushed.</li>
+<li>Added an <code>update_column</code> method on Active Record. This new method updates a given attribute on an object, skipping validations and callbacks. It is recommended to use <code>update_attributes</code> or <code>update_attribute</code> unless you are sure you do not want to execute any callback, including the modification of the <code>updated_at</code> column. It should not be called on new records.</li>
+<li>Associations with a <code>:through</code> option can now use any association as the through or source association, including other associations which have a <code>:through</code> option and <code>has_and_belongs_to_many</code> associations.</li>
+<li>The configuration for the current database connection is now accessible via <code>ActiveRecord::Base.connection_config</code>.</li>
+<li>
+limits and offsets are removed from COUNT queries unless both are supplied.
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+People.limit(1).count           # =&gt; 'SELECT COUNT(*) FROM people'
+People.offset(1).count          # =&gt; 'SELECT COUNT(*) FROM people'
+People.limit(1).offset(1).count # =&gt; 'SELECT COUNT(*) FROM people LIMIT 1 OFFSET 1'
+
+</pre>
+</div>
+</li>
+<li>
+<code>ActiveRecord::Associations::AssociationProxy</code> has been split. There is now an <code>Association</code> class (and subclasses) which are responsible for operating on associations, and then a separate, thin wrapper called <code>CollectionProxy</code>, which proxies collection associations. This prevents namespace pollution, separates concerns, and will allow further refactorings.</li>
+<li>Singular associations (<code>has_one</code>, <code>belongs_to</code>) no longer have a proxy and simply returns the associated record or <code>nil</code>. This means that you should not use undocumented methods such as <code>bob.mother.create</code> - use <code>bob.create_mother</code> instead.</li>
+<li>Support the <code>:dependent</code> option on <code>has_many :through</code> associations. For historical and practical reasons, <code>:delete_all</code> is the default deletion strategy employed by <code>association.delete(*records)</code>, despite the fact that the default strategy is <code>:nullify</code> for regular has_many. Also, this only works at all if the source reflection is a belongs_to. For other situations, you should directly modify the through association.</li>
+<li>The behavior of <code>association.destroy</code> for <code>has_and_belongs_to_many</code> and <code>has_many :through</code> is changed. From now on, 'destroy' or 'delete' on an association will be taken to mean 'get rid of the link', not (necessarily) 'get rid of the associated records'.</li>
+<li>Previously, <code>has_and_belongs_to_many.destroy(*records)</code> would destroy the records themselves. It would not delete any records in the join table. Now, it deletes the records in the join table.</li>
+<li>Previously, <code>has_many_through.destroy(*records)</code> would destroy the records themselves, and the records in the join table. [Note: This has not always been the case; previous version of Rails only deleted the records themselves.] Now, it destroys only the records in the join table.</li>
+<li>Note that this change is backwards-incompatible to an extent, but there is unfortunately no way to 'deprecate' it before changing it. The change is being made in order to have consistency as to the meaning of 'destroy' or 'delete' across the different types of associations. If you wish to destroy the records themselves, you can do <code>records.association.each(&amp;:destroy)</code>.</li>
+<li>
+Add <code>:bulk =&gt; true</code> option to <code>change_table</code> to make all the schema changes defined in a block using a single ALTER statement.
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+change_table(:users, :bulk =&gt; true) do |t|
+  t.string :company_name
+  t.change :birthdate, :datetime
+end
+
+</pre>
+</div>
+</li>
+<li>Removed support for accessing attributes on a <code>has_and_belongs_to_many</code> join table. <code>has_many :through</code> needs to be used.</li>
+<li>Added a <code>create_association!</code> method for <code>has_one</code> and <code>belongs_to</code> associations.</li>
+<li>
+Migrations are now reversible, meaning that Rails will figure out how to reverse your migrations. To use reversible migrations, just define the <code>change</code> method.
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class MyMigration &lt; ActiveRecord::Migration
+  def change
+    create_table(:horses) do |t|
+      t.column :content, :text
+      t.column :remind_at, :datetime
+    end
+  end
+end
+
+</pre>
+</div>
+</li>
+<li>Some things cannot be automatically reversed for you. If you know how to reverse those things, you should define <code>up</code> and <code>down</code> in your migration. If you define something in change that cannot be reversed, an <code>IrreversibleMigration</code> exception will be raised when going down.</li>
+<li>
+Migrations now use instance methods rather than class methods:
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class FooMigration &lt; ActiveRecord::Migration
+  def up # Not self.up
+    ...
+  end
+end
+
+</pre>
+</div>
+</li>
+<li>Migration files generated from model and constructive migration generators (for example, add_name_to_users) use the reversible migration's <code>change</code> method instead of the ordinary <code>up</code> and <code>down</code> methods.</li>
+<li>
+Removed support for interpolating string SQL conditions on associations. Instead, a proc should be used.
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+has_many :things, :conditions =&gt; 'foo = #{bar}'          # before
+has_many :things, :conditions =&gt; proc { "foo = #{bar}" } # after
+
+</pre>
+</div>
+Inside the proc, <code>self</code> is the object which is the owner of the association, unless you are eager loading the association, in which case <code>self</code> is the class which the association is within.
+You can have any "normal" conditions inside the proc, so the following will work too:
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+has_many :things, :conditions =&gt; proc { ["foo = ?", bar] }
+
+</pre>
+</div>
+</li>
+<li>Previously <code>:insert_sql</code> and <code>:delete_sql</code> on <code>has_and_belongs_to_many</code> association allowed you to call 'record' to get the record being inserted or deleted. This is now passed as an argument to the proc.</li>
+<li>
+Added <code>ActiveRecord::Base#has_secure_password</code> (via <code>ActiveModel::SecurePassword</code>) to encapsulate dead-simple password usage with BCrypt encryption and salting.
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+# Schema: User(name:string, password_digest:string, password_salt:string)
+class User &lt; ActiveRecord::Base
+  has_secure_password
+end
+
+</pre>
+</div>
+</li>
+<li>When a model is generated <code>add_index</code> is added by default for <code>belongs_to</code> or <code>references</code> columns.</li>
+<li>Setting the id of a <code>belongs_to</code> object will update the reference to the object.</li>
+<li>
+<code>ActiveRecord::Base#dup</code> and <code>ActiveRecord::Base#clone</code> semantics have changed to closer match normal Ruby dup and clone semantics.</li>
+<li>Calling <code>ActiveRecord::Base#clone</code> will result in a shallow copy of the record, including copying the frozen state. No callbacks will be called.</li>
+<li>Calling <code>ActiveRecord::Base#dup</code> will duplicate the record, including calling after initialize hooks. Frozen state will not be copied, and all associations will be cleared. A duped record will return <code>true</code> for <code>new_record?</code>, have a <code>nil</code> id field, and is saveable.</li>
+<li>The query cache now works with prepared statements. No changes in the applications are required.</li>
+</ul>
+</body>
+</html>

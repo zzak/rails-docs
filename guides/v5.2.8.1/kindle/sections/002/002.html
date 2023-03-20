@@ -1,0 +1,48 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>3 Creating Active Record Models</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v5.2.8.1/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="creating-active-record-models"><a class="anchorlink" href="#creating-active-record-models">3 Creating Active Record Models</a></h3>
+<p>It is very easy to create Active Record models. All you have to do is to
+subclass the <code>ApplicationRecord</code> class and you're good to go:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class Product &lt; ApplicationRecord
+end
+
+</pre>
+</div>
+<p>This will create a <code>Product</code> model, mapped to a <code>products</code> table at the
+database. By doing this you'll also have the ability to map the columns of each
+row in that table with the attributes of the instances of your model. Suppose
+that the <code>products</code> table was created using an SQL (or one of its extensions) statement like:</p>
+
+<div class="code_container">
+<pre class="brush: sql; gutter: false; toolbar: false">
+CREATE TABLE products (
+   id int(11) NOT NULL auto_increment,
+   name varchar(255),
+   PRIMARY KEY  (id)
+);
+
+</pre>
+</div>
+<p>Schema above declares a table with two columns: <code>id</code> and <code>name</code>. Each row of
+this table represents a certain product with these two parameters. Thus, you
+would be able to write code like the following:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+p = Product.new
+p.name = "Some Book"
+puts p.name # "Some Book"
+
+</pre>
+</div>
+</body>
+</html>

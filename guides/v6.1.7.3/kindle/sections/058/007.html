@@ -1,0 +1,116 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>8 Active Model</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v6.1.7.3/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="active-model"><a class="anchorlink" href="#active-model">8 Active Model</a></h3>
+<p>Active Model is new in Rails 3.0. It provides an abstraction layer for any ORM libraries to use to interact with Rails by implementing an Active Model interface.</p>
+
+<h4 id="orm-abstraction-and-action-pack-interface"><a class="anchorlink" href="#orm-abstraction-and-action-pack-interface">8.1 ORM Abstraction and Action Pack Interface</a></h4>
+
+<p>Part of decoupling the core components was extracting all ties to Active Record from Action Pack. This has now been completed. All new ORM plugins now just need to implement Active Model interfaces to work seamlessly with Action Pack.</p>
+
+<p>More Information: - <a href="http://yehudakatz.com/2010/01/10/activemodel-make-any-ruby-object-feel-like-activerecord/">Make Any Ruby Object Feel Like ActiveRecord</a></p>
+
+<h4 id="validations"><a class="anchorlink" href="#validations">8.2 Validations</a></h4>
+
+<p>Validations have been moved from Active Record into Active Model, providing an interface to validations that works across ORM libraries in Rails 3.</p>
+<ul>
+<li>There is now a <code>validates :attribute, options_hash</code> shortcut method that allows you to pass options for all the validates class methods, you can pass more than one option to a validate method.</li>
+<li>The <code>validates</code> method has the following options:
+
+<ul>
+<li>
+<code>:acceptance =&gt; Boolean</code>.</li>
+<li>
+<code>:confirmation =&gt; Boolean</code>.</li>
+<li>
+<code>:exclusion =&gt; { :in =&gt; Enumerable }</code>.</li>
+<li>
+<code>:inclusion =&gt; { :in =&gt; Enumerable }</code>.</li>
+<li>
+<code>:format =&gt; { :with =&gt; Regexp, :on =&gt; :create }</code>.</li>
+<li>
+<code>:length =&gt; { :maximum =&gt; Fixnum }</code>.</li>
+<li>
+<code>:numericality =&gt; Boolean</code>.</li>
+<li>
+<code>:presence =&gt; Boolean</code>.</li>
+<li>
+<code>:uniqueness =&gt; Boolean</code>.</li>
+</ul>
+</li>
+</ul>
+<div class="note"><p>All the Rails version 2.3 style validation methods are still supported in Rails 3.0, the new validates method is designed as an additional aid in your model validations, not a replacement for the existing API.</p></div>
+
+<p>You can also pass in a validator object, which you can then reuse between objects that use Active Model:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">TitleValidator</span> <span class="o">&lt;</span> <span class="no">ActiveModel</span><span class="o">::</span><span class="no">EachValidator</span>
+  <span class="no">Titles</span> <span class="o">=</span> <span class="p">[</span><span class="s1">'Mr.'</span><span class="p">,</span> <span class="s1">'Mrs.'</span><span class="p">,</span> <span class="s1">'Dr.'</span><span class="p">]</span>
+  <span class="k">def</span> <span class="nf">validate_each</span><span class="p">(</span><span class="n">record</span><span class="p">,</span> <span class="n">attribute</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+    <span class="k">unless</span> <span class="no">Titles</span><span class="p">.</span><span class="nf">include?</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+      <span class="n">record</span><span class="p">.</span><span class="nf">errors</span><span class="p">[</span><span class="n">attribute</span><span class="p">]</span> <span class="o">&lt;&lt;</span> <span class="s1">'must be a valid title'</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-79ccdcfbc370b4e4d9787f34d40b9ead">class TitleValidator &lt; ActiveModel::EachValidator
+  Titles = ['Mr.', 'Mrs.', 'Dr.']
+  def validate_each(record, attribute, value)
+    unless Titles.include?(value)
+      record.errors[attribute] &lt;&lt; 'must be a valid title'
+    end
+  end
+end
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-79ccdcfbc370b4e4d9787f34d40b9ead">Copy</button>
+</div>
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">Person</span>
+  <span class="kp">include</span> <span class="no">ActiveModel</span><span class="o">::</span><span class="no">Validations</span>
+  <span class="nb">attr_accessor</span> <span class="ss">:title</span>
+  <span class="n">validates</span> <span class="ss">:title</span><span class="p">,</span> <span class="ss">:presence</span> <span class="o">=&gt;</span> <span class="kp">true</span><span class="p">,</span> <span class="ss">:title</span> <span class="o">=&gt;</span> <span class="kp">true</span>
+<span class="k">end</span>
+
+<span class="c1"># Or for Active Record</span>
+
+<span class="k">class</span> <span class="nc">Person</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Base</span>
+  <span class="n">validates</span> <span class="ss">:title</span><span class="p">,</span> <span class="ss">:presence</span> <span class="o">=&gt;</span> <span class="kp">true</span><span class="p">,</span> <span class="ss">:title</span> <span class="o">=&gt;</span> <span class="kp">true</span>
+<span class="k">end</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-4ab7bad28226c734f445d0c84517a465">class Person
+  include ActiveModel::Validations
+  attr_accessor :title
+  validates :title, :presence =&gt; true, :title =&gt; true
+end
+
+# Or for Active Record
+
+class Person &lt; ActiveRecord::Base
+  validates :title, :presence =&gt; true, :title =&gt; true
+end
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-4ab7bad28226c734f445d0c84517a465">Copy</button>
+</div>
+<p>There's also support for introspection:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="no">User</span><span class="p">.</span><span class="nf">validators</span>
+<span class="no">User</span><span class="p">.</span><span class="nf">validators_on</span><span class="p">(</span><span class="ss">:login</span><span class="p">)</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-a37c6cf4dbd92f3077812d82a7353309">User.validators
+User.validators_on(:login)
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-a37c6cf4dbd92f3077812d82a7353309">Copy</button>
+</div>
+<p>More Information:</p>
+<ul>
+<li><a href="http://thelucid.com/2010/01/08/sexy-validation-in-edge-rails-rails-3/">Sexy Validation in Rails 3</a></li>
+<li><a href="http://lindsaar.net/2010/1/31/validates_rails_3_awesome_is_true">Rails 3 Validations Explained</a></li>
+</ul>
+</body>
+</html>

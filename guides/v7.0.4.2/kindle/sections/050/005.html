@@ -1,0 +1,39 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>6 Action View</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v7.0.4.2/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="action-view"><a class="anchorlink" href="#action-view">6 Action View</a></h3>
+<p>Please refer to the <a href="https://github.com/rails/rails/blob/7-0-stable/actionview/CHANGELOG.md">Changelog</a> for detailed changes.</p>
+
+<h4 id="action-view-removals"><a class="anchorlink" href="#action-view-removals">6.1 Removals</a></h4>
+<ul>
+<li>  Remove deprecated <code>Rails.config.action_view.raise_on_missing_translations</code>.</li>
+</ul>
+<h4 id="action-view-deprecations"><a class="anchorlink" href="#action-view-deprecations">6.2 Deprecations</a></h4>
+
+<h4 id="action-view-notable-changes"><a class="anchorlink" href="#action-view-notable-changes">6.3 Notable changes</a></h4>
+<ul>
+<li>
+ <code>button_to</code> infers HTTP verb [method] from an Active Record object if object is used to build URL
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">button_to</span><span class="p">(</span><span class="s2">"Do a POST"</span><span class="p">,</span> <span class="p">[</span><span class="ss">:do_post_action</span><span class="p">,</span> <span class="no">Workshop</span><span class="p">.</span><span class="nf">find</span><span class="p">(</span><span class="mi">1</span><span class="p">)])</span>
+<span class="c1"># Before</span>
+<span class="c1">#=&gt;   &lt;input type="hidden" name="_method" value="post" autocomplete="off" /&gt;</span>
+<span class="c1"># After</span>
+<span class="c1">#=&gt;   &lt;input type="hidden" name="_method" value="patch" autocomplete="off" /&gt;</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='button_to("Do a POST", [:do_post_action, Workshop.find(1)])
+# Before
+#=&gt;   &lt;input type="hidden" name="_method" value="post" autocomplete="off" /&gt;
+# After
+#=&gt;   &lt;input type="hidden" name="_method" value="patch" autocomplete="off" /&gt;
+'>Copy</button>
+</div>
+</li>
+</ul>
+</body>
+</html>

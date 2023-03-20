@@ -1,0 +1,90 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>8 Conditional Callbacks</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v7.0.4.2/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="conditional-callbacks"><a class="anchorlink" href="#conditional-callbacks">8 Conditional Callbacks</a></h3>
+<p>As with validations, we can also make the calling of a callback method conditional on the satisfaction of a given predicate. We can do this using the <code>:if</code> and <code>:unless</code> options, which can take a symbol, a <code>Proc</code> or an <code>Array</code>. You may use the <code>:if</code> option when you want to specify under which conditions the callback <strong>should</strong> be called. If you want to specify the conditions under which the callback <strong>should not</strong> be called, then you may use the <code>:unless</code> option.</p>
+
+<h4 id="using-if-and-unless-with-a-symbol"><a class="anchorlink" href="#using-if-and-unless-with-a-symbol">8.1 Using <code>:if</code> and <code>:unless</code> with a <code>Symbol</code></a></h4>
+
+<p>You can associate the <code>:if</code> and <code>:unless</code> options with a symbol corresponding to the name of a predicate method that will get called right before the callback. When using the <code>:if</code> option, the callback won't be executed if the predicate method returns false; when using the <code>:unless</code> option, the callback won't be executed if the predicate method returns true. This is the most common option. Using this form of registration it is also possible to register several different predicates that should be called to check if the callback should be executed.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">Order</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="n">before_save</span> <span class="ss">:normalize_card_number</span><span class="p">,</span> <span class="ss">if: :paid_with_card?</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="class Order &lt; ApplicationRecord
+  before_save :normalize_card_number, if: :paid_with_card?
+end
+">Copy</button>
+</div>
+<h4 id="using-if-and-unless-with-a-proc"><a class="anchorlink" href="#using-if-and-unless-with-a-proc">8.2 Using <code>:if</code> and <code>:unless</code> with a <code>Proc</code></a></h4>
+
+<p>It is possible to associate <code>:if</code> and <code>:unless</code> with a <code>Proc</code> object. This option is best suited when writing short validation methods, usually one-liners:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">Order</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="n">before_save</span> <span class="ss">:normalize_card_number</span><span class="p">,</span>
+    <span class="ss">if: </span><span class="no">Proc</span><span class="p">.</span><span class="nf">new</span> <span class="p">{</span> <span class="o">|</span><span class="n">order</span><span class="o">|</span> <span class="n">order</span><span class="p">.</span><span class="nf">paid_with_card?</span> <span class="p">}</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="class Order &lt; ApplicationRecord
+  before_save :normalize_card_number,
+    if: Proc.new { |order| order.paid_with_card? }
+end
+">Copy</button>
+</div>
+<p>As the proc is evaluated in the context of the object, it is also possible to write this as:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">Order</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="n">before_save</span> <span class="ss">:normalize_card_number</span><span class="p">,</span> <span class="ss">if: </span><span class="no">Proc</span><span class="p">.</span><span class="nf">new</span> <span class="p">{</span> <span class="n">paid_with_card?</span> <span class="p">}</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="class Order &lt; ApplicationRecord
+  before_save :normalize_card_number, if: Proc.new { paid_with_card? }
+end
+">Copy</button>
+</div>
+<h4 id="using-both-if-and-unless"><a class="anchorlink" href="#using-both-if-and-unless">8.3 Using both :if and :unless</a></h4>
+
+<p>Callbacks can mix both <code>:if</code> and <code>:unless</code> in the same declaration:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">Comment</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="n">before_save</span> <span class="ss">:filter_content</span><span class="p">,</span>
+    <span class="ss">if: </span><span class="no">Proc</span><span class="p">.</span><span class="nf">new</span> <span class="p">{</span> <span class="n">forum</span><span class="p">.</span><span class="nf">parental_control?</span> <span class="p">},</span>
+    <span class="ss">unless: </span><span class="no">Proc</span><span class="p">.</span><span class="nf">new</span> <span class="p">{</span> <span class="n">author</span><span class="p">.</span><span class="nf">trusted?</span> <span class="p">}</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="class Comment &lt; ApplicationRecord
+  before_save :filter_content,
+    if: Proc.new { forum.parental_control? },
+    unless: Proc.new { author.trusted? }
+end
+">Copy</button>
+</div>
+<h4 id="multiple-callback-conditions"><a class="anchorlink" href="#multiple-callback-conditions">8.4 Multiple Callback Conditions</a></h4>
+
+<p>The <code>:if</code> and <code>:unless</code> options also accept an array of procs or method names as symbols:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">Comment</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="n">before_save</span> <span class="ss">:filter_content</span><span class="p">,</span>
+    <span class="ss">if: </span><span class="p">[</span><span class="ss">:subject_to_parental_control?</span><span class="p">,</span> <span class="ss">:untrusted_author?</span><span class="p">]</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="class Comment &lt; ApplicationRecord
+  before_save :filter_content,
+    if: [:subject_to_parental_control?, :untrusted_author?]
+end
+">Copy</button>
+</div>
+<p>The callback only runs when all the <code>:if</code> conditions and none of the <code>:unless</code> conditions are evaluated to <code>true</code>.</p>
+</body>
+</html>

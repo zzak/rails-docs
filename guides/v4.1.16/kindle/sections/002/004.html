@@ -1,0 +1,119 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>5 CRUD: Reading and Writing Data</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v4.1.16/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="crud-reading-and-writing-data">5 CRUD: Reading and Writing Data</h3>
+<p>CRUD is an acronym for the four verbs we use to operate on data: <strong>C</strong>reate,
+<strong>R</strong>ead, <strong>U</strong>pdate and <strong>D</strong>elete. Active Record automatically creates methods
+to allow an application to read and manipulate data stored within its tables.</p>
+<h4 id="create">5.1 Create</h4>
+<p>Active Record objects can be created from a hash, a block or have their
+attributes manually set after creation. The <code>new</code> method will return a new
+object while <code>create</code> will return the object and save it to the database.</p>
+<p>For example, given a model <code>User</code> with attributes of <code>name</code> and <code>occupation</code>,
+the <code>create</code> method call will create and save a new record into the database:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+user = User.create(name: "David", occupation: "Code Artist")
+
+</pre>
+</div>
+<p>Using the <code>new</code> method, an object can be instantiated without being saved:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+user = User.new
+user.name = "David"
+user.occupation = "Code Artist"
+
+</pre>
+</div>
+<p>A call to <code>user.save</code> will commit the record to the database.</p>
+<p>Finally, if a block is provided, both <code>create</code> and <code>new</code> will yield the new
+object to that block for initialization:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+user = User.new do |u|
+  u.name = "David"
+  u.occupation = "Code Artist"
+end
+
+</pre>
+</div>
+<h4 id="read">5.2 Read</h4>
+<p>Active Record provides a rich API for accessing data within a database. Below
+are a few examples of different data access methods provided by Active Record.</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+# return a collection with all users
+users = User.all
+
+</pre>
+</div>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+# return the first user
+user = User.first
+
+</pre>
+</div>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+# return the first user named David
+david = User.find_by(name: 'David')
+
+</pre>
+</div>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+# find all users named David who are Code Artists and sort by created_at in reverse chronological order
+users = User.where(name: 'David', occupation: 'Code Artist').order('created_at DESC')
+
+</pre>
+</div>
+<p>You can learn more about querying an Active Record model in the <a href="active_record_querying.html">Active Record
+Query Interface</a> guide.</p>
+<h4 id="update">5.3 Update</h4>
+<p>Once an Active Record object has been retrieved, its attributes can be modified
+and it can be saved to the database.</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+user = User.find_by(name: 'David')
+user.name = 'Dave'
+user.save
+
+</pre>
+</div>
+<p>A shorthand for this is to use a hash mapping attribute names to the desired
+value, like so:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+user = User.find_by(name: 'David')
+user.update(name: 'Dave')
+
+</pre>
+</div>
+<p>This is most useful when updating several attributes at once. If, on the other
+hand, you'd like to update several records in bulk, you may find the
+<code>update_all</code> class method useful:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+User.update_all "max_login_attempts = 3, must_change_password = 'true'"
+
+</pre>
+</div>
+<h4 id="delete">5.4 Delete</h4>
+<p>Likewise, once retrieved an Active Record object can be destroyed which removes
+it from the database.</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+user = User.find_by(name: 'David')
+user.destroy
+
+</pre>
+</div>
+</body>
+</html>

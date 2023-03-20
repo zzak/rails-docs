@@ -1,0 +1,221 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>8 Active Record</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v6.1.7.3/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="active-record"><a class="anchorlink" href="#active-record">8 Active Record</a></h3>
+<ul>
+<li>Boolean columns with 'on' and 'ON' values are type cast to true.</li>
+<li>When the <code>timestamps</code> method creates the <code>created_at</code> and <code>updated_at</code> columns, it makes them non-nullable by default.</li>
+<li>Implemented <code>ActiveRecord::Relation#explain</code>.</li>
+<li>Implements <code>ActiveRecord::Base.silence_auto_explain</code> which allows the user to selectively disable automatic EXPLAINs within a block.</li>
+<li>Implements automatic EXPLAIN logging for slow queries. A new configuration parameter <code>config.active_record.auto_explain_threshold_in_seconds</code> determines what's to be considered a slow query. Setting that to nil disables this feature. Defaults are 0.5 in development mode, and nil in test and production modes. Rails 3.2 supports this feature in SQLite, MySQL (mysql2 adapter), and PostgreSQL.</li>
+<li>
+Added <code>ActiveRecord::Base.store</code> for declaring simple single-column key/value stores.
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">User</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Base</span>
+  <span class="n">store</span> <span class="ss">:settings</span><span class="p">,</span> <span class="ss">accessors: </span><span class="p">[</span> <span class="ss">:color</span><span class="p">,</span> <span class="ss">:homepage</span> <span class="p">]</span>
+<span class="k">end</span>
+
+<span class="n">u</span> <span class="o">=</span> <span class="no">User</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="ss">color: </span><span class="s1">'black'</span><span class="p">,</span> <span class="ss">homepage: </span><span class="s1">'37signals.com'</span><span class="p">)</span>
+<span class="n">u</span><span class="p">.</span><span class="nf">color</span>                          <span class="c1"># Accessor stored attribute</span>
+<span class="n">u</span><span class="p">.</span><span class="nf">settings</span><span class="p">[</span><span class="ss">:country</span><span class="p">]</span> <span class="o">=</span> <span class="s1">'Denmark'</span> <span class="c1"># Any attribute, even if not specified with an accessor</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-fb701754cc51115f1c6e89d29c59177b">class User &lt; ActiveRecord::Base
+  store :settings, accessors: [ :color, :homepage ]
+end
+
+u = User.new(color: 'black', homepage: '37signals.com')
+u.color                          # Accessor stored attribute
+u.settings[:country] = 'Denmark' # Any attribute, even if not specified with an accessor
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-fb701754cc51115f1c6e89d29c59177b">Copy</button>
+</div>
+</li>
+<li>
+Added ability to run migrations only for a given scope, which allows to run migrations only from one engine (for example to revert changes from an engine that need to be removed).
+<div class="code_container">
+<pre><code class="highlight plaintext">rake db:migrate SCOPE=blog
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-ac78a2852e2ade61b2f4c4a29727a0b1">rake db:migrate SCOPE=blog
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-ac78a2852e2ade61b2f4c4a29727a0b1">Copy</button>
+</div>
+</li>
+<li>Migrations copied from engines are now scoped with engine's name, for example <code>01_create_posts.blog.rb</code>.</li>
+<li>
+Implemented <code>ActiveRecord::Relation#pluck</code> method that returns an array of column values directly from the underlying table. This also works with serialized attributes.
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="no">Client</span><span class="p">.</span><span class="nf">where</span><span class="p">(</span><span class="ss">:active</span> <span class="o">=&gt;</span> <span class="kp">true</span><span class="p">).</span><span class="nf">pluck</span><span class="p">(</span><span class="ss">:id</span><span class="p">)</span>
+<span class="c1"># SELECT id from clients where active = 1</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-e80d47ea6df254534646a64a41a779ab">Client.where(:active =&gt; true).pluck(:id)
+# SELECT id from clients where active = 1
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-e80d47ea6df254534646a64a41a779ab">Copy</button>
+</div>
+</li>
+<li>Generated association methods are created within a separate module to allow overriding and composition. For a class named MyModel, the module is named <code>MyModel::GeneratedFeatureMethods</code>. It is included into the model class immediately after the <code>generated_attributes_methods</code> module defined in Active Model, so association methods override attribute methods of the same name.</li>
+<li>
+Add <code>ActiveRecord::Relation#uniq</code> for generating unique queries.
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="no">Client</span><span class="p">.</span><span class="nf">select</span><span class="p">(</span><span class="s1">'DISTINCT name'</span><span class="p">)</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-92fc8259aca80c8382006906398ebac9">Client.select('DISTINCT name')
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-92fc8259aca80c8382006906398ebac9">Copy</button>
+</div>
+..can be written as:
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="no">Client</span><span class="p">.</span><span class="nf">select</span><span class="p">(</span><span class="ss">:name</span><span class="p">).</span><span class="nf">uniq</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-b7c51a24fc3bd1542f3b7a2167ea595b">Client.select(:name).uniq
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-b7c51a24fc3bd1542f3b7a2167ea595b">Copy</button>
+</div>
+This also allows you to revert the uniqueness in a relation:
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="no">Client</span><span class="p">.</span><span class="nf">select</span><span class="p">(</span><span class="ss">:name</span><span class="p">).</span><span class="nf">uniq</span><span class="p">.</span><span class="nf">uniq</span><span class="p">(</span><span class="kp">false</span><span class="p">)</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-42efb7f7f8dff7ad390c8506ae2672cd">Client.select(:name).uniq.uniq(false)
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-42efb7f7f8dff7ad390c8506ae2672cd">Copy</button>
+</div>
+</li>
+<li>Support index sort order in SQLite, MySQL and PostgreSQL adapters.</li>
+<li>
+Allow the <code>:class_name</code> option for associations to take a symbol in addition to a string. This is to avoid confusing newbies, and to be consistent with the fact that other options like <code>:foreign_key</code> already allow a symbol or a string.
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">has_many</span> <span class="ss">:clients</span><span class="p">,</span> <span class="ss">:class_name</span> <span class="o">=&gt;</span> <span class="ss">:Client</span> <span class="c1"># Note that the symbol need to be capitalized</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-7018859cc1a40081831cbd062704be03">has_many :clients, :class_name =&gt; :Client # Note that the symbol need to be capitalized
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-7018859cc1a40081831cbd062704be03">Copy</button>
+</div>
+</li>
+<li>In development mode, <code>db:drop</code> also drops the test database in order to be symmetric with <code>db:create</code>.</li>
+<li>Case-insensitive uniqueness validation avoids calling LOWER in MySQL when the column already uses a case-insensitive collation.</li>
+<li>Transactional fixtures enlist all active database connections. You can test models on different connections without disabling transactional fixtures.</li>
+<li>
+Add <code>first_or_create</code>, <code>first_or_create!</code>, <code>first_or_initialize</code> methods to Active Record. This is a better approach over the old <code>find_or_create_by</code> dynamic methods because it's clearer which arguments are used to find the record and which are used to create it.
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="no">User</span><span class="p">.</span><span class="nf">where</span><span class="p">(</span><span class="ss">:first_name</span> <span class="o">=&gt;</span> <span class="s2">"Scarlett"</span><span class="p">).</span><span class="nf">first_or_create!</span><span class="p">(</span><span class="ss">:last_name</span> <span class="o">=&gt;</span> <span class="s2">"Johansson"</span><span class="p">)</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-b6f3ff8f7d8d07b3287dbbc9743efe5c">User.where(:first_name =&gt; "Scarlett").first_or_create!(:last_name =&gt; "Johansson")
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-b6f3ff8f7d8d07b3287dbbc9743efe5c">Copy</button>
+</div>
+</li>
+<li>
+Added a <code>with_lock</code> method to Active Record objects, which starts a transaction, locks the object (pessimistically) and yields to the block. The method takes one (optional) parameter and passes it to <code>lock!</code>.
+This makes it possible to write the following:
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">Order</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Base</span>
+  <span class="k">def</span> <span class="nf">cancel!</span>
+    <span class="n">transaction</span> <span class="k">do</span>
+      <span class="n">lock!</span>
+      <span class="c1"># ... cancelling logic</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-1d124cd8e8913a3af54a8c5b1ce6c1a1">class Order &lt; ActiveRecord::Base
+  def cancel!
+    transaction do
+      lock!
+      # ... cancelling logic
+    end
+  end
+end
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-1d124cd8e8913a3af54a8c5b1ce6c1a1">Copy</button>
+</div>
+as:
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">Order</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Base</span>
+  <span class="k">def</span> <span class="nf">cancel!</span>
+    <span class="n">with_lock</span> <span class="k">do</span>
+      <span class="c1"># ... cancelling logic</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-690a687619ee955faaaa208b6256b8ed">class Order &lt; ActiveRecord::Base
+  def cancel!
+    with_lock do
+      # ... cancelling logic
+    end
+  end
+end
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-690a687619ee955faaaa208b6256b8ed">Copy</button>
+</div>
+</li>
+</ul>
+<h4 id="active-record-deprecations"><a class="anchorlink" href="#active-record-deprecations">8.1 Deprecations</a></h4>
+<ul>
+<li>
+Automatic closure of connections in threads is deprecated. For example the following code is deprecated:
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="no">Thread</span><span class="p">.</span><span class="nf">new</span> <span class="p">{</span> <span class="no">Post</span><span class="p">.</span><span class="nf">find</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="p">}.</span><span class="nf">join</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-62a7939131ab1aedd146f4b834a7d3b3">Thread.new { Post.find(1) }.join
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-62a7939131ab1aedd146f4b834a7d3b3">Copy</button>
+</div>
+It should be changed to close the database connection at the end of the thread:
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="no">Thread</span><span class="p">.</span><span class="nf">new</span> <span class="p">{</span>
+  <span class="no">Post</span><span class="p">.</span><span class="nf">find</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+  <span class="no">Post</span><span class="p">.</span><span class="nf">connection</span><span class="p">.</span><span class="nf">close</span>
+<span class="p">}.</span><span class="nf">join</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-8fb58e145e78bb2e27b46b81be2147d7">Thread.new {
+  Post.find(1)
+  Post.connection.close
+}.join
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-8fb58e145e78bb2e27b46b81be2147d7">Copy</button>
+</div>
+Only people who spawn threads in their application code need to worry about this change.
+</li>
+<li>
+The <code>set_table_name</code>, <code>set_inheritance_column</code>, <code>set_sequence_name</code>, <code>set_primary_key</code>, <code>set_locking_column</code> methods are deprecated. Use an assignment method instead. For example, instead of <code>set_table_name</code>, use <code>self.table_name=</code>.
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">Project</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Base</span>
+  <span class="nb">self</span><span class="p">.</span><span class="nf">table_name</span> <span class="o">=</span> <span class="s2">"project"</span>
+<span class="k">end</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-7dc4b9c80bf1128a0f1f565754ceede1">class Project &lt; ActiveRecord::Base
+  self.table_name = "project"
+end
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-7dc4b9c80bf1128a0f1f565754ceede1">Copy</button>
+</div>
+Or define your own <code>self.table_name</code> method:
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">Post</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Base</span>
+  <span class="k">def</span> <span class="nc">self</span><span class="o">.</span><span class="nf">table_name</span>
+    <span class="s2">"special_"</span> <span class="o">+</span> <span class="k">super</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+
+<span class="no">Post</span><span class="p">.</span><span class="nf">table_name</span> <span class="c1"># =&gt; "special_posts"</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-375220a2a241d3a44a4b27bf7be587a9">class Post &lt; ActiveRecord::Base
+  def self.table_name
+    "special_" + super
+  end
+end
+
+Post.table_name # =&gt; "special_posts"
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-375220a2a241d3a44a4b27bf7be587a9">Copy</button>
+</div>
+</li>
+</ul>
+</body>
+</html>

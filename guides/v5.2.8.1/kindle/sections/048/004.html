@@ -1,0 +1,51 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>5 Railties</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v5.2.8.1/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="railties"><a class="anchorlink" href="#railties">5 Railties</a></h3>
+<ul>
+<li>Speed up development by only reloading classes if dependencies files changed. This can be turned off by setting <code>config.reload_classes_only_on_change</code> to false.</li>
+<li>New applications get a flag <code>config.active_record.auto_explain_threshold_in_seconds</code> in the environments configuration files. With a value of <code>0.5</code> in <code>development.rb</code> and commented out in <code>production.rb</code>. No mention in <code>test.rb</code>.</li>
+<li>Added <code>config.exceptions_app</code> to set the exceptions application invoked by the <code>ShowException</code> middleware when an exception happens. Defaults to <code>ActionDispatch::PublicExceptions.new(Rails.public_path)</code>.</li>
+<li>Added a <code>DebugExceptions</code> middleware which contains features extracted from <code>ShowExceptions</code> middleware.</li>
+<li>Display mounted engines' routes in <code>rake routes</code>.</li>
+<li>
+Allow to change the loading order of railties with <code>config.railties_order</code> like:
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+config.railties_order = [Blog::Engine, :main_app, :all]
+
+</pre>
+</div>
+</li>
+<li>Scaffold returns 204 No Content for API requests without content. This makes scaffold work with jQuery out of the box.</li>
+<li>Update <code>Rails::Rack::Logger</code> middleware to apply any tags set in <code>config.log_tags</code> to <code>ActiveSupport::TaggedLogging</code>. This makes it easy to tag log lines with debug information like subdomain and request id -- both very helpful in debugging multi-user production applications.</li>
+<li>Default options to <code>rails new</code> can be set in <code>~/.railsrc</code>. You can specify extra command-line arguments to be used every time <code>rails new</code> runs in the <code>.railsrc</code> configuration file in your home directory.</li>
+<li>Add an alias <code>d</code> for <code>destroy</code>. This works for engines too.</li>
+<li>Attributes on scaffold and model generators default to string. This allows the following: <code>rails g scaffold Post title body:text author</code>
+</li>
+<li>
+Allow scaffold/model/migration generators to accept "index" and "uniq" modifiers. For example,
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+rails g scaffold Post title:string:index author:uniq price:decimal{7,2}
+
+</pre>
+</div>
+will create indexes for <code>title</code> and <code>author</code> with the latter being a unique index. Some types such as decimal accept custom options. In the example, <code>price</code> will be a decimal column with precision and scale set to 7 and 2 respectively.
+</li>
+<li>Turn gem has been removed from default <code>Gemfile</code>.</li>
+<li>Remove old plugin generator <code>rails generate plugin</code> in favor of <code>rails plugin new</code> command.</li>
+<li>Remove old <code>config.paths.app.controller</code> API in favor of <code>config.paths["app/controller"]</code>.</li>
+</ul>
+<h5 id="railties-deprecations"><a class="anchorlink" href="#railties-deprecations">5.1 Deprecations</a></h5>
+<ul>
+<li>
+<code>Rails::Plugin</code> is deprecated and will be removed in Rails 4.0. Instead of adding plugins to <code>vendor/plugins</code> use gems or bundler with path or git dependencies.</li>
+</ul>
+</body>
+</html>

@@ -1,0 +1,158 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>3 Usage</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v7.0.4.2/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="usage"><a class="anchorlink" href="#usage">3 Usage</a></h3>
+<h4 id="using-webpacker-for-javascript"><a class="anchorlink" href="#using-webpacker-for-javascript">3.1 Using Webpacker for JavaScript</a></h4>
+
+<p>With Webpacker installed, any JavaScript file in the <code>app/javascript/packs</code> directory will get compiled to its own pack file by default.</p>
+
+<p>So if you have a file called <code>app/javascript/packs/application.js</code>, Webpacker will create a pack called <code>application</code>, and you can add it to your Rails application with the code <code>&lt;%= javascript_pack_tag "application" %&gt;</code>. With that in place, in development, Rails will recompile the <code>application.js</code> file every time it changes, and you load a page that uses that pack. Typically, the file in the actual <code>packs</code> directory will be a manifest that mostly loads other files, but it can also have arbitrary JavaScript code.</p>
+
+<p>The default pack created for you by Webpacker will link to Rails' default JavaScript packages if they have been included in the project:</p>
+
+<div class="code_container">
+<pre><code class="highlight plaintext">import Rails from "@rails/ujs"
+import Turbolinks from "turbolinks"
+import * as ActiveStorage from "@rails/activestorage"
+import "channels"
+
+Rails.start()
+Turbolinks.start()
+ActiveStorage.start()
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='import Rails from "@rails/ujs"
+import Turbolinks from "turbolinks"
+import * as ActiveStorage from "@rails/activestorage"
+import "channels"
+
+Rails.start()
+Turbolinks.start()
+ActiveStorage.start()
+'>Copy</button>
+</div>
+<p>You'll need to include a pack that requires these packages to use them in your Rails application.</p>
+
+<p>It is important to note that only webpack entry files should be placed in the <code>app/javascript/packs</code> directory; Webpack will create a separate dependency graph for each entry point, so a large number of packs will increase compilation overhead. The rest of your asset source code should live outside this directory though Webpacker does not place any restrictions or make any suggestions on how to structure your source code. Here is an example:</p>
+
+<div class="code_container">
+<pre><code class="highlight sh">app/javascript:
+  ├── packs:
+  │   <span class="c"># only webpack entry files here</span>
+  │   └── application.js
+  │   └── application.css
+  └── src:
+  │   └── my_component.js
+  └── stylesheets:
+  │   └── my_styles.css
+  └── images:
+      └── logo.svg
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="app/javascript:
+  ├── packs:
+  │   # only webpack entry files here
+  │   └── application.js
+  │   └── application.css
+  └── src:
+  │   └── my_component.js
+  └── stylesheets:
+  │   └── my_styles.css
+  └── images:
+      └── logo.svg
+">Copy</button>
+</div>
+<p>Typically, the pack file itself is largely a manifest that uses <code>import</code> or <code>require</code> to load the necessary files and may also do some initialization.</p>
+
+<p>If you want to change these directories, you can adjust the <code>source_path</code> (default <code>app/javascript</code>) and <code>source_entry_path</code> (default <code>packs</code>) in the <code>config/webpacker.yml</code> file.</p>
+
+<p>Within source files, <code>import</code> statements are resolved relative to the file doing the import, so <code>import Bar from "./foo"</code> finds a <code>foo.js</code> file in the same directory as the current file, while <code>import Bar from "../src/foo"</code> finds a file in a sibling directory named <code>src</code>.</p>
+
+<h4 id="using-webpacker-for-css"><a class="anchorlink" href="#using-webpacker-for-css">3.2 Using Webpacker for CSS</a></h4>
+
+<p>Out of the box, Webpacker supports CSS and SCSS using the PostCSS processor.</p>
+
+<p>To include CSS code in your packs, first include your CSS files in your top-level pack file as though it was a JavaScript file. So if your CSS top-level manifest is in <code>app/javascript/styles/styles.scss</code>, you can import it with <code>import styles/styles</code>. This tells webpack to include your CSS file in the download. To actually load it in the page, include <code>&lt;%= stylesheet_pack_tag "application" %&gt;</code> in the view, where the <code>application</code> is the same pack name that you were using.</p>
+
+<p>If you are using a CSS framework, you can add it to Webpacker by following the instructions to load the framework as an NPM module using <code>yarn</code>, typically <code>yarn add &lt;framework&gt;</code>. The framework should have instructions on importing it into a CSS or SCSS file.</p>
+
+<h4 id="using-webpacker-for-static-assets"><a class="anchorlink" href="#using-webpacker-for-static-assets">3.3 Using Webpacker for Static Assets</a></h4>
+
+<p>The default Webpacker <a href="https://github.com/rails/webpacker/blob/master/lib/install/config/webpacker.yml#L21">configuration</a> should work out of the box for static assets.
+The configuration includes several image and font file format extensions, allowing webpack to include them in the generated <code>manifest.json</code> file.</p>
+
+<p>With webpack, static assets can be imported directly in JavaScript files. The imported value represents the URL to the asset. For example:</p>
+
+<div class="code_container">
+<pre><code class="highlight javascript"><span class="k">import</span> <span class="nx">myImageUrl</span> <span class="k">from</span> <span class="dl">'</span><span class="s1">../images/my-image.jpg</span><span class="dl">'</span>
+
+<span class="c1">// ...</span>
+<span class="kd">let</span> <span class="nx">myImage</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Image</span><span class="p">();</span>
+<span class="nx">myImage</span><span class="p">.</span><span class="nx">src</span> <span class="o">=</span> <span class="nx">myImageUrl</span><span class="p">;</span>
+<span class="nx">myImage</span><span class="p">.</span><span class="nx">alt</span> <span class="o">=</span> <span class="dl">"</span><span class="s2">I'm a Webpacker-bundled image</span><span class="dl">"</span><span class="p">;</span>
+<span class="nb">document</span><span class="p">.</span><span class="nx">body</span><span class="p">.</span><span class="nx">appendChild</span><span class="p">(</span><span class="nx">myImage</span><span class="p">);</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="import myImageUrl from '../images/my-image.jpg'
+
+// ...
+let myImage = new Image();
+myImage.src = myImageUrl;
+myImage.alt = &quot;I'm a Webpacker-bundled image&quot;;
+document.body.appendChild(myImage);
+">Copy</button>
+</div>
+<p>If you need to reference Webpacker static assets from a Rails view, the assets need to be explicitly required from Webpacker-bundled JavaScript files. Unlike Sprockets, Webpacker does not import your static assets by default. The default <code>app/javascript/packs/application.js</code> file has a template for importing files from a given directory, which you can uncomment for every directory you want to have static files in. The directories are relative to <code>app/javascript</code>. The template uses the directory <code>images</code>, but you can use anything in <code>app/javascript</code>:</p>
+
+<div class="code_container">
+<pre><code class="highlight plaintext">const images = require.context("../images", true)
+const imagePath = name =&gt; images(name, true)
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='const images = require.context("../images", true)
+const imagePath = name =&gt; images(name, true)
+'>Copy</button>
+</div>
+<p>Static assets will be output into a directory under <code>public/packs/media</code>. For example, an image located and imported at <code>app/javascript/images/my-image.jpg</code> will be output at <code>public/packs/media/images/my-image-abcd1234.jpg</code>. To render an image tag for this image in a Rails view, use <code>image_pack_tag 'media/images/my-image.jpg</code>.</p>
+
+<p>The Webpacker ActionView helpers for static assets correspond to asset pipeline helpers according to the following table:</p>
+<table>
+<thead>
+<tr>
+<th>ActionView helper</th>
+<th>Webpacker helper</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>favicon_link_tag</td>
+<td>favicon_pack_tag</td>
+</tr>
+<tr>
+<td>image_tag</td>
+<td>image_pack_tag</td>
+</tr>
+</tbody>
+</table>
+<p>Also, the generic helper <code>asset_pack_path</code> takes the local location of a file and returns its Webpacker location for use in Rails views.</p>
+
+<p>You can also access the image by directly referencing the file from a CSS file in <code>app/javascript</code>.</p>
+
+<h4 id="webpacker-in-rails-engines"><a class="anchorlink" href="#webpacker-in-rails-engines">3.4 Webpacker in Rails Engines</a></h4>
+
+<p>As of Webpacker version 6, Webpacker is not "engine-aware," which means Webpacker does not have feature-parity with Sprockets when it comes to using within Rails engines.</p>
+
+<p>Gem authors of Rails engines who wish to support consumers using Webpacker are encouraged to distribute frontend assets as an NPM package in addition to the gem itself and provide instructions (or an installer) to demonstrate how host apps should integrate. A good example of this approach is <a href="https://github.com/AlchemyCMS/alchemy_cms">Alchemy CMS</a>.</p>
+
+<h4 id="hot-module-replacement-hmr"><a class="anchorlink" href="#hot-module-replacement-hmr">3.5 Hot Module Replacement (HMR)</a></h4>
+
+<p>Webpacker out-of-the-box supports HMR with webpack-dev-server, and you can toggle it by setting dev_server/hmr option inside <code>webpacker.yml</code>.</p>
+
+<p>Check out <a href="https://webpack.js.org/configuration/dev-server/#devserver-hot">webpack's documentation on DevServer</a> for more information.</p>
+
+<p>To support HMR with React, you would need to add react-hot-loader. Check out <a href="https://gaearon.github.io/react-hot-loader/getstarted/">React Hot Loader's <em>Getting Started</em> guide</a>.</p>
+
+<p>Don't forget to disable HMR if you are not running webpack-dev-server; otherwise, you will get a "not found error" for stylesheets.</p>
+</body>
+</html>

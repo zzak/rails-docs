@@ -1,0 +1,51 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>13 Log Filtering</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v7.0.4.2/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="log-filtering"><a class="anchorlink" href="#log-filtering">13 Log Filtering</a></h3>
+<p>Rails keeps a log file for each environment in the <code>log</code> folder. These are extremely useful when debugging what's actually going on in your application, but in a live application you may not want every bit of information to be stored in the log file.</p>
+
+<h4 id="parameters-filtering"><a class="anchorlink" href="#parameters-filtering">13.1 Parameters Filtering</a></h4>
+
+<p>You can filter out sensitive request parameters from your log files by
+appending them to <a href="configuring.html#config-filter-parameters"><code>config.filter_parameters</code></a> in the application configuration.
+These parameters will be marked [FILTERED] in the log.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">config</span><span class="p">.</span><span class="nf">filter_parameters</span> <span class="o">&lt;&lt;</span> <span class="ss">:password</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="config.filter_parameters &lt;&lt; :password
+">Copy</button>
+</div>
+<div class="note"><p>Provided parameters will be filtered out by partial matching regular
+expression. Rails adds a list of default filters, including <code>:passw</code>,
+<code>:secret</code>, and <code>:token</code>, in the appropriate initializer
+(<code>initializers/filter_parameter_logging.rb</code>) to handle typical application
+parameters like <code>password</code>, <code>password_confirmation</code> and <code>my_token</code>.</p></div>
+
+<h4 id="redirects-filtering"><a class="anchorlink" href="#redirects-filtering">13.2 Redirects Filtering</a></h4>
+
+<p>Sometimes it's desirable to filter out from log files some sensitive locations your application is redirecting to.
+You can do that by using the <code>config.filter_redirect</code> configuration option:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">config</span><span class="p">.</span><span class="nf">filter_redirect</span> <span class="o">&lt;&lt;</span> <span class="s1">'s3.amazonaws.com'</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="config.filter_redirect &lt;&lt; 's3.amazonaws.com'
+">Copy</button>
+</div>
+<p>You can set it to a String, a Regexp, or an array of both.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">config</span><span class="p">.</span><span class="nf">filter_redirect</span><span class="p">.</span><span class="nf">concat</span> <span class="p">[</span><span class="s1">'s3.amazonaws.com'</span><span class="p">,</span> <span class="sr">/private_path/</span><span class="p">]</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="config.filter_redirect.concat ['s3.amazonaws.com', /private_path/]
+">Copy</button>
+</div>
+<p>Matching URLs will be marked as '[FILTERED]'.</p>
+</body>
+</html>

@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>ActiveStorage::Attachment</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <link rel="stylesheet" href="../../css/reset.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="../../css/panel.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="../../css/main.css" type="text/css" media="screen" />
+<link rel="stylesheet" href="../../css/github.css" type="text/css" media="screen" />
+<script src="../../js/jquery-3.5.1.min.js" type="text/javascript" charset="utf-8"></script>
+<script src="../../js/main.js" type="text/javascript" charset="utf-8"></script>
+<script src="../../js/highlight.pack.js" type="text/javascript" charset="utf-8"></script>
+<script src="../../js/turbolinks.js" type="text/javascript" charset="utf-8"></script>
+<script src="../../js/search_index.js" type="text/javascript" charset="utf-8"></script>
+<script src="../../js/searcher.js" type="text/javascript" charset="utf-8"></script>
+<script src="../../panel/tree.js" type="text/javascript" charset="utf-8"></script>
+<script src="../../js/searchdoc.js" type="text/javascript" charset="utf-8"></script>
+<meta name="data-rel-prefix" content="../../">
+<meta name="data-tree-keys" content='["ActiveStorage", "Attachment"]'>
+
+
+    <meta property="og:title" value="ActiveStorage::Attachment">
+
+  
+    
+    <meta name="description" content="Attachments associate records with blobs. Usually that&#39;s a one record-many blobs relationship, but it is possible to associate many different records with the same blob.">
+    <meta property="og:description" content="Attachments associate records with blobs. Usually that&#39;s a one record-many blobs relationship, but it is possible to associate many different records with the same blob.">
+  
+
+    <meta name="keywords" content="ActiveStorage::Attachment class, purge, purge_later, variant">
+</head>
+
+<body>
+    <a class="sr-only sr-only-focusable" href="#content" data-turbolinks="false">Skip to Content</a>
+    <a class="sr-only sr-only-focusable" href="#search" data-turbolinks="false">Skip to Search</a>
+
+    <input type="checkbox" id="hamburger" class="panel_checkbox">
+<label class="panel_mobile_button" for="hamburger"><span></span> Menu</label>
+<nav class="panel panel_tree" id="panel" data-turbolinks-permanent>
+  <div class="header">
+    <input type="text" placeholder="Search (/) for a class, method, ..." autosave="searchdoc" results="10" id="search" autocomplete="off" tabindex="-1" />
+    <label class="panel_mobile_button_close" for="hamburger"><span></span> Close</label>
+  </div>
+  <div class="tree">
+    <ul>
+    </ul>
+  </div>
+  <div class="result">
+    <ul>
+    </ul>
+  </div>
+  <a href="links.html" id="links">index</a>
+</nav>
+
+
+    <div class="banner">
+        
+            <span>Ruby on Rails 7.0.4.2</span><br />
+        
+        <h2>
+            <span class="type">Class</span>
+            ActiveStorage::Attachment
+            
+                <span class="parent">&lt;
+                    
+                    ActiveStorage::Record
+                    
+                </span>
+            
+        </h2>
+        <ul class="files">
+            
+            <li><a href="../../files/activestorage/app/models/active_storage/attachment_rb.html">activestorage/app/models/active_storage/attachment.rb</a></li>
+            
+        </ul>
+    </div>
+
+    <main id="bodyContent">
+        <div id="content">
+  
+    <div class="description">
+      
+<p>Attachments associate records with blobs. Usually that&#39;s a one record-many blobs relationship, but it is possible to associate many different records with the same blob. A foreign-key constraint on the attachments table prevents blobs from being purged if they’re still attached to any records.</p>
+
+<p>Attachments also have access to all methods from <a href="Blob.html"><code>ActiveStorage::Blob</code></a>.</p>
+
+<p>If you wish to preload attachments or blobs, you can use these scopes:</p>
+
+<pre><code># preloads attachments, their corresponding blobs, and variant records (if using `ActiveStorage.track_variants`)
+User.all.with_attached_avatars
+
+# preloads blobs and variant records (if using `ActiveStorage.track_variants`)
+User.first.avatars.with_all_variant_records
+</code></pre>
+
+    </div>
+  
+
+
+  
+
+
+  
+  
+
+
+  
+
+
+  
+    <!-- Method ref -->
+    <div class="sectiontitle">Methods</div>
+    <dl class="methods">
+      
+        <dt>P</dt>
+        <dd>
+          <ul>
+            
+              
+              <li>
+                <a href="#method-i-purge">purge</a>,
+              </li>
+            
+              
+              <li>
+                <a href="#method-i-purge_later">purge_later</a>
+              </li>
+            
+          </ul>
+        </dd>
+      
+        <dt>V</dt>
+        <dd>
+          <ul>
+            
+              
+              <li>
+                <a href="#method-i-variant">variant</a>
+              </li>
+            
+          </ul>
+        </dd>
+      
+    </dl>
+  
+
+  
+
+
+
+  
+
+    
+
+    
+
+    
+
+
+    
+
+
+    <!-- Methods -->
+    
+    
+      <h2 class="sectiontitle">Instance Public methods</h2>
+      
+        <div class="method">
+          <h3 class="title method-title" id="method-i-purge">
+            
+              <b>purge</b>()
+            
+            <a href="../../classes/ActiveStorage/Attachment.html#method-i-purge" name="method-i-purge" class="permalink">Link</a>
+          </h3>
+
+          
+            <div class="description">
+              <p>Synchronously deletes the attachment and <a href="Blob.html#method-i-purge">purges the blob</a>.</p>
+            </div>
+          
+
+          
+
+          
+
+          
+            
+            <div class="sourcecode">
+              
+              <p class="source-link">
+                 Source: 
+
+                
+                  <a href="javascript:toggleSource('method-i-purge_source')" id="l_method-i-purge_source">show</a>
+                
+
+                 | 
+
+                
+                  <a href="https://github.com/rails/rails/blob/7c70791470fc517deb7c640bead9f1b47efb5539/activestorage/app/models/active_storage/attachment.rb#L33" target="_blank" class="github_url">on GitHub</a>
+                
+              </p>
+              <div id="method-i-purge_source" class="dyn-source">
+                <pre><span class="ruby-comment"># File activestorage/app/models/active_storage/attachment.rb, line 33</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier ruby-title">purge</span>
+  <span class="ruby-identifier">transaction</span> <span class="ruby-keyword">do</span>
+    <span class="ruby-identifier">delete</span>
+    <span class="ruby-identifier">record</span>.<span class="ruby-identifier">touch</span> <span class="ruby-keyword">if</span> <span class="ruby-identifier">record</span>&amp;.<span class="ruby-identifier">persisted?</span>
+  <span class="ruby-keyword">end</span>
+  <span class="ruby-identifier">blob</span>&amp;.<span class="ruby-identifier">purge</span>
+<span class="ruby-keyword">end</span></pre>
+              </div>
+            </div>
+            
+          </div>
+        
+        <div class="method">
+          <h3 class="title method-title" id="method-i-purge_later">
+            
+              <b>purge_later</b>()
+            
+            <a href="../../classes/ActiveStorage/Attachment.html#method-i-purge_later" name="method-i-purge_later" class="permalink">Link</a>
+          </h3>
+
+          
+            <div class="description">
+              <p>Deletes the attachment and <a href="Blob.html#method-i-purge_later">enqueues a background job</a> to purge the blob.</p>
+            </div>
+          
+
+          
+
+          
+
+          
+            
+            <div class="sourcecode">
+              
+              <p class="source-link">
+                 Source: 
+
+                
+                  <a href="javascript:toggleSource('method-i-purge_later_source')" id="l_method-i-purge_later_source">show</a>
+                
+
+                 | 
+
+                
+                  <a href="https://github.com/rails/rails/blob/7c70791470fc517deb7c640bead9f1b47efb5539/activestorage/app/models/active_storage/attachment.rb#L42" target="_blank" class="github_url">on GitHub</a>
+                
+              </p>
+              <div id="method-i-purge_later_source" class="dyn-source">
+                <pre><span class="ruby-comment"># File activestorage/app/models/active_storage/attachment.rb, line 42</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier ruby-title">purge_later</span>
+  <span class="ruby-identifier">transaction</span> <span class="ruby-keyword">do</span>
+    <span class="ruby-identifier">delete</span>
+    <span class="ruby-identifier">record</span>.<span class="ruby-identifier">touch</span> <span class="ruby-keyword">if</span> <span class="ruby-identifier">record</span>&amp;.<span class="ruby-identifier">persisted?</span>
+  <span class="ruby-keyword">end</span>
+  <span class="ruby-identifier">blob</span>&amp;.<span class="ruby-identifier">purge_later</span>
+<span class="ruby-keyword">end</span></pre>
+              </div>
+            </div>
+            
+          </div>
+        
+        <div class="method">
+          <h3 class="title method-title" id="method-i-variant">
+            
+              <b>variant</b>(transformations)
+            
+            <a href="../../classes/ActiveStorage/Attachment.html#method-i-variant" name="method-i-variant" class="permalink">Link</a>
+          </h3>
+
+          
+            <div class="description">
+              <p>Returns an <a href="Variant.html"><code>ActiveStorage::Variant</code></a> or <a href="VariantWithRecord.html"><code>ActiveStorage::VariantWithRecord</code></a> instance for the attachment with the set of <code>transformations</code> provided. See <a href="Blob/Representable.html#method-i-variant"><code>ActiveStorage::Blob::Representable#variant</code></a> for more information.</p>
+
+<p>Raises an <code>ArgumentError</code> if <code>transformations</code> is a <code>Symbol</code> which is an unknown pre-defined variant of the attachment.</p>
+            </div>
+          
+
+          
+
+          
+
+          
+            
+            <div class="sourcecode">
+              
+              <p class="source-link">
+                 Source: 
+
+                
+                  <a href="javascript:toggleSource('method-i-variant_source')" id="l_method-i-variant_source">show</a>
+                
+
+                 | 
+
+                
+                  <a href="https://github.com/rails/rails/blob/7c70791470fc517deb7c640bead9f1b47efb5539/activestorage/app/models/active_storage/attachment.rb#L56" target="_blank" class="github_url">on GitHub</a>
+                
+              </p>
+              <div id="method-i-variant_source" class="dyn-source">
+                <pre><span class="ruby-comment"># File activestorage/app/models/active_storage/attachment.rb, line 56</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier ruby-title">variant</span>(<span class="ruby-identifier">transformations</span>)
+  <span class="ruby-keyword">case</span> <span class="ruby-identifier">transformations</span>
+  <span class="ruby-keyword">when</span> <span class="ruby-constant">Symbol</span>
+    <span class="ruby-identifier">variant_name</span> = <span class="ruby-identifier">transformations</span>
+    <span class="ruby-identifier">transformations</span> = <span class="ruby-identifier">variants</span>.<span class="ruby-identifier">fetch</span>(<span class="ruby-identifier">variant_name</span>) <span class="ruby-keyword">do</span>
+      <span class="ruby-identifier">record_model_name</span> = <span class="ruby-identifier">record</span>.<span class="ruby-identifier">to_model</span>.<span class="ruby-identifier">model_name</span>.<span class="ruby-identifier">name</span>
+      <span class="ruby-identifier">raise</span> <span class="ruby-constant">ArgumentError</span>, <span class="ruby-node">&quot;Cannot find variant :#{variant_name} for #{record_model_name}##{name}&quot;</span>
+    <span class="ruby-keyword">end</span>
+  <span class="ruby-keyword">end</span>
+
+  <span class="ruby-identifier">blob</span>.<span class="ruby-identifier">variant</span>(<span class="ruby-identifier">transformations</span>)
+<span class="ruby-keyword">end</span></pre>
+              </div>
+            </div>
+            
+          </div>
+        
+      
+    
+  
+</div>
+
+    </main>
+  </body>
+</html>

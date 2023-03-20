@@ -1,0 +1,69 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>4 Selecting Specific Fields</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v5.2.8.1/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="selecting-specific-fields"><a class="anchorlink" href="#selecting-specific-fields">4 Selecting Specific Fields</a></h3>
+<p>By default, <code>Model.find</code> selects all the fields from the result set using <code>select *</code>.</p>
+
+<p>To select only a subset of fields from the result set, you can specify the subset via the <code>select</code> method.</p>
+
+<p>For example, to select only <code>viewable_by</code> and <code>locked</code> columns:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+Client.select("viewable_by, locked")
+
+</pre>
+</div>
+<p>The SQL query used by this find call will be somewhat like:</p>
+
+<div class="code_container">
+<pre class="brush: sql; gutter: false; toolbar: false">
+SELECT viewable_by, locked FROM clients
+
+</pre>
+</div>
+<p>Be careful because this also means you're initializing a model object with only the fields that you've selected. If you attempt to access a field that is not in the initialized record you'll receive:</p>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+ActiveModel::MissingAttributeError: missing attribute: &lt;attribute&gt;
+
+</pre>
+</div>
+<p>Where <code>&lt;attribute&gt;</code> is the attribute you asked for. The <code>id</code> method will not raise the <code>ActiveRecord::MissingAttributeError</code>, so just be careful when working with associations because they need the <code>id</code> method to function properly.</p>
+
+<p>If you would like to only grab a single record per unique value in a certain field, you can use <code>distinct</code>:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+Client.select(:name).distinct
+
+</pre>
+</div>
+<p>This would generate SQL like:</p>
+
+<div class="code_container">
+<pre class="brush: sql; gutter: false; toolbar: false">
+SELECT DISTINCT name FROM clients
+
+</pre>
+</div>
+<p>You can also remove the uniqueness constraint:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+query = Client.select(:name).distinct
+# =&gt; Returns unique names
+
+query.distinct(false)
+# =&gt; Returns all names, even if there are duplicates
+
+</pre>
+</div>
+</body>
+</html>

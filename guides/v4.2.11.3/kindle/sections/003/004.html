@@ -1,0 +1,29 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>5 Changing Existing Migrations</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v4.2.11.3/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="changing-existing-migrations">5 Changing Existing Migrations</h3>
+<p>Occasionally you will make a mistake when writing a migration. If you have
+already run the migration then you cannot just edit the migration and run the
+migration again: Rails thinks it has already run the migration and so will do
+nothing when you run <code>rake db:migrate</code>. You must rollback the migration (for
+example with <code>rake db:rollback</code>), edit your migration and then run
+<code>rake db:migrate</code> to run the corrected version.</p>
+
+<p>In general, editing existing migrations is not a good idea. You will be
+creating extra work for yourself and your co-workers and cause major headaches
+if the existing version of the migration has already been run on production
+machines. Instead, you should write a new migration that performs the changes
+you require. Editing a freshly generated migration that has not yet been
+committed to source control (or, more generally, which has not been propagated
+beyond your development machine) is relatively harmless.</p>
+
+<p>The <code>revert</code> method can be helpful when writing a new migration to undo
+previous migrations in whole or in part
+(see <a href="#reverting-previous-migrations">Reverting Previous Migrations</a> above).</p>
+</body>
+</html>

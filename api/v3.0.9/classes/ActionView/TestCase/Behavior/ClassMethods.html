@@ -1,0 +1,258 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html 
+     PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+  <head>
+    <title>Module: ActionView::TestCase::Behavior::ClassMethods</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <link rel="stylesheet" href="../../../../rdoc-style.css" type="text/css" media="screen" />
+
+    <script language="JavaScript" type="text/javascript">
+    // <![CDATA[
+
+        function toggleSource( id )
+        {
+          var elem
+          var link
+
+          if( document.getElementById )
+          {
+            elem = document.getElementById( id )
+            link = document.getElementById( "l_" + id )
+          }
+          else if ( document.all )
+          {
+            elem = eval( "document.all." + id )
+            link = eval( "document.all.l_" + id )
+          }
+          else
+            return false;
+
+          if( elem.style.display == "block" )
+          {
+            elem.style.display = "none"
+            link.innerHTML = "show source"
+          }
+          else
+          {
+            elem.style.display = "block"
+            link.innerHTML = "hide source"
+          }
+        }
+
+        function openCode( url )
+        {
+          window.open( url, "SOURCE_CODE", "resizable=yes,scrollbars=yes,toolbar=no,status=no,height=480,width=750" ).focus();
+        }
+      // ]]>
+    </script>
+  </head>
+
+  <body>
+    <table width="100%" border='0' cellpadding='0' cellspacing='0' class='banner'>
+    <tr><td>Ruby on Rails v3.0.9</td></tr>
+    <tr>
+  <td class="file-title"><span class="file-title-prefix">Module</span><br />ActionView::TestCase::Behavior::ClassMethods</td>
+  <td align="right">
+    <table cellspacing="0" cellpadding="2">
+      <tr valign="top">
+        <td>In:</td>
+        <td>
+<a href="../../../../files/actionpack/lib/action_view/test_case_rb.html">actionpack/lib/action_view/test_case.rb</a>:
+        </td>
+      </tr>
+         </table>
+        </td>
+        </tr>
+      </table>
+  <div id="bodyContent">
+  <div id="content">
+
+  <div class="description"></div>
+
+
+  <div class="sectiontitle">Methods</div>
+  <ul>
+                <li><a href="#method-i-determine_default_helper_class">determine_default_helper_class</a></li>
+                <li><a href="#method-i-helper_class">helper_class</a></li>
+                <li><a href="#method-i-helper_method">helper_method</a></li>
+                <li><a href="#method-i-new">new</a></li>
+                <li><a href="#method-i-tests">tests</a></li>
+      </ul>
+
+
+
+  <div class="sectiontitle">Attributes</div>
+  <table border='0' cellpadding='5'>
+  <tr valign='top'>
+    <td class='attr-rw'>
+[W]
+    </td>
+    <td class='attr-name'>helper_class</td>
+    <td class='attr-desc'>
+                        </td>
+  </tr>
+  </table>
+
+                        
+    <div class="sectiontitle">
+      Public      Instance      methods
+    </div>
+
+          
+      <div class="method">
+        <div class="title">
+                      <a name="method-i-determine_default_helper_class"></a>
+            <b>determine_default_helper_class</b>(name)          
+        </div>
+
+                  <div class="description">
+                      </div>
+        
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('determine_default_helper_class_source')"
+                 id="l_method-i-determine_default_helper_class_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="determine_default_helper_class_source">
+<pre>
+  <span class="ruby-comment"># File actionpack/lib/action_view/test_case.rb, line 53</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">determine_default_helper_class</span>(<span class="ruby-identifier">name</span>)
+  <span class="ruby-identifier">mod</span> = <span class="ruby-identifier">name</span>.<span class="ruby-identifier">sub</span>(<span class="ruby-regexp">/Test$/</span>, <span class="ruby-string">''</span>).<span class="ruby-identifier">constantize</span>
+  <span class="ruby-identifier">mod</span>.<span class="ruby-identifier">is_a?</span>(<span class="ruby-constant">Class</span>) <span class="ruby-operator">?</span> <span class="ruby-keyword">nil</span> <span class="ruby-operator">:</span> <span class="ruby-identifier">mod</span>
+<span class="ruby-keyword">rescue</span> <span class="ruby-constant">NameError</span>
+  <span class="ruby-keyword">nil</span>
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+          
+      <div class="method">
+        <div class="title">
+                      <a name="method-i-helper_class"></a>
+            <b>helper_class</b>()          
+        </div>
+
+                  <div class="description">
+                      </div>
+        
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('helper_class_source')"
+                 id="l_method-i-helper_class_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="helper_class_source">
+<pre>
+  <span class="ruby-comment"># File actionpack/lib/action_view/test_case.rb, line 73</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">helper_class</span>
+  <span class="ruby-ivar">@helper_class</span> <span class="ruby-operator">||=</span> <span class="ruby-identifier">determine_default_helper_class</span>(<span class="ruby-identifier">name</span>)
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+          
+      <div class="method">
+        <div class="title">
+                      <a name="method-i-helper_method"></a>
+            <b>helper_method</b>(*methods)          
+        </div>
+
+                  <div class="description">
+                      </div>
+        
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('helper_method_source')"
+                 id="l_method-i-helper_method_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="helper_method_source">
+<pre>
+  <span class="ruby-comment"># File actionpack/lib/action_view/test_case.rb, line 60</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">helper_method</span>(*<span class="ruby-identifier">methods</span>)
+  <span class="ruby-comment"># Almost a duplicate from ActionController::Helpers</span>
+  <span class="ruby-identifier">methods</span>.<span class="ruby-identifier">flatten</span>.<span class="ruby-identifier">each</span> <span class="ruby-keyword">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">method</span><span class="ruby-operator">|</span>
+    <span class="ruby-identifier">_helpers</span>.<span class="ruby-identifier">module_eval</span> <span class="ruby-string">              def #{method}(*args, &amp;block)                    # def current_user(*args, &amp;block)                _test_case.send(%(#{method}), *args, &amp;block)  #   test_case.send(%(current_user), *args, &amp;block)              end                                             # end</span>
+  <span class="ruby-keyword">end</span>
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+          
+      <div class="method">
+        <div class="title">
+                      <a name="method-i-new"></a>
+            <b>new</b>(*)          
+        </div>
+
+                  <div class="description">
+                      </div>
+        
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('new_source')"
+                 id="l_method-i-new_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="new_source">
+<pre>
+  <span class="ruby-comment"># File actionpack/lib/action_view/test_case.rb, line 77</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">new</span>(*)
+  <span class="ruby-identifier">include_helper_modules!</span>
+  <span class="ruby-keyword">super</span>
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+          
+      <div class="method">
+        <div class="title">
+                      <a name="method-i-tests"></a>
+            <b>tests</b>(helper_class)          
+        </div>
+
+                  <div class="description">
+                      </div>
+        
+        
+                  <div class="sourcecode">
+            <p class="source-link">[
+            <a href="javascript:toggleSource('tests_source')"
+                 id="l_method-i-tests_source">
+              show source
+            </a> ]</p>
+            <div class="dyn-source"
+                    id="tests_source">
+<pre>
+  <span class="ruby-comment"># File actionpack/lib/action_view/test_case.rb, line 49</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">tests</span>(<span class="ruby-identifier">helper_class</span>)
+  <span class="ruby-keyword">self</span>.<span class="ruby-identifier">helper_class</span> = <span class="ruby-identifier">helper_class</span>
+<span class="ruby-keyword">end</span></pre>
+            </div>
+          </div>
+        
+      </div>
+
+              </div>
+  </div>
+  </body>
+</html>

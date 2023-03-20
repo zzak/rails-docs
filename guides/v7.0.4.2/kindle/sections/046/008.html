@@ -1,0 +1,88 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>9 Fonts</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v7.0.4.2/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="fonts"><a class="anchorlink" href="#fonts">9 Fonts</a></h3>
+<h4 id="fixed-width-font"><a class="anchorlink" href="#fixed-width-font">9.1 Fixed-width Font</a></h4>
+
+<p>Use fixed-width fonts for:</p>
+<ul>
+<li>Constants, in particular class and module names.</li>
+<li>Method names.</li>
+<li>Literals like <code>nil</code>, <code>false</code>, <code>true</code>, <code>self</code>.</li>
+<li>Symbols.</li>
+<li>Method parameters.</li>
+<li>File names.</li>
+</ul>
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">Array</span>
+  <span class="c1"># Calls +to_param+ on all its elements and joins the result with</span>
+  <span class="c1"># slashes. This is used by +url_for+ in Action Pack.</span>
+  <span class="k">def</span> <span class="nf">to_param</span>
+    <span class="n">collect</span> <span class="p">{</span> <span class="o">|</span><span class="n">e</span><span class="o">|</span> <span class="n">e</span><span class="p">.</span><span class="nf">to_param</span> <span class="p">}.</span><span class="nf">join</span> <span class="s1">'/'</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="class Array
+  # Calls +to_param+ on all its elements and joins the result with
+  # slashes. This is used by +url_for+ in Action Pack.
+  def to_param
+    collect { |e| e.to_param }.join '/'
+  end
+end
+">Copy</button>
+</div>
+<div class="warning"><p>Using <code>+...+</code> for fixed-width font only works with simple content like
+ordinary method names, symbols, paths (with forward slashes), etc. Please use
+<code>&lt;tt&gt;...&lt;/tt&gt;</code> for everything else, notably class or module names with a
+namespace as in <code>&lt;tt&gt;ActiveRecord::Base&lt;/tt&gt;</code>.</p></div>
+
+<p>You can quickly test the RDoc output with the following command:</p>
+
+<div class="code_container">
+<pre><code class="highlight console"><span class="gp">$</span><span class="w"> </span><span class="nb">echo</span> <span class="s2">"+:to_param+"</span> | rdoc <span class="nt">--pipe</span>
+<span class="gp">#</span><span class="w"> </span><span class="o">=&gt;</span> &lt;p&gt;&lt;code&gt;:to_param&lt;/code&gt;&lt;/p&gt;
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='echo "+:to_param+" | rdoc --pipe
+'>Copy</button>
+</div>
+<h4 id="regular-font"><a class="anchorlink" href="#regular-font">9.2 Regular Font</a></h4>
+
+<p>When "true" and "false" are English words rather than Ruby keywords use a regular font:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="c1"># Runs all the validations within the specified context.</span>
+<span class="c1"># Returns true if no errors are found, false otherwise.</span>
+<span class="c1">#</span>
+<span class="c1"># If the argument is false (default is +nil+), the context is</span>
+<span class="c1"># set to &lt;tt&gt;:create&lt;/tt&gt; if &lt;tt&gt;new_record?&lt;/tt&gt; is true,</span>
+<span class="c1"># and to &lt;tt&gt;:update&lt;/tt&gt; if it is not.</span>
+<span class="c1">#</span>
+<span class="c1"># Validations with no &lt;tt&gt;:on&lt;/tt&gt; option will run no</span>
+<span class="c1"># matter the context. Validations with # some &lt;tt&gt;:on&lt;/tt&gt;</span>
+<span class="c1"># option will only run in the specified context.</span>
+<span class="k">def</span> <span class="nf">valid?</span><span class="p">(</span><span class="n">context</span> <span class="o">=</span> <span class="kp">nil</span><span class="p">)</span>
+  <span class="c1"># ...</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="# Runs all the validations within the specified context.
+# Returns true if no errors are found, false otherwise.
+#
+# If the argument is false (default is +nil+), the context is
+# set to &lt;tt&gt;:create&lt;/tt&gt; if &lt;tt&gt;new_record?&lt;/tt&gt; is true,
+# and to &lt;tt&gt;:update&lt;/tt&gt; if it is not.
+#
+# Validations with no &lt;tt&gt;:on&lt;/tt&gt; option will run no
+# matter the context. Validations with # some &lt;tt&gt;:on&lt;/tt&gt;
+# option will only run in the specified context.
+def valid?(context = nil)
+  # ...
+end
+">Copy</button>
+</div>
+</body>
+</html>

@@ -1,0 +1,104 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>3 Cross-Site Request Forgery (CSRF)</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v5.1.7/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="cross-site-request-forgery-csrf">3 Cross-Site Request Forgery (CSRF)</h3>
+<p>This attack method works by including malicious code or a link in a page that accesses a web application that the user is believed to have authenticated. If the session for that web application has not timed out, an attacker may execute unauthorized commands.</p>
+
+<p><img src="/home/rails/v5.1.7/guides/output/kindle/images/csrf.png" alt=""></p>
+
+<p>In the <a href="#sessions">session chapter</a> you have learned that most Rails applications use cookie-based sessions. Either they store the session ID in the cookie and have a server-side session hash, or the entire session hash is on the client-side. In either case the browser will automatically send along the cookie on every request to a domain, if it can find a cookie for that domain. The controversial point is that if the request comes from a site of a different domain, it will also send the cookie. Let's start with an example:</p>
+<ul>
+<li>Bob browses a message board and views a post from a hacker where there is a crafted HTML image element. The element references a command in Bob's project management application, rather than an image file: <code>&lt;img src="http://www.webapp.com/project/1/destroy"&gt;</code>
+</li>
+<li>Bob's session at <code>www.webapp.com</code> is still alive, because he didn't log out a few minutes ago.</li>
+<li>By viewing the post, the browser finds an image tag. It tries to load the suspected image from <code>www.webapp.com</code>. As explained before, it will also send along the cookie with the valid session ID.</li>
+<li>The web application at <code>www.webapp.com</code> verifies the user information in the corresponding session hash and destroys the project with the ID 1. It then returns a result page which is an unexpected result for the browser, so it will not display the image.</li>
+<li>Bob doesn't notice the attack - but a few days later he finds out that project number one is gone.</li>
+</ul>
+<p>It is important to notice that the actual crafted image or link doesn't necessarily have to be situated in the web application's domain, it can be anywhere - in a forum, blog post or email.</p>
+
+<p>CSRF appears very rarely in CVE (Common Vulnerabilities and Exposures) - less than 0.1% in 2006 - but it really is a 'sleeping giant' [Grossman]. This is in stark contrast to the results in many security contract works - <em>CSRF is an important security issue</em>.</p>
+
+<h4 id="csrf-countermeasures">3.1 CSRF Countermeasures</h4>
+
+<div class="note"><p><em>First, as is required by the W3C, use GET and POST appropriately. Secondly, a security token in non-GET requests will protect your application from CSRF.</em></p></div>
+
+<p>The HTTP protocol basically provides two main types of requests - GET and POST (and more, but they are not supported by most browsers). The World Wide Web Consortium (W3C) provides a checklist for choosing HTTP GET or POST:</p>
+
+<p><strong>Use GET if:</strong></p>
+<ul>
+<li>The interaction is more <em>like a question</em> (i.e., it is a safe operation such as a query, read operation, or lookup).</li>
+</ul>
+<p><strong>Use POST if:</strong></p>
+<ul>
+<li>The interaction is more <em>like an order</em>, or</li>
+<li>The interaction <em>changes the state</em> of the resource in a way that the user would perceive (e.g., a subscription to a service), or</li>
+<li>The user is <em>held accountable for the results</em> of the interaction.</li>
+</ul>
+<p>If your web application is RESTful, you might be used to additional HTTP verbs, such as PATCH, PUT or DELETE. Most of today's web browsers, however, do not support them - only GET and POST. Rails uses a hidden <code>_method</code> field to handle this barrier.</p>
+
+<p><em>POST requests can be sent automatically, too</em>. In this example, the link <a href="http://www.harmless.com">www.harmless.com</a> is shown as the destination in the browser's status bar. But it has actually dynamically created a new form that sends a POST request.</p>
+
+<div class="code_container">
+<pre class="brush: xml; gutter: false; toolbar: false">
+&lt;a href="http://www.harmless.com/" onclick="
+  var f = document.createElement('form');
+  f.style.display = 'none';
+  this.parentNode.appendChild(f);
+  f.method = 'POST';
+  f.action = 'http://www.example.com/account/destroy';
+  f.submit();
+  return false;"&gt;To the harmless survey&lt;/a&gt;
+
+</pre>
+</div>
+<p>Or the attacker places the code into the onmouseover event handler of an image:</p>
+
+<div class="code_container">
+<pre class="brush: xml; gutter: false; toolbar: false">
+&lt;img src="http://www.harmless.com/img" width="400" height="400" onmouseover="..." /&gt;
+
+</pre>
+</div>
+<p>There are many other possibilities, like using a <code>&lt;script&gt;</code> tag to make a cross-site request to a URL with a JSONP or JavaScript response. The response is executable code that the attacker can find a way to run, possibly extracting sensitive data. To protect against this data leakage, we must disallow cross-site <code>&lt;script&gt;</code> tags. Ajax requests, however, obey the browser's same-origin policy (only your own site is allowed to initiate <code>XmlHttpRequest</code>) so we can safely allow them to return JavaScript responses.</p>
+
+<p>Note: We can't distinguish a <code>&lt;script&gt;</code> tag's origin—whether it's a tag on your own site or on some other malicious site—so we must block all <code>&lt;script&gt;</code> across the board, even if it's actually a safe same-origin script served from your own site. In these cases, explicitly skip CSRF protection on actions that serve JavaScript meant for a <code>&lt;script&gt;</code> tag.</p>
+
+<p>To protect against all other forged requests, we introduce a <em>required security token</em> that our site knows but other sites don't know. We include the security token in requests and verify it on the server. This is a one-liner in your application controller, and is the default for newly created Rails applications:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+protect_from_forgery with: :exception
+
+</pre>
+</div>
+<p>This will automatically include a security token in all forms and Ajax requests generated by Rails. If the security token doesn't match what was expected, an exception will be thrown.</p>
+
+<div class="note"><p>By default, Rails includes an <a href="https://github.com/rails/rails-ujs">unobtrusive scripting adapter</a>,
+which adds a header called <code>X-CSRF-Token</code> with the security token on every non-GET
+Ajax call. Without this header, non-GET Ajax requests won't be accepted by Rails.
+When using another library to make Ajax calls, it is necessary to add the security
+token as a default header for Ajax calls in your library. To get the token, have
+a look at <code>&lt;meta name='csrf-token' content='THE-TOKEN'&gt;</code> tag printed by
+<code>&lt;%= csrf_meta_tags %&gt;</code> in your application view.</p></div>
+
+<p>It is common to use persistent cookies to store user information, with <code>cookies.permanent</code> for example. In this case, the cookies will not be cleared and the out of the box CSRF protection will not be effective. If you are using a different cookie store than the session for this information, you must handle what to do with it yourself:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+rescue_from ActionController::InvalidAuthenticityToken do |exception|
+  sign_out_user # Example method that will destroy the user cookies
+end
+
+</pre>
+</div>
+<p>The above method can be placed in the <code>ApplicationController</code> and will be called when a CSRF token is not present or is incorrect on a non-GET request.</p>
+
+<p>Note that <em>cross-site scripting (XSS) vulnerabilities bypass all CSRF protections</em>. XSS gives the attacker access to all elements on a page, so they can read the CSRF security token from a form or directly submit the form. Read <a href="#cross-site-scripting-xss">more about XSS</a> later.</p>
+</body>
+</html>

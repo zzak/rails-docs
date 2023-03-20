@@ -1,0 +1,100 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>2 Rails on Rack</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v4.1.16/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="rails-on-rack">2 Rails on Rack</h3>
+<h4 id="rails-application-s-rack-object">2.1 Rails Application's Rack Object</h4>
+<p><code>Rails.application</code> is the primary Rack application object of a Rails
+application. Any Rack compliant web server should be using
+<code>Rails.application</code> object to serve a Rails application.</p>
+<h4 id="rails-server">2.2 <code>rails server</code>
+</h4>
+<p><code>rails server</code> does the basic job of creating a <code>Rack::Server</code> object and starting the webserver.</p>
+<p>Here's how <code>rails server</code> creates an instance of <code>Rack::Server</code></p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+Rails::Server.new.tap do |server|
+  require APP_PATH
+  Dir.chdir(Rails.application.root)
+  server.start
+end
+
+</pre>
+</div>
+<p>The <code>Rails::Server</code> inherits from <code>Rack::Server</code> and calls the <code>Rack::Server#start</code> method this way:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class Server &lt; ::Rack::Server
+  def start
+    ...
+    super
+  end
+end
+
+</pre>
+</div>
+<p>Here's how it loads the middlewares:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+def middleware
+  middlewares = []
+  middlewares &lt;&lt; [Rails::Rack::Debugger] if options[:debugger]
+  middlewares &lt;&lt; [::Rack::ContentLength]
+  Hash.new(middlewares)
+end
+
+</pre>
+</div>
+<p><code>Rails::Rack::Debugger</code> is primarily useful only in the development environment. The following table explains the usage of the loaded middlewares:</p>
+<table>
+<thead>
+<tr>
+<th>Middleware</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Rails::Rack::Debugger</code></td>
+<td>Starts Debugger</td>
+</tr>
+<tr>
+<td><code>Rack::ContentLength</code></td>
+<td>Counts the number of bytes in the response and set the HTTP Content-Length header</td>
+</tr>
+</tbody>
+</table>
+<h4 id="rackup">2.3 <code>rackup</code>
+</h4>
+<p>To use <code>rackup</code> instead of Rails' <code>rails server</code>, you can put the following inside <code>config.ru</code> of your Rails application's root directory:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+# Rails.root/config.ru
+require ::File.expand_path('../config/environment', __FILE__)
+
+use Rails::Rack::Debugger
+use Rack::ContentLength
+run Rails.application
+
+</pre>
+</div>
+<p>And start the server:</p>
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+$ rackup config.ru
+
+</pre>
+</div>
+<p>To find out more about different <code>rackup</code> options:</p>
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+$ rackup --help
+
+</pre>
+</div>
+</body>
+</html>

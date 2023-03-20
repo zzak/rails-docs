@@ -1,0 +1,71 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>2 Callbacks Overview</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v6.0.6.1/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="callbacks-overview"><a class="anchorlink" href="#callbacks-overview">2 Callbacks Overview</a></h3>
+<p>Callbacks are methods that get called at certain moments of an object's life cycle. With callbacks it is possible to write code that will run whenever an Active Record object is created, saved, updated, deleted, validated, or loaded from the database.</p>
+
+<h4 id="callback-registration"><a class="anchorlink" href="#callback-registration">2.1 Callback Registration</a></h4>
+
+<p>In order to use the available callbacks, you need to register them. You can implement the callbacks as ordinary methods and use a macro-style class method to register them as callbacks:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class User &lt; ApplicationRecord
+  validates :login, :email, presence: true
+
+  before_validation :ensure_login_has_a_value
+
+  private
+    def ensure_login_has_a_value
+      if login.nil?
+        self.login = email unless email.blank?
+      end
+    end
+end
+
+</pre>
+</div>
+<p>The macro-style class methods can also receive a block. Consider using this style if the code inside your block is so short that it fits in a single line:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class User &lt; ApplicationRecord
+  validates :login, :email, presence: true
+
+  before_create do
+    self.name = login.capitalize if name.blank?
+  end
+end
+
+</pre>
+</div>
+<p>Callbacks can also be registered to only fire on certain life cycle events:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class User &lt; ApplicationRecord
+  before_validation :normalize_name, on: :create
+
+  # :on takes an array as well
+  after_validation :set_location, on: [ :create, :update ]
+
+  private
+    def normalize_name
+      self.name = name.downcase.titleize
+    end
+
+    def set_location
+      self.location = LocationService.query(self)
+    end
+end
+
+</pre>
+</div>
+<p>It is considered good practice to declare callback methods as private. If left public, they can be called from outside of the model and violate the principle of object encapsulation.</p>
+</body>
+</html>

@@ -1,0 +1,79 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>3 Railties</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v6.1.7.3/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="railties"><a class="anchorlink" href="#railties">3 Railties</a></h3>
+<p>Please refer to the <a href="https://github.com/rails/rails/blob/5-2-stable/railties/CHANGELOG.md">Changelog</a> for detailed changes.</p>
+
+<h4 id="railties-deprecations"><a class="anchorlink" href="#railties-deprecations">3.1 Deprecations</a></h4>
+<ul>
+<li>  Deprecate <code>capify!</code> method in generators and templates.
+(<a href="https://github.com/rails/rails/pull/29493">Pull Request</a>)</li>
+<li>  Passing the environment's name as a regular argument to the
+<code>rails dbconsole</code> and <code>rails console</code> commands is deprecated.
+The <code>-e</code> option should be used instead.
+(<a href="https://github.com/rails/rails/commit/48b249927375465a7102acc71c2dfb8d49af8309">Commit</a>)</li>
+<li>  Deprecate using subclass of <code>Rails::Application</code> to start the Rails server.
+(<a href="https://github.com/rails/rails/pull/30127">Pull Request</a>)</li>
+<li>  Deprecate <code>after_bundle</code> callback in Rails plugin templates.
+(<a href="https://github.com/rails/rails/pull/29446">Pull Request</a>)</li>
+</ul>
+<h4 id="railties-notable-changes"><a class="anchorlink" href="#railties-notable-changes">3.2 Notable changes</a></h4>
+<ul>
+<li>  Added a shared section to <code>config/database.yml</code> that will be loaded for
+all environments.
+(<a href="https://github.com/rails/rails/pull/28896">Pull Request</a>)</li>
+<li>  Add <code>railtie.rb</code> to the plugin generator.
+(<a href="https://github.com/rails/rails/pull/29576">Pull Request</a>)</li>
+<li>  Clear screenshot files in <code>tmp:clear</code> task.
+(<a href="https://github.com/rails/rails/pull/29534">Pull Request</a>)</li>
+<li>  Skip unused components when running <code>bin/rails app:update</code>.
+If the initial app generation skipped Action Cable, Active Record, etc.,
+the update task honors those skips too.
+(<a href="https://github.com/rails/rails/pull/29645">Pull Request</a>)</li>
+<li>  Allow passing a custom connection name to the <code>rails dbconsole</code>
+command when using a 3-level database configuration.
+Example: <code>bin/rails dbconsole -c replica</code>.
+(<a href="https://github.com/rails/rails/commit/1acd9a6464668d4d54ab30d016829f60b70dbbeb">Commit</a>)</li>
+<li>  Properly expand shortcuts for environment's name running the <code>console</code>
+and <code>dbconsole</code> commands.
+(<a href="https://github.com/rails/rails/commit/3777701f1380f3814bd5313b225586dec64d4104">Commit</a>)</li>
+<li>  Add <code>bootsnap</code> to default <code>Gemfile</code>.
+(<a href="https://github.com/rails/rails/pull/29313">Pull Request</a>)</li>
+<li>  Support <code>-</code> as a platform-agnostic way to run a script from stdin with
+<code>rails runner</code>
+(<a href="https://github.com/rails/rails/pull/26343">Pull Request</a>)</li>
+<li>  Add <code>ruby x.x.x</code> version to <code>Gemfile</code> and create <code>.ruby-version</code>
+root file containing the current Ruby version when new Rails applications
+are created.
+(<a href="https://github.com/rails/rails/pull/30016">Pull Request</a>)</li>
+<li>  Add <code>--skip-action-cable</code> option to the plugin generator.
+(<a href="https://github.com/rails/rails/pull/30164">Pull Request</a>)</li>
+<li>  Add <code>git_source</code> to <code>Gemfile</code> for plugin generator.
+(<a href="https://github.com/rails/rails/pull/30110">Pull Request</a>)</li>
+<li>  Skip unused components when running <code>bin/rails</code> in Rails plugin.
+(<a href="https://github.com/rails/rails/commit/62499cb6e088c3bc32a9396322c7473a17a28640">Commit</a>)</li>
+<li>  Optimize indentation for generator actions.
+(<a href="https://github.com/rails/rails/pull/30166">Pull Request</a>)</li>
+<li>  Optimize routes indentation.
+(<a href="https://github.com/rails/rails/pull/30241">Pull Request</a>)</li>
+<li>  Add <code>--skip-yarn</code> option to the plugin generator.
+(<a href="https://github.com/rails/rails/pull/30238">Pull Request</a>)</li>
+<li>  Support multiple versions arguments for <code>gem</code> method of Generators.
+(<a href="https://github.com/rails/rails/pull/30323">Pull Request</a>)</li>
+<li>  Derive <code>secret_key_base</code> from the app name in development and test
+environments.
+(<a href="https://github.com/rails/rails/pull/30067">Pull Request</a>)</li>
+<li>  Add <code>mini_magick</code> to default <code>Gemfile</code> as comment.
+(<a href="https://github.com/rails/rails/pull/30633">Pull Request</a>)</li>
+<li>  <code>rails new</code> and <code>rails plugin new</code> get <code>Active Storage</code> by default.
+Add ability to skip <code>Active Storage</code> with <code>--skip-active-storage</code>
+and do so automatically when <code>--skip-active-record</code> is used.
+(<a href="https://github.com/rails/rails/pull/30101">Pull Request</a>)</li>
+</ul>
+</body>
+</html>

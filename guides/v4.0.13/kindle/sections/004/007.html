@@ -1,0 +1,62 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>8 Displaying Validation Errors in Views</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v4.0.13/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="displaying-validation-errors-in-views">8 Displaying Validation Errors in Views</h3>
+<p>Once you've created a model and added validations, if that model is created via
+a web form, you probably want to display an error message when one of the
+validations fail.</p>
+<p>Because every application handles this kind of thing differently, Rails does
+not include any view helpers to help you generate these messages directly.
+However, due to the rich number of methods Rails gives you to interact with
+validations in general, it's fairly easy to build your own. In addition, when
+generating a scaffold, Rails will put some ERB into the <code>_form.html.erb</code> that
+it generates that displays the full list of errors on that model.</p>
+<p>Assuming we have a model that's been saved in an instance variable named
+<code>@post</code>, it looks like this:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+&lt;% if @post.errors.any? %&gt;
+  &lt;div id="error_explanation"&gt;
+    &lt;h2&gt;&lt;%= pluralize(@post.errors.count, "error") %&gt; prohibited this post from being saved:&lt;/h2&gt;
+
+    &lt;ul&gt;
+    &lt;% @post.errors.full_messages.each do |msg| %&gt;
+      &lt;li&gt;&lt;%= msg %&gt;&lt;/li&gt;
+    &lt;% end %&gt;
+    &lt;/ul&gt;
+  &lt;/div&gt;
+&lt;% end %&gt;
+
+</pre>
+</div>
+<p>Furthermore, if you use the Rails form helpers to generate your forms, when
+a validation error occurs on a field, it will generate an extra <code>&lt;div&gt;</code> around
+the entry.</p>
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+&lt;div class="field_with_errors"&gt;
+ &lt;input id="post_title" name="post[title]" size="30" type="text" value=""&gt;
+&lt;/div&gt;
+
+</pre>
+</div>
+<p>You can then style this div however you'd like. The default scaffold that
+Rails generates, for example, adds this CSS rule:</p>
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+.field_with_errors {
+  padding: 2px;
+  background-color: red;
+  display: table;
+}
+
+</pre>
+</div>
+<p>This means that any field with an error ends up with a 2 pixel red border.</p>
+</body>
+</html>

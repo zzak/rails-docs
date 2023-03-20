@@ -1,0 +1,249 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>2 bin/rails</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v5.2.8.1/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="bin-rails"><a class="anchorlink" href="#bin-rails">2 bin/rails</a></h3>
+<p>Since Rails 5.0+ has rake commands built into the rails executable, <code>bin/rails</code> is the new default for running commands.</p>
+
+<p>You can get a list of bin/rails tasks available to you, which will often depend on your current directory, by typing <code>bin/rails --help</code>. Each task has a description, and should help you find the thing you need.</p>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+$ bin/rails --help
+Usage: rails COMMAND [ARGS]
+
+The most common rails commands are:
+generate    Generate new code (short-cut alias: "g")
+console     Start the Rails console (short-cut alias: "c")
+server      Start the Rails server (short-cut alias: "s")
+...
+
+All commands can be run with -h (or --help) for more information.
+
+In addition to those commands, there are:
+about                               List versions of all Rails ...
+assets:clean[keep]                  Remove old compiled assets
+assets:clobber                      Remove compiled assets
+assets:environment                  Load asset compile environment
+assets:precompile                   Compile all the assets ...
+...
+db:fixtures:load                    Loads fixtures into the ...
+db:migrate                          Migrate the database ...
+db:migrate:status                   Display status of migrations
+db:rollback                         Rolls the schema back to ...
+db:schema:cache:clear               Clears a db/schema_cache.yml file
+db:schema:cache:dump                Creates a db/schema_cache.yml file
+db:schema:dump                      Creates a db/schema.rb file ...
+db:schema:load                      Loads a schema.rb file ...
+db:seed                             Loads the seed data ...
+db:structure:dump                   Dumps the database structure ...
+db:structure:load                   Recreates the databases ...
+db:version                          Retrieves the current schema ...
+...
+restart                             Restart app by touching ...
+tmp:create                          Creates tmp directories ...
+
+</pre>
+</div>
+<div class="info"><p>You can also use <code>bin/rails -T</code>  to get the list of tasks.</p></div>
+
+<h4 id="about"><a class="anchorlink" href="#about">2.1 <code>about</code></a></h4>
+
+<p><code>bin/rails about</code> gives information about version numbers for Ruby, RubyGems, Rails, the Rails subcomponents, your application's folder, the current Rails environment name, your app's database adapter, and schema version. It is useful when you need to ask for help, check if a security patch might affect you, or when you need some stats for an existing Rails installation.</p>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+$ bin/rails about
+About your application's environment
+Rails version             5.1.0
+Ruby version              2.2.2 (x86_64-linux)
+RubyGems version          2.4.6
+Rack version              2.0.1
+JavaScript Runtime        Node.js (V8)
+Middleware:               Rack::Sendfile, ActionDispatch::Static, ActionDispatch::Executor, ActiveSupport::Cache::Strategy::LocalCache::Middleware, Rack::Runtime, Rack::MethodOverride, ActionDispatch::RequestId, ActionDispatch::RemoteIp, Sprockets::Rails::QuietAssets, Rails::Rack::Logger, ActionDispatch::ShowExceptions, WebConsole::Middleware, ActionDispatch::DebugExceptions, ActionDispatch::Reloader, ActionDispatch::Callbacks, ActiveRecord::Migration::CheckPending, ActionDispatch::Cookies, ActionDispatch::Session::CookieStore, ActionDispatch::Flash, Rack::Head, Rack::ConditionalGet, Rack::ETag
+Application root          /home/foobar/commandsapp
+Environment               development
+Database adapter          sqlite3
+Database schema version   20110805173523
+
+</pre>
+</div>
+<h4 id="assets"><a class="anchorlink" href="#assets">2.2 <code>assets</code></a></h4>
+
+<p>You can precompile the assets in <code>app/assets</code> using <code>bin/rails assets:precompile</code>, and remove older compiled assets using <code>bin/rails assets:clean</code>. The <code>assets:clean</code> task allows for rolling deploys that may still be linking to an old asset while the new assets are being built.</p>
+
+<p>If you want to clear <code>public/assets</code> completely, you can use <code>bin/rails assets:clobber</code>.</p>
+
+<h4 id="db"><a class="anchorlink" href="#db">2.3 <code>db</code></a></h4>
+
+<p>The most common tasks of the <code>db:</code> bin/rails namespace are <code>migrate</code> and <code>create</code>, and it will pay off to try out all of the migration bin/rails tasks (<code>up</code>, <code>down</code>, <code>redo</code>, <code>reset</code>). <code>bin/rails db:version</code> is useful when troubleshooting, telling you the current version of the database.</p>
+
+<p>More information about migrations can be found in the <a href="active_record_migrations.html">Migrations</a> guide.</p>
+
+<h4 id="notes"><a class="anchorlink" href="#notes">2.4 <code>notes</code></a></h4>
+
+<p><code>bin/rails notes</code> will search through your code for comments beginning with FIXME, OPTIMIZE or TODO. The search is done in files with extension <code>.builder</code>, <code>.rb</code>, <code>.rake</code>, <code>.yml</code>, <code>.yaml</code>, <code>.ruby</code>, <code>.css</code>, <code>.js</code> and <code>.erb</code> for both default and custom annotations.</p>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+$ bin/rails notes
+(in /home/foobar/commandsapp)
+app/controllers/admin/users_controller.rb:
+  * [ 20] [TODO] any other way to do this?
+  * [132] [FIXME] high priority for next deploy
+
+app/models/school.rb:
+  * [ 13] [OPTIMIZE] refactor this code to make it faster
+  * [ 17] [FIXME]
+
+</pre>
+</div>
+<p>You can add support for new file extensions using <code>config.annotations.register_extensions</code> option, which receives a list of the extensions with its corresponding regex to match it up.</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+config.annotations.register_extensions("scss", "sass", "less") { |annotation| /\/\/\s*(#{annotation}):?\s*(.*)$/ }
+
+</pre>
+</div>
+<p>If you are looking for a specific annotation, say FIXME, you can use <code>bin/rails notes:fixme</code>. Note that you have to lower case the annotation's name.</p>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+$ bin/rails notes:fixme
+(in /home/foobar/commandsapp)
+app/controllers/admin/users_controller.rb:
+  * [132] high priority for next deploy
+
+app/models/school.rb:
+  * [ 17]
+
+</pre>
+</div>
+<p>You can also use custom annotations in your code and list them using <code>bin/rails notes:custom</code> by specifying the annotation using an environment variable <code>ANNOTATION</code>.</p>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+$ bin/rails notes:custom ANNOTATION=BUG
+(in /home/foobar/commandsapp)
+app/models/article.rb:
+  * [ 23] Have to fix this one before pushing!
+
+</pre>
+</div>
+<div class="note"><p>When using specific annotations and custom annotations, the annotation name (FIXME, BUG etc) is not displayed in the output lines.</p></div>
+
+<p>By default, <code>rails notes</code> will look in the <code>app</code>, <code>config</code>, <code>db</code>, <code>lib</code> and <code>test</code> directories. If you would like to search other directories, you can configure them using <code>config.annotations.register_directories</code> option.</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+config.annotations.register_directories("spec", "vendor")
+
+</pre>
+</div>
+<p>You can also provide them as a comma separated list in the environment variable <code>SOURCE_ANNOTATION_DIRECTORIES</code>.</p>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+$ export SOURCE_ANNOTATION_DIRECTORIES='spec,vendor'
+$ bin/rails notes
+(in /home/foobar/commandsapp)
+app/models/user.rb:
+  * [ 35] [FIXME] User should have a subscription at this point
+spec/models/user_spec.rb:
+  * [122] [TODO] Verify the user that has a subscription works
+
+</pre>
+</div>
+<h4 id="routes"><a class="anchorlink" href="#routes">2.5 <code>routes</code></a></h4>
+
+<p><code>rails routes</code> will list all of your defined routes, which is useful for tracking down routing problems in your app, or giving you a good overview of the URLs in an app you're trying to get familiar with.</p>
+
+<h4 id="test"><a class="anchorlink" href="#test">2.6 <code>test</code></a></h4>
+
+<div class="info"><p>A good description of unit testing in Rails is given in <a href="testing.html">A Guide to Testing Rails Applications</a></p></div>
+
+<p>Rails comes with a test suite called Minitest. Rails owes its stability to the use of tests. The tasks available in the <code>test:</code> namespace helps in running the different tests you will hopefully write.</p>
+
+<h4 id="tmp"><a class="anchorlink" href="#tmp">2.7 <code>tmp</code></a></h4>
+
+<p>The <code>Rails.root/tmp</code> directory is, like the *nix /tmp directory, the holding place for temporary files like process id files and cached actions.</p>
+
+<p>The <code>tmp:</code> namespaced tasks will help you clear and create the <code>Rails.root/tmp</code> directory:</p>
+<ul>
+<li>
+<code>rails tmp:cache:clear</code> clears <code>tmp/cache</code>.</li>
+<li>
+<code>rails tmp:sockets:clear</code> clears <code>tmp/sockets</code>.</li>
+<li>
+<code>rails tmp:screenshots:clear</code> clears <code>tmp/screenshots</code>.</li>
+<li>
+<code>rails tmp:clear</code> clears all cache, sockets and screenshot files.</li>
+<li>
+<code>rails tmp:create</code> creates tmp directories for cache, sockets and pids.</li>
+</ul>
+<h4 id="miscellaneous"><a class="anchorlink" href="#miscellaneous">2.8 Miscellaneous</a></h4>
+<ul>
+<li>
+<code>rails stats</code> is great for looking at statistics on your code, displaying things like KLOCs (thousands of lines of code) and your code to test ratio.</li>
+<li>
+<code>rails secret</code> will give you a pseudo-random key to use for your session secret.</li>
+<li>
+<code>rails time:zones:all</code> lists all the timezones Rails knows about.</li>
+</ul>
+<h4 id="custom-rake-tasks"><a class="anchorlink" href="#custom-rake-tasks">2.9 Custom Rake Tasks</a></h4>
+
+<p>Custom rake tasks have a <code>.rake</code> extension and are placed in
+<code>Rails.root/lib/tasks</code>. You can create these custom rake tasks with the
+<code>bin/rails generate task</code> command.</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+desc "I am short, but comprehensive description for my cool task"
+task task_name: [:prerequisite_task, :another_task_we_depend_on] do
+  # All your magic here
+  # Any valid Ruby code is allowed
+end
+
+</pre>
+</div>
+<p>To pass arguments to your custom rake task:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+task :task_name, [:arg_1] =&gt; [:prerequisite_1, :prerequisite_2] do |task, args|
+  argument_1 = args.arg_1
+end
+
+</pre>
+</div>
+<p>You can group tasks by placing them in namespaces:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+namespace :db do
+  desc "This task does nothing"
+  task :nothing do
+    # Seriously, nothing
+  end
+end
+
+</pre>
+</div>
+<p>Invocation of the tasks will look like:</p>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+$ bin/rails task_name
+$ bin/rails "task_name[value 1]" # entire argument string should be quoted
+$ bin/rails db:nothing
+
+</pre>
+</div>
+<div class="note"><p>If your need to interact with your application models, perform database queries and so on, your task should depend on the <code>environment</code> task, which will load your application code.</p></div>
+</body>
+</html>

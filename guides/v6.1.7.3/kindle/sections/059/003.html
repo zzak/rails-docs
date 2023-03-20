@@ -1,0 +1,222 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>4 Active Record</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v6.1.7.3/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="active-record"><a class="anchorlink" href="#active-record">4 Active Record</a></h3>
+<p>Active Record gets quite a number of new features and bug fixes in Rails 2.3. The highlights include nested attributes, nested transactions, dynamic and default scopes, and batch processing.</p>
+
+<h4 id="nested-attributes"><a class="anchorlink" href="#nested-attributes">4.1 Nested Attributes</a></h4>
+
+<p>Active Record can now update the attributes on nested models directly, provided you tell it to do so:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">Book</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Base</span>
+  <span class="n">has_one</span> <span class="ss">:author</span>
+  <span class="n">has_many</span> <span class="ss">:pages</span>
+
+  <span class="n">accepts_nested_attributes_for</span> <span class="ss">:author</span><span class="p">,</span> <span class="ss">:pages</span>
+<span class="k">end</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-f0fc86c870025599e04821d619ea7bac">class Book &lt; ActiveRecord::Base
+  has_one :author
+  has_many :pages
+
+  accepts_nested_attributes_for :author, :pages
+end
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-f0fc86c870025599e04821d619ea7bac">Copy</button>
+</div>
+<p>Turning on nested attributes enables a number of things: automatic (and atomic) saving of a record together with its associated children, child-aware validations, and support for nested forms (discussed later).</p>
+
+<p>You can also specify requirements for any new records that are added via nested attributes using the <code>:reject_if</code> option:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">accepts_nested_attributes_for</span> <span class="ss">:author</span><span class="p">,</span>
+  <span class="ss">:reject_if</span> <span class="o">=&gt;</span> <span class="nb">proc</span> <span class="p">{</span> <span class="o">|</span><span class="n">attributes</span><span class="o">|</span> <span class="n">attributes</span><span class="p">[</span><span class="s1">'name'</span><span class="p">].</span><span class="nf">blank?</span> <span class="p">}</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-021198f42481059e233457caccae68b5">accepts_nested_attributes_for :author,
+  :reject_if =&gt; proc { |attributes| attributes['name'].blank? }
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-021198f42481059e233457caccae68b5">Copy</button>
+</div>
+<ul>
+<li>Lead Contributor: <a href="http://superalloy.nl/">Eloy Duran</a>
+</li>
+<li>More Information: <a href="https://weblog.rubyonrails.org/2009/1/26/nested-model-forms">Nested Model Forms</a>
+</li>
+</ul>
+<h4 id="nested-transactions"><a class="anchorlink" href="#nested-transactions">4.2 Nested Transactions</a></h4>
+
+<p>Active Record now supports nested transactions, a much-requested feature. Now you can write code like this:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="no">User</span><span class="p">.</span><span class="nf">transaction</span> <span class="k">do</span>
+  <span class="no">User</span><span class="p">.</span><span class="nf">create</span><span class="p">(</span><span class="ss">:username</span> <span class="o">=&gt;</span> <span class="s1">'Admin'</span><span class="p">)</span>
+  <span class="no">User</span><span class="p">.</span><span class="nf">transaction</span><span class="p">(</span><span class="ss">:requires_new</span> <span class="o">=&gt;</span> <span class="kp">true</span><span class="p">)</span> <span class="k">do</span>
+    <span class="no">User</span><span class="p">.</span><span class="nf">create</span><span class="p">(</span><span class="ss">:username</span> <span class="o">=&gt;</span> <span class="s1">'Regular'</span><span class="p">)</span>
+    <span class="k">raise</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Rollback</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+
+<span class="no">User</span><span class="p">.</span><span class="nf">find</span><span class="p">(</span><span class="ss">:all</span><span class="p">)</span>  <span class="c1"># =&gt; Returns only Admin</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-324310310e5a5b6f1f1c3256b6ff5021">User.transaction do
+  User.create(:username =&gt; 'Admin')
+  User.transaction(:requires_new =&gt; true) do
+    User.create(:username =&gt; 'Regular')
+    raise ActiveRecord::Rollback
+  end
+end
+
+User.find(:all)  # =&gt; Returns only Admin
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-324310310e5a5b6f1f1c3256b6ff5021">Copy</button>
+</div>
+<p>Nested transactions let you roll back an inner transaction without affecting the state of the outer transaction. If you want a transaction to be nested, you must explicitly add the <code>:requires_new</code> option; otherwise, a nested transaction simply becomes part of the parent transaction (as it does currently on Rails 2.2). Under the covers, nested transactions are <a href="http://rails.lighthouseapp.com/projects/8994/tickets/383,">using savepoints</a> so they're supported even on databases that don't have true nested transactions. There is also a bit of magic going on to make these transactions play well with transactional fixtures during testing.</p>
+<ul>
+<li>Lead Contributors: <a href="http://www.workingwithrails.com/person/4985-jonathan-viney">Jonathan Viney</a> and <a href="http://izumi.plan99.net/blog/">Hongli Lai</a>
+</li>
+</ul>
+<h4 id="dynamic-scopes"><a class="anchorlink" href="#dynamic-scopes">4.3 Dynamic Scopes</a></h4>
+
+<p>You know about dynamic finders in Rails (which allow you to concoct methods like <code>find_by_color_and_flavor</code> on the fly) and named scopes (which allow you to encapsulate reusable query conditions into friendly names like <code>currently_active</code>). Well, now you can have dynamic scope methods. The idea is to put together syntax that allows filtering on the fly <em>and</em> method chaining. For example:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="no">Order</span><span class="p">.</span><span class="nf">scoped_by_customer_id</span><span class="p">(</span><span class="mi">12</span><span class="p">)</span>
+<span class="no">Order</span><span class="p">.</span><span class="nf">scoped_by_customer_id</span><span class="p">(</span><span class="mi">12</span><span class="p">).</span><span class="nf">find</span><span class="p">(</span><span class="ss">:all</span><span class="p">,</span>
+  <span class="ss">:conditions</span> <span class="o">=&gt;</span> <span class="s2">"status = 'open'"</span><span class="p">)</span>
+<span class="no">Order</span><span class="p">.</span><span class="nf">scoped_by_customer_id</span><span class="p">(</span><span class="mi">12</span><span class="p">).</span><span class="nf">scoped_by_status</span><span class="p">(</span><span class="s2">"open"</span><span class="p">)</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-a254f46006f23fac9b38286c65844e3c">Order.scoped_by_customer_id(12)
+Order.scoped_by_customer_id(12).find(:all,
+  :conditions =&gt; "status = 'open'")
+Order.scoped_by_customer_id(12).scoped_by_status("open")
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-a254f46006f23fac9b38286c65844e3c">Copy</button>
+</div>
+<p>There's nothing to define to use dynamic scopes: they just work.</p>
+<ul>
+<li>Lead Contributor: <a href="http://evilmartians.com/">Yaroslav Markin</a>
+</li>
+<li>More Information: <a href="http://archives.ryandaigle.com/articles/2008/12/29/what-s-new-in-edge-rails-dynamic-scope-methods">What's New in Edge Rails: Dynamic Scope Methods</a>
+</li>
+</ul>
+<h4 id="default-scopes"><a class="anchorlink" href="#default-scopes">4.4 Default Scopes</a></h4>
+
+<p>Rails 2.3 will introduce the notion of <em>default scopes</em> similar to named scopes, but applying to all named scopes or find methods within the model. For example, you can write <code>default_scope :order =&gt; 'name ASC'</code> and any time you retrieve records from that model they'll come out sorted by name (unless you override the option, of course).</p>
+<ul>
+<li>Lead Contributor: Paweł Kondzior</li>
+<li>More Information: <a href="http://archives.ryandaigle.com/articles/2008/11/18/what-s-new-in-edge-rails-default-scoping">What's New in Edge Rails: Default Scoping</a>
+</li>
+</ul>
+<h4 id="batch-processing"><a class="anchorlink" href="#batch-processing">4.5 Batch Processing</a></h4>
+
+<p>You can now process large numbers of records from an Active Record model with less pressure on memory by using <code>find_in_batches</code>:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="no">Customer</span><span class="p">.</span><span class="nf">find_in_batches</span><span class="p">(</span><span class="ss">:conditions</span> <span class="o">=&gt;</span> <span class="p">{</span><span class="ss">:active</span> <span class="o">=&gt;</span> <span class="kp">true</span><span class="p">})</span> <span class="k">do</span> <span class="o">|</span><span class="n">customer_group</span><span class="o">|</span>
+  <span class="n">customer_group</span><span class="p">.</span><span class="nf">each</span> <span class="p">{</span> <span class="o">|</span><span class="n">customer</span><span class="o">|</span> <span class="n">customer</span><span class="p">.</span><span class="nf">update_account_balance!</span> <span class="p">}</span>
+<span class="k">end</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-e09e7b3158b823a3c204a25aa61f5e3e">Customer.find_in_batches(:conditions =&gt; {:active =&gt; true}) do |customer_group|
+  customer_group.each { |customer| customer.update_account_balance! }
+end
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-e09e7b3158b823a3c204a25aa61f5e3e">Copy</button>
+</div>
+<p>You can pass most of the <code>find</code> options into <code>find_in_batches</code>. However, you cannot specify the order that records will be returned in (they will always be returned in ascending order of primary key, which must be an integer), or use the <code>:limit</code> option. Instead, use the <code>:batch_size</code> option, which defaults to 1000, to set the number of records that will be returned in each batch.</p>
+
+<p>The new <code>find_each</code> method provides a wrapper around <code>find_in_batches</code> that returns individual records, with the find itself being done in batches (of 1000 by default):</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="no">Customer</span><span class="p">.</span><span class="nf">find_each</span> <span class="k">do</span> <span class="o">|</span><span class="n">customer</span><span class="o">|</span>
+  <span class="n">customer</span><span class="p">.</span><span class="nf">update_account_balance!</span>
+<span class="k">end</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-c49084707c6b8cf6297c5a34c4d8fc3c">Customer.find_each do |customer|
+  customer.update_account_balance!
+end
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-c49084707c6b8cf6297c5a34c4d8fc3c">Copy</button>
+</div>
+<p>Note that you should only use this method for batch processing: for small numbers of records (less than 1000), you should just use the regular find methods with your own loop.</p>
+<ul>
+<li>More Information (at that point the convenience method was called just <code>each</code>):
+
+<ul>
+<li><a href="http://afreshcup.com/2009/02/23/rails-23-batch-finding/">Rails 2.3: Batch Finding</a></li>
+<li><a href="http://archives.ryandaigle.com/articles/2009/2/23/what-s-new-in-edge-rails-batched-find">What's New in Edge Rails: Batched Find</a></li>
+</ul>
+</li>
+</ul>
+<h4 id="multiple-conditions-for-callbacks"><a class="anchorlink" href="#multiple-conditions-for-callbacks">4.6 Multiple Conditions for Callbacks</a></h4>
+
+<p>When using Active Record callbacks, you can now combine <code>:if</code> and <code>:unless</code> options on the same callback, and supply multiple conditions as an array:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">before_save</span> <span class="ss">:update_credit_rating</span><span class="p">,</span> <span class="ss">:if</span> <span class="o">=&gt;</span> <span class="ss">:active</span><span class="p">,</span>
+  <span class="ss">:unless</span> <span class="o">=&gt;</span> <span class="p">[</span><span class="ss">:admin</span><span class="p">,</span> <span class="ss">:cash_only</span><span class="p">]</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-58c7dea5426c6bbb33b24a41aeacc54e">before_save :update_credit_rating, :if =&gt; :active,
+  :unless =&gt; [:admin, :cash_only]
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-58c7dea5426c6bbb33b24a41aeacc54e">Copy</button>
+</div>
+<ul>
+<li>Lead Contributor: L. Caviola</li>
+</ul>
+<h4 id="find-with-having"><a class="anchorlink" href="#find-with-having">4.7 Find with having</a></h4>
+
+<p>Rails now has a <code>:having</code> option on find (as well as on <code>has_many</code> and <code>has_and_belongs_to_many</code> associations) for filtering records in grouped finds. As those with heavy SQL backgrounds know, this allows filtering based on grouped results:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">developers</span> <span class="o">=</span> <span class="no">Developer</span><span class="p">.</span><span class="nf">find</span><span class="p">(</span><span class="ss">:all</span><span class="p">,</span> <span class="ss">:group</span> <span class="o">=&gt;</span> <span class="s2">"salary"</span><span class="p">,</span>
+  <span class="ss">:having</span> <span class="o">=&gt;</span> <span class="s2">"sum(salary) &gt; 10000"</span><span class="p">,</span> <span class="ss">:select</span> <span class="o">=&gt;</span> <span class="s2">"salary"</span><span class="p">)</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-b9382d5c87277b2fc68838c5d66ef480">developers = Developer.find(:all, :group =&gt; "salary",
+  :having =&gt; "sum(salary) &gt; 10000", :select =&gt; "salary")
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-b9382d5c87277b2fc68838c5d66ef480">Copy</button>
+</div>
+<ul>
+<li>Lead Contributor: <a href="https://github.com/miloops">Emilio Tagua</a>
+</li>
+</ul>
+<h4 id="reconnecting-mysql-connections"><a class="anchorlink" href="#reconnecting-mysql-connections">4.8 Reconnecting MySQL Connections</a></h4>
+
+<p>MySQL supports a reconnect flag in its connections - if set to true, then the client will try reconnecting to the server before giving up in case of a lost connection. You can now set <code>reconnect = true</code> for your MySQL connections in <code>database.yml</code> to get this behavior from a Rails application. The default is <code>false</code>, so the behavior of existing applications doesn't change.</p>
+<ul>
+<li>Lead Contributor: <a href="http://twitter.com/dubek">Dov Murik</a>
+</li>
+<li>More information:
+
+<ul>
+<li><a href="http://dev.mysql.com/doc/refman/5.6/en/auto-reconnect.html">Controlling Automatic Reconnection Behavior</a></li>
+<li><a href="http://groups.google.com/group/rubyonrails-core/browse_thread/thread/49d2a7e9c96cb9f4">MySQL auto-reconnect revisited</a></li>
+</ul>
+</li>
+</ul>
+<h4 id="other-active-record-changes"><a class="anchorlink" href="#other-active-record-changes">4.9 Other Active Record Changes</a></h4>
+<ul>
+<li>An extra <code>AS</code> was removed from the generated SQL for <code>has_and_belongs_to_many</code> preloading, making it work better for some databases.</li>
+<li>
+<code>ActiveRecord::Base#new_record?</code> now returns <code>false</code> rather than <code>nil</code> when confronted with an existing record.</li>
+<li>A bug in quoting table names in some <code>has_many :through</code> associations was fixed.</li>
+<li>You can now specify a particular timestamp for <code>updated_at</code> timestamps: <code>cust = Customer.create(:name =&gt; "ABC Industries", :updated_at =&gt; 1.day.ago)</code>
+</li>
+<li>Better error messages on failed <code>find_by_attribute!</code> calls.</li>
+<li>Active Record's <code>to_xml</code> support gets just a little bit more flexible with the addition of a <code>:camelize</code> option.</li>
+<li>A bug in canceling callbacks from <code>before_update</code> or <code>before_create</code> was fixed.</li>
+<li>Rake tasks for testing databases via JDBC have been added.</li>
+<li>
+<code>validates_length_of</code> will use a custom error message with the <code>:in</code> or <code>:within</code> options (if one is supplied).</li>
+<li>Counts on scoped selects now work properly, so you can do things like <code>Account.scoped(:select =&gt; "DISTINCT credit_limit").count</code>.</li>
+<li>
+<code>ActiveRecord::Base#invalid?</code> now works as the opposite of <code>ActiveRecord::Base#valid?</code>.</li>
+</ul>
+</body>
+</html>

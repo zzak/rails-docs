@@ -1,0 +1,23 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>6 Structure dumps</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v7.0.4.2/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="structure-dumps"><a class="anchorlink" href="#structure-dumps">6 Structure dumps</a></h3>
+<p>If your <code>config.active_record.schema_format</code> is <code>:sql</code>, Rails will call <code>pg_dump</code> to generate a
+structure dump.</p>
+
+<p>You can use <code>ActiveRecord::Tasks::DatabaseTasks.structure_dump_flags</code> to configure <code>pg_dump</code>.
+For example, to exclude comments from your structure dump, add this to an initializer:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Tasks</span><span class="o">::</span><span class="no">DatabaseTasks</span><span class="p">.</span><span class="nf">structure_dump_flags</span> <span class="o">=</span> <span class="p">[</span><span class="s1">'--no-comments'</span><span class="p">]</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="ActiveRecord::Tasks::DatabaseTasks.structure_dump_flags = ['--no-comments']
+">Copy</button>
+</div>
+</body>
+</html>

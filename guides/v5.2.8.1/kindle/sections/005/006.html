@@ -1,0 +1,37 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>7 Relational Callbacks</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v5.2.8.1/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="relational-callbacks"><a class="anchorlink" href="#relational-callbacks">7 Relational Callbacks</a></h3>
+<p>Callbacks work through model relationships, and can even be defined by them. Suppose an example where a user has many articles. A user's articles should be destroyed if the user is destroyed. Let's add an <code>after_destroy</code> callback to the <code>User</code> model by way of its relationship to the <code>Article</code> model:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class User &lt; ApplicationRecord
+  has_many :articles, dependent: :destroy
+end
+
+class Article &lt; ApplicationRecord
+  after_destroy :log_destroy_action
+
+  def log_destroy_action
+    puts 'Article destroyed'
+  end
+end
+
+&gt;&gt; user = User.first
+=&gt; #&lt;User id: 1&gt;
+&gt;&gt; user.articles.create!
+=&gt; #&lt;Article id: 1, user_id: 1&gt;
+&gt;&gt; user.destroy
+Article destroyed
+=&gt; #&lt;User id: 1&gt;
+
+</pre>
+</div>
+</body>
+</html>

@@ -1,0 +1,203 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>3 Incompatibilities</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v5.2.8.1/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="incompatibilities"><a class="anchorlink" href="#incompatibilities">3 Incompatibilities</a></h3>
+<p>Previously deprecated functionality has been removed. Please refer to the
+individual components for new deprecations in this release.</p>
+
+<p>The following changes may require immediate action upon upgrade.</p>
+
+<h4 id="render-with-a-string-argument"><a class="anchorlink" href="#render-with-a-string-argument">3.1 <code>render</code> with a String Argument</a></h4>
+
+<p>Previously, calling <code>render "foo/bar"</code> in a controller action was equivalent to
+<code>render file: "foo/bar"</code>. In Rails 4.2, this has been changed to mean
+<code>render template: "foo/bar"</code> instead. If you need to render a file, please
+change your code to use the explicit form (<code>render file: "foo/bar"</code>) instead.</p>
+
+<h4 id="respond-with-class-level-respond-to"><a class="anchorlink" href="#respond-with-class-level-respond-to">3.2 <code>respond_with</code> / Class-Level <code>respond_to</code></a></h4>
+
+<p><code>respond_with</code> and the corresponding class-level <code>respond_to</code> have been moved
+to the <a href="https://github.com/plataformatec/responders">responders</a> gem. Add
+<code>gem 'responders', '~&gt; 2.0'</code> to your <code>Gemfile</code> to use it:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+# app/controllers/users_controller.rb
+
+class UsersController &lt; ApplicationController
+  respond_to :html, :json
+
+  def show
+    @user = User.find(params[:id])
+    respond_with @user
+  end
+end
+
+</pre>
+</div>
+<p>Instance-level <code>respond_to</code> is unaffected:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+# app/controllers/users_controller.rb
+
+class UsersController &lt; ApplicationController
+  def show
+    @user = User.find(params[:id])
+    respond_to do |format|
+      format.html
+      format.json { render json: @user }
+    end
+  end
+end
+
+</pre>
+</div>
+<h4 id="default-host-for-rails-server"><a class="anchorlink" href="#default-host-for-rails-server">3.3 Default Host for <code>rails server</code></a></h4>
+
+<p>Due to a <a href="https://github.com/rack/rack/commit/28b014484a8ac0bbb388e7eaeeef159598ec64fc">change in Rack</a>,
+<code>rails server</code> now listens on <code>localhost</code> instead of <code>0.0.0.0</code> by default. This
+should have minimal impact on the standard development workflow as both
+<a href="http://127.0.0.1:3000">http://127.0.0.1:3000</a> and <a href="http://localhost:3000">http://localhost:3000</a> will continue to work as before
+on your own machine.</p>
+
+<p>However, with this change you will no longer be able to access the Rails
+server from a different machine, for example if your development environment
+is in a virtual machine and you would like to access it from the host machine.
+In such cases, please start the server with <code>rails server -b 0.0.0.0</code> to
+restore the old behavior.</p>
+
+<p>If you do this, be sure to configure your firewall properly such that only
+trusted machines on your network can access your development server.</p>
+
+<h4 id="changed-status-option-symbols-for-render"><a class="anchorlink" href="#changed-status-option-symbols-for-render">3.4 Changed status option symbols for <code>render</code></a></h4>
+
+<p>Due to a <a href="https://github.com/rack/rack/commit/be28c6a2ac152fe4adfbef71f3db9f4200df89e8">change in Rack</a>, the symbols that the <code>render</code> method accepts for the <code>:status</code> option have changed:</p>
+<ul>
+<li>306: <code>:reserved</code> has been removed.</li>
+<li>413: <code>:request_entity_too_large</code> has been renamed to <code>:payload_too_large</code>.</li>
+<li>414: <code>:request_uri_too_long</code> has been renamed to <code>:uri_too_long</code>.</li>
+<li>416: <code>:requested_range_not_satisfiable</code> has been renamed to <code>:range_not_satisfiable</code>.</li>
+</ul>
+<p>Keep in mind that if calling <code>render</code> with an unknown symbol, the response status will default to 500.</p>
+
+<h4 id="html-sanitizer"><a class="anchorlink" href="#html-sanitizer">3.5 HTML Sanitizer</a></h4>
+
+<p>The HTML sanitizer has been replaced with a new, more robust, implementation
+built upon <a href="https://github.com/flavorjones/loofah">Loofah</a> and
+<a href="https://github.com/sparklemotion/nokogiri">Nokogiri</a>. The new sanitizer is
+more secure and its sanitization is more powerful and flexible.</p>
+
+<p>Due to the new algorithm, the sanitized output may be different for certain
+pathological inputs.</p>
+
+<p>If you have a particular need for the exact output of the old sanitizer, you
+can add the <a href="https://github.com/kaspth/rails-deprecated_sanitizer">rails-deprecated_sanitizer</a>
+gem to the <code>Gemfile</code>, to have the old behavior. The gem does not issue
+deprecation warnings because it is opt-in.</p>
+
+<p><code>rails-deprecated_sanitizer</code> will be supported for Rails 4.2 only; it will not
+be maintained for Rails 5.0.</p>
+
+<p>See <a href="http://blog.plataformatec.com.br/2014/07/the-new-html-sanitizer-in-rails-4-2/">this blog post</a>
+for more details on the changes in the new sanitizer.</p>
+
+<h4 id="assert-select"><a class="anchorlink" href="#assert-select">3.6 <code>assert_select</code></a></h4>
+
+<p><code>assert_select</code> is now based on <a href="https://github.com/sparklemotion/nokogiri">Nokogiri</a>.
+As a result, some previously-valid selectors are now unsupported. If your
+application is using any of these spellings, you will need to update them:</p>
+<ul>
+<li>
+  Values in attribute selectors may need to be quoted if they contain
+non-alphanumeric characters.
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+# before
+a[href=/]
+a[href$=/]
+
+# now
+a[href="/"]
+a[href$="/"]
+
+</pre>
+</div>
+</li>
+<li>
+  DOMs built from HTML source containing invalid HTML with improperly
+nested elements may differ.
+For example:
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+# content: &lt;div&gt;&lt;i&gt;&lt;p&gt;&lt;/i&gt;&lt;/div&gt;
+
+# before:
+assert_select('div &gt; i')  # =&gt; true
+assert_select('div &gt; p')  # =&gt; false
+assert_select('i &gt; p')    # =&gt; true
+
+# now:
+assert_select('div &gt; i')  # =&gt; true
+assert_select('div &gt; p')  # =&gt; true
+assert_select('i &gt; p')    # =&gt; false
+
+</pre>
+</div>
+</li>
+<li>
+  If the data selected contains entities, the value selected for comparison
+used to be raw (e.g. <code>AT&amp;amp;T</code>), and now is evaluated
+(e.g. <code>AT&amp;T</code>).
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+# content: &lt;p&gt;AT&amp;amp;T&lt;/p&gt;
+
+# before:
+assert_select('p', 'AT&amp;amp;T')  # =&gt; true
+assert_select('p', 'AT&amp;T')      # =&gt; false
+
+# now:
+assert_select('p', 'AT&amp;T')      # =&gt; true
+assert_select('p', 'AT&amp;amp;T')  # =&gt; false
+
+</pre>
+</div>
+</li>
+</ul>
+<p>Furthermore substitutions have changed syntax.</p>
+
+<p>Now you have to use a <code>:match</code> CSS-like selector:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+assert_select ":match('id', ?)", 'comment_1'
+
+</pre>
+</div>
+<p>Additionally Regexp substitutions look different when the assertion fails.
+Notice how <code>/hello/</code> here:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+assert_select(":match('id', ?)", /hello/)
+
+</pre>
+</div>
+<p>becomes <code>"(?-mix:hello)"</code>:</p>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+Expected at least 1 element matching "div:match('id', "(?-mix:hello)")", found 0..
+Expected 0 to be &gt;= 1.
+
+</pre>
+</div>
+<p>See the <a href="https://github.com/rails/rails-dom-testing/tree/8798b9349fb9540ad8cb9a0ce6cb88d1384a210b">Rails Dom Testing</a> documentation for more on <code>assert_select</code>.</p>
+</body>
+</html>

@@ -1,0 +1,97 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>9 Testing Views</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v5.2.8.1/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="testing-views"><a class="anchorlink" href="#testing-views">9 Testing Views</a></h3>
+<p>Testing the response to your request by asserting the presence of key HTML elements and their content is a common way to test the views of your application. Like route tests, view tests reside in <code>test/controllers/</code> or are part of controller tests. The <code>assert_select</code> method allows you to query HTML elements of the response by using a simple yet powerful syntax.</p>
+
+<p>There are two forms of <code>assert_select</code>:</p>
+
+<p><code>assert_select(selector, [equality], [message])</code> ensures that the equality condition is met on the selected elements through the selector. The selector may be a CSS selector expression (String) or an expression with substitution values.</p>
+
+<p><code>assert_select(element, selector, [equality], [message])</code> ensures that the equality condition is met on all the selected elements through the selector starting from the <em>element</em> (instance of <code>Nokogiri::XML::Node</code> or <code>Nokogiri::XML::NodeSet</code>) and its descendants.</p>
+
+<p>For example, you could verify the contents on the title element in your response with:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+assert_select 'title', "Welcome to Rails Testing Guide"
+
+</pre>
+</div>
+<p>You can also use nested <code>assert_select</code> blocks for deeper investigation.</p>
+
+<p>In the following example, the inner <code>assert_select</code> for <code>li.menu_item</code> runs
+within the collection of elements selected by the outer block:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+assert_select 'ul.navigation' do
+  assert_select 'li.menu_item'
+end
+
+</pre>
+</div>
+<p>A collection of selected elements may be iterated through so that <code>assert_select</code> may be called separately for each element.</p>
+
+<p>For example if the response contains two ordered lists, each with four nested list elements then the following tests will both pass.</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+assert_select "ol" do |elements|
+  elements.each do |element|
+    assert_select element, "li", 4
+  end
+end
+
+assert_select "ol" do
+  assert_select "li", 8
+end
+
+</pre>
+</div>
+<p>This assertion is quite powerful. For more advanced usage, refer to its <a href="https://github.com/rails/rails-dom-testing/blob/master/lib/rails/dom/testing/assertions/selector_assertions.rb">documentation</a>.</p>
+
+<h5 id="additional-view-based-assertions"><a class="anchorlink" href="#additional-view-based-assertions">9.1 Additional View-Based Assertions</a></h5>
+
+<p>There are more assertions that are primarily used in testing views:</p>
+<table>
+<thead>
+<tr>
+<th>Assertion</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>assert_select_email</code></td>
+<td>Allows you to make assertions on the body of an e-mail.</td>
+</tr>
+<tr>
+<td><code>assert_select_encoded</code></td>
+<td>Allows you to make assertions on encoded HTML. It does this by un-encoding the contents of each element and then calling the block with all the un-encoded elements.</td>
+</tr>
+<tr>
+<td>
+<code>css_select(selector)</code> or <code>css_select(element, selector)</code>
+</td>
+<td>Returns an array of all the elements selected by the <em>selector</em>. In the second variant it first matches the base <em>element</em> and tries to match the <em>selector</em> expression on any of its children. If there are no matches both variants return an empty array.</td>
+</tr>
+</tbody>
+</table>
+<p>Here's an example of using <code>assert_select_email</code>:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+assert_select_email do
+  assert_select 'small', 'Please click the "Unsubscribe" link if you want to opt-out.'
+end
+
+</pre>
+</div>
+</body>
+</html>

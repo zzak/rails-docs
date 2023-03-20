@@ -1,0 +1,197 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>8 Understanding Parameter Naming Conventions</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v6.1.7.3/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="understanding-parameter-naming-conventions"><a class="anchorlink" href="#understanding-parameter-naming-conventions">8 Understanding Parameter Naming Conventions</a></h3>
+<p>Values from forms can be at the top level of the <code>params</code> hash or nested in another hash. For example, in a standard <code>create</code> action for a Person model, <code>params[:person]</code> would usually be a hash of all the attributes for the person to create. The <code>params</code> hash can also contain arrays, arrays of hashes, and so on.</p>
+
+<p>Fundamentally HTML forms don't know about any sort of structured data, all they generate is name-value pairs, where pairs are just plain strings. The arrays and hashes you see in your application are the result of some parameter naming conventions that Rails uses.</p>
+
+<h4 id="basic-structures"><a class="anchorlink" href="#basic-structures">8.1 Basic Structures</a></h4>
+
+<p>The two basic structures are arrays and hashes. Hashes mirror the syntax used for accessing the value in <code>params</code>. For example, if a form contains:</p>
+
+<div class="code_container">
+<pre><code class="highlight html"><span class="nt">&lt;input</span> <span class="na">id=</span><span class="s">"person_name"</span> <span class="na">name=</span><span class="s">"person[name]"</span> <span class="na">type=</span><span class="s">"text"</span> <span class="na">value=</span><span class="s">"Henry"</span><span class="nt">/&gt;</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-26e27247f24bc26226a787e18a8b0d3b">&lt;input id="person_name" name="person[name]" type="text" value="Henry"/&gt;
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-26e27247f24bc26226a787e18a8b0d3b">Copy</button>
+</div>
+<p>the <code>params</code> hash will contain</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="p">{</span><span class="s1">'person'</span> <span class="o">=&gt;</span> <span class="p">{</span><span class="s1">'name'</span> <span class="o">=&gt;</span> <span class="s1">'Henry'</span><span class="p">}}</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-5f5d35d0949509bbc8ab7f932e4ce810">{'person' =&gt; {'name' =&gt; 'Henry'}}
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-5f5d35d0949509bbc8ab7f932e4ce810">Copy</button>
+</div>
+<p>and <code>params[:person][:name]</code> will retrieve the submitted value in the controller.</p>
+
+<p>Hashes can be nested as many levels as required, for example:</p>
+
+<div class="code_container">
+<pre><code class="highlight html"><span class="nt">&lt;input</span> <span class="na">id=</span><span class="s">"person_address_city"</span> <span class="na">name=</span><span class="s">"person[address][city]"</span> <span class="na">type=</span><span class="s">"text"</span> <span class="na">value=</span><span class="s">"New York"</span><span class="nt">/&gt;</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-a249b46af1abd6723e736647069ce6d9">&lt;input id="person_address_city" name="person[address][city]" type="text" value="New York"/&gt;
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-a249b46af1abd6723e736647069ce6d9">Copy</button>
+</div>
+<p>will result in the <code>params</code> hash being</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="p">{</span><span class="s1">'person'</span> <span class="o">=&gt;</span> <span class="p">{</span><span class="s1">'address'</span> <span class="o">=&gt;</span> <span class="p">{</span><span class="s1">'city'</span> <span class="o">=&gt;</span> <span class="s1">'New York'</span><span class="p">}}}</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-8c323f3b8ee1d01367cea055fadbcfee">{'person' =&gt; {'address' =&gt; {'city' =&gt; 'New York'}}}
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-8c323f3b8ee1d01367cea055fadbcfee">Copy</button>
+</div>
+<p>Normally Rails ignores duplicate parameter names. If the parameter name ends with an empty set of square brackets <code>[]</code> then they will be accumulated in an array. If you wanted users to be able to input multiple phone numbers, you could place this in the form:</p>
+
+<div class="code_container">
+<pre><code class="highlight html"><span class="nt">&lt;input</span> <span class="na">name=</span><span class="s">"person[phone_number][]"</span> <span class="na">type=</span><span class="s">"text"</span><span class="nt">/&gt;</span>
+<span class="nt">&lt;input</span> <span class="na">name=</span><span class="s">"person[phone_number][]"</span> <span class="na">type=</span><span class="s">"text"</span><span class="nt">/&gt;</span>
+<span class="nt">&lt;input</span> <span class="na">name=</span><span class="s">"person[phone_number][]"</span> <span class="na">type=</span><span class="s">"text"</span><span class="nt">/&gt;</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-ddff9198fe86ffbbea652664b8baa767">&lt;input name="person[phone_number][]" type="text"/&gt;
+&lt;input name="person[phone_number][]" type="text"/&gt;
+&lt;input name="person[phone_number][]" type="text"/&gt;
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-ddff9198fe86ffbbea652664b8baa767">Copy</button>
+</div>
+<p>This would result in <code>params[:person][:phone_number]</code> being an array containing the inputted phone numbers.</p>
+
+<h4 id="combining-them"><a class="anchorlink" href="#combining-them">8.2 Combining Them</a></h4>
+
+<p>We can mix and match these two concepts. One element of a hash might be an array as in the previous example, or you can have an array of hashes. For example, a form might let you create any number of addresses by repeating the following form fragment</p>
+
+<div class="code_container">
+<pre><code class="highlight html"><span class="nt">&lt;input</span> <span class="na">name=</span><span class="s">"person[addresses][][line1]"</span> <span class="na">type=</span><span class="s">"text"</span><span class="nt">/&gt;</span>
+<span class="nt">&lt;input</span> <span class="na">name=</span><span class="s">"person[addresses][][line2]"</span> <span class="na">type=</span><span class="s">"text"</span><span class="nt">/&gt;</span>
+<span class="nt">&lt;input</span> <span class="na">name=</span><span class="s">"person[addresses][][city]"</span> <span class="na">type=</span><span class="s">"text"</span><span class="nt">/&gt;</span>
+<span class="nt">&lt;input</span> <span class="na">name=</span><span class="s">"person[addresses][][line1]"</span> <span class="na">type=</span><span class="s">"text"</span><span class="nt">/&gt;</span>
+<span class="nt">&lt;input</span> <span class="na">name=</span><span class="s">"person[addresses][][line2]"</span> <span class="na">type=</span><span class="s">"text"</span><span class="nt">/&gt;</span>
+<span class="nt">&lt;input</span> <span class="na">name=</span><span class="s">"person[addresses][][city]"</span> <span class="na">type=</span><span class="s">"text"</span><span class="nt">/&gt;</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-42647e7da4abba480c61195a6fc639cf">&lt;input name="person[addresses][][line1]" type="text"/&gt;
+&lt;input name="person[addresses][][line2]" type="text"/&gt;
+&lt;input name="person[addresses][][city]" type="text"/&gt;
+&lt;input name="person[addresses][][line1]" type="text"/&gt;
+&lt;input name="person[addresses][][line2]" type="text"/&gt;
+&lt;input name="person[addresses][][city]" type="text"/&gt;
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-42647e7da4abba480c61195a6fc639cf">Copy</button>
+</div>
+<p>This would result in <code>params[:person][:addresses]</code> being an array of hashes with keys <code>line1</code>, <code>line2</code>, and <code>city</code>.</p>
+
+<p>There's a restriction, however: while hashes can be nested arbitrarily, only one level of "arrayness" is allowed. Arrays can usually be replaced by hashes; for example, instead of having an array of model objects, one can have a hash of model objects keyed by their id, an array index, or some other parameter.</p>
+
+<div class="warning"><p>Array parameters do not play well with the <code>check_box</code> helper. According to the HTML specification unchecked checkboxes submit no value. However it is often convenient for a checkbox to always submit a value. The <code>check_box</code> helper fakes this by creating an auxiliary hidden input with the same name. If the checkbox is unchecked only the hidden input is submitted and if it is checked then both are submitted but the value submitted by the checkbox takes precedence.</p></div>
+
+<h4 id="understanding-parameter-naming-conventions-the-fields-for-helper"><a class="anchorlink" href="#understanding-parameter-naming-conventions-the-fields-for-helper">8.3 The <code>fields_for</code> Helper</a></h4>
+
+<p>Let's say we want to render a form with a set of fields for each of a person's addresses. The <code>fields_for</code> helper and its <code>:index</code> argument can assist with this:</p>
+
+<div class="code_container">
+<pre><code class="highlight erb"><span class="cp">&lt;%=</span> <span class="n">form_with</span> <span class="ss">model: </span><span class="vi">@person</span> <span class="k">do</span> <span class="o">|</span><span class="n">person_form</span><span class="o">|</span> <span class="cp">%&gt;</span>
+  <span class="cp">&lt;%=</span> <span class="n">person_form</span><span class="p">.</span><span class="nf">text_field</span> <span class="ss">:name</span> <span class="cp">%&gt;</span>
+  <span class="cp">&lt;%</span> <span class="vi">@person</span><span class="p">.</span><span class="nf">addresses</span><span class="p">.</span><span class="nf">each</span> <span class="k">do</span> <span class="o">|</span><span class="n">address</span><span class="o">|</span> <span class="cp">%&gt;</span>
+    <span class="cp">&lt;%=</span> <span class="n">person_form</span><span class="p">.</span><span class="nf">fields_for</span> <span class="n">address</span><span class="p">,</span> <span class="ss">index: </span><span class="n">address</span><span class="p">.</span><span class="nf">id</span> <span class="k">do</span> <span class="o">|</span><span class="n">address_form</span><span class="o">|</span> <span class="cp">%&gt;</span>
+      <span class="cp">&lt;%=</span> <span class="n">address_form</span><span class="p">.</span><span class="nf">text_field</span> <span class="ss">:city</span> <span class="cp">%&gt;</span>
+    <span class="cp">&lt;%</span> <span class="k">end</span> <span class="cp">%&gt;</span>
+  <span class="cp">&lt;%</span> <span class="k">end</span> <span class="cp">%&gt;</span>
+<span class="cp">&lt;%</span> <span class="k">end</span> <span class="cp">%&gt;</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-722c739fb2809db053e0490763a7c432">&lt;%= form_with model: @person do |person_form| %&gt;
+  &lt;%= person_form.text_field :name %&gt;
+  &lt;% @person.addresses.each do |address| %&gt;
+    &lt;%= person_form.fields_for address, index: address.id do |address_form| %&gt;
+      &lt;%= address_form.text_field :city %&gt;
+    &lt;% end %&gt;
+  &lt;% end %&gt;
+&lt;% end %&gt;
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-722c739fb2809db053e0490763a7c432">Copy</button>
+</div>
+<p>Assuming the person had two addresses, with ids 23 and 45 this would create output similar to this:</p>
+
+<div class="code_container">
+<pre><code class="highlight html"><span class="nt">&lt;form</span> <span class="na">accept-charset=</span><span class="s">"UTF-8"</span> <span class="na">action=</span><span class="s">"/people/1"</span> <span class="na">method=</span><span class="s">"post"</span><span class="nt">&gt;</span>
+  <span class="nt">&lt;input</span> <span class="na">name=</span><span class="s">"_method"</span> <span class="na">type=</span><span class="s">"hidden"</span> <span class="na">value=</span><span class="s">"patch"</span> <span class="nt">/&gt;</span>
+  <span class="nt">&lt;input</span> <span class="na">id=</span><span class="s">"person_name"</span> <span class="na">name=</span><span class="s">"person[name]"</span> <span class="na">type=</span><span class="s">"text"</span> <span class="nt">/&gt;</span>
+  <span class="nt">&lt;input</span> <span class="na">id=</span><span class="s">"person_address_23_city"</span> <span class="na">name=</span><span class="s">"person[address][23][city]"</span> <span class="na">type=</span><span class="s">"text"</span> <span class="nt">/&gt;</span>
+  <span class="nt">&lt;input</span> <span class="na">id=</span><span class="s">"person_address_45_city"</span> <span class="na">name=</span><span class="s">"person[address][45][city]"</span> <span class="na">type=</span><span class="s">"text"</span> <span class="nt">/&gt;</span>
+<span class="nt">&lt;/form&gt;</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-bbd4e0546b143cb7d56a12f03d43bf02">&lt;form accept-charset="UTF-8" action="/people/1" method="post"&gt;
+  &lt;input name="_method" type="hidden" value="patch" /&gt;
+  &lt;input id="person_name" name="person[name]" type="text" /&gt;
+  &lt;input id="person_address_23_city" name="person[address][23][city]" type="text" /&gt;
+  &lt;input id="person_address_45_city" name="person[address][45][city]" type="text" /&gt;
+&lt;/form&gt;
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-bbd4e0546b143cb7d56a12f03d43bf02">Copy</button>
+</div>
+<p>This will result in a <code>params</code> hash that looks like</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="p">{</span><span class="s1">'person'</span> <span class="o">=&gt;</span> <span class="p">{</span><span class="s1">'name'</span> <span class="o">=&gt;</span> <span class="s1">'Bob'</span><span class="p">,</span> <span class="s1">'address'</span> <span class="o">=&gt;</span> <span class="p">{</span><span class="s1">'23'</span> <span class="o">=&gt;</span> <span class="p">{</span><span class="s1">'city'</span> <span class="o">=&gt;</span> <span class="s1">'Paris'</span><span class="p">},</span> <span class="s1">'45'</span> <span class="o">=&gt;</span> <span class="p">{</span><span class="s1">'city'</span> <span class="o">=&gt;</span> <span class="s1">'London'</span><span class="p">}}}}</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-37d225367ae3546c8b79a01c9ff7adb2">{'person' =&gt; {'name' =&gt; 'Bob', 'address' =&gt; {'23' =&gt; {'city' =&gt; 'Paris'}, '45' =&gt; {'city' =&gt; 'London'}}}}
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-37d225367ae3546c8b79a01c9ff7adb2">Copy</button>
+</div>
+<p>Rails knows that all these inputs should be part of the person hash because you
+called <code>fields_for</code> on the first form builder. By specifying an <code>:index</code> option
+you're telling Rails that instead of naming the inputs <code>person[address][city]</code>
+it should insert that index surrounded by [] between the address and the city.
+This is often useful as it is then easy to locate which Address record
+should be modified. You can pass numbers with some other significance,
+strings or even <code>nil</code> (which will result in an array parameter being created).</p>
+
+<p>To create more intricate nestings, you can specify the first part of the input
+name (<code>person[address]</code> in the previous example) explicitly:</p>
+
+<div class="code_container">
+<pre><code class="highlight erb"><span class="cp">&lt;%=</span> <span class="n">fields_for</span> <span class="s1">'person[address][primary]'</span><span class="p">,</span> <span class="n">address</span><span class="p">,</span> <span class="ss">index: </span><span class="n">address</span><span class="p">.</span><span class="nf">id</span> <span class="k">do</span> <span class="o">|</span><span class="n">address_form</span><span class="o">|</span> <span class="cp">%&gt;</span>
+  <span class="cp">&lt;%=</span> <span class="n">address_form</span><span class="p">.</span><span class="nf">text_field</span> <span class="ss">:city</span> <span class="cp">%&gt;</span>
+<span class="cp">&lt;%</span> <span class="k">end</span> <span class="cp">%&gt;</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-69776afe536a648b9ac8014bacd81a64">&lt;%= fields_for 'person[address][primary]', address, index: address.id do |address_form| %&gt;
+  &lt;%= address_form.text_field :city %&gt;
+&lt;% end %&gt;
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-69776afe536a648b9ac8014bacd81a64">Copy</button>
+</div>
+<p>will create inputs like</p>
+
+<div class="code_container">
+<pre><code class="highlight html"><span class="nt">&lt;input</span> <span class="na">id=</span><span class="s">"person_address_primary_1_city"</span> <span class="na">name=</span><span class="s">"person[address][primary][1][city]"</span> <span class="na">type=</span><span class="s">"text"</span> <span class="na">value=</span><span class="s">"Bologna"</span> <span class="nt">/&gt;</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-a77f1a8f2fb137ad3930f207ea96587c">&lt;input id="person_address_primary_1_city" name="person[address][primary][1][city]" type="text" value="Bologna" /&gt;
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-a77f1a8f2fb137ad3930f207ea96587c">Copy</button>
+</div>
+<p>As a general rule the final input name is the concatenation of the name given to <code>fields_for</code>/<code>form_with</code>, the index value, and the name of the attribute. You can also pass an <code>:index</code> option directly to helpers such as <code>text_field</code>, but it is usually less repetitive to specify this at the form builder level rather than on individual input controls.</p>
+
+<p>As a shortcut you can append [] to the name and omit the <code>:index</code> option. This is the same as specifying <code>index: address.id</code> so</p>
+
+<div class="code_container">
+<pre><code class="highlight erb"><span class="cp">&lt;%=</span> <span class="n">fields_for</span> <span class="s1">'person[address][primary][]'</span><span class="p">,</span> <span class="n">address</span> <span class="k">do</span> <span class="o">|</span><span class="n">address_form</span><span class="o">|</span> <span class="cp">%&gt;</span>
+  <span class="cp">&lt;%=</span> <span class="n">address_form</span><span class="p">.</span><span class="nf">text_field</span> <span class="ss">:city</span> <span class="cp">%&gt;</span>
+<span class="cp">&lt;%</span> <span class="k">end</span> <span class="cp">%&gt;</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-4d6c0def1e1bc175d0df47426809b625">&lt;%= fields_for 'person[address][primary][]', address do |address_form| %&gt;
+  &lt;%= address_form.text_field :city %&gt;
+&lt;% end %&gt;
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-4d6c0def1e1bc175d0df47426809b625">Copy</button>
+</div>
+<p>produces exactly the same output as the previous example.</p>
+</body>
+</html>

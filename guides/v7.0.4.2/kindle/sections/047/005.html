@@ -1,0 +1,78 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>6 HTML Guides</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v7.0.4.2/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="html-guides"><a class="anchorlink" href="#html-guides">6 HTML Guides</a></h3>
+<p>Before generating the guides, make sure that you have the latest version of
+Bundler installed on your system. You can find the latest Bundler version
+<a href="https://rubygems.org/gems/bundler">here</a>. As of this writing, it's v1.17.1.</p>
+
+<p>To install the latest version of Bundler, run <code>gem install bundler</code>.</p>
+
+<h4 id="html-guides-generation"><a class="anchorlink" href="#html-guides-generation">6.1 Generation</a></h4>
+
+<p>To generate all the guides, just <code>cd</code> into the <code>guides</code> directory, run <code>bundle install</code>, and execute:</p>
+
+<div class="code_container">
+<pre><code class="highlight console"><span class="gp">$</span><span class="w"> </span><span class="nb">bundle exec rake </span>guides:generate
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="bundle exec rake guides:generate
+">Copy</button>
+</div>
+<p>or</p>
+
+<div class="code_container">
+<pre><code class="highlight console"><span class="gp">$</span><span class="w"> </span><span class="nb">bundle exec rake </span>guides:generate:html
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="bundle exec rake guides:generate:html
+">Copy</button>
+</div>
+<p>Resulting HTML files can be found in the <code>./output</code> directory.</p>
+
+<p>To process <code>my_guide.md</code> and nothing else use the <code>ONLY</code> environment variable:</p>
+
+<div class="code_container">
+<pre><code class="highlight console"><span class="gp">$</span><span class="w"> </span><span class="nb">touch </span>my_guide.md
+<span class="gp">$</span><span class="w"> </span><span class="nb">bundle exec rake </span>guides:generate <span class="nv">ONLY</span><span class="o">=</span>my_guide
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="touch my_guide.md
+bundle exec rake guides:generate ONLY=my_guide
+">Copy</button>
+</div>
+<p>By default, guides that have not been modified are not processed, so <code>ONLY</code> is rarely needed in practice.</p>
+
+<p>To force processing all the guides, pass <code>ALL=1</code>.</p>
+
+<p>If you want to generate guides in a language other than English, you can keep them in a separate directory under <code>source</code> (e.g. <code>source/es</code>) and use the <code>GUIDES_LANGUAGE</code> environment variable:</p>
+
+<div class="code_container">
+<pre><code class="highlight console"><span class="gp">$</span><span class="w"> </span><span class="nb">bundle exec rake </span>guides:generate <span class="nv">GUIDES_LANGUAGE</span><span class="o">=</span>es
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="bundle exec rake guides:generate GUIDES_LANGUAGE=es
+">Copy</button>
+</div>
+<p>If you want to see all the environment variables you can use to configure the generation script just run:</p>
+
+<div class="code_container">
+<pre><code class="highlight console"><span class="gp">$</span><span class="w"> </span><span class="nb">rake</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="rake
+">Copy</button>
+</div>
+<h4 id="validation"><a class="anchorlink" href="#validation">6.2 Validation</a></h4>
+
+<p>Please validate the generated HTML with:</p>
+
+<div class="code_container">
+<pre><code class="highlight console"><span class="gp">$</span><span class="w"> </span><span class="nb">bundle exec rake </span>guides:validate
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="bundle exec rake guides:validate
+">Copy</button>
+</div>
+<p>Particularly, titles get an ID generated from their content and this often leads to duplicates.</p>
+</body>
+</html>

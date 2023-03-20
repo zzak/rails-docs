@@ -1,0 +1,200 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>20 Finding by SQL</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v6.1.7.3/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="finding-by-sql"><a class="anchorlink" href="#finding-by-sql">20 Finding by SQL</a></h3>
+<p>If you'd like to use your own SQL to find records in a table you can use <a href="https://api.rubyonrails.org/v6.1.7.3/classes/ActiveRecord/Querying.html#method-i-find_by_sql"><code>find_by_sql</code></a>. The <code>find_by_sql</code> method will return an array of objects even if the underlying query returns just a single record. For example you could run this query:</p>
+
+<div class="code_container">
+<pre><code class="highlight irb"><span class="gp">irb&gt;</span><span class="w"> </span><span class="no">Customer</span><span class="p">.</span><span class="nf">find_by_sql</span><span class="p">(</span><span class="s2">"SELECT * FROM customers INNER JOIN orders ON customers.id = orders.customer_id ORDER BY customers.created_at desc"</span><span class="p">)</span>
+<span class="p">=&gt;</span> <span class="p">[</span><span class="kt">#&lt;</span><span class="no">Customer</span> <span class="ss">id: </span><span class="mi">1</span><span class="p">,</span> <span class="ss">first_name: </span><span class="s2">"Lucas"</span> <span class="o">...</span><span class="kt">&gt;</span><span class="p">,</span> <span class="kt">#&lt;</span><span class="no">Customer</span> <span class="ss">id: </span><span class="mi">2</span><span class="p">,</span> <span class="ss">first_name: </span><span class="s2">"Jan"</span> <span class="o">...</span><span class="kt">&gt;</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-911dfae5fd0a28b7cae7d016beac4152">Customer.find_by_sql("SELECT * FROM customers INNER JOIN orders ON customers.id = orders.customer_id ORDER BY customers.created_at desc")
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-911dfae5fd0a28b7cae7d016beac4152">Copy</button>
+</div>
+<p><code>find_by_sql</code> provides you with a simple way of making custom calls to the database and retrieving instantiated objects.</p>
+
+<h4 id="select-all"><a class="anchorlink" href="#select-all">20.1 <code>select_all</code></a></h4>
+
+<p><code>find_by_sql</code> has a close relative called <a href="https://api.rubyonrails.org/v6.1.7.3/classes/ActiveRecord/ConnectionAdapters/DatabaseStatements.html#method-i-select_all"><code>connection.select_all</code></a>. <code>select_all</code> will retrieve
+objects from the database using custom SQL just like <code>find_by_sql</code> but will not instantiate them.
+This method will return an instance of <code>ActiveRecord::Result</code> class and calling <code>to_a</code> on this
+object would return you an array of hashes where each hash indicates a record.</p>
+
+<div class="code_container">
+<pre><code class="highlight irb"><span class="gp">irb&gt;</span><span class="w"> </span><span class="no">Customer</span><span class="p">.</span><span class="nf">connection</span><span class="p">.</span><span class="nf">select_all</span><span class="p">(</span><span class="s2">"SELECT first_name, created_at FROM customers WHERE id = '1'"</span><span class="p">).</span><span class="nf">to_hash</span>
+<span class="p">=&gt;</span> <span class="p">[{</span><span class="s2">"first_name"</span><span class="o">=&gt;</span><span class="s2">"Rafael"</span><span class="p">,</span> <span class="s2">"created_at"</span><span class="o">=&gt;</span><span class="s2">"2012-11-10 23:23:45.281189"</span><span class="p">},</span> <span class="p">{</span><span class="s2">"first_name"</span><span class="o">=&gt;</span><span class="s2">"Eileen"</span><span class="p">,</span> <span class="s2">"created_at"</span><span class="o">=&gt;</span><span class="s2">"2013-12-09 11:22:35.221282"</span><span class="p">}]</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-112fe53cd5f760a4166773cd7d9faedc">Customer.connection.select_all("SELECT first_name, created_at FROM customers WHERE id = '1'").to_hash
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-112fe53cd5f760a4166773cd7d9faedc">Copy</button>
+</div>
+<h4 id="pluck"><a class="anchorlink" href="#pluck">20.2 <code>pluck</code></a></h4>
+
+<p><a href="https://api.rubyonrails.org/v6.1.7.3/classes/ActiveRecord/Calculations.html#method-i-pluck"><code>pluck</code></a> can be used to query single or multiple columns from the underlying table of a model. It accepts a list of column names as an argument and returns an array of values of the specified columns with the corresponding data type.</p>
+
+<div class="code_container">
+<pre><code class="highlight irb"><span class="gp">irb&gt;</span><span class="w"> </span><span class="no">Book</span><span class="p">.</span><span class="nf">where</span><span class="p">(</span><span class="ss">out_of_print: </span><span class="kp">true</span><span class="p">).</span><span class="nf">pluck</span><span class="p">(</span><span class="ss">:id</span><span class="p">)</span>
+<span class="go">SELECT id FROM books WHERE out_of_print = false
+</span><span class="p">=&gt;</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]</span>
+
+<span class="gp">irb&gt;</span><span class="w"> </span><span class="no">Order</span><span class="p">.</span><span class="nf">distinct</span><span class="p">.</span><span class="nf">pluck</span><span class="p">(</span><span class="ss">:status</span><span class="p">)</span>
+<span class="go">SELECT DISTINCT status FROM orders
+</span><span class="p">=&gt;</span> <span class="p">[</span><span class="s2">"shipped"</span><span class="p">,</span> <span class="s2">"being_packed"</span><span class="p">,</span> <span class="s2">"cancelled"</span><span class="p">]</span>
+
+<span class="gp">irb&gt;</span><span class="w"> </span><span class="no">Customer</span><span class="p">.</span><span class="nf">pluck</span><span class="p">(</span><span class="ss">:id</span><span class="p">,</span> <span class="ss">:first_name</span><span class="p">)</span>
+<span class="go">SELECT customers.id, customers.name FROM customers
+</span><span class="p">=&gt;</span> <span class="p">[[</span><span class="mi">1</span><span class="p">,</span> <span class="s2">"David"</span><span class="p">],</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="s2">"Fran"</span><span class="p">],</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="s2">"Jose"</span><span class="p">]]</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-10d63bf6aa2e5745230ef8c29a23180f">Book.where(out_of_print: true).pluck(:id)
+Order.distinct.pluck(:status)
+Customer.pluck(:id, :first_name)
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-10d63bf6aa2e5745230ef8c29a23180f">Copy</button>
+</div>
+<p><code>pluck</code> makes it possible to replace code like:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="no">Customer</span><span class="p">.</span><span class="nf">select</span><span class="p">(</span><span class="ss">:id</span><span class="p">).</span><span class="nf">map</span> <span class="p">{</span> <span class="o">|</span><span class="n">c</span><span class="o">|</span> <span class="n">c</span><span class="p">.</span><span class="nf">id</span> <span class="p">}</span>
+<span class="c1"># or</span>
+<span class="no">Customer</span><span class="p">.</span><span class="nf">select</span><span class="p">(</span><span class="ss">:id</span><span class="p">).</span><span class="nf">map</span><span class="p">(</span><span class="o">&amp;</span><span class="ss">:id</span><span class="p">)</span>
+<span class="c1"># or</span>
+<span class="no">Customer</span><span class="p">.</span><span class="nf">select</span><span class="p">(</span><span class="ss">:id</span><span class="p">,</span> <span class="ss">:name</span><span class="p">).</span><span class="nf">map</span> <span class="p">{</span> <span class="o">|</span><span class="n">c</span><span class="o">|</span> <span class="p">[</span><span class="n">c</span><span class="p">.</span><span class="nf">id</span><span class="p">,</span> <span class="n">c</span><span class="p">.</span><span class="nf">first_name</span><span class="p">]</span> <span class="p">}</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-180629a1145f8431279d8195b6687a26">Customer.select(:id).map { |c| c.id }
+# or
+Customer.select(:id).map(&amp;:id)
+# or
+Customer.select(:id, :name).map { |c| [c.id, c.first_name] }
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-180629a1145f8431279d8195b6687a26">Copy</button>
+</div>
+<p>with:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="no">Customer</span><span class="p">.</span><span class="nf">pluck</span><span class="p">(</span><span class="ss">:id</span><span class="p">)</span>
+<span class="c1"># or</span>
+<span class="no">Customer</span><span class="p">.</span><span class="nf">pluck</span><span class="p">(</span><span class="ss">:id</span><span class="p">,</span> <span class="ss">:first_name</span><span class="p">)</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-1f1d4b2a839fa440268f0b97df861c6b">Customer.pluck(:id)
+# or
+Customer.pluck(:id, :first_name)
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-1f1d4b2a839fa440268f0b97df861c6b">Copy</button>
+</div>
+<p>Unlike <code>select</code>, <code>pluck</code> directly converts a database result into a Ruby <code>Array</code>,
+without constructing <code>ActiveRecord</code> objects. This can mean better performance for
+a large or frequently-run query. However, any model method overrides will
+not be available. For example:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">Customer</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="k">def</span> <span class="nf">name</span>
+    <span class="s2">"I am </span><span class="si">#{</span><span class="n">first_name</span><span class="si">}</span><span class="s2">"</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-e181ccde5bd052ccbf6e5d55d3cc265c">class Customer &lt; ApplicationRecord
+  def name
+    "I am #{first_name}"
+  end
+end
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-e181ccde5bd052ccbf6e5d55d3cc265c">Copy</button>
+</div>
+<div class="code_container">
+<pre><code class="highlight irb"><span class="gp">irb&gt;</span><span class="w"> </span><span class="no">Customer</span><span class="p">.</span><span class="nf">select</span><span class="p">(</span><span class="ss">:first_name</span><span class="p">).</span><span class="nf">map</span> <span class="o">&amp;</span><span class="ss">:name</span>
+<span class="p">=&gt;</span> <span class="p">[</span><span class="s2">"I am David"</span><span class="p">,</span> <span class="s2">"I am Jeremy"</span><span class="p">,</span> <span class="s2">"I am Jose"</span><span class="p">]</span>
+
+<span class="gp">irb&gt;</span><span class="w"> </span><span class="no">Customer</span><span class="p">.</span><span class="nf">pluck</span><span class="p">(</span><span class="ss">:first_name</span><span class="p">)</span>
+<span class="p">=&gt;</span> <span class="p">[</span><span class="s2">"David"</span><span class="p">,</span> <span class="s2">"Jeremy"</span><span class="p">,</span> <span class="s2">"Jose"</span><span class="p">]</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-b2296cfdc8d12d4f33ba513a3e63a73e">Customer.select(:first_name).map &amp;:name
+Customer.pluck(:first_name)
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-b2296cfdc8d12d4f33ba513a3e63a73e">Copy</button>
+</div>
+<p>You are not limited to querying fields from a single table, you can query multiple tables as well.</p>
+
+<div class="code_container">
+<pre><code class="highlight irb"><span class="gp">irb&gt;</span><span class="w"> </span><span class="no">Order</span><span class="p">.</span><span class="nf">joins</span><span class="p">(</span><span class="ss">:customer</span><span class="p">,</span> <span class="ss">:books</span><span class="p">).</span><span class="nf">pluck</span><span class="p">(</span><span class="s2">"orders.created_at, customers.email, books.title"</span><span class="p">)</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-6c299699b369d71b38e307e33fcc9ce8">Order.joins(:customer, :books).pluck("orders.created_at, customers.email, books.title")
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-6c299699b369d71b38e307e33fcc9ce8">Copy</button>
+</div>
+<p>Furthermore, unlike <code>select</code> and other <code>Relation</code> scopes, <code>pluck</code> triggers an immediate
+query, and thus cannot be chained with any further scopes, although it can work with
+scopes already constructed earlier:</p>
+
+<div class="code_container">
+<pre><code class="highlight irb"><span class="gp">irb&gt;</span><span class="w"> </span><span class="no">Customer</span><span class="p">.</span><span class="nf">pluck</span><span class="p">(</span><span class="ss">:first_name</span><span class="p">).</span><span class="nf">limit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<span class="gr">NoMethodError: undefined method `limit' for #&lt;Array:0x007ff34d3ad6d8&gt;
+</span><span class="err">
+</span><span class="gp">irb&gt;</span><span class="w"> </span><span class="no">Customer</span><span class="p">.</span><span class="nf">limit</span><span class="p">(</span><span class="mi">1</span><span class="p">).</span><span class="nf">pluck</span><span class="p">(</span><span class="ss">:first_name</span><span class="p">)</span>
+<span class="p">=&gt;</span> <span class="p">[</span><span class="s2">"David"</span><span class="p">]</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-2ce2ab3f2f432b86eb5b855a0cd875f2">Customer.pluck(:first_name).limit(1)
+Customer.limit(1).pluck(:first_name)
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-2ce2ab3f2f432b86eb5b855a0cd875f2">Copy</button>
+</div>
+<div class="note"><p>You should also know that using <code>pluck</code> will trigger eager loading if the relation object contains include values, even if the eager loading is not necessary for the query. For example:</p></div>
+
+<div class="code_container">
+<pre><code class="highlight irb"><span class="gp">irb&gt;</span><span class="w"> </span><span class="n">assoc</span> <span class="o">=</span> <span class="no">Customer</span><span class="p">.</span><span class="nf">includes</span><span class="p">(</span><span class="ss">:reviews</span><span class="p">)</span>
+<span class="gp">irb&gt;</span><span class="w"> </span><span class="n">assoc</span><span class="p">.</span><span class="nf">pluck</span><span class="p">(</span><span class="ss">:id</span><span class="p">)</span>
+<span class="go">SELECT "customers"."id" FROM "customers" LEFT OUTER JOIN "reviews" ON "reviews"."id" = "customers"."review_id"
+</span></code></pre>
+<textarea class="clipboard-content" id="clipboard-055e7b9d0a9e52492e36971a02c219c3">assoc = Customer.includes(:reviews)
+assoc.pluck(:id)
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-055e7b9d0a9e52492e36971a02c219c3">Copy</button>
+</div>
+<p>One way to avoid this is to <code>unscope</code> the includes:</p>
+
+<div class="code_container">
+<pre><code class="highlight irb"><span class="gp">irb&gt;</span><span class="w"> </span><span class="n">assoc</span><span class="p">.</span><span class="nf">unscope</span><span class="p">(</span><span class="ss">:includes</span><span class="p">).</span><span class="nf">pluck</span><span class="p">(</span><span class="ss">:id</span><span class="p">)</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-a6f1b80618766878ef4dcea23d0ce8fa">assoc.unscope(:includes).pluck(:id)
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-a6f1b80618766878ef4dcea23d0ce8fa">Copy</button>
+</div>
+<h4 id="ids"><a class="anchorlink" href="#ids">20.3 <code>ids</code></a></h4>
+
+<p><a href="https://api.rubyonrails.org/v6.1.7.3/classes/ActiveRecord/Calculations.html#method-i-ids"><code>ids</code></a> can be used to pluck all the IDs for the relation using the table's primary key.</p>
+
+<div class="code_container">
+<pre><code class="highlight irb"><span class="gp">irb&gt;</span><span class="w"> </span><span class="no">Customer</span><span class="p">.</span><span class="nf">ids</span>
+<span class="go">SELECT id FROM customers
+</span></code></pre>
+<textarea class="clipboard-content" id="clipboard-4332a01fd0ad6be877558451464818e7">Customer.ids
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-4332a01fd0ad6be877558451464818e7">Copy</button>
+</div>
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">Customer</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="nb">self</span><span class="p">.</span><span class="nf">primary_key</span> <span class="o">=</span> <span class="s2">"customer_id"</span>
+<span class="k">end</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-c2533de3d9d9599369a27192dbeee451">class Customer &lt; ApplicationRecord
+  self.primary_key = "customer_id"
+end
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-c2533de3d9d9599369a27192dbeee451">Copy</button>
+</div>
+<div class="code_container">
+<pre><code class="highlight irb"><span class="gp">irb&gt;</span><span class="w"> </span><span class="no">Customer</span><span class="p">.</span><span class="nf">ids</span>
+<span class="go">SELECT customer_id FROM customers
+</span></code></pre>
+<textarea class="clipboard-content" id="clipboard-6f74f81e8fc5d389816ce20d2b1699f4">Customer.ids
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-6f74f81e8fc5d389816ce20d2b1699f4">Copy</button>
+</div>
+</body>
+</html>

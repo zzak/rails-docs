@@ -1,0 +1,39 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>9 Module#autoload isn't Involved</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v5.1.7/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="module-autoload-isn-t-involved">9 Module#autoload isn't Involved</h3>
+<p><code>Module#autoload</code> provides a lazy way to load constants that is fully integrated
+with the Ruby constant lookup algorithms, dynamic constant API, etc. It is quite
+transparent.</p>
+
+<p>Rails internals make extensive use of it to defer as much work as possible from
+the boot process. But constant autoloading in Rails is <strong>not</strong> implemented with
+<code>Module#autoload</code>.</p>
+
+<p>One possible implementation based on <code>Module#autoload</code> would be to walk the
+application tree and issue <code>autoload</code> calls that map existing file names to
+their conventional constant name.</p>
+
+<p>There are a number of reasons that prevent Rails from using that implementation.</p>
+
+<p>For example, <code>Module#autoload</code> is only capable of loading files using <code>require</code>,
+so reloading would not be possible. Not only that, it uses an internal <code>require</code>
+which is not <code>Kernel#require</code>.</p>
+
+<p>Then, it provides no way to remove declarations in case a file is deleted. If a
+constant gets removed with <code>Module#remove_const</code> its <code>autoload</code> is not triggered
+again. Also, it doesn't support qualified names, so files with namespaces should
+be interpreted during the walk tree to install their own <code>autoload</code> calls, but
+those files could have constant references not yet configured.</p>
+
+<p>An implementation based on <code>Module#autoload</code> would be awesome but, as you see,
+at least as of today it is not possible. Constant autoloading in Rails is
+implemented with <code>Module#const_missing</code>, and that's why it has its own contract,
+documented in this guide.</p>
+</body>
+</html>

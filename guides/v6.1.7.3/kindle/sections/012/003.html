@@ -1,0 +1,157 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>4 Using Date and Time Form Helpers</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v6.1.7.3/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="using-date-and-time-form-helpers"><a class="anchorlink" href="#using-date-and-time-form-helpers">4 Using Date and Time Form Helpers</a></h3>
+<p>If you do not wish to use HTML5 date and time inputs, Rails provides alternative date and time form helpers that render plain select boxes. These helpers render a select box for each temporal component (e.g. year, month, day, etc). For example, if we have a <code>@person</code> model object like:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="vi">@person</span> <span class="o">=</span> <span class="no">Person</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="ss">birth_date: </span><span class="no">Date</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="mi">1995</span><span class="p">,</span> <span class="mi">12</span><span class="p">,</span> <span class="mi">21</span><span class="p">))</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-3cc5d01e6bc07934f46a494941e8ca70">@person = Person.new(birth_date: Date.new(1995, 12, 21))
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-3cc5d01e6bc07934f46a494941e8ca70">Copy</button>
+</div>
+<p>The following form:</p>
+
+<div class="code_container">
+<pre><code class="highlight erb"><span class="cp">&lt;%=</span> <span class="n">form_with</span> <span class="ss">model: </span><span class="vi">@person</span> <span class="k">do</span> <span class="o">|</span><span class="n">form</span><span class="o">|</span> <span class="cp">%&gt;</span>
+  <span class="cp">&lt;%=</span> <span class="n">form</span><span class="p">.</span><span class="nf">date_select</span> <span class="ss">:birth_date</span> <span class="cp">%&gt;</span>
+<span class="cp">&lt;%</span> <span class="k">end</span> <span class="cp">%&gt;</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-4ade84cf85ed7ee94cad537e70b7554e">&lt;%= form_with model: @person do |form| %&gt;
+  &lt;%= form.date_select :birth_date %&gt;
+&lt;% end %&gt;
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-4ade84cf85ed7ee94cad537e70b7554e">Copy</button>
+</div>
+<p>Outputs select boxes like:</p>
+
+<div class="code_container">
+<pre><code class="highlight html"><span class="nt">&lt;select</span> <span class="na">name=</span><span class="s">"person[birth_date(1i)]"</span> <span class="na">id=</span><span class="s">"person_birth_date_1i"</span><span class="nt">&gt;</span>
+  <span class="nt">&lt;option</span> <span class="na">value=</span><span class="s">"1990"</span><span class="nt">&gt;</span>1990<span class="nt">&lt;/option&gt;</span>
+  <span class="nt">&lt;option</span> <span class="na">value=</span><span class="s">"1991"</span><span class="nt">&gt;</span>1991<span class="nt">&lt;/option&gt;</span>
+  <span class="nt">&lt;option</span> <span class="na">value=</span><span class="s">"1992"</span><span class="nt">&gt;</span>1992<span class="nt">&lt;/option&gt;</span>
+  <span class="nt">&lt;option</span> <span class="na">value=</span><span class="s">"1993"</span><span class="nt">&gt;</span>1993<span class="nt">&lt;/option&gt;</span>
+  <span class="nt">&lt;option</span> <span class="na">value=</span><span class="s">"1994"</span><span class="nt">&gt;</span>1994<span class="nt">&lt;/option&gt;</span>
+  <span class="nt">&lt;option</span> <span class="na">value=</span><span class="s">"1995"</span> <span class="na">selected=</span><span class="s">"selected"</span><span class="nt">&gt;</span>1995<span class="nt">&lt;/option&gt;</span>
+  <span class="nt">&lt;option</span> <span class="na">value=</span><span class="s">"1996"</span><span class="nt">&gt;</span>1996<span class="nt">&lt;/option&gt;</span>
+  <span class="nt">&lt;option</span> <span class="na">value=</span><span class="s">"1997"</span><span class="nt">&gt;</span>1997<span class="nt">&lt;/option&gt;</span>
+  <span class="nt">&lt;option</span> <span class="na">value=</span><span class="s">"1998"</span><span class="nt">&gt;</span>1998<span class="nt">&lt;/option&gt;</span>
+  <span class="nt">&lt;option</span> <span class="na">value=</span><span class="s">"1999"</span><span class="nt">&gt;</span>1999<span class="nt">&lt;/option&gt;</span>
+  <span class="nt">&lt;option</span> <span class="na">value=</span><span class="s">"2000"</span><span class="nt">&gt;</span>2000<span class="nt">&lt;/option&gt;</span>
+<span class="nt">&lt;/select&gt;</span>
+<span class="nt">&lt;select</span> <span class="na">name=</span><span class="s">"person[birth_date(2i)]"</span> <span class="na">id=</span><span class="s">"person_birth_date_2i"</span><span class="nt">&gt;</span>
+  <span class="nt">&lt;option</span> <span class="na">value=</span><span class="s">"1"</span><span class="nt">&gt;</span>January<span class="nt">&lt;/option&gt;</span>
+  <span class="nt">&lt;option</span> <span class="na">value=</span><span class="s">"2"</span><span class="nt">&gt;</span>February<span class="nt">&lt;/option&gt;</span>
+  <span class="nt">&lt;option</span> <span class="na">value=</span><span class="s">"3"</span><span class="nt">&gt;</span>March<span class="nt">&lt;/option&gt;</span>
+  <span class="nt">&lt;option</span> <span class="na">value=</span><span class="s">"4"</span><span class="nt">&gt;</span>April<span class="nt">&lt;/option&gt;</span>
+  <span class="nt">&lt;option</span> <span class="na">value=</span><span class="s">"5"</span><span class="nt">&gt;</span>May<span class="nt">&lt;/option&gt;</span>
+  <span class="nt">&lt;option</span> <span class="na">value=</span><span class="s">"6"</span><span class="nt">&gt;</span>June<span class="nt">&lt;/option&gt;</span>
+  <span class="nt">&lt;option</span> <span class="na">value=</span><span class="s">"7"</span><span class="nt">&gt;</span>July<span class="nt">&lt;/option&gt;</span>
+  <span class="nt">&lt;option</span> <span class="na">value=</span><span class="s">"8"</span><span class="nt">&gt;</span>August<span class="nt">&lt;/option&gt;</span>
+  <span class="nt">&lt;option</span> <span class="na">value=</span><span class="s">"9"</span><span class="nt">&gt;</span>September<span class="nt">&lt;/option&gt;</span>
+  <span class="nt">&lt;option</span> <span class="na">value=</span><span class="s">"10"</span><span class="nt">&gt;</span>October<span class="nt">&lt;/option&gt;</span>
+  <span class="nt">&lt;option</span> <span class="na">value=</span><span class="s">"11"</span><span class="nt">&gt;</span>November<span class="nt">&lt;/option&gt;</span>
+  <span class="nt">&lt;option</span> <span class="na">value=</span><span class="s">"12"</span> <span class="na">selected=</span><span class="s">"selected"</span><span class="nt">&gt;</span>December<span class="nt">&lt;/option&gt;</span>
+<span class="nt">&lt;/select&gt;</span>
+<span class="nt">&lt;select</span> <span class="na">name=</span><span class="s">"person[birth_date(3i)]"</span> <span class="na">id=</span><span class="s">"person_birth_date_3i"</span><span class="nt">&gt;</span>
+  <span class="nt">&lt;option</span> <span class="na">value=</span><span class="s">"1"</span><span class="nt">&gt;</span>1<span class="nt">&lt;/option&gt;</span>
+  ...
+  <span class="nt">&lt;option</span> <span class="na">value=</span><span class="s">"21"</span> <span class="na">selected=</span><span class="s">"selected"</span><span class="nt">&gt;</span>21<span class="nt">&lt;/option&gt;</span>
+  ...
+  <span class="nt">&lt;option</span> <span class="na">value=</span><span class="s">"31"</span><span class="nt">&gt;</span>31<span class="nt">&lt;/option&gt;</span>
+<span class="nt">&lt;/select&gt;</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-6a00e072dca90f6c601e280afc7807ec">&lt;select name="person[birth_date(1i)]" id="person_birth_date_1i"&gt;
+  &lt;option value="1990"&gt;1990&lt;/option&gt;
+  &lt;option value="1991"&gt;1991&lt;/option&gt;
+  &lt;option value="1992"&gt;1992&lt;/option&gt;
+  &lt;option value="1993"&gt;1993&lt;/option&gt;
+  &lt;option value="1994"&gt;1994&lt;/option&gt;
+  &lt;option value="1995" selected="selected"&gt;1995&lt;/option&gt;
+  &lt;option value="1996"&gt;1996&lt;/option&gt;
+  &lt;option value="1997"&gt;1997&lt;/option&gt;
+  &lt;option value="1998"&gt;1998&lt;/option&gt;
+  &lt;option value="1999"&gt;1999&lt;/option&gt;
+  &lt;option value="2000"&gt;2000&lt;/option&gt;
+&lt;/select&gt;
+&lt;select name="person[birth_date(2i)]" id="person_birth_date_2i"&gt;
+  &lt;option value="1"&gt;January&lt;/option&gt;
+  &lt;option value="2"&gt;February&lt;/option&gt;
+  &lt;option value="3"&gt;March&lt;/option&gt;
+  &lt;option value="4"&gt;April&lt;/option&gt;
+  &lt;option value="5"&gt;May&lt;/option&gt;
+  &lt;option value="6"&gt;June&lt;/option&gt;
+  &lt;option value="7"&gt;July&lt;/option&gt;
+  &lt;option value="8"&gt;August&lt;/option&gt;
+  &lt;option value="9"&gt;September&lt;/option&gt;
+  &lt;option value="10"&gt;October&lt;/option&gt;
+  &lt;option value="11"&gt;November&lt;/option&gt;
+  &lt;option value="12" selected="selected"&gt;December&lt;/option&gt;
+&lt;/select&gt;
+&lt;select name="person[birth_date(3i)]" id="person_birth_date_3i"&gt;
+  &lt;option value="1"&gt;1&lt;/option&gt;
+  ...
+  &lt;option value="21" selected="selected"&gt;21&lt;/option&gt;
+  ...
+  &lt;option value="31"&gt;31&lt;/option&gt;
+&lt;/select&gt;
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-6a00e072dca90f6c601e280afc7807ec">Copy</button>
+</div>
+<p>Notice that, when the form is submitted, there will be no single value in the <code>params</code> hash that contains the full date. Instead, there will be several values with special names like <code>"birth_date(1i)"</code>. Active Record knows how to assemble these specially-named values into a full date or time, based on the declared type of the model attribute. So we can pass <code>params[:person]</code> to e.g. <code>Person.new</code> or <code>Person#update</code> just like we would if the form used a single field to represent the full date.</p>
+
+<p>In addition to the <a href="https://api.rubyonrails.org/v6.1.7.3/classes/ActionView/Helpers/FormBuilder.html#method-i-date_select"><code>date_select</code></a> helper, Rails provides <a href="https://api.rubyonrails.org/v6.1.7.3/classes/ActionView/Helpers/FormBuilder.html#method-i-time_select"><code>time_select</code></a> and <a href="https://api.rubyonrails.org/v6.1.7.3/classes/ActionView/Helpers/FormBuilder.html#method-i-datetime_select"><code>datetime_select</code></a>.</p>
+
+<h4 id="select-boxes-for-individual-temporal-components"><a class="anchorlink" href="#select-boxes-for-individual-temporal-components">4.1 Select Boxes for Individual Temporal Components</a></h4>
+
+<p>Rails also provides helpers to render select boxes for individual temporal components: <a href="https://api.rubyonrails.org/v6.1.7.3/classes/ActionView/Helpers/DateHelper.html#method-i-select_year"><code>select_year</code></a>, <a href="https://api.rubyonrails.org/v6.1.7.3/classes/ActionView/Helpers/DateHelper.html#method-i-select_month"><code>select_month</code></a>, <a href="https://api.rubyonrails.org/v6.1.7.3/classes/ActionView/Helpers/DateHelper.html#method-i-select_day"><code>select_day</code></a>, <a href="https://api.rubyonrails.org/v6.1.7.3/classes/ActionView/Helpers/DateHelper.html#method-i-select_hour"><code>select_hour</code></a>, <a href="https://api.rubyonrails.org/v6.1.7.3/classes/ActionView/Helpers/DateHelper.html#method-i-select_minute"><code>select_minute</code></a>, and <a href="https://api.rubyonrails.org/v6.1.7.3/classes/ActionView/Helpers/DateHelper.html#method-i-select_second"><code>select_second</code></a>.  These helpers are "bare" methods, meaning they are not called on a form builder instance.  For example:</p>
+
+<div class="code_container">
+<pre><code class="highlight erb"><span class="cp">&lt;%=</span> <span class="n">select_year</span> <span class="mi">1999</span><span class="p">,</span> <span class="ss">prefix: </span><span class="s2">"party"</span> <span class="cp">%&gt;</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-b16ab1c6e277bcb5d0c9aaa6391269ca">&lt;%= select_year 1999, prefix: "party" %&gt;
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-b16ab1c6e277bcb5d0c9aaa6391269ca">Copy</button>
+</div>
+<p>Outputs a select box like:</p>
+
+<div class="code_container">
+<pre><code class="highlight html"><span class="nt">&lt;select</span> <span class="na">name=</span><span class="s">"party[year]"</span> <span class="na">id=</span><span class="s">"party_year"</span><span class="nt">&gt;</span>
+  <span class="nt">&lt;option</span> <span class="na">value=</span><span class="s">"1994"</span><span class="nt">&gt;</span>1994<span class="nt">&lt;/option&gt;</span>
+  <span class="nt">&lt;option</span> <span class="na">value=</span><span class="s">"1995"</span><span class="nt">&gt;</span>1995<span class="nt">&lt;/option&gt;</span>
+  <span class="nt">&lt;option</span> <span class="na">value=</span><span class="s">"1996"</span><span class="nt">&gt;</span>1996<span class="nt">&lt;/option&gt;</span>
+  <span class="nt">&lt;option</span> <span class="na">value=</span><span class="s">"1997"</span><span class="nt">&gt;</span>1997<span class="nt">&lt;/option&gt;</span>
+  <span class="nt">&lt;option</span> <span class="na">value=</span><span class="s">"1998"</span><span class="nt">&gt;</span>1998<span class="nt">&lt;/option&gt;</span>
+  <span class="nt">&lt;option</span> <span class="na">value=</span><span class="s">"1999"</span> <span class="na">selected=</span><span class="s">"selected"</span><span class="nt">&gt;</span>1999<span class="nt">&lt;/option&gt;</span>
+  <span class="nt">&lt;option</span> <span class="na">value=</span><span class="s">"2000"</span><span class="nt">&gt;</span>2000<span class="nt">&lt;/option&gt;</span>
+  <span class="nt">&lt;option</span> <span class="na">value=</span><span class="s">"2001"</span><span class="nt">&gt;</span>2001<span class="nt">&lt;/option&gt;</span>
+  <span class="nt">&lt;option</span> <span class="na">value=</span><span class="s">"2002"</span><span class="nt">&gt;</span>2002<span class="nt">&lt;/option&gt;</span>
+  <span class="nt">&lt;option</span> <span class="na">value=</span><span class="s">"2003"</span><span class="nt">&gt;</span>2003<span class="nt">&lt;/option&gt;</span>
+  <span class="nt">&lt;option</span> <span class="na">value=</span><span class="s">"2004"</span><span class="nt">&gt;</span>2004<span class="nt">&lt;/option&gt;</span>
+<span class="nt">&lt;/select&gt;</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-dd77dd0734814a8dacb5040cd62a39a6">&lt;select name="party[year]" id="party_year"&gt;
+  &lt;option value="1994"&gt;1994&lt;/option&gt;
+  &lt;option value="1995"&gt;1995&lt;/option&gt;
+  &lt;option value="1996"&gt;1996&lt;/option&gt;
+  &lt;option value="1997"&gt;1997&lt;/option&gt;
+  &lt;option value="1998"&gt;1998&lt;/option&gt;
+  &lt;option value="1999" selected="selected"&gt;1999&lt;/option&gt;
+  &lt;option value="2000"&gt;2000&lt;/option&gt;
+  &lt;option value="2001"&gt;2001&lt;/option&gt;
+  &lt;option value="2002"&gt;2002&lt;/option&gt;
+  &lt;option value="2003"&gt;2003&lt;/option&gt;
+  &lt;option value="2004"&gt;2004&lt;/option&gt;
+&lt;/select&gt;
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-dd77dd0734814a8dacb5040cd62a39a6">Copy</button>
+</div>
+<p>For each of these helpers, you may specify a date or time object instead of a number as the default value, and the appropriate temporal component will be extracted and used.</p>
+</body>
+</html>

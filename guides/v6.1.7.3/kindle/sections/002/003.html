@@ -1,0 +1,64 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>4 Overriding the Naming Conventions</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v6.1.7.3/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="overriding-the-naming-conventions"><a class="anchorlink" href="#overriding-the-naming-conventions">4 Overriding the Naming Conventions</a></h3>
+<p>What if you need to follow a different naming convention or need to use your
+Rails application with a legacy database? No problem, you can easily override
+the default conventions.</p>
+
+<p><code>ApplicationRecord</code> inherits from <code>ActiveRecord::Base</code>, which defines a
+number of helpful methods. You can use the <code>ActiveRecord::Base.table_name=</code>
+method to specify the table name that should be used:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">Product</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="nb">self</span><span class="p">.</span><span class="nf">table_name</span> <span class="o">=</span> <span class="s2">"my_products"</span>
+<span class="k">end</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-8a02ee3f87eeaf023e9555104032023e">class Product &lt; ApplicationRecord
+  self.table_name = "my_products"
+end
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-8a02ee3f87eeaf023e9555104032023e">Copy</button>
+</div>
+<p>If you do so, you will have to define manually the class name that is hosting
+the fixtures (my_products.yml) using the <code>set_fixture_class</code> method in your test
+definition:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">ProductTest</span> <span class="o">&lt;</span> <span class="no">ActiveSupport</span><span class="o">::</span><span class="no">TestCase</span>
+  <span class="n">set_fixture_class</span> <span class="ss">my_products: </span><span class="no">Product</span>
+  <span class="n">fixtures</span> <span class="ss">:my_products</span>
+  <span class="c1"># ...</span>
+<span class="k">end</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-3b2677a20b1cae5aa118fc84babc4ed4">class ProductTest &lt; ActiveSupport::TestCase
+  set_fixture_class my_products: Product
+  fixtures :my_products
+  # ...
+end
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-3b2677a20b1cae5aa118fc84babc4ed4">Copy</button>
+</div>
+<p>It's also possible to override the column that should be used as the table's
+primary key using the <code>ActiveRecord::Base.primary_key=</code> method:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">Product</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="nb">self</span><span class="p">.</span><span class="nf">primary_key</span> <span class="o">=</span> <span class="s2">"product_id"</span>
+<span class="k">end</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-0c27e47c9740b9e5734d63750d544578">class Product &lt; ApplicationRecord
+  self.primary_key = "product_id"
+end
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-0c27e47c9740b9e5734d63750d544578">Copy</button>
+</div>
+<div class="note"><p>Active Record does not support using non-primary key columns named <code>id</code>.</p></div>
+</body>
+</html>

@@ -1,0 +1,58 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>3 Full Text Search</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v6.1.7.3/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="full-text-search"><a class="anchorlink" href="#full-text-search">3 Full Text Search</a></h3>
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="c1"># db/migrate/20131220144913_create_documents.rb</span>
+<span class="n">create_table</span> <span class="ss">:documents</span> <span class="k">do</span> <span class="o">|</span><span class="n">t</span><span class="o">|</span>
+  <span class="n">t</span><span class="p">.</span><span class="nf">string</span> <span class="s1">'title'</span>
+  <span class="n">t</span><span class="p">.</span><span class="nf">string</span> <span class="s1">'body'</span>
+<span class="k">end</span>
+
+<span class="n">add_index</span> <span class="ss">:documents</span><span class="p">,</span> <span class="s2">"to_tsvector('english', title || ' ' || body)"</span><span class="p">,</span> <span class="ss">using: :gin</span><span class="p">,</span> <span class="ss">name: </span><span class="s1">'documents_idx'</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-fb6b7f1738a02e1481aecfd3a09eca7f"># db/migrate/20131220144913_create_documents.rb
+create_table :documents do |t|
+  t.string 'title'
+  t.string 'body'
+end
+
+add_index :documents, "to_tsvector('english', title || ' ' || body)", using: :gin, name: 'documents_idx'
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-fb6b7f1738a02e1481aecfd3a09eca7f">Copy</button>
+</div>
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="c1"># app/models/document.rb</span>
+<span class="k">class</span> <span class="nc">Document</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+<span class="k">end</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-ec2595804c079dfcd3ba0a3e01016b36"># app/models/document.rb
+class Document &lt; ApplicationRecord
+end
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-ec2595804c079dfcd3ba0a3e01016b36">Copy</button>
+</div>
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="c1"># Usage</span>
+<span class="no">Document</span><span class="p">.</span><span class="nf">create</span><span class="p">(</span><span class="ss">title: </span><span class="s2">"Cats and Dogs"</span><span class="p">,</span> <span class="ss">body: </span><span class="s2">"are nice!"</span><span class="p">)</span>
+
+<span class="c1">## all documents matching 'cat &amp; dog'</span>
+<span class="no">Document</span><span class="p">.</span><span class="nf">where</span><span class="p">(</span><span class="s2">"to_tsvector('english', title || ' ' || body) @@ to_tsquery(?)"</span><span class="p">,</span>
+                 <span class="s2">"cat &amp; dog"</span><span class="p">)</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-3abe8ccbb98fc4597ea625475300cd59"># Usage
+Document.create(title: "Cats and Dogs", body: "are nice!")
+
+## all documents matching 'cat &amp; dog'
+Document.where("to_tsvector('english', title || ' ' || body) @@ to_tsquery(?)",
+                 "cat &amp; dog")
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-3abe8ccbb98fc4597ea625475300cd59">Copy</button>
+</div>
+</body>
+</html>

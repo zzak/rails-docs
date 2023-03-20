@@ -1,0 +1,32 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>8 Previewing Files</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v5.2.8.1/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="previewing-files"><a class="anchorlink" href="#previewing-files">8 Previewing Files</a></h3>
+<p>Some non-image files can be previewed: that is, they can be presented as images.
+For example, a video file can be previewed by extracting its first frame. Out of
+the box, Active Storage supports previewing videos and PDF documents.</p>
+
+<div class="code_container">
+<pre class="brush: ruby; html-script: true; gutter: false; toolbar: false">
+&lt;ul&gt;
+  &lt;% @message.files.each do |file| %&gt;
+    &lt;li&gt;
+      &lt;%= image_tag file.preview(resize: "100x100&gt;") %&gt;
+    &lt;/li&gt;
+  &lt;% end %&gt;
+&lt;/ul&gt;
+
+</pre>
+</div>
+<div class="warning"><p>Extracting previews requires third-party applications, <code>ffmpeg</code> for
+video and <code>mutool</code> for PDFs. These libraries are not provided by Rails. You must
+install them yourself to use the built-in previewers. Before you install and use
+third-party software, make sure you understand the licensing implications of
+doing so.</p></div>
+</body>
+</html>

@@ -1,0 +1,197 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>12 Streaming and File Downloads</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v5.1.7/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="streaming-and-file-downloads">12 Streaming and File Downloads</h3>
+<p>Sometimes you may want to send a file to the user instead of rendering an HTML page. All controllers in Rails have the <code>send_data</code> and the <code>send_file</code> methods, which will both stream data to the client. <code>send_file</code> is a convenience method that lets you provide the name of a file on the disk and it will stream the contents of that file for you.</p>
+
+<p>To stream data to the client, use <code>send_data</code>:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+require "prawn"
+class ClientsController &lt; ApplicationController
+  # Generates a PDF document with information on the client and
+  # returns it. The user will get the PDF as a file download.
+  def download_pdf
+    client = Client.find(params[:id])
+    send_data generate_pdf(client),
+              filename: "#{client.name}.pdf",
+              type: "application/pdf"
+  end
+
+  private
+
+    def generate_pdf(client)
+      Prawn::Document.new do
+        text client.name, align: :center
+        text "Address: #{client.address}"
+        text "Email: #{client.email}"
+      end.render
+    end
+end
+
+</pre>
+</div>
+<p>The <code>download_pdf</code> action in the example above will call a private method which actually generates the PDF document and returns it as a string. This string will then be streamed to the client as a file download and a filename will be suggested to the user. Sometimes when streaming files to the user, you may not want them to download the file. Take images, for example, which can be embedded into HTML pages. To tell the browser a file is not meant to be downloaded, you can set the <code>:disposition</code> option to "inline". The opposite and default value for this option is "attachment".</p>
+
+<h4 id="sending-files">12.1 Sending Files</h4>
+
+<p>If you want to send a file that already exists on disk, use the <code>send_file</code> method.</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class ClientsController &lt; ApplicationController
+  # Stream a file that has already been generated and stored on disk.
+  def download_pdf
+    client = Client.find(params[:id])
+    send_file("#{Rails.root}/files/clients/#{client.id}.pdf",
+              filename: "#{client.name}.pdf",
+              type: "application/pdf")
+  end
+end
+
+</pre>
+</div>
+<p>This will read and stream the file 4kB at the time, avoiding loading the entire file into memory at once. You can turn off streaming with the <code>:stream</code> option or adjust the block size with the <code>:buffer_size</code> option.</p>
+
+<p>If <code>:type</code> is not specified, it will be guessed from the file extension specified in <code>:filename</code>. If the content type is not registered for the extension, <code>application/octet-stream</code> will be used.</p>
+
+<div class="warning"><p>Be careful when using data coming from the client (params, cookies, etc.) to locate the file on disk, as this is a security risk that might allow someone to gain access to files they are not meant to.</p></div>
+
+<div class="info"><p>It is not recommended that you stream static files through Rails if you can instead keep them in a public folder on your web server. It is much more efficient to let the user download the file directly using Apache or another web server, keeping the request from unnecessarily going through the whole Rails stack.</p></div>
+
+<h4 id="restful-downloads">12.2 RESTful Downloads</h4>
+
+<p>While <code>send_data</code> works just fine, if you are creating a RESTful application having separate actions for file downloads is usually not necessary. In REST terminology, the PDF file from the example above can be considered just another representation of the client resource. Rails provides an easy and quite sleek way of doing "RESTful downloads". Here's how you can rewrite the example so that the PDF download is a part of the <code>show</code> action, without any streaming:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class ClientsController &lt; ApplicationController
+  # The user can request to receive this resource as HTML or PDF.
+  def show
+    @client = Client.find(params[:id])
+
+    respond_to do |format|
+      format.html
+      format.pdf { render pdf: generate_pdf(@client) }
+    end
+  end
+end
+
+</pre>
+</div>
+<p>In order for this example to work, you have to add the PDF MIME type to Rails. This can be done by adding the following line to the file <code>config/initializers/mime_types.rb</code>:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+Mime::Type.register "application/pdf", :pdf
+
+</pre>
+</div>
+<div class="note"><p>Configuration files are not reloaded on each request, so you have to restart the server in order for their changes to take effect.</p></div>
+
+<p>Now the user can request to get a PDF version of a client just by adding ".pdf" to the URL:</p>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+GET /clients/1.pdf
+
+</pre>
+</div>
+<h4 id="live-streaming-of-arbitrary-data">12.3 Live Streaming of Arbitrary Data</h4>
+
+<p>Rails allows you to stream more than just files. In fact, you can stream anything
+you would like in a response object. The <code>ActionController::Live</code> module allows
+you to create a persistent connection with a browser. Using this module, you will
+be able to send arbitrary data to the browser at specific points in time.</p>
+
+<h5 id="incorporating-live-streaming">12.3.1 Incorporating Live Streaming</h5>
+
+<p>Including <code>ActionController::Live</code> inside of your controller class will provide
+all actions inside of the controller the ability to stream data. You can mix in
+the module like so:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class MyController &lt; ActionController::Base
+  include ActionController::Live
+
+  def stream
+    response.headers['Content-Type'] = 'text/event-stream'
+    100.times {
+      response.stream.write "hello world\n"
+      sleep 1
+    }
+  ensure
+    response.stream.close
+  end
+end
+
+</pre>
+</div>
+<p>The above code will keep a persistent connection with the browser and send 100
+messages of <code>"hello world\n"</code>, each one second apart.</p>
+
+<p>There are a couple of things to notice in the above example. We need to make
+sure to close the response stream. Forgetting to close the stream will leave
+the socket open forever. We also have to set the content type to <code>text/event-stream</code>
+before we write to the response stream. This is because headers cannot be written
+after the response has been committed (when <code>response.committed?</code> returns a truthy
+value), which occurs when you <code>write</code> or <code>commit</code> the response stream.</p>
+
+<h5 id="example-usage">12.3.2 Example Usage</h5>
+
+<p>Let's suppose that you were making a Karaoke machine and a user wants to get the
+lyrics for a particular song. Each <code>Song</code> has a particular number of lines and
+each line takes time <code>num_beats</code> to finish singing.</p>
+
+<p>If we wanted to return the lyrics in Karaoke fashion (only sending the line when
+the singer has finished the previous line), then we could use <code>ActionController::Live</code>
+as follows:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class LyricsController &lt; ActionController::Base
+  include ActionController::Live
+
+  def show
+    response.headers['Content-Type'] = 'text/event-stream'
+    song = Song.find(params[:id])
+
+    song.each do |line|
+      response.stream.write line.lyrics
+      sleep line.num_beats
+    end
+  ensure
+    response.stream.close
+  end
+end
+
+</pre>
+</div>
+<p>The above code sends the next line only after the singer has completed the previous
+line.</p>
+
+<h5 id="streaming-considerations">12.3.3 Streaming Considerations</h5>
+
+<p>Streaming arbitrary data is an extremely powerful tool. As shown in the previous
+examples, you can choose when and what to send across a response stream. However,
+you should also note the following things:</p>
+<ul>
+<li>Each response stream creates a new thread and copies over the thread local
+variables from the original thread. Having too many thread local variables can
+negatively impact performance. Similarly, a large number of threads can also
+hinder performance.</li>
+<li>Failing to close the response stream will leave the corresponding socket open
+forever. Make sure to call <code>close</code> whenever you are using a response stream.</li>
+<li>WEBrick servers buffer all responses, and so including <code>ActionController::Live</code>
+will not work. You must use a web server which does not automatically buffer
+responses.</li>
+</ul>
+</body>
+</html>

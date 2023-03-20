@@ -1,0 +1,140 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>5 Rendering Rich Text content</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v7.0.4.2/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="rendering-rich-text-content"><a class="anchorlink" href="#rendering-rich-text-content">5 Rendering Rich Text content</a></h3>
+<p>By default, Action Text will render rich text content inside an element with the
+<code>.trix-content</code> class:</p>
+
+<div class="code_container">
+<pre><code class="highlight erb"><span class="c">&lt;%# app/views/layouts/action_text/contents/_content.html.erb %&gt;</span>
+<span class="nt">&lt;div</span> <span class="na">class=</span><span class="s">"trix-content"</span><span class="nt">&gt;</span>
+  <span class="cp">&lt;%=</span> <span class="k">yield</span> <span class="cp">%&gt;</span>
+<span class="nt">&lt;/div&gt;</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='&lt;%# app/views/layouts/action_text/contents/_content.html.erb %&gt;
+&lt;div class="trix-content"&gt;
+  &lt;%= yield %&gt;
+&lt;/div&gt;
+'>Copy</button>
+</div>
+<p>Elements with this class, as well as the Action Text editor, are styled by the
+<a href="https://raw.githubusercontent.com/basecamp/trix/master/dist/trix.css"><code>trix</code> stylesheet</a>.
+To provide your own styles instead, remove the <code>= require trix</code> line from the
+<code>app/assets/stylesheets/actiontext.css</code> stylesheet created by the installer.</p>
+
+<p>To customize the HTML rendered around rich text content, edit the
+<code>app/views/layouts/action_text/contents/_content.html.erb</code> layout created by the
+installer.</p>
+
+<p>To customize the HTML rendered for embedded images and other attachments (known
+as blobs), edit the <code>app/views/active_storage/blobs/_blob.html.erb</code> template
+created by the installer.</p>
+
+<h4 id="rendering-attachments"><a class="anchorlink" href="#rendering-attachments">5.1 Rendering attachments</a></h4>
+
+<p>In addition to attachments uploaded through Active Storage, Action Text can
+embed anything that can be resolved by a <a href="https://github.com/rails/globalid#signed-global-ids">Signed
+GlobalID</a>.</p>
+
+<p>Action Text renders embedded <code>&lt;action-text-attachment&gt;</code> elements by resolving
+their <code>sgid</code> attribute into an instance. Once resolved, that instance is passed
+along to
+<a href="https://edgeapi.rubyonrails.org/classes/ActionView/Helpers/RenderingHelper.html#method-i-render"><code>render</code></a>.
+The resulting HTML is embedded as a descendant of the <code>&lt;action-text-attachment&gt;</code>
+element.</p>
+
+<p>For example, consider a <code>User</code> model:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="c1"># app/models/user.rb</span>
+<span class="k">class</span> <span class="nc">User</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="n">has_one_attached</span> <span class="ss">:avatar</span>
+<span class="k">end</span>
+
+<span class="n">user</span> <span class="o">=</span> <span class="no">User</span><span class="p">.</span><span class="nf">find</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">user</span><span class="p">.</span><span class="nf">to_global_id</span><span class="p">.</span><span class="nf">to_s</span> <span class="c1">#=&gt; gid://MyRailsApp/User/1</span>
+<span class="n">user</span><span class="p">.</span><span class="nf">to_signed_global_id</span><span class="p">.</span><span class="nf">to_s</span> <span class="c1">#=&gt; BAh7CEkiCG…</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="# app/models/user.rb
+class User &lt; ApplicationRecord
+  has_one_attached :avatar
+end
+
+user = User.find(1)
+user.to_global_id.to_s #=&gt; gid://MyRailsApp/User/1
+user.to_signed_global_id.to_s #=&gt; BAh7CEkiCG…
+">Copy</button>
+</div>
+<p>Next, consider some rich text content that embeds an <code>&lt;action-text-attachment&gt;</code>
+element that references the <code>User</code> instance's signed GlobalID:</p>
+
+<div class="code_container">
+<pre><code class="highlight html"><span class="nt">&lt;p&gt;</span>Hello, <span class="nt">&lt;action-text-attachment</span> <span class="na">sgid=</span><span class="s">"BAh7CEkiCG…"</span><span class="nt">&gt;&lt;/action-text-attachment&gt;</span>.<span class="nt">&lt;/p&gt;</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='&lt;p&gt;Hello, &lt;action-text-attachment sgid="BAh7CEkiCG…"&gt;&lt;/action-text-attachment&gt;.&lt;/p&gt;
+'>Copy</button>
+</div>
+<p>Action Text resolves uses the "BAh7CEkiCG…" String to resolve the <code>User</code>
+instance. Next, consider the application's <code>users/user</code> partial:</p>
+
+<div class="code_container">
+<pre><code class="highlight erb"><span class="c">&lt;%# app/views/users/_user.html.erb %&gt;</span>
+<span class="nt">&lt;span&gt;</span><span class="cp">&lt;%=</span> <span class="n">image_tag</span> <span class="n">user</span><span class="p">.</span><span class="nf">avatar</span> <span class="cp">%&gt;</span> <span class="cp">&lt;%=</span> <span class="n">user</span><span class="p">.</span><span class="nf">name</span> <span class="cp">%&gt;</span><span class="nt">&lt;/span&gt;</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="&lt;%# app/views/users/_user.html.erb %&gt;
+&lt;span&gt;&lt;%= image_tag user.avatar %&gt; &lt;%= user.name %&gt;&lt;/span&gt;
+">Copy</button>
+</div>
+<p>The resulting HTML rendered by Action Text would look something like:</p>
+
+<div class="code_container">
+<pre><code class="highlight html"><span class="nt">&lt;p&gt;</span>Hello, <span class="nt">&lt;action-text-attachment</span> <span class="na">sgid=</span><span class="s">"BAh7CEkiCG…"</span><span class="nt">&gt;&lt;span&gt;&lt;img</span> <span class="na">src=</span><span class="s">"..."</span><span class="nt">&gt;</span> Jane Doe<span class="nt">&lt;/span&gt;&lt;/action-text-attachment&gt;</span>.<span class="nt">&lt;/p&gt;</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='&lt;p&gt;Hello, &lt;action-text-attachment sgid="BAh7CEkiCG…"&gt;&lt;span&gt;&lt;img src="..."&gt; Jane Doe&lt;/span&gt;&lt;/action-text-attachment&gt;.&lt;/p&gt;
+'>Copy</button>
+</div>
+<p>To render a different partial, define <code>User#to_attachable_partial_path</code>:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">User</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="k">def</span> <span class="nf">to_attachable_partial_path</span>
+    <span class="s2">"users/attachable"</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='class User &lt; ApplicationRecord
+  def to_attachable_partial_path
+    "users/attachable"
+  end
+end
+'>Copy</button>
+</div>
+<p>Then declare that partial. The <code>User</code> instance will be available as the <code>user</code>
+partial-local variable:</p>
+
+<div class="code_container">
+<pre><code class="highlight erb"><span class="c">&lt;%# app/views/users/_attachable.html.erb %&gt;</span>
+<span class="nt">&lt;span&gt;</span><span class="cp">&lt;%=</span> <span class="n">image_tag</span> <span class="n">user</span><span class="p">.</span><span class="nf">avatar</span> <span class="cp">%&gt;</span> <span class="cp">&lt;%=</span> <span class="n">user</span><span class="p">.</span><span class="nf">name</span> <span class="cp">%&gt;</span><span class="nt">&lt;/span&gt;</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="&lt;%# app/views/users/_attachable.html.erb %&gt;
+&lt;span&gt;&lt;%= image_tag user.avatar %&gt; &lt;%= user.name %&gt;&lt;/span&gt;
+">Copy</button>
+</div>
+<p>To integrate with Action Text <code>&lt;action-text-attachment&gt;</code> element rendering, a
+class must:</p>
+<ul>
+<li>include the <code>ActionText::Attachable</code> module</li>
+<li>implement <code>#to_sgid(**options)</code> (made available through the <a href="https://github.com/rails/globalid#usage"><code>GlobalID::Identification</code> concern</a>)</li>
+<li>(optional) declare <code>#to_attachable_partial_path</code>
+</li>
+</ul>
+<p>By default, all <code>ActiveRecord::Base</code> descendants mix-in
+<a href="https://github.com/rails/globalid#usage"><code>GlobalID::Identification</code> concern</a>, and are therefore
+<code>ActionText::Attachable</code> compatible.</p>
+</body>
+</html>

@@ -1,0 +1,444 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>10 Extensions to Array</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v6.0.6.1/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="extensions-to-array"><a class="anchorlink" href="#extensions-to-array">10 Extensions to <code>Array</code></a></h3>
+<h4 id="accessing"><a class="anchorlink" href="#accessing">10.1 Accessing</a></h4>
+
+<p>Active Support augments the API of arrays to ease certain ways of accessing them. For example, <code>to</code> returns the subarray of elements up to the one at the passed index:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+%w(a b c d).to(2) # =&gt; ["a", "b", "c"]
+[].to(7)          # =&gt; []
+
+</pre>
+</div>
+<p>Similarly, <code>from</code> returns the tail from the element at the passed index to the end. If the index is greater than the length of the array, it returns an empty array.</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+%w(a b c d).from(2)  # =&gt; ["c", "d"]
+%w(a b c d).from(10) # =&gt; []
+[].from(0)           # =&gt; []
+
+</pre>
+</div>
+<p>The methods <code>second</code>, <code>third</code>, <code>fourth</code>, and <code>fifth</code> return the corresponding element, as do <code>second_to_last</code> and <code>third_to_last</code> (<code>first</code> and <code>last</code> are built-in). Thanks to social wisdom and positive constructiveness all around, <code>forty_two</code> is also available.</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+%w(a b c d).third # =&gt; "c"
+%w(a b c d).fifth # =&gt; nil
+
+</pre>
+</div>
+<div class="note"><p>Defined in <code><a href="https://github.com/rails/rails/tree/v6.0.6.1/activesupport/lib/active_support/core_ext/array/access.rb">active_support/core_ext/array/access.rb</a></code>.</p></div>
+
+<h4 id="extensions-to-array-extracting"><a class="anchorlink" href="#extensions-to-array-extracting">10.2 Extracting</a></h4>
+
+<p>The method <code>extract!</code> removes and returns the elements for which the block returns a true value.
+If no block is given, an Enumerator is returned instead.</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+numbers = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+odd_numbers = numbers.extract! { |number| number.odd? } # =&gt; [1, 3, 5, 7, 9]
+numbers # =&gt; [0, 2, 4, 6, 8]
+
+</pre>
+</div>
+<div class="note"><p>Defined in <code><a href="https://github.com/rails/rails/tree/v6.0.6.1/activesupport/lib/active_support/core_ext/array/extract.rb">active_support/core_ext/array/extract.rb</a></code>.</p></div>
+
+<h4 id="options-extraction"><a class="anchorlink" href="#options-extraction">10.3 Options Extraction</a></h4>
+
+<p>When the last argument in a method call is a hash, except perhaps for a <code>&amp;block</code> argument, Ruby allows you to omit the brackets:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+User.exists?(email: params[:email])
+
+</pre>
+</div>
+<p>That syntactic sugar is used a lot in Rails to avoid positional arguments where there would be too many, offering instead interfaces that emulate named parameters. In particular it is very idiomatic to use a trailing hash for options.</p>
+
+<p>If a method expects a variable number of arguments and uses <code>*</code> in its declaration, however, such an options hash ends up being an item of the array of arguments, where it loses its role.</p>
+
+<p>In those cases, you may give an options hash a distinguished treatment with <code>extract_options!</code>. This method checks the type of the last item of an array. If it is a hash it pops it and returns it, otherwise it returns an empty hash.</p>
+
+<p>Let's see for example the definition of the <code>caches_action</code> controller macro:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+def caches_action(*actions)
+  return unless cache_configured?
+  options = actions.extract_options!
+  ...
+end
+
+</pre>
+</div>
+<p>This method receives an arbitrary number of action names, and an optional hash of options as last argument. With the call to <code>extract_options!</code> you obtain the options hash and remove it from <code>actions</code> in a simple and explicit way.</p>
+
+<div class="note"><p>Defined in <code><a href="https://github.com/rails/rails/tree/v6.0.6.1/activesupport/lib/active_support/core_ext/array/extract_options.rb">active_support/core_ext/array/extract_options.rb</a></code>.</p></div>
+
+<h4 id="extensions-to-array-conversions"><a class="anchorlink" href="#extensions-to-array-conversions">10.4 Conversions</a></h4>
+
+<h5 id="to-sentence"><a class="anchorlink" href="#to-sentence">10.4.1 <code>to_sentence</code></a></h5>
+
+<p>The method <code>to_sentence</code> turns an array into a string containing a sentence that enumerates its items:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+%w().to_sentence                # =&gt; ""
+%w(Earth).to_sentence           # =&gt; "Earth"
+%w(Earth Wind).to_sentence      # =&gt; "Earth and Wind"
+%w(Earth Wind Fire).to_sentence # =&gt; "Earth, Wind, and Fire"
+
+</pre>
+</div>
+<p>This method accepts three options:</p>
+<ul>
+<li>
+<code>:two_words_connector</code>: What is used for arrays of length 2. Default is " and ".</li>
+<li>
+<code>:words_connector</code>: What is used to join the elements of arrays with 3 or more elements, except for the last two. Default is ", ".</li>
+<li>
+<code>:last_word_connector</code>: What is used to join the last items of an array with 3 or more elements. Default is ", and ".</li>
+</ul>
+<p>The defaults for these options can be localized, their keys are:</p>
+<table>
+<thead>
+<tr>
+<th>Option</th>
+<th>I18n key</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>:two_words_connector</code></td>
+<td><code>support.array.two_words_connector</code></td>
+</tr>
+<tr>
+<td><code>:words_connector</code></td>
+<td><code>support.array.words_connector</code></td>
+</tr>
+<tr>
+<td><code>:last_word_connector</code></td>
+<td><code>support.array.last_word_connector</code></td>
+</tr>
+</tbody>
+</table>
+<div class="note"><p>Defined in <code><a href="https://github.com/rails/rails/tree/v6.0.6.1/activesupport/lib/active_support/core_ext/array/conversions.rb">active_support/core_ext/array/conversions.rb</a></code>.</p></div>
+
+<h5 id="to-formatted-s"><a class="anchorlink" href="#to-formatted-s">10.4.2 <code>to_formatted_s</code></a></h5>
+
+<p>The method <code>to_formatted_s</code> acts like <code>to_s</code> by default.</p>
+
+<p>If the array contains items that respond to <code>id</code>, however, the symbol
+<code>:db</code> may be passed as argument. That's typically used with
+collections of Active Record objects. Returned strings are:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+[].to_formatted_s(:db)            # =&gt; "null"
+[user].to_formatted_s(:db)        # =&gt; "8456"
+invoice.lines.to_formatted_s(:db) # =&gt; "23,567,556,12"
+
+</pre>
+</div>
+<p>Integers in the example above are supposed to come from the respective calls to <code>id</code>.</p>
+
+<div class="note"><p>Defined in <code><a href="https://github.com/rails/rails/tree/v6.0.6.1/activesupport/lib/active_support/core_ext/array/conversions.rb">active_support/core_ext/array/conversions.rb</a></code>.</p></div>
+
+<h5 id="extensions-to-array-conversions-to-xml"><a class="anchorlink" href="#extensions-to-array-conversions-to-xml">10.4.3 <code>to_xml</code></a></h5>
+
+<p>The method <code>to_xml</code> returns a string containing an XML representation of its receiver:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+Contributor.limit(2).order(:rank).to_xml
+# =&gt;
+# &lt;?xml version="1.0" encoding="UTF-8"?&gt;
+# &lt;contributors type="array"&gt;
+#   &lt;contributor&gt;
+#     &lt;id type="integer"&gt;4356&lt;/id&gt;
+#     &lt;name&gt;Jeremy Kemper&lt;/name&gt;
+#     &lt;rank type="integer"&gt;1&lt;/rank&gt;
+#     &lt;url-id&gt;jeremy-kemper&lt;/url-id&gt;
+#   &lt;/contributor&gt;
+#   &lt;contributor&gt;
+#     &lt;id type="integer"&gt;4404&lt;/id&gt;
+#     &lt;name&gt;David Heinemeier Hansson&lt;/name&gt;
+#     &lt;rank type="integer"&gt;2&lt;/rank&gt;
+#     &lt;url-id&gt;david-heinemeier-hansson&lt;/url-id&gt;
+#   &lt;/contributor&gt;
+# &lt;/contributors&gt;
+
+</pre>
+</div>
+<p>To do so it sends <code>to_xml</code> to every item in turn, and collects the results under a root node. All items must respond to <code>to_xml</code>, an exception is raised otherwise.</p>
+
+<p>By default, the name of the root element is the underscored and dasherized plural of the name of the class of the first item, provided the rest of elements belong to that type (checked with <code>is_a?</code>) and they are not hashes. In the example above that's "contributors".</p>
+
+<p>If there's any element that does not belong to the type of the first one the root node becomes "objects":</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+[Contributor.first, Commit.first].to_xml
+# =&gt;
+# &lt;?xml version="1.0" encoding="UTF-8"?&gt;
+# &lt;objects type="array"&gt;
+#   &lt;object&gt;
+#     &lt;id type="integer"&gt;4583&lt;/id&gt;
+#     &lt;name&gt;Aaron Batalion&lt;/name&gt;
+#     &lt;rank type="integer"&gt;53&lt;/rank&gt;
+#     &lt;url-id&gt;aaron-batalion&lt;/url-id&gt;
+#   &lt;/object&gt;
+#   &lt;object&gt;
+#     &lt;author&gt;Joshua Peek&lt;/author&gt;
+#     &lt;authored-timestamp type="datetime"&gt;2009-09-02T16:44:36Z&lt;/authored-timestamp&gt;
+#     &lt;branch&gt;origin/master&lt;/branch&gt;
+#     &lt;committed-timestamp type="datetime"&gt;2009-09-02T16:44:36Z&lt;/committed-timestamp&gt;
+#     &lt;committer&gt;Joshua Peek&lt;/committer&gt;
+#     &lt;git-show nil="true"&gt;&lt;/git-show&gt;
+#     &lt;id type="integer"&gt;190316&lt;/id&gt;
+#     &lt;imported-from-svn type="boolean"&gt;false&lt;/imported-from-svn&gt;
+#     &lt;message&gt;Kill AMo observing wrap_with_notifications since ARes was only using it&lt;/message&gt;
+#     &lt;sha1&gt;723a47bfb3708f968821bc969a9a3fc873a3ed58&lt;/sha1&gt;
+#   &lt;/object&gt;
+# &lt;/objects&gt;
+
+</pre>
+</div>
+<p>If the receiver is an array of hashes the root element is by default also "objects":</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+[{a: 1, b: 2}, {c: 3}].to_xml
+# =&gt;
+# &lt;?xml version="1.0" encoding="UTF-8"?&gt;
+# &lt;objects type="array"&gt;
+#   &lt;object&gt;
+#     &lt;b type="integer"&gt;2&lt;/b&gt;
+#     &lt;a type="integer"&gt;1&lt;/a&gt;
+#   &lt;/object&gt;
+#   &lt;object&gt;
+#     &lt;c type="integer"&gt;3&lt;/c&gt;
+#   &lt;/object&gt;
+# &lt;/objects&gt;
+
+</pre>
+</div>
+<div class="warning"><p>If the collection is empty the root element is by default "nil-classes". That's a gotcha, for example the root element of the list of contributors above would not be "contributors" if the collection was empty, but "nil-classes". You may use the <code>:root</code> option to ensure a consistent root element.</p></div>
+
+<p>The name of children nodes is by default the name of the root node singularized. In the examples above we've seen "contributor" and "object". The option <code>:children</code> allows you to set these node names.</p>
+
+<p>The default XML builder is a fresh instance of <code>Builder::XmlMarkup</code>. You can configure your own builder via the <code>:builder</code> option. The method also accepts options like <code>:dasherize</code> and friends, they are forwarded to the builder:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+Contributor.limit(2).order(:rank).to_xml(skip_types: true)
+# =&gt;
+# &lt;?xml version="1.0" encoding="UTF-8"?&gt;
+# &lt;contributors&gt;
+#   &lt;contributor&gt;
+#     &lt;id&gt;4356&lt;/id&gt;
+#     &lt;name&gt;Jeremy Kemper&lt;/name&gt;
+#     &lt;rank&gt;1&lt;/rank&gt;
+#     &lt;url-id&gt;jeremy-kemper&lt;/url-id&gt;
+#   &lt;/contributor&gt;
+#   &lt;contributor&gt;
+#     &lt;id&gt;4404&lt;/id&gt;
+#     &lt;name&gt;David Heinemeier Hansson&lt;/name&gt;
+#     &lt;rank&gt;2&lt;/rank&gt;
+#     &lt;url-id&gt;david-heinemeier-hansson&lt;/url-id&gt;
+#   &lt;/contributor&gt;
+# &lt;/contributors&gt;
+
+</pre>
+</div>
+<div class="note"><p>Defined in <code><a href="https://github.com/rails/rails/tree/v6.0.6.1/activesupport/lib/active_support/core_ext/array/conversions.rb">active_support/core_ext/array/conversions.rb</a></code>.</p></div>
+
+<h4 id="wrapping"><a class="anchorlink" href="#wrapping">10.5 Wrapping</a></h4>
+
+<p>The method <code>Array.wrap</code> wraps its argument in an array unless it is already an array (or array-like).</p>
+
+<p>Specifically:</p>
+<ul>
+<li>If the argument is <code>nil</code> an empty array is returned.</li>
+<li>Otherwise, if the argument responds to <code>to_ary</code> it is invoked, and if the value of <code>to_ary</code> is not <code>nil</code>, it is returned.</li>
+<li>Otherwise, an array with the argument as its single element is returned.</li>
+</ul>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+Array.wrap(nil)       # =&gt; []
+Array.wrap([1, 2, 3]) # =&gt; [1, 2, 3]
+Array.wrap(0)         # =&gt; [0]
+
+</pre>
+</div>
+<p>This method is similar in purpose to <code>Kernel#Array</code>, but there are some differences:</p>
+<ul>
+<li>If the argument responds to <code>to_ary</code> the method is invoked. <code>Kernel#Array</code> moves on to try <code>to_a</code> if the returned value is <code>nil</code>, but <code>Array.wrap</code> returns an array with the argument as its single element right away.</li>
+<li>If the returned value from <code>to_ary</code> is neither <code>nil</code> nor an <code>Array</code> object, <code>Kernel#Array</code> raises an exception, while <code>Array.wrap</code> does not, it just returns the value.</li>
+<li>It does not call <code>to_a</code> on the argument, if the argument does not respond to <code>to_ary</code> it returns an array with the argument as its single element.</li>
+</ul>
+<p>The last point is particularly worth comparing for some enumerables:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+Array.wrap(foo: :bar) # =&gt; [{:foo=&gt;:bar}]
+Array(foo: :bar)      # =&gt; [[:foo, :bar]]
+
+</pre>
+</div>
+<p>There's also a related idiom that uses the splat operator:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+[*object]
+
+</pre>
+</div>
+<div class="note"><p>Defined in <code><a href="https://github.com/rails/rails/tree/v6.0.6.1/activesupport/lib/active_support/core_ext/array/wrap.rb">active_support/core_ext/array/wrap.rb</a></code>.</p></div>
+
+<h4 id="duplicating"><a class="anchorlink" href="#duplicating">10.6 Duplicating</a></h4>
+
+<p>The method <code>Array#deep_dup</code> duplicates itself and all objects inside
+recursively with Active Support method <code>Object#deep_dup</code>. It works like <code>Array#map</code> with sending <code>deep_dup</code> method to each object inside.</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+array = [1, [2, 3]]
+dup = array.deep_dup
+dup[1][2] = 4
+array[1][2] == nil   # =&gt; true
+
+</pre>
+</div>
+<div class="note"><p>Defined in <code><a href="https://github.com/rails/rails/tree/v6.0.6.1/activesupport/lib/active_support/core_ext/object/deep_dup.rb">active_support/core_ext/object/deep_dup.rb</a></code>.</p></div>
+
+<h4 id="grouping"><a class="anchorlink" href="#grouping">10.7 Grouping</a></h4>
+
+<h5 id="in-groups-of-number-fill-with-nil"><a class="anchorlink" href="#in-groups-of-number-fill-with-nil">10.7.1 <code>in_groups_of(number, fill_with = nil)</code></a></h5>
+
+<p>The method <code>in_groups_of</code> splits an array into consecutive groups of a certain size. It returns an array with the groups:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+[1, 2, 3].in_groups_of(2) # =&gt; [[1, 2], [3, nil]]
+
+</pre>
+</div>
+<p>or yields them in turn if a block is passed:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; html-script: true; gutter: false; toolbar: false">
+&lt;% sample.in_groups_of(3) do |a, b, c| %&gt;
+  &lt;tr&gt;
+    &lt;td&gt;&lt;%= a %&gt;&lt;/td&gt;
+    &lt;td&gt;&lt;%= b %&gt;&lt;/td&gt;
+    &lt;td&gt;&lt;%= c %&gt;&lt;/td&gt;
+  &lt;/tr&gt;
+&lt;% end %&gt;
+
+</pre>
+</div>
+<p>The first example shows <code>in_groups_of</code> fills the last group with as many <code>nil</code> elements as needed to have the requested size. You can change this padding value using the second optional argument:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+[1, 2, 3].in_groups_of(2, 0) # =&gt; [[1, 2], [3, 0]]
+
+</pre>
+</div>
+<p>And you can tell the method not to fill the last group passing <code>false</code>:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+[1, 2, 3].in_groups_of(2, false) # =&gt; [[1, 2], [3]]
+
+</pre>
+</div>
+<p>As a consequence <code>false</code> can't be a used as a padding value.</p>
+
+<div class="note"><p>Defined in <code><a href="https://github.com/rails/rails/tree/v6.0.6.1/activesupport/lib/active_support/core_ext/array/grouping.rb">active_support/core_ext/array/grouping.rb</a></code>.</p></div>
+
+<h5 id="in-groups-number-fill-with-nil"><a class="anchorlink" href="#in-groups-number-fill-with-nil">10.7.2 <code>in_groups(number, fill_with = nil)</code></a></h5>
+
+<p>The method <code>in_groups</code> splits an array into a certain number of groups. The method returns an array with the groups:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+%w(1 2 3 4 5 6 7).in_groups(3)
+# =&gt; [["1", "2", "3"], ["4", "5", nil], ["6", "7", nil]]
+
+</pre>
+</div>
+<p>or yields them in turn if a block is passed:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+%w(1 2 3 4 5 6 7).in_groups(3) {|group| p group}
+["1", "2", "3"]
+["4", "5", nil]
+["6", "7", nil]
+
+</pre>
+</div>
+<p>The examples above show that <code>in_groups</code> fills some groups with a trailing <code>nil</code> element as needed. A group can get at most one of these extra elements, the rightmost one if any. And the groups that have them are always the last ones.</p>
+
+<p>You can change this padding value using the second optional argument:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+%w(1 2 3 4 5 6 7).in_groups(3, "0")
+# =&gt; [["1", "2", "3"], ["4", "5", "0"], ["6", "7", "0"]]
+
+</pre>
+</div>
+<p>And you can tell the method not to fill the smaller groups passing <code>false</code>:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+%w(1 2 3 4 5 6 7).in_groups(3, false)
+# =&gt; [["1", "2", "3"], ["4", "5"], ["6", "7"]]
+
+</pre>
+</div>
+<p>As a consequence <code>false</code> can't be a used as a padding value.</p>
+
+<div class="note"><p>Defined in <code><a href="https://github.com/rails/rails/tree/v6.0.6.1/activesupport/lib/active_support/core_ext/array/grouping.rb">active_support/core_ext/array/grouping.rb</a></code>.</p></div>
+
+<h5 id="split-value-nil"><a class="anchorlink" href="#split-value-nil">10.7.3 <code>split(value = nil)</code></a></h5>
+
+<p>The method <code>split</code> divides an array by a separator and returns the resulting chunks.</p>
+
+<p>If a block is passed the separators are those elements of the array for which the block returns true:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+(-5..5).to_a.split { |i| i.multiple_of?(4) }
+# =&gt; [[-5], [-3, -2, -1], [1, 2, 3], [5]]
+
+</pre>
+</div>
+<p>Otherwise, the value received as argument, which defaults to <code>nil</code>, is the separator:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+[0, 1, -5, 1, 1, "foo", "bar"].split(1)
+# =&gt; [[0], [-5], [], ["foo", "bar"]]
+
+</pre>
+</div>
+<div class="info"><p>Observe in the previous example that consecutive separators result in empty arrays.</p></div>
+
+<div class="note"><p>Defined in <code><a href="https://github.com/rails/rails/tree/v6.0.6.1/activesupport/lib/active_support/core_ext/array/grouping.rb">active_support/core_ext/array/grouping.rb</a></code>.</p></div>
+</body>
+</html>

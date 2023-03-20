@@ -1,0 +1,58 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>11 Testing Helpers</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v6.1.7.3/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="testing-helpers"><a class="anchorlink" href="#testing-helpers">11 Testing Helpers</a></h3>
+<p>A helper is just a simple module where you can define methods which are
+available in your views.</p>
+
+<p>In order to test helpers, all you need to do is check that the output of the
+helper method matches what you'd expect. Tests related to the helpers are
+located under the <code>test/helpers</code> directory.</p>
+
+<p>Given we have the following helper:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">module</span> <span class="nn">UsersHelper</span>
+  <span class="k">def</span> <span class="nf">link_to_user</span><span class="p">(</span><span class="n">user</span><span class="p">)</span>
+    <span class="n">link_to</span> <span class="s2">"</span><span class="si">#{</span><span class="n">user</span><span class="p">.</span><span class="nf">first_name</span><span class="si">}</span><span class="s2"> </span><span class="si">#{</span><span class="n">user</span><span class="p">.</span><span class="nf">last_name</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span> <span class="n">user</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-52d35fa84949318ac0325e9214e62ca0">module UsersHelper
+  def link_to_user(user)
+    link_to "#{user.first_name} #{user.last_name}", user
+  end
+end
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-52d35fa84949318ac0325e9214e62ca0">Copy</button>
+</div>
+<p>We can test the output of this method like this:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">UsersHelperTest</span> <span class="o">&lt;</span> <span class="no">ActionView</span><span class="o">::</span><span class="no">TestCase</span>
+  <span class="nb">test</span> <span class="s2">"should return the user's full name"</span> <span class="k">do</span>
+    <span class="n">user</span> <span class="o">=</span> <span class="n">users</span><span class="p">(</span><span class="ss">:david</span><span class="p">)</span>
+
+    <span class="n">assert_dom_equal</span> <span class="sx">%{&lt;a href="/user/#{user.id}"&gt;David Heinemeier Hansson&lt;/a&gt;}</span><span class="p">,</span> <span class="n">link_to_user</span><span class="p">(</span><span class="n">user</span><span class="p">)</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-5673d93949871d208c171b08c5c43f43">class UsersHelperTest &lt; ActionView::TestCase
+  test "should return the user's full name" do
+    user = users(:david)
+
+    assert_dom_equal %{&lt;a href="/user/#{user.id}"&gt;David Heinemeier Hansson&lt;/a&gt;}, link_to_user(user)
+  end
+end
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-5673d93949871d208c171b08c5c43f43">Copy</button>
+</div>
+<p>Moreover, since the test class extends from <code>ActionView::TestCase</code>, you have
+access to Rails' helper methods such as <code>link_to</code> or <code>pluralize</code>.</p>
+</body>
+</html>

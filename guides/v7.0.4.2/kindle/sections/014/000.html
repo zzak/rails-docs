@@ -1,0 +1,92 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>1 The Purpose of the Rails Router</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v7.0.4.2/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="the-purpose-of-the-rails-router"><a class="anchorlink" href="#the-purpose-of-the-rails-router">1 The Purpose of the Rails Router</a></h3>
+<p>The Rails router recognizes URLs and dispatches them to a controller's action, or to a Rack application. It can also generate paths and URLs, avoiding the need to hardcode strings in your views.</p>
+
+<h4 id="connecting-urls-to-code"><a class="anchorlink" href="#connecting-urls-to-code">1.1 Connecting URLs to Code</a></h4>
+
+<p>When your Rails application receives an incoming request for:</p>
+
+<div class="code_container">
+<pre><code class="highlight plaintext">GET /patients/17
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="GET /patients/17
+">Copy</button>
+</div>
+<p>it asks the router to match it to a controller action. If the first matching route is:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">get</span> <span class="s1">'/patients/:id'</span><span class="p">,</span> <span class="ss">to: </span><span class="s1">'patients#show'</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="get '/patients/:id', to: 'patients#show'
+">Copy</button>
+</div>
+<p>the request is dispatched to the <code>patients</code> controller's <code>show</code> action with <code>{ id: '17' }</code> in <code>params</code>.</p>
+
+<div class="note"><p>Rails uses snake_case for controller names here, if you have a multiple word controller like <code>MonsterTrucksController</code>, you want to use <code>monster_trucks#show</code> for example.</p></div>
+
+<h4 id="generating-paths-and-urls-from-code"><a class="anchorlink" href="#generating-paths-and-urls-from-code">1.2 Generating Paths and URLs from Code</a></h4>
+
+<p>You can also generate paths and URLs. If the route above is modified to be:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">get</span> <span class="s1">'/patients/:id'</span><span class="p">,</span> <span class="ss">to: </span><span class="s1">'patients#show'</span><span class="p">,</span> <span class="ss">as: </span><span class="s1">'patient'</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="get '/patients/:id', to: 'patients#show', as: 'patient'
+">Copy</button>
+</div>
+<p>and your application contains this code in the controller:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="vi">@patient</span> <span class="o">=</span> <span class="no">Patient</span><span class="p">.</span><span class="nf">find</span><span class="p">(</span><span class="n">params</span><span class="p">[</span><span class="ss">:id</span><span class="p">])</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="@patient = Patient.find(params[:id])
+">Copy</button>
+</div>
+<p>and this in the corresponding view:</p>
+
+<div class="code_container">
+<pre><code class="highlight erb"><span class="cp">&lt;%=</span> <span class="n">link_to</span> <span class="s1">'Patient Record'</span><span class="p">,</span> <span class="n">patient_path</span><span class="p">(</span><span class="vi">@patient</span><span class="p">)</span> <span class="cp">%&gt;</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="&lt;%= link_to 'Patient Record', patient_path(@patient) %&gt;
+">Copy</button>
+</div>
+<p>then the router will generate the path <code>/patients/17</code>. This reduces the brittleness of your view and makes your code easier to understand. Note that the id does not need to be specified in the route helper.</p>
+
+<h4 id="configuring-the-rails-router"><a class="anchorlink" href="#configuring-the-rails-router">1.3 Configuring the Rails Router</a></h4>
+
+<p>The routes for your application or engine live in the file <code>config/routes.rb</code> and typically looks like this:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="no">Rails</span><span class="p">.</span><span class="nf">application</span><span class="p">.</span><span class="nf">routes</span><span class="p">.</span><span class="nf">draw</span> <span class="k">do</span>
+  <span class="n">resources</span> <span class="ss">:brands</span><span class="p">,</span> <span class="ss">only: </span><span class="p">[</span><span class="ss">:index</span><span class="p">,</span> <span class="ss">:show</span><span class="p">]</span> <span class="k">do</span>
+    <span class="n">resources</span> <span class="ss">:products</span><span class="p">,</span> <span class="ss">only: </span><span class="p">[</span><span class="ss">:index</span><span class="p">,</span> <span class="ss">:show</span><span class="p">]</span>
+  <span class="k">end</span>
+
+  <span class="n">resource</span> <span class="ss">:basket</span><span class="p">,</span> <span class="ss">only: </span><span class="p">[</span><span class="ss">:show</span><span class="p">,</span> <span class="ss">:update</span><span class="p">,</span> <span class="ss">:destroy</span><span class="p">]</span>
+
+  <span class="n">resolve</span><span class="p">(</span><span class="s2">"Basket"</span><span class="p">)</span> <span class="p">{</span> <span class="n">route_for</span><span class="p">(</span><span class="ss">:basket</span><span class="p">)</span> <span class="p">}</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='Rails.application.routes.draw do
+  resources :brands, only: [:index, :show] do
+    resources :products, only: [:index, :show]
+  end
+
+  resource :basket, only: [:show, :update, :destroy]
+
+  resolve("Basket") { route_for(:basket) }
+end
+'>Copy</button>
+</div>
+<p>Since this is a regular Ruby source file you can use all of its features to help you define your routes but be careful with variable names as they can clash with the DSL methods of the router.</p>
+
+<div class="note"><p>The <code>Rails.application.routes.draw do ... end</code> block that wraps your route definitions is required to establish the scope for the router DSL and must not be deleted.</p></div>
+</body>
+</html>

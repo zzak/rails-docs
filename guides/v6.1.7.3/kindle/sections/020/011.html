@@ -1,0 +1,58 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>12 Discarding Files Stored During Integration Tests</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v6.1.7.3/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="discarding-files-stored-during-integration-tests"><a class="anchorlink" href="#discarding-files-stored-during-integration-tests">12 Discarding Files Stored During Integration Tests</a></h3>
+<p>Similarly to System Tests, files uploaded during Integration Tests will not be
+automatically cleaned up. If you want to clear the files, you can do it in an
+<code>after_teardown</code> callback. Doing it here ensures that all connections created
+during the test are complete and you won't receive an error from Active Storage
+saying it can't find a file.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">module</span> <span class="nn">RemoveUploadedFiles</span>
+  <span class="k">def</span> <span class="nf">after_teardown</span>
+    <span class="k">super</span>
+    <span class="n">remove_uploaded_files</span>
+  <span class="k">end</span>
+
+  <span class="kp">private</span>
+
+  <span class="k">def</span> <span class="nf">remove_uploaded_files</span>
+    <span class="no">FileUtils</span><span class="p">.</span><span class="nf">rm_rf</span><span class="p">(</span><span class="no">Rails</span><span class="p">.</span><span class="nf">root</span><span class="p">.</span><span class="nf">join</span><span class="p">(</span><span class="s1">'tmp'</span><span class="p">,</span> <span class="s1">'storage'</span><span class="p">))</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+
+<span class="k">module</span> <span class="nn">ActionDispatch</span>
+  <span class="k">class</span> <span class="nc">IntegrationTest</span>
+    <span class="n">prepend</span> <span class="no">RemoveUploadedFiles</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-830c83fcc46b1903230559343c1ab8f3">module RemoveUploadedFiles
+  def after_teardown
+    super
+    remove_uploaded_files
+  end
+
+  private
+
+  def remove_uploaded_files
+    FileUtils.rm_rf(Rails.root.join('tmp', 'storage'))
+  end
+end
+
+module ActionDispatch
+  class IntegrationTest
+    prepend RemoveUploadedFiles
+  end
+end
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-830c83fcc46b1903230559343c1ab8f3">Copy</button>
+</div>
+</body>
+</html>

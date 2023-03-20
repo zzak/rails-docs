@@ -1,0 +1,63 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>4 Testing Active Record</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v4.1.16/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="testing-active-record">4 Testing Active Record</h3>
+<p>This is how you run the Active Record test suite only for SQLite3:</p>
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+$ cd activerecord
+$ bundle exec rake test_sqlite3
+
+</pre>
+</div>
+<p>You can now run the tests as you did for <code>sqlite3</code>. The tasks are respectively</p>
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+test_mysql
+test_mysql2
+test_postgresql
+
+</pre>
+</div>
+<p>Finally,</p>
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+$ bundle exec rake test
+
+</pre>
+</div>
+<p>will now run the four of them in turn.</p>
+<p>You can also run any single test separately:</p>
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+$ ARCONN=sqlite3 ruby -Itest test/cases/associations/has_many_associations_test.rb
+
+</pre>
+</div>
+<p>You can invoke <code>test_jdbcmysql</code>, <code>test_jdbcsqlite3</code> or <code>test_jdbcpostgresql</code> also. See the file <code>activerecord/RUNNING_UNIT_TESTS.rdoc</code> for information on running more targeted database tests, or the file <code>ci/travis.rb</code> for the test suite run by the continuous integration server.</p>
+<h4 id="warnings">4.1 Warnings</h4>
+<p>The test suite runs with warnings enabled. Ideally, Ruby on Rails should issue no warnings, but there may be a few, as well as some from third-party libraries. Please ignore (or fix!) them, if any, and submit patches that do not issue new warnings.</p>
+<p>If you are sure about what you are doing and would like to have a more clear output, there's a way to override the flag:</p>
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+$ RUBYOPT=-W0 bundle exec rake test
+
+</pre>
+</div>
+<h4 id="older-versions-of-ruby-on-rails">4.2 Older Versions of Ruby on Rails</h4>
+<p>If you want to add a fix to older versions of Ruby on Rails, you'll need to set up and switch to your own local tracking branch. Here is an example to switch to the 3-0-stable branch:</p>
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+$ git branch --track 3-0-stable origin/3-0-stable
+$ git checkout 3-0-stable
+
+</pre>
+</div>
+<div class="info"><p>You may want to <a href="http://qugstart.com/blog/git-and-svn/add-colored-git-branch-name-to-your-shell-prompt/">put your Git branch name in your shell prompt</a> to make it easier to remember which version of the code you're working with.</p></div>
+</body>
+</html>

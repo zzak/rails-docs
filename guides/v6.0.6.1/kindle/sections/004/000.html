@@ -1,0 +1,265 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>1 Validations Overview</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v6.0.6.1/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="validations-overview"><a class="anchorlink" href="#validations-overview">1 Validations Overview</a></h3>
+<p>Here's an example of a very simple validation:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class Person &lt; ApplicationRecord
+  validates :name, presence: true
+end
+
+Person.create(name: "John Doe").valid? # =&gt; true
+Person.create(name: nil).valid? # =&gt; false
+
+</pre>
+</div>
+<p>As you can see, our validation lets us know that our <code>Person</code> is not valid
+without a <code>name</code> attribute. The second <code>Person</code> will not be persisted to the
+database.</p>
+
+<p>Before we dig into more details, let's talk about how validations fit into the
+big picture of your application.</p>
+
+<h4 id="why-use-validations-questionmark"><a class="anchorlink" href="#why-use-validations-questionmark">1.1 Why Use Validations?</a></h4>
+
+<p>Validations are used to ensure that only valid data is saved into your
+database. For example, it may be important to your application to ensure that
+every user provides a valid email address and mailing address. Model-level
+validations are the best way to ensure that only valid data is saved into your
+database. They are database agnostic, cannot be bypassed by end users, and are
+convenient to test and maintain. Rails makes them easy to use, provides
+built-in helpers for common needs, and allows you to create your own validation
+methods as well.</p>
+
+<p>There are several other ways to validate data before it is saved into your
+database, including native database constraints, client-side validations and
+controller-level validations. Here's a summary of the pros and cons:</p>
+<ul>
+<li>Database constraints and/or stored procedures make the validation mechanisms
+database-dependent and can make testing and maintenance more difficult.
+However, if your database is used by other applications, it may be a good
+idea to use some constraints at the database level. Additionally,
+database-level validations can safely handle some things (such as uniqueness
+in heavily-used tables) that can be difficult to implement otherwise.</li>
+<li>Client-side validations can be useful, but are generally unreliable if used
+alone. If they are implemented using JavaScript, they may be bypassed if
+JavaScript is turned off in the user's browser. However, if combined with
+other techniques, client-side validation can be a convenient way to provide
+users with immediate feedback as they use your site.</li>
+<li>Controller-level validations can be tempting to use, but often become
+unwieldy and difficult to test and maintain. Whenever possible, it's a good
+idea to keep your controllers skinny, as it will make your application a
+pleasure to work with in the long run.</li>
+</ul>
+<p>Choose these in certain, specific cases. It's the opinion of the Rails team
+that model-level validations are the most appropriate in most circumstances.</p>
+
+<h4 id="when-does-validation-happen-questionmark"><a class="anchorlink" href="#when-does-validation-happen-questionmark">1.2 When Does Validation Happen?</a></h4>
+
+<p>There are two kinds of Active Record objects: those that correspond to a row
+inside your database and those that do not. When you create a fresh object, for
+example using the <code>new</code> method, that object does not belong to the database
+yet. Once you call <code>save</code> upon that object it will be saved into the
+appropriate database table. Active Record uses the <code>new_record?</code> instance
+method to determine whether an object is already in the database or not.
+Consider the following simple Active Record class:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class Person &lt; ApplicationRecord
+end
+
+</pre>
+</div>
+<p>We can see how it works by looking at some <code>rails console</code> output:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+$ rails console
+&gt;&gt; p = Person.new(name: "John Doe")
+=&gt; #&lt;Person id: nil, name: "John Doe", created_at: nil, updated_at: nil&gt;
+&gt;&gt; p.new_record?
+=&gt; true
+&gt;&gt; p.save
+=&gt; true
+&gt;&gt; p.new_record?
+=&gt; false
+
+</pre>
+</div>
+<p>Creating and saving a new record will send an SQL <code>INSERT</code> operation to the
+database. Updating an existing record will send an SQL <code>UPDATE</code> operation
+instead. Validations are typically run before these commands are sent to the
+database. If any validations fail, the object will be marked as invalid and
+Active Record will not perform the <code>INSERT</code> or <code>UPDATE</code> operation. This avoids
+storing an invalid object in the database. You can choose to have specific
+validations run when an object is created, saved, or updated.</p>
+
+<div class="warning"><p>There are many ways to change the state of an object in the database.
+Some methods will trigger validations, but some will not. This means that it's
+possible to save an object in the database in an invalid state if you aren't
+careful.</p></div>
+
+<p>The following methods trigger validations, and will save the object to the
+database only if the object is valid:</p>
+<ul>
+<li><code>create</code></li>
+<li><code>create!</code></li>
+<li><code>save</code></li>
+<li><code>save!</code></li>
+<li><code>update</code></li>
+<li><code>update!</code></li>
+</ul>
+<p>The bang versions (e.g. <code>save!</code>) raise an exception if the record is invalid.
+The non-bang versions don't: <code>save</code> and <code>update</code> return <code>false</code>, and
+<code>create</code> just returns the object.</p>
+
+<h4 id="skipping-validations"><a class="anchorlink" href="#skipping-validations">1.3 Skipping Validations</a></h4>
+
+<p>The following methods skip validations, and will save the object to the
+database regardless of its validity. They should be used with caution.</p>
+<ul>
+<li><code>decrement!</code></li>
+<li><code>decrement_counter</code></li>
+<li><code>increment!</code></li>
+<li><code>increment_counter</code></li>
+<li><code>insert</code></li>
+<li><code>insert!</code></li>
+<li><code>insert_all</code></li>
+<li><code>insert_all!</code></li>
+<li><code>toggle!</code></li>
+<li><code>touch</code></li>
+<li><code>touch_all</code></li>
+<li><code>update_all</code></li>
+<li><code>update_attribute</code></li>
+<li><code>update_column</code></li>
+<li><code>update_columns</code></li>
+<li><code>update_counters</code></li>
+<li><code>upsert</code></li>
+<li><code>upsert_all</code></li>
+</ul>
+<p>Note that <code>save</code> also has the ability to skip validations if passed <code>validate:
+false</code> as an argument. This technique should be used with caution.</p>
+<ul>
+<li><code>save(validate: false)</code></li>
+</ul>
+<h4 id="valid-questionmark-and-invalid-questionmark"><a class="anchorlink" href="#valid-questionmark-and-invalid-questionmark">1.4 <code>valid?</code> and <code>invalid?</code></a></h4>
+
+<p>Before saving an Active Record object, Rails runs your validations.
+If these validations produce any errors, Rails does not save the object.</p>
+
+<p>You can also run these validations on your own. <code>valid?</code> triggers your validations
+and returns true if no errors were found in the object, and false otherwise.
+As you saw above:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class Person &lt; ApplicationRecord
+  validates :name, presence: true
+end
+
+Person.create(name: "John Doe").valid? # =&gt; true
+Person.create(name: nil).valid? # =&gt; false
+
+</pre>
+</div>
+<p>After Active Record has performed validations, any errors found can be accessed
+through the <code>errors.messages</code> instance method, which returns a collection of errors.
+By definition, an object is valid if this collection is empty after running
+validations.</p>
+
+<p>Note that an object instantiated with <code>new</code> will not report errors
+even if it's technically invalid, because validations are automatically run
+only when the object is saved, such as with the <code>create</code> or <code>save</code> methods.</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class Person &lt; ApplicationRecord
+  validates :name, presence: true
+end
+
+&gt;&gt; p = Person.new
+# =&gt; #&lt;Person id: nil, name: nil&gt;
+&gt;&gt; p.errors.messages
+# =&gt; {}
+
+&gt;&gt; p.valid?
+# =&gt; false
+&gt;&gt; p.errors.messages
+# =&gt; {name:["can't be blank"]}
+
+&gt;&gt; p = Person.create
+# =&gt; #&lt;Person id: nil, name: nil&gt;
+&gt;&gt; p.errors.messages
+# =&gt; {name:["can't be blank"]}
+
+&gt;&gt; p.save
+# =&gt; false
+
+&gt;&gt; p.save!
+# =&gt; ActiveRecord::RecordInvalid: Validation failed: Name can't be blank
+
+&gt;&gt; Person.create!
+# =&gt; ActiveRecord::RecordInvalid: Validation failed: Name can't be blank
+
+</pre>
+</div>
+<p><code>invalid?</code> is simply the inverse of <code>valid?</code>. It triggers your validations,
+returning true if any errors were found in the object, and false otherwise.</p>
+
+<h4 id="validations-overview-errors"><a class="anchorlink" href="#validations-overview-errors">1.5 <code>errors[]</code></a></h4>
+
+<p>To verify whether or not a particular attribute of an object is valid, you can
+use <code>errors[:attribute]</code>. It returns an array of all the errors for
+<code>:attribute</code>. If there are no errors on the specified attribute, an empty array
+is returned.</p>
+
+<p>This method is only useful <em>after</em> validations have been run, because it only
+inspects the errors collection and does not trigger validations itself. It's
+different from the <code>ActiveRecord::Base#invalid?</code> method explained above because
+it doesn't verify the validity of the object as a whole. It only checks to see
+whether there are errors found on an individual attribute of the object.</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class Person &lt; ApplicationRecord
+  validates :name, presence: true
+end
+
+&gt;&gt; Person.new.errors[:name].any? # =&gt; false
+&gt;&gt; Person.create.errors[:name].any? # =&gt; true
+
+</pre>
+</div>
+<p>We'll cover validation errors in greater depth in the <a href="#working-with-validation-errors">Working with Validation
+Errors</a> section.</p>
+
+<h4 id="validations-overview-errors-details"><a class="anchorlink" href="#validations-overview-errors-details">1.6 <code>errors.details</code></a></h4>
+
+<p>To check which validations failed on an invalid attribute, you can use
+<code>errors.details[:attribute]</code>. It returns an array of hashes with an <code>:error</code>
+key to get the symbol of the validator:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class Person &lt; ApplicationRecord
+  validates :name, presence: true
+end
+
+&gt;&gt; person = Person.new
+&gt;&gt; person.valid?
+&gt;&gt; person.errors.details[:name] # =&gt; [{error: :blank}]
+
+</pre>
+</div>
+<p>Using <code>details</code> with custom validators is covered in the <a href="#working-with-validation-errors">Working with
+Validation Errors</a> section.</p>
+</body>
+</html>

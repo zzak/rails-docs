@@ -1,0 +1,136 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>5 Active Record</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v4.2.11.3/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="active-record">5 Active Record</h3>
+<p>There are two big additions to talk about here: transactional migrations and pooled database transactions. There's also a new (and cleaner) syntax for join table conditions, as well as a number of smaller improvements.</p>
+
+<h4 id="transactional-migrations">5.1 Transactional Migrations</h4>
+
+<p>Historically, multiple-step Rails migrations have been a source of trouble. If something went wrong during a migration, everything before the error changed the database and everything after the error wasn't applied. Also, the migration version was stored as having been executed, which means that it couldn't be simply rerun by <code>rake db:migrate:redo</code> after you fix the problem. Transactional migrations change this by wrapping migration steps in a DDL transaction, so that if any of them fail, the entire migration is undone. In Rails 2.2, transactional migrations are supported on PostgreSQL out of the box. The code is extensible to other database types in the future - and IBM has already extended it to support the DB2 adapter.</p>
+<ul>
+<li>Lead Contributor: <a href="http://adam.heroku.com/">Adam Wiggins</a>
+</li>
+<li>More information:
+
+<ul>
+<li><a href="http://adam.heroku.com/past/2008/9/3/ddl_transactions/">DDL Transactions</a></li>
+<li><a href="http://db2onrails.com/2008/11/08/a-major-milestone-for-db2-on-rails/">A major milestone for DB2 on Rails</a></li>
+</ul>
+</li>
+</ul>
+<h4 id="connection-pooling">5.2 Connection Pooling</h4>
+
+<p>Connection pooling lets Rails distribute database requests across a pool of database connections that will grow to a maximum size (by default 5, but you can add a <code>pool</code> key to your <code>database.yml</code> to adjust this). This helps remove bottlenecks in applications that support many concurrent users. There's also a <code>wait_timeout</code> that defaults to 5 seconds before giving up. <code>ActiveRecord::Base.connection_pool</code> gives you direct access to the pool if you need it.</p>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+development:
+  adapter: mysql
+  username: root
+  database: sample_development
+  pool: 10
+  wait_timeout: 10
+
+</pre>
+</div>
+<ul>
+<li>Lead Contributor: <a href="http://blog.nicksieger.com/">Nick Sieger</a>
+</li>
+<li>More information:
+
+<ul>
+<li><a href="http://ryandaigle.com/articles/2008/9/7/what-s-new-in-edge-rails-connection-pools">What's New in Edge Rails: Connection Pools</a></li>
+</ul>
+</li>
+</ul>
+<h4 id="hashes-for-join-table-conditions">5.3 Hashes for Join Table Conditions</h4>
+
+<p>You can now specify conditions on join tables using a hash. This is a big help if you need to query across complex joins.</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class Photo &lt; ActiveRecord::Base
+  belongs_to :product
+end
+
+class Product &lt; ActiveRecord::Base
+  has_many :photos
+end
+
+# Get all products with copyright-free photos:
+Product.all(:joins =&gt; :photos, :conditions =&gt; { :photos =&gt; { :copyright =&gt; false }})
+
+</pre>
+</div>
+<ul>
+<li>More information:
+
+<ul>
+<li><a href="http://ryandaigle.com/articles/2008/7/7/what-s-new-in-edge-rails-easy-join-table-conditions">What's New in Edge Rails: Easy Join Table Conditions</a></li>
+</ul>
+</li>
+</ul>
+<h4 id="new-dynamic-finders">5.4 New Dynamic Finders</h4>
+
+<p>Two new sets of methods have been added to Active Record's dynamic finders family.</p>
+
+<h5 id="find-last-by-attribute">5.4.1 <code>find_last_by_attribute</code>
+</h5>
+
+<p>The <code>find_last_by_attribute</code> method is equivalent to <code>Model.last(:conditions =&gt; {:attribute =&gt; value})</code></p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+# Get the last user who signed up from London
+User.find_last_by_city('London')
+
+</pre>
+</div>
+<ul>
+<li>Lead Contributor: <a href="http://www.workingwithrails.com/person/9147-emilio-tagua">Emilio Tagua</a>
+</li>
+</ul>
+<h5 id="find-by-attribute-bang">5.4.2 <code>find_by_attribute!</code>
+</h5>
+
+<p>The new bang! version of <code>find_by_attribute!</code> is equivalent to <code>Model.first(:conditions =&gt; {:attribute =&gt; value}) || raise ActiveRecord::RecordNotFound</code> Instead of returning <code>nil</code> if it can't find a matching record, this method will raise an exception if it cannot find a match.</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+# Raise ActiveRecord::RecordNotFound exception if 'Moby' hasn't signed up yet!
+User.find_by_name!('Moby')
+
+</pre>
+</div>
+<ul>
+<li>Lead Contributor: <a href="http://blog.hasmanythrough.com">Josh Susser</a>
+</li>
+</ul>
+<h4 id="associations-respect-private-protected-scope">5.5 Associations Respect Private/Protected Scope</h4>
+
+<p>Active Record association proxies now respect the scope of methods on the proxied object. Previously (given User has_one :account) <code>@user.account.private_method</code> would call the private method on the associated Account object. That fails in Rails 2.2; if you need this functionality, you should use <code>@user.account.send(:private_method)</code> (or make the method public instead of private or protected). Please note that if you're overriding <code>method_missing</code>, you should also override <code>respond_to</code> to match the behavior in order for associations to function normally.</p>
+<ul>
+<li>Lead Contributor: Adam Milligan</li>
+<li>More information:
+
+<ul>
+<li><a href="http://afreshcup.com/2008/10/24/rails-22-change-private-methods-on-association-proxies-are-private/">Rails 2.2 Change: Private Methods on Association Proxies are Private</a></li>
+</ul>
+</li>
+</ul>
+<h4 id="other-active-record-changes">5.6 Other Active Record Changes</h4>
+<ul>
+<li>
+<code>rake db:migrate:redo</code> now accepts an optional VERSION to target that specific migration to redo</li>
+<li>Set <code>config.active_record.timestamped_migrations = false</code> to have migrations with numeric prefix instead of UTC timestamp.</li>
+<li>Counter cache columns (for associations declared with <code>:counter_cache =&gt; true</code>) do not need to be initialized to zero any longer.</li>
+<li>
+<code>ActiveRecord::Base.human_name</code> for an internationalization-aware humane translation of model names</li>
+</ul>
+</body>
+</html>

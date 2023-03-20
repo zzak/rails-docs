@@ -1,0 +1,158 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>3 Attaching Files to Records</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v6.0.6.1/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="attaching-files-to-records"><a class="anchorlink" href="#attaching-files-to-records">3 Attaching Files to Records</a></h3>
+<h4 id="has-one-attached"><a class="anchorlink" href="#has-one-attached">3.1 <code>has_one_attached</code></a></h4>
+
+<p>The <code>has_one_attached</code> macro sets up a one-to-one mapping between records and
+files. Each record can have one file attached to it.</p>
+
+<p>For example, suppose your application has a <code>User</code> model. If you want each user to
+have an avatar, define the <code>User</code> model like this:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class User &lt; ApplicationRecord
+  has_one_attached :avatar
+end
+
+</pre>
+</div>
+<p>You can create a user with an avatar:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; html-script: true; gutter: false; toolbar: false">
+&lt;%= form.file_field :avatar %&gt;
+
+</pre>
+</div>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class SignupController &lt; ApplicationController
+  def create
+    user = User.create!(user_params)
+    session[:user_id] = user.id
+    redirect_to root_path
+  end
+
+  private
+    def user_params
+      params.require(:user).permit(:email_address, :password, :avatar)
+    end
+end
+
+</pre>
+</div>
+<p>Call <code>avatar.attach</code> to attach an avatar to an existing user:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+user.avatar.attach(params[:avatar])
+
+</pre>
+</div>
+<p>Call <code>avatar.attached?</code> to determine whether a particular user has an avatar:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+user.avatar.attached?
+
+</pre>
+</div>
+<h4 id="has-many-attached"><a class="anchorlink" href="#has-many-attached">3.2 <code>has_many_attached</code></a></h4>
+
+<p>The <code>has_many_attached</code> macro sets up a one-to-many relationship between records
+and files. Each record can have many files attached to it.</p>
+
+<p>For example, suppose your application has a <code>Message</code> model. If you want each
+message to have many images, define the <code>Message</code> model like this:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class Message &lt; ApplicationRecord
+  has_many_attached :images
+end
+
+</pre>
+</div>
+<p>You can create a message with images:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class MessagesController &lt; ApplicationController
+  def create
+    message = Message.create!(message_params)
+    redirect_to message
+  end
+
+  private
+    def message_params
+      params.require(:message).permit(:title, :content, images: [])
+    end
+end
+
+</pre>
+</div>
+<p>Call <code>images.attach</code> to add new images to an existing message:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+@message.images.attach(params[:images])
+
+</pre>
+</div>
+<p>Call <code>images.attached?</code> to determine whether a particular message has any images:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+@message.images.attached?
+
+</pre>
+</div>
+<h4 id="attaching-file-io-objects"><a class="anchorlink" href="#attaching-file-io-objects">3.3 Attaching File/IO Objects</a></h4>
+
+<p>Sometimes you need to attach a file that doesn’t arrive via an HTTP request.
+For example, you may want to attach a file you generated on disk or downloaded
+from a user-submitted URL. You may also want to attach a fixture file in a
+model test. To do that, provide a Hash containing at least an open IO object
+and a filename:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+@message.image.attach(io: File.open('/path/to/file'), filename: 'file.pdf')
+
+</pre>
+</div>
+<p>When possible, provide a content type as well. Active Storage attempts to
+determine a file’s content type from its data. It falls back to the content
+type you provide if it can’t do that.</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+@message.image.attach(io: File.open('/path/to/file'), filename: 'file.pdf', content_type: 'application/pdf')
+
+</pre>
+</div>
+<p>You can bypass the content type inference from the data by passing in
+<code>identify: false</code> along with the <code>content_type</code>.</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+@message.image.attach(
+  io: File.open('/path/to/file'),
+  filename: 'file.pdf',
+  content_type: 'application/pdf',
+  identify: false
+)
+
+</pre>
+</div>
+<p>If you don’t provide a content type and Active Storage can’t determine the
+file’s content type automatically, it defaults to application/octet-stream.</p>
+</body>
+</html>

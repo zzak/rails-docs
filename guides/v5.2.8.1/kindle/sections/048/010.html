@@ -1,0 +1,85 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>11 Active Support</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v5.2.8.1/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="active-support"><a class="anchorlink" href="#active-support">11 Active Support</a></h3>
+<ul>
+<li>
+Added <code>ActiveSupport:TaggedLogging</code> that can wrap any standard <code>Logger</code> class to provide tagging capabilities.
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+Logger = ActiveSupport::TaggedLogging.new(Logger.new(STDOUT))
+
+Logger.tagged("BCX") { Logger.info "Stuff" }
+# Logs "[BCX] Stuff"
+
+Logger.tagged("BCX", "Jason") { Logger.info "Stuff" }
+# Logs "[BCX] [Jason] Stuff"
+
+Logger.tagged("BCX") { Logger.tagged("Jason") { Logger.info "Stuff" } }
+# Logs "[BCX] [Jason] Stuff"
+
+</pre>
+</div>
+</li>
+<li>The <code>beginning_of_week</code> method in <code>Date</code>, <code>Time</code> and <code>DateTime</code> accepts an optional argument representing the day in which the week is assumed to start.</li>
+<li>
+<code>ActiveSupport::Notifications.subscribed</code> provides subscriptions to events while a block runs.</li>
+<li>Defined new methods <code>Module#qualified_const_defined?</code>, <code>Module#qualified_const_get</code> and <code>Module#qualified_const_set</code> that are analogous to the corresponding methods in the standard API, but accept qualified constant names.</li>
+<li>Added <code>#deconstantize</code> which complements <code>#demodulize</code> in inflections. This removes the rightmost segment in a qualified constant name.</li>
+<li>Added <code>safe_constantize</code> that constantizes a string but returns <code>nil</code> instead of raising an exception if the constant (or part of it) does not exist.</li>
+<li>
+<code>ActiveSupport::OrderedHash</code> is now marked as extractable when using <code>Array#extract_options!</code>.</li>
+<li>Added <code>Array#prepend</code> as an alias for <code>Array#unshift</code> and <code>Array#append</code> as an alias for <code>Array#&lt;&lt;</code>.</li>
+<li>The definition of a blank string for Ruby 1.9 has been extended to Unicode whitespace. Also, in Ruby 1.8 the ideographic space U`3000 is considered to be whitespace.</li>
+<li>The inflector understands acronyms.</li>
+<li>
+Added <code>Time#all_day</code>, <code>Time#all_week</code>, <code>Time#all_quarter</code> and <code>Time#all_year</code> as a way of generating ranges.
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+Event.where(:created_at =&gt; Time.now.all_week)
+Event.where(:created_at =&gt; Time.now.all_day)
+
+</pre>
+</div>
+</li>
+<li>Added <code>instance_accessor: false</code> as an option to <code>Class#cattr_accessor</code> and friends.</li>
+<li>
+<code>ActiveSupport::OrderedHash</code> now has different behavior for <code>#each</code> and <code>#each_pair</code> when given a block accepting its parameters with a splat.</li>
+<li>Added <code>ActiveSupport::Cache::NullStore</code> for use in development and testing.</li>
+<li>Removed <code>ActiveSupport::SecureRandom</code> in favor of <code>SecureRandom</code> from the standard library.</li>
+</ul>
+<h4 id="deprecations"><a class="anchorlink" href="#deprecations">11.1 Deprecations</a></h4>
+<ul>
+<li>
+<code>ActiveSupport::Base64</code> is deprecated in favor of <code>::Base64</code>.</li>
+<li>Deprecated <code>ActiveSupport::Memoizable</code> in favor of Ruby memoization pattern.</li>
+<li>
+<code>Module#synchronize</code> is deprecated with no replacement. Please use monitor from ruby's standard library.</li>
+<li>Deprecated <code>ActiveSupport::MessageEncryptor#encrypt</code> and <code>ActiveSupport::MessageEncryptor#decrypt</code>.</li>
+<li>
+<code>ActiveSupport::BufferedLogger#silence</code> is deprecated. If you want to squelch logs for a certain block, change the log level for that block.</li>
+<li>
+<code>ActiveSupport::BufferedLogger#open_log</code> is deprecated. This method should not have been public in the first place.</li>
+<li>
+<code>ActiveSupport::BufferedLogger's</code> behavior of automatically creating the directory for your log file is deprecated. Please make sure to create the directory for your log file before instantiating.</li>
+<li>
+<code>ActiveSupport::BufferedLogger#auto_flushing</code> is deprecated. Either set the sync level on the underlying file handle like this. Or tune your filesystem. The FS cache is now what controls flushing.
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+f = File.open('foo.log', 'w')
+f.sync = true
+ActiveSupport::BufferedLogger.new f
+
+</pre>
+</div>
+</li>
+<li>
+<code>ActiveSupport::BufferedLogger#flush</code> is deprecated. Set sync on your filehandle, or tune your filesystem.</li>
+</ul>
+</body>
+</html>

@@ -1,0 +1,162 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>6 Performing Custom Validations</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v6.1.7.3/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="performing-custom-validations"><a class="anchorlink" href="#performing-custom-validations">6 Performing Custom Validations</a></h3>
+<p>When the built-in validation helpers are not enough for your needs, you can
+write your own validators or validation methods as you prefer.</p>
+
+<h4 id="custom-validators"><a class="anchorlink" href="#custom-validators">6.1 Custom Validators</a></h4>
+
+<p>Custom validators are classes that inherit from <a href="https://api.rubyonrails.org/v6.1.7.3/classes/ActiveModel/Validator.html"><code>ActiveModel::Validator</code></a>. These
+classes must implement the <code>validate</code> method which takes a record as an argument
+and performs the validation on it. The custom validator is called using the
+<code>validates_with</code> method.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">MyValidator</span> <span class="o">&lt;</span> <span class="no">ActiveModel</span><span class="o">::</span><span class="no">Validator</span>
+  <span class="k">def</span> <span class="nf">validate</span><span class="p">(</span><span class="n">record</span><span class="p">)</span>
+    <span class="k">unless</span> <span class="n">record</span><span class="p">.</span><span class="nf">name</span><span class="p">.</span><span class="nf">start_with?</span> <span class="s1">'X'</span>
+      <span class="n">record</span><span class="p">.</span><span class="nf">errors</span><span class="p">.</span><span class="nf">add</span> <span class="ss">:name</span><span class="p">,</span> <span class="s2">"Need a name starting with X please!"</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+
+<span class="k">class</span> <span class="nc">Person</span>
+  <span class="kp">include</span> <span class="no">ActiveModel</span><span class="o">::</span><span class="no">Validations</span>
+  <span class="n">validates_with</span> <span class="no">MyValidator</span>
+<span class="k">end</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-1a84a7eb1cbf331048924d121b25c324">class MyValidator &lt; ActiveModel::Validator
+  def validate(record)
+    unless record.name.start_with? 'X'
+      record.errors.add :name, "Need a name starting with X please!"
+    end
+  end
+end
+
+class Person
+  include ActiveModel::Validations
+  validates_with MyValidator
+end
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-1a84a7eb1cbf331048924d121b25c324">Copy</button>
+</div>
+<p>The easiest way to add custom validators for validating individual attributes
+is with the convenient <code>ActiveModel::EachValidator</code>. In this case, the custom
+validator class must implement a <code>validate_each</code> method which takes three
+arguments: record, attribute, and value. These correspond to the instance, the
+attribute to be validated, and the value of the attribute in the passed
+instance.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">EmailValidator</span> <span class="o">&lt;</span> <span class="no">ActiveModel</span><span class="o">::</span><span class="no">EachValidator</span>
+  <span class="k">def</span> <span class="nf">validate_each</span><span class="p">(</span><span class="n">record</span><span class="p">,</span> <span class="n">attribute</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+    <span class="k">unless</span> <span class="n">value</span> <span class="o">=~</span> <span class="sr">/\A([^@\s]+)@((?:[-a-z0-9]+\.)+[a-z]{2,})\z/i</span>
+      <span class="n">record</span><span class="p">.</span><span class="nf">errors</span><span class="p">.</span><span class="nf">add</span> <span class="n">attribute</span><span class="p">,</span> <span class="p">(</span><span class="n">options</span><span class="p">[</span><span class="ss">:message</span><span class="p">]</span> <span class="o">||</span> <span class="s2">"is not an email"</span><span class="p">)</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+
+<span class="k">class</span> <span class="nc">Person</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="n">validates</span> <span class="ss">:email</span><span class="p">,</span> <span class="ss">presence: </span><span class="kp">true</span><span class="p">,</span> <span class="ss">email: </span><span class="kp">true</span>
+<span class="k">end</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-7321253812b8cb53faf7337c03f3ece3">class EmailValidator &lt; ActiveModel::EachValidator
+  def validate_each(record, attribute, value)
+    unless value =~ /\A([^@\s]+)@((?:[-a-z0-9]+\.)+[a-z]{2,})\z/i
+      record.errors.add attribute, (options[:message] || "is not an email")
+    end
+  end
+end
+
+class Person &lt; ApplicationRecord
+  validates :email, presence: true, email: true
+end
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-7321253812b8cb53faf7337c03f3ece3">Copy</button>
+</div>
+<p>As shown in the example, you can also combine standard validations with your
+own custom validators.</p>
+
+<h4 id="custom-methods"><a class="anchorlink" href="#custom-methods">6.2 Custom Methods</a></h4>
+
+<p>You can also create methods that verify the state of your models and add
+errors to the <code>errors</code> collection when they are invalid. You must then
+register these methods by using the <a href="https://api.rubyonrails.org/v6.1.7.3/classes/ActiveModel/Validations/ClassMethods.html#method-i-validate"><code>validate</code></a>
+class method, passing in the symbols for the validation methods' names.</p>
+
+<p>You can pass more than one symbol for each class method and the respective
+validations will be run in the same order as they were registered.</p>
+
+<p>The <code>valid?</code> method will verify that the errors collection is empty,
+so your custom validation methods should add errors to it when you
+wish validation to fail:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">Invoice</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="n">validate</span> <span class="ss">:expiration_date_cannot_be_in_the_past</span><span class="p">,</span>
+    <span class="ss">:discount_cannot_be_greater_than_total_value</span>
+
+  <span class="k">def</span> <span class="nf">expiration_date_cannot_be_in_the_past</span>
+    <span class="k">if</span> <span class="n">expiration_date</span><span class="p">.</span><span class="nf">present?</span> <span class="o">&amp;&amp;</span> <span class="n">expiration_date</span> <span class="o">&lt;</span> <span class="no">Date</span><span class="p">.</span><span class="nf">today</span>
+      <span class="n">errors</span><span class="p">.</span><span class="nf">add</span><span class="p">(</span><span class="ss">:expiration_date</span><span class="p">,</span> <span class="s2">"can't be in the past"</span><span class="p">)</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+
+  <span class="k">def</span> <span class="nf">discount_cannot_be_greater_than_total_value</span>
+    <span class="k">if</span> <span class="n">discount</span> <span class="o">&gt;</span> <span class="n">total_value</span>
+      <span class="n">errors</span><span class="p">.</span><span class="nf">add</span><span class="p">(</span><span class="ss">:discount</span><span class="p">,</span> <span class="s2">"can't be greater than total value"</span><span class="p">)</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-2b9fcba8b9bda4ad3aff2895e822931b">class Invoice &lt; ApplicationRecord
+  validate :expiration_date_cannot_be_in_the_past,
+    :discount_cannot_be_greater_than_total_value
+
+  def expiration_date_cannot_be_in_the_past
+    if expiration_date.present? &amp;&amp; expiration_date &lt; Date.today
+      errors.add(:expiration_date, "can't be in the past")
+    end
+  end
+
+  def discount_cannot_be_greater_than_total_value
+    if discount &gt; total_value
+      errors.add(:discount, "can't be greater than total value")
+    end
+  end
+end
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-2b9fcba8b9bda4ad3aff2895e822931b">Copy</button>
+</div>
+<p>By default, such validations will run every time you call <code>valid?</code>
+or save the object. But it is also possible to control when to run these
+custom validations by giving an <code>:on</code> option to the <code>validate</code> method,
+with either: <code>:create</code> or <code>:update</code>.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">Invoice</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="n">validate</span> <span class="ss">:active_customer</span><span class="p">,</span> <span class="ss">on: :create</span>
+
+  <span class="k">def</span> <span class="nf">active_customer</span>
+    <span class="n">errors</span><span class="p">.</span><span class="nf">add</span><span class="p">(</span><span class="ss">:customer_id</span><span class="p">,</span> <span class="s2">"is not active"</span><span class="p">)</span> <span class="k">unless</span> <span class="n">customer</span><span class="p">.</span><span class="nf">active?</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-5f689d957170aeecd4f36c54f4e42036">class Invoice &lt; ApplicationRecord
+  validate :active_customer, on: :create
+
+  def active_customer
+    errors.add(:customer_id, "is not active") unless customer.active?
+  end
+end
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-5f689d957170aeecd4f36c54f4e42036">Copy</button>
+</div>
+</body>
+</html>

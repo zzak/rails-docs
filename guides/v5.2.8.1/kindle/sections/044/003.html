@@ -1,0 +1,152 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>4 Action Pack</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v5.2.8.1/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="action-pack"><a class="anchorlink" href="#action-pack">4 Action Pack</a></h3>
+<p>Please refer to the <a href="https://github.com/rails/rails/blob/5-0-stable/actionpack/CHANGELOG.md">Changelog</a> for detailed changes.</p>
+
+<h4 id="action-pack-removals"><a class="anchorlink" href="#action-pack-removals">4.1 Removals</a></h4>
+<ul>
+<li>  Removed <code>ActionDispatch::Request::Utils.deep_munge</code>.
+(<a href="https://github.com/rails/rails/commit/52cf1a71b393486435fab4386a8663b146608996">commit</a>)</li>
+<li>  Removed <code>ActionController::HideActions</code>.
+(<a href="https://github.com/rails/rails/pull/18371">Pull Request</a>)</li>
+<li>  Removed <code>respond_to</code> and <code>respond_with</code> placeholder methods, this functionality
+has been extracted to the
+<a href="https://github.com/plataformatec/responders">responders</a> gem.
+(<a href="https://github.com/rails/rails/commit/afd5e9a7ff0072e482b0b0e8e238d21b070b6280">commit</a>)</li>
+<li>  Removed deprecated assertion files.
+(<a href="https://github.com/rails/rails/commit/92e27d30d8112962ee068f7b14aa7b10daf0c976">commit</a>)</li>
+<li>  Removed deprecated usage of string keys in URL helpers.
+(<a href="https://github.com/rails/rails/commit/34e380764edede47f7ebe0c7671d6f9c9dc7e809">commit</a>)</li>
+<li>  Removed deprecated <code>only_path</code> option on <code>*_path</code> helpers.
+(<a href="https://github.com/rails/rails/commit/e4e1fd7ade47771067177254cb133564a3422b8a">commit</a>)</li>
+<li>  Removed deprecated <code>NamedRouteCollection#helpers</code>.
+(<a href="https://github.com/rails/rails/commit/2cc91c37bc2e32b7a04b2d782fb8f4a69a14503f">commit</a>)</li>
+<li>  Removed deprecated support to define routes with <code>:to</code> option that doesn't contain <code>#</code>.
+(<a href="https://github.com/rails/rails/commit/1f3b0a8609c00278b9a10076040ac9c90a9cc4a6">commit</a>)</li>
+<li>  Removed deprecated <code>ActionDispatch::Response#to_ary</code>.
+(<a href="https://github.com/rails/rails/commit/4b19d5b7bcdf4f11bd1e2e9ed2149a958e338c01">commit</a>)</li>
+<li>  Removed deprecated <code>ActionDispatch::Request#deep_munge</code>.
+(<a href="https://github.com/rails/rails/commit/7676659633057dacd97b8da66e0d9119809b343e">commit</a>)</li>
+<li>  Removed deprecated
+<code>ActionDispatch::Http::Parameters#symbolized_path_parameters</code>.
+(<a href="https://github.com/rails/rails/commit/7fe7973cd8bd119b724d72c5f617cf94c18edf9e">commit</a>)</li>
+<li>  Removed deprecated option <code>use_route</code> in controller tests.
+(<a href="https://github.com/rails/rails/commit/e4cfd353a47369dd32198b0e67b8cbb2f9a1c548">commit</a>)</li>
+<li>  Removed <code>assigns</code> and <code>assert_template</code>. Both methods have been extracted
+into the
+<a href="https://github.com/rails/rails-controller-testing">rails-controller-testing</a>
+gem.
+(<a href="https://github.com/rails/rails/pull/20138">Pull Request</a>)</li>
+</ul>
+<h4 id="action-pack-deprecations"><a class="anchorlink" href="#action-pack-deprecations">4.2 Deprecations</a></h4>
+<ul>
+<li>  Deprecated all <code>*_filter</code> callbacks in favor of <code>*_action</code> callbacks.
+(<a href="https://github.com/rails/rails/pull/18410">Pull Request</a>)</li>
+<li>  Deprecated <code>*_via_redirect</code> integration test methods. Use <code>follow_redirect!</code>
+manually after the request call for the same behavior.
+(<a href="https://github.com/rails/rails/pull/18693">Pull Request</a>)</li>
+<li>  Deprecated <code>AbstractController#skip_action_callback</code> in favor of individual
+skip_callback methods.
+(<a href="https://github.com/rails/rails/pull/19060">Pull Request</a>)</li>
+<li>  Deprecated <code>:nothing</code> option for <code>render</code> method.
+(<a href="https://github.com/rails/rails/pull/20336">Pull Request</a>)</li>
+<li>  Deprecated passing first parameter as <code>Hash</code> and default status code for
+<code>head</code> method.
+(<a href="https://github.com/rails/rails/pull/20407">Pull Request</a>)</li>
+<li>  Deprecated using strings or symbols for middleware class names. Use class
+names instead.
+(<a href="https://github.com/rails/rails/commit/83b767ce">commit</a>)</li>
+<li>  Deprecated accessing mime types via constants (eg. <code>Mime::HTML</code>). Use the
+subscript operator with a symbol instead (eg. <code>Mime[:html]</code>).
+(<a href="https://github.com/rails/rails/pull/21869">Pull Request</a>)</li>
+<li>  Deprecated <code>redirect_to :back</code> in favor of <code>redirect_back</code>, which accepts a
+required <code>fallback_location</code> argument, thus eliminating the possibility of a
+<code>RedirectBackError</code>.
+(<a href="https://github.com/rails/rails/pull/22506">Pull Request</a>)</li>
+<li>  <code>ActionDispatch::IntegrationTest</code> and <code>ActionController::TestCase</code> deprecate positional arguments in favor of
+keyword arguments. (<a href="https://github.com/rails/rails/pull/18323">Pull Request</a>)</li>
+<li>  Deprecated <code>:controller</code> and <code>:action</code> path parameters.
+(<a href="https://github.com/rails/rails/pull/23980">Pull Request</a>)</li>
+<li>  Deprecated env method on controller instances.
+(<a href="https://github.com/rails/rails/commit/05934d24aff62d66fc62621aa38dae6456e276be">commit</a>)</li>
+<li>  <code>ActionDispatch::ParamsParser</code> is deprecated and was removed from the
+middleware stack. To configure the parameter parsers use
+<code>ActionDispatch::Request.parameter_parsers=</code>.
+(<a href="https://github.com/rails/rails/commit/38d2bf5fd1f3e014f2397898d371c339baa627b1">commit</a>,
+<a href="https://github.com/rails/rails/commit/5ed38014811d4ce6d6f957510b9153938370173b">commit</a>)</li>
+</ul>
+<h4 id="action-pack-notable-changes"><a class="anchorlink" href="#action-pack-notable-changes">4.3 Notable changes</a></h4>
+<ul>
+<li>  Added <code>ActionController::Renderer</code> to render arbitrary templates
+outside controller actions.
+(<a href="https://github.com/rails/rails/pull/18546">Pull Request</a>)</li>
+<li>  Migrating to keyword arguments syntax in <code>ActionController::TestCase</code> and
+<code>ActionDispatch::Integration</code> HTTP request methods.
+(<a href="https://github.com/rails/rails/pull/18323">Pull Request</a>)</li>
+<li>  Added <code>http_cache_forever</code> to Action Controller, so we can cache a response
+that never gets expired.
+(<a href="https://github.com/rails/rails/pull/18394">Pull Request</a>)</li>
+<li>  Provide friendlier access to request variants.
+(<a href="https://github.com/rails/rails/pull/18939">Pull Request</a>)</li>
+<li>  For actions with no corresponding templates, render <code>head :no_content</code>
+instead of raising an error.
+(<a href="https://github.com/rails/rails/pull/19377">Pull Request</a>)</li>
+<li>  Added the ability to override default form builder for a controller.
+(<a href="https://github.com/rails/rails/pull/19736">Pull Request</a>)</li>
+<li>  Added support for API only apps.
+<code>ActionController::API</code> is added as a replacement of
+<code>ActionController::Base</code> for this kind of applications.
+(<a href="https://github.com/rails/rails/pull/19832">Pull Request</a>)</li>
+<li>  Make <code>ActionController::Parameters</code> no longer inherits from
+<code>HashWithIndifferentAccess</code>.
+(<a href="https://github.com/rails/rails/pull/20868">Pull Request</a>)</li>
+<li>  Make it easier to opt in to <code>config.force_ssl</code> and <code>config.ssl_options</code> by
+making them less dangerous to try and easier to disable.
+(<a href="https://github.com/rails/rails/pull/21520">Pull Request</a>)</li>
+<li>  Added the ability of returning arbitrary headers to <code>ActionDispatch::Static</code>.
+(<a href="https://github.com/rails/rails/pull/19135">Pull Request</a>)</li>
+<li>  Changed the <code>protect_from_forgery</code> prepend default to <code>false</code>.
+(<a href="https://github.com/rails/rails/commit/39794037817703575c35a75f1961b01b83791191">commit</a>)</li>
+<li>  <code>ActionController::TestCase</code> will be moved to its own gem in Rails 5.1. Use
+<code>ActionDispatch::IntegrationTest</code> instead.
+(<a href="https://github.com/rails/rails/commit/4414c5d1795e815b102571425974a8b1d46d932d">commit</a>)</li>
+<li>  Rails generates weak ETags by default.
+(<a href="https://github.com/rails/rails/pull/17573">Pull Request</a>)</li>
+<li>  Controller actions without an explicit <code>render</code> call and with no
+corresponding templates will render <code>head :no_content</code> implicitly
+instead of raising an error.
+(Pull Request <a href="https://github.com/rails/rails/pull/19377">1</a>,
+<a href="https://github.com/rails/rails/pull/23827">2</a>)</li>
+<li>  Added an option for per-form CSRF tokens.
+(<a href="https://github.com/rails/rails/pull/22275">Pull Request</a>)</li>
+<li>  Added request encoding and response parsing to integration tests.
+(<a href="https://github.com/rails/rails/pull/21671">Pull Request</a>)</li>
+<li>  Add <code>ActionController#helpers</code> to get access to the view context
+at the controller level.
+(<a href="https://github.com/rails/rails/pull/24866">Pull Request</a>)</li>
+<li>  Discarded flash messages get removed before storing into session.
+(<a href="https://github.com/rails/rails/pull/18721">Pull Request</a>)</li>
+<li>  Added support for passing collection of records to <code>fresh_when</code> and
+<code>stale?</code>.
+(<a href="https://github.com/rails/rails/pull/18374">Pull Request</a>)</li>
+<li>  <code>ActionController::Live</code> became an <code>ActiveSupport::Concern</code>. That
+means it can't be just included in other modules without extending
+them with <code>ActiveSupport::Concern</code> or <code>ActionController::Live</code>
+won't take effect in production. Some people may be using another
+module to include some special <code>Warden</code>/<code>Devise</code> authentication
+failure handling code as well since the middleware can't catch a
+<code>:warden</code> thrown by a spawned thread which is the case when using
+<code>ActionController::Live</code>.
+(<a href="https://github.com/rails/rails/issues/25581">More details in this issue</a>)</li>
+<li>  Introduce <code>Response#strong_etag=</code> and <code>#weak_etag=</code> and analogous
+options for <code>fresh_when</code> and <code>stale?</code>.
+(<a href="https://github.com/rails/rails/pull/24387">Pull Request</a>)</li>
+</ul>
+</body>
+</html>

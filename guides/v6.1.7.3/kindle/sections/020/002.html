@@ -1,0 +1,227 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>3 Attaching Files to Records</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v6.1.7.3/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="attaching-files-to-records"><a class="anchorlink" href="#attaching-files-to-records">3 Attaching Files to Records</a></h3>
+<h4 id="has-one-attached"><a class="anchorlink" href="#has-one-attached">3.1 <code>has_one_attached</code></a></h4>
+
+<p>The <a href="https://api.rubyonrails.org/v6.1.7.3/classes/ActiveStorage/Attached/Model.html#method-i-has_one_attached"><code>has_one_attached</code></a> macro sets up a one-to-one mapping between records and
+files. Each record can have one file attached to it.</p>
+
+<p>For example, suppose your application has a <code>User</code> model. If you want each user to
+have an avatar, define the <code>User</code> model like this:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">User</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="n">has_one_attached</span> <span class="ss">:avatar</span>
+<span class="k">end</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-f014dba442be064e1433b6918b1fbdbe">class User &lt; ApplicationRecord
+  has_one_attached :avatar
+end
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-f014dba442be064e1433b6918b1fbdbe">Copy</button>
+</div>
+<p>You can create a user with an avatar:</p>
+
+<div class="code_container">
+<pre><code class="highlight erb"><span class="cp">&lt;%=</span> <span class="n">form</span><span class="p">.</span><span class="nf">file_field</span> <span class="ss">:avatar</span> <span class="cp">%&gt;</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-28b42ce67aec4c3bbe4a57c175c04bef">&lt;%= form.file_field :avatar %&gt;
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-28b42ce67aec4c3bbe4a57c175c04bef">Copy</button>
+</div>
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">SignupController</span> <span class="o">&lt;</span> <span class="no">ApplicationController</span>
+  <span class="k">def</span> <span class="nf">create</span>
+    <span class="n">user</span> <span class="o">=</span> <span class="no">User</span><span class="p">.</span><span class="nf">create!</span><span class="p">(</span><span class="n">user_params</span><span class="p">)</span>
+    <span class="n">session</span><span class="p">[</span><span class="ss">:user_id</span><span class="p">]</span> <span class="o">=</span> <span class="n">user</span><span class="p">.</span><span class="nf">id</span>
+    <span class="n">redirect_to</span> <span class="n">root_path</span>
+  <span class="k">end</span>
+
+  <span class="kp">private</span>
+    <span class="k">def</span> <span class="nf">user_params</span>
+      <span class="n">params</span><span class="p">.</span><span class="nf">require</span><span class="p">(</span><span class="ss">:user</span><span class="p">).</span><span class="nf">permit</span><span class="p">(</span><span class="ss">:email_address</span><span class="p">,</span> <span class="ss">:password</span><span class="p">,</span> <span class="ss">:avatar</span><span class="p">)</span>
+    <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-938e59e91ca7ad2b95c354fb249fc93e">class SignupController &lt; ApplicationController
+  def create
+    user = User.create!(user_params)
+    session[:user_id] = user.id
+    redirect_to root_path
+  end
+
+  private
+    def user_params
+      params.require(:user).permit(:email_address, :password, :avatar)
+    end
+end
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-938e59e91ca7ad2b95c354fb249fc93e">Copy</button>
+</div>
+<p>Call <a href="https://api.rubyonrails.org/v6.1.7.3/classes/ActiveStorage/Attached/One.html#method-i-attach"><code>avatar.attach</code></a> to attach an avatar to an existing user:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">user</span><span class="p">.</span><span class="nf">avatar</span><span class="p">.</span><span class="nf">attach</span><span class="p">(</span><span class="n">params</span><span class="p">[</span><span class="ss">:avatar</span><span class="p">])</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-0be9829cbc941497545d842694ae98d6">user.avatar.attach(params[:avatar])
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-0be9829cbc941497545d842694ae98d6">Copy</button>
+</div>
+<p>Call <a href="https://api.rubyonrails.org/v6.1.7.3/classes/ActiveStorage/Attached/One.html#method-i-attached-3F"><code>avatar.attached?</code></a> to determine whether a particular user has an avatar:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">user</span><span class="p">.</span><span class="nf">avatar</span><span class="p">.</span><span class="nf">attached?</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-ea3482538e1b9e5e3d6946a15864789f">user.avatar.attached?
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-ea3482538e1b9e5e3d6946a15864789f">Copy</button>
+</div>
+<p>In some cases you might want to override a default service for a specific attachment.
+You can configure specific services per attachment using the <code>service</code> option:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">User</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="n">has_one_attached</span> <span class="ss">:avatar</span><span class="p">,</span> <span class="ss">service: :s3</span>
+<span class="k">end</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-9a1c8caf7a7aca313054bba3164d61c8">class User &lt; ApplicationRecord
+  has_one_attached :avatar, service: :s3
+end
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-9a1c8caf7a7aca313054bba3164d61c8">Copy</button>
+</div>
+<h4 id="has-many-attached"><a class="anchorlink" href="#has-many-attached">3.2 <code>has_many_attached</code></a></h4>
+
+<p>The <a href="https://api.rubyonrails.org/v6.1.7.3/classes/ActiveStorage/Attached/Model.html#method-i-has_many_attached"><code>has_many_attached</code></a> macro sets up a one-to-many relationship between records
+and files. Each record can have many files attached to it.</p>
+
+<p>For example, suppose your application has a <code>Message</code> model. If you want each
+message to have many images, define the <code>Message</code> model like this:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">Message</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="n">has_many_attached</span> <span class="ss">:images</span>
+<span class="k">end</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-1a1470bb4f01f5345dea20216bb50f1c">class Message &lt; ApplicationRecord
+  has_many_attached :images
+end
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-1a1470bb4f01f5345dea20216bb50f1c">Copy</button>
+</div>
+<p>You can create a message with images:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">MessagesController</span> <span class="o">&lt;</span> <span class="no">ApplicationController</span>
+  <span class="k">def</span> <span class="nf">create</span>
+    <span class="n">message</span> <span class="o">=</span> <span class="no">Message</span><span class="p">.</span><span class="nf">create!</span><span class="p">(</span><span class="n">message_params</span><span class="p">)</span>
+    <span class="n">redirect_to</span> <span class="n">message</span>
+  <span class="k">end</span>
+
+  <span class="kp">private</span>
+    <span class="k">def</span> <span class="nf">message_params</span>
+      <span class="n">params</span><span class="p">.</span><span class="nf">require</span><span class="p">(</span><span class="ss">:message</span><span class="p">).</span><span class="nf">permit</span><span class="p">(</span><span class="ss">:title</span><span class="p">,</span> <span class="ss">:content</span><span class="p">,</span> <span class="ss">images: </span><span class="p">[])</span>
+    <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-423d135ad0501e243c06734848ba1cb9">class MessagesController &lt; ApplicationController
+  def create
+    message = Message.create!(message_params)
+    redirect_to message
+  end
+
+  private
+    def message_params
+      params.require(:message).permit(:title, :content, images: [])
+    end
+end
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-423d135ad0501e243c06734848ba1cb9">Copy</button>
+</div>
+<p>Call <a href="https://api.rubyonrails.org/v6.1.7.3/classes/ActiveStorage/Attached/Many.html#method-i-attach"><code>images.attach</code></a> to add new images to an existing message:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="vi">@message</span><span class="p">.</span><span class="nf">images</span><span class="p">.</span><span class="nf">attach</span><span class="p">(</span><span class="n">params</span><span class="p">[</span><span class="ss">:images</span><span class="p">])</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-acbc33ca9137f465f8f21acb729d40f3">@message.images.attach(params[:images])
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-acbc33ca9137f465f8f21acb729d40f3">Copy</button>
+</div>
+<p>Call <a href="https://api.rubyonrails.org/v6.1.7.3/classes/ActiveStorage/Attached/Many.html#method-i-attached-3F"><code>images.attached?</code></a> to determine whether a particular message has any images:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="vi">@message</span><span class="p">.</span><span class="nf">images</span><span class="p">.</span><span class="nf">attached?</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-d61fb3f1cc7e7c9bcf5d477e5ec12f54">@message.images.attached?
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-d61fb3f1cc7e7c9bcf5d477e5ec12f54">Copy</button>
+</div>
+<p>Overriding the default service is done the same way as <code>has_one_attached</code>, by using the <code>service</code> option:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">Message</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="n">has_many_attached</span> <span class="ss">:images</span><span class="p">,</span> <span class="ss">service: :s3</span>
+<span class="k">end</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-3febc9bd10329d872bd4b45cf37158da">class Message &lt; ApplicationRecord
+  has_many_attached :images, service: :s3
+end
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-3febc9bd10329d872bd4b45cf37158da">Copy</button>
+</div>
+<h4 id="attaching-file-io-objects"><a class="anchorlink" href="#attaching-file-io-objects">3.3 Attaching File/IO Objects</a></h4>
+
+<p>Sometimes you need to attach a file that doesn’t arrive via an HTTP request.
+For example, you may want to attach a file you generated on disk or downloaded
+from a user-submitted URL. You may also want to attach a fixture file in a
+model test. To do that, provide a Hash containing at least an open IO object
+and a filename:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="vi">@message</span><span class="p">.</span><span class="nf">image</span><span class="p">.</span><span class="nf">attach</span><span class="p">(</span><span class="ss">io: </span><span class="no">File</span><span class="p">.</span><span class="nf">open</span><span class="p">(</span><span class="s1">'/path/to/file'</span><span class="p">),</span> <span class="ss">filename: </span><span class="s1">'file.pdf'</span><span class="p">)</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-045e09962b6d5ab535dd97b2d6f07106">@message.image.attach(io: File.open('/path/to/file'), filename: 'file.pdf')
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-045e09962b6d5ab535dd97b2d6f07106">Copy</button>
+</div>
+<p>When possible, provide a content type as well. Active Storage attempts to
+determine a file’s content type from its data. It falls back to the content
+type you provide if it can’t do that.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="vi">@message</span><span class="p">.</span><span class="nf">image</span><span class="p">.</span><span class="nf">attach</span><span class="p">(</span><span class="ss">io: </span><span class="no">File</span><span class="p">.</span><span class="nf">open</span><span class="p">(</span><span class="s1">'/path/to/file'</span><span class="p">),</span> <span class="ss">filename: </span><span class="s1">'file.pdf'</span><span class="p">,</span> <span class="ss">content_type: </span><span class="s1">'application/pdf'</span><span class="p">)</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-772c83cbfea5633aed74037c6070567a">@message.image.attach(io: File.open('/path/to/file'), filename: 'file.pdf', content_type: 'application/pdf')
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-772c83cbfea5633aed74037c6070567a">Copy</button>
+</div>
+<p>You can bypass the content type inference from the data by passing in
+<code>identify: false</code> along with the <code>content_type</code>.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="vi">@message</span><span class="p">.</span><span class="nf">image</span><span class="p">.</span><span class="nf">attach</span><span class="p">(</span>
+  <span class="ss">io: </span><span class="no">File</span><span class="p">.</span><span class="nf">open</span><span class="p">(</span><span class="s1">'/path/to/file'</span><span class="p">),</span>
+  <span class="ss">filename: </span><span class="s1">'file.pdf'</span><span class="p">,</span>
+  <span class="ss">content_type: </span><span class="s1">'application/pdf'</span><span class="p">,</span>
+  <span class="ss">identify: </span><span class="kp">false</span>
+<span class="p">)</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-9ebb71ba5c603751b3c618aca9e21f1f">@message.image.attach(
+  io: File.open('/path/to/file'),
+  filename: 'file.pdf',
+  content_type: 'application/pdf',
+  identify: false
+)
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-9ebb71ba5c603751b3c618aca9e21f1f">Copy</button>
+</div>
+<p>If you don’t provide a content type and Active Storage can’t determine the
+file’s content type automatically, it defaults to application/octet-stream.</p>
+</body>
+</html>

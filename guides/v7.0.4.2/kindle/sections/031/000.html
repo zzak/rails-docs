@@ -1,0 +1,755 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>1 Launch!</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v7.0.4.2/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="launch-bang"><a class="anchorlink" href="#launch-bang">1 Launch!</a></h3>
+<p>Let's start to boot and initialize the app. A Rails application is usually
+started by running <code>bin/rails console</code> or <code>bin/rails server</code>.</p>
+
+<h4 id="bin-rails"><a class="anchorlink" href="#bin-rails">1.1 <code>bin/rails</code></a></h4>
+
+<p>This file is as follows:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="c1">#!/usr/bin/env ruby</span>
+<span class="no">APP_PATH</span> <span class="o">=</span> <span class="no">File</span><span class="p">.</span><span class="nf">expand_path</span><span class="p">(</span><span class="s1">'../config/application'</span><span class="p">,</span> <span class="n">__dir__</span><span class="p">)</span>
+<span class="nb">require_relative</span> <span class="s2">"../config/boot"</span>
+<span class="nb">require</span> <span class="s2">"rails/commands"</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="#!/usr/bin/env ruby
+APP_PATH = File.expand_path('../config/application', __dir__)
+require_relative &quot;../config/boot&quot;
+require &quot;rails/commands&quot;
+">Copy</button>
+</div>
+<p>The <code>APP_PATH</code> constant will be used later in <code>rails/commands</code>. The <code>config/boot</code> file referenced here is the <code>config/boot.rb</code> file in our application which is responsible for loading Bundler and setting it up.</p>
+
+<h4 id="config-boot-rb"><a class="anchorlink" href="#config-boot-rb">1.2 <code>config/boot.rb</code></a></h4>
+
+<p><code>config/boot.rb</code> contains:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="no">ENV</span><span class="p">[</span><span class="s1">'BUNDLE_GEMFILE'</span><span class="p">]</span> <span class="o">||=</span> <span class="no">File</span><span class="p">.</span><span class="nf">expand_path</span><span class="p">(</span><span class="s1">'../Gemfile'</span><span class="p">,</span> <span class="n">__dir__</span><span class="p">)</span>
+
+<span class="nb">require</span> <span class="s2">"bundler/setup"</span> <span class="c1"># Set up gems listed in the Gemfile.</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="ENV['BUNDLE_GEMFILE'] ||= File.expand_path('../Gemfile', __dir__)
+
+require &quot;bundler/setup&quot; # Set up gems listed in the Gemfile.
+">Copy</button>
+</div>
+<p>In a standard Rails application, there's a <code>Gemfile</code> which declares all
+dependencies of the application. <code>config/boot.rb</code> sets
+<code>ENV['BUNDLE_GEMFILE']</code> to the location of this file. If the <code>Gemfile</code>
+exists, then <code>bundler/setup</code> is required. The require is used by Bundler to
+configure the load path for your Gemfile's dependencies.</p>
+
+<h4 id="rails-commands-rb"><a class="anchorlink" href="#rails-commands-rb">1.3 <code>rails/commands.rb</code></a></h4>
+
+<p>Once <code>config/boot.rb</code> has finished, the next file that is required is
+<code>rails/commands</code>, which helps in expanding aliases. In the current case, the
+<code>ARGV</code> array simply contains <code>server</code> which will be passed over:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="nb">require</span> <span class="s2">"rails/command"</span>
+
+<span class="n">aliases</span> <span class="o">=</span> <span class="p">{</span>
+  <span class="s2">"g"</span>  <span class="o">=&gt;</span> <span class="s2">"generate"</span><span class="p">,</span>
+  <span class="s2">"d"</span>  <span class="o">=&gt;</span> <span class="s2">"destroy"</span><span class="p">,</span>
+  <span class="s2">"c"</span>  <span class="o">=&gt;</span> <span class="s2">"console"</span><span class="p">,</span>
+  <span class="s2">"s"</span>  <span class="o">=&gt;</span> <span class="s2">"server"</span><span class="p">,</span>
+  <span class="s2">"db"</span> <span class="o">=&gt;</span> <span class="s2">"dbconsole"</span><span class="p">,</span>
+  <span class="s2">"r"</span>  <span class="o">=&gt;</span> <span class="s2">"runner"</span><span class="p">,</span>
+  <span class="s2">"t"</span>  <span class="o">=&gt;</span> <span class="s2">"test"</span>
+<span class="p">}</span>
+
+<span class="n">command</span> <span class="o">=</span> <span class="no">ARGV</span><span class="p">.</span><span class="nf">shift</span>
+<span class="n">command</span> <span class="o">=</span> <span class="n">aliases</span><span class="p">[</span><span class="n">command</span><span class="p">]</span> <span class="o">||</span> <span class="n">command</span>
+
+<span class="no">Rails</span><span class="o">::</span><span class="no">Command</span><span class="p">.</span><span class="nf">invoke</span> <span class="n">command</span><span class="p">,</span> <span class="no">ARGV</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='require "rails/command"
+
+aliases = {
+  "g"  =&gt; "generate",
+  "d"  =&gt; "destroy",
+  "c"  =&gt; "console",
+  "s"  =&gt; "server",
+  "db" =&gt; "dbconsole",
+  "r"  =&gt; "runner",
+  "t"  =&gt; "test"
+}
+
+command = ARGV.shift
+command = aliases[command] || command
+
+Rails::Command.invoke command, ARGV
+'>Copy</button>
+</div>
+<p>If we had used <code>s</code> rather than <code>server</code>, Rails would have used the <code>aliases</code>
+defined here to find the matching command.</p>
+
+<h4 id="rails-command-rb"><a class="anchorlink" href="#rails-command-rb">1.4 <code>rails/command.rb</code></a></h4>
+
+<p>When one types a Rails command, <code>invoke</code> tries to lookup a command for the given
+namespace and executes the command if found.</p>
+
+<p>If Rails doesn't recognize the command, it hands the reins over to Rake
+to run a task of the same name.</p>
+
+<p>As shown, <code>Rails::Command</code> displays the help output automatically if the <code>namespace</code>
+is empty.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">module</span> <span class="nn">Rails</span>
+  <span class="k">module</span> <span class="nn">Command</span>
+    <span class="k">class</span> <span class="o">&lt;&lt;</span> <span class="nb">self</span>
+      <span class="k">def</span> <span class="nf">invoke</span><span class="p">(</span><span class="n">full_namespace</span><span class="p">,</span> <span class="n">args</span> <span class="o">=</span> <span class="p">[],</span> <span class="o">**</span><span class="n">config</span><span class="p">)</span>
+        <span class="n">namespace</span> <span class="o">=</span> <span class="n">full_namespace</span> <span class="o">=</span> <span class="n">full_namespace</span><span class="p">.</span><span class="nf">to_s</span>
+
+        <span class="k">if</span> <span class="n">char</span> <span class="o">=</span> <span class="n">namespace</span> <span class="o">=~</span> <span class="sr">/:(\w+)$/</span>
+          <span class="n">command_name</span><span class="p">,</span> <span class="n">namespace</span> <span class="o">=</span> <span class="vg">$1</span><span class="p">,</span> <span class="n">namespace</span><span class="p">.</span><span class="nf">slice</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">char</span><span class="p">)</span>
+        <span class="k">else</span>
+          <span class="n">command_name</span> <span class="o">=</span> <span class="n">namespace</span>
+        <span class="k">end</span>
+
+        <span class="n">command_name</span><span class="p">,</span> <span class="n">namespace</span> <span class="o">=</span> <span class="s2">"help"</span><span class="p">,</span> <span class="s2">"help"</span> <span class="k">if</span> <span class="n">command_name</span><span class="p">.</span><span class="nf">blank?</span> <span class="o">||</span> <span class="no">HELP_MAPPINGS</span><span class="p">.</span><span class="nf">include?</span><span class="p">(</span><span class="n">command_name</span><span class="p">)</span>
+        <span class="n">command_name</span><span class="p">,</span> <span class="n">namespace</span> <span class="o">=</span> <span class="s2">"version"</span><span class="p">,</span> <span class="s2">"version"</span> <span class="k">if</span> <span class="sx">%w( -v --version )</span><span class="p">.</span><span class="nf">include?</span><span class="p">(</span><span class="n">command_name</span><span class="p">)</span>
+
+        <span class="n">command</span> <span class="o">=</span> <span class="n">find_by_namespace</span><span class="p">(</span><span class="n">namespace</span><span class="p">,</span> <span class="n">command_name</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">command</span> <span class="o">&amp;&amp;</span> <span class="n">command</span><span class="p">.</span><span class="nf">all_commands</span><span class="p">[</span><span class="n">command_name</span><span class="p">]</span>
+          <span class="n">command</span><span class="p">.</span><span class="nf">perform</span><span class="p">(</span><span class="n">command_name</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">config</span><span class="p">)</span>
+        <span class="k">else</span>
+          <span class="n">find_by_namespace</span><span class="p">(</span><span class="s2">"rake"</span><span class="p">).</span><span class="nf">perform</span><span class="p">(</span><span class="n">full_namespace</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">config</span><span class="p">)</span>
+        <span class="k">end</span>
+      <span class="k">end</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='module Rails
+  module Command
+    class &lt;&lt; self
+      def invoke(full_namespace, args = [], **config)
+        namespace = full_namespace = full_namespace.to_s
+
+        if char = namespace =~ /:(\w+)$/
+          command_name, namespace = $1, namespace.slice(0, char)
+        else
+          command_name = namespace
+        end
+
+        command_name, namespace = "help", "help" if command_name.blank? || HELP_MAPPINGS.include?(command_name)
+        command_name, namespace = "version", "version" if %w( -v --version ).include?(command_name)
+
+        command = find_by_namespace(namespace, command_name)
+        if command &amp;&amp; command.all_commands[command_name]
+          command.perform(command_name, args, config)
+        else
+          find_by_namespace("rake").perform(full_namespace, args, config)
+        end
+      end
+    end
+  end
+end
+'>Copy</button>
+</div>
+<p>With the <code>server</code> command, Rails will further run the following code:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">module</span> <span class="nn">Rails</span>
+  <span class="k">module</span> <span class="nn">Command</span>
+    <span class="k">class</span> <span class="nc">ServerCommand</span> <span class="o">&lt;</span> <span class="no">Base</span> <span class="c1"># :nodoc:</span>
+      <span class="k">def</span> <span class="nf">perform</span>
+        <span class="n">extract_environment_option_from_argument</span>
+        <span class="n">set_application_directory!</span>
+        <span class="n">prepare_restart</span>
+
+        <span class="no">Rails</span><span class="o">::</span><span class="no">Server</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="n">server_options</span><span class="p">).</span><span class="nf">tap</span> <span class="k">do</span> <span class="o">|</span><span class="n">server</span><span class="o">|</span>
+          <span class="c1"># Require application after server sets environment to propagate</span>
+          <span class="c1"># the --environment option.</span>
+          <span class="nb">require</span> <span class="no">APP_PATH</span>
+          <span class="no">Dir</span><span class="p">.</span><span class="nf">chdir</span><span class="p">(</span><span class="no">Rails</span><span class="p">.</span><span class="nf">application</span><span class="p">.</span><span class="nf">root</span><span class="p">)</span>
+
+          <span class="k">if</span> <span class="n">server</span><span class="p">.</span><span class="nf">serveable?</span>
+            <span class="n">print_boot_information</span><span class="p">(</span><span class="n">server</span><span class="p">.</span><span class="nf">server</span><span class="p">,</span> <span class="n">server</span><span class="p">.</span><span class="nf">served_url</span><span class="p">)</span>
+            <span class="n">after_stop_callback</span> <span class="o">=</span> <span class="o">-&gt;</span> <span class="p">{</span> <span class="n">say</span> <span class="s2">"Exiting"</span> <span class="k">unless</span> <span class="n">options</span><span class="p">[</span><span class="ss">:daemon</span><span class="p">]</span> <span class="p">}</span>
+            <span class="n">server</span><span class="p">.</span><span class="nf">start</span><span class="p">(</span><span class="n">after_stop_callback</span><span class="p">)</span>
+          <span class="k">else</span>
+            <span class="n">say</span> <span class="n">rack_server_suggestion</span><span class="p">(</span><span class="n">using</span><span class="p">)</span>
+          <span class="k">end</span>
+        <span class="k">end</span>
+      <span class="k">end</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='module Rails
+  module Command
+    class ServerCommand &lt; Base # :nodoc:
+      def perform
+        extract_environment_option_from_argument
+        set_application_directory!
+        prepare_restart
+
+        Rails::Server.new(server_options).tap do |server|
+          # Require application after server sets environment to propagate
+          # the --environment option.
+          require APP_PATH
+          Dir.chdir(Rails.application.root)
+
+          if server.serveable?
+            print_boot_information(server.server, server.served_url)
+            after_stop_callback = -&gt; { say "Exiting" unless options[:daemon] }
+            server.start(after_stop_callback)
+          else
+            say rack_server_suggestion(using)
+          end
+        end
+      end
+    end
+  end
+end
+'>Copy</button>
+</div>
+<p>This file will change into the Rails root directory (a path two directories up
+from <code>APP_PATH</code> which points at <code>config/application.rb</code>), but only if the
+<code>config.ru</code> file isn't found. This then starts up the <code>Rails::Server</code> class.</p>
+
+<h4 id="actionpack-lib-action-dispatch-rb"><a class="anchorlink" href="#actionpack-lib-action-dispatch-rb">1.5 <code>actionpack/lib/action_dispatch.rb</code></a></h4>
+
+<p>Action Dispatch is the routing component of the Rails framework.
+It adds functionality like routing, session, and common middlewares.</p>
+
+<h4 id="rails-commands-server-server-command-rb"><a class="anchorlink" href="#rails-commands-server-server-command-rb">1.6 <code>rails/commands/server/server_command.rb</code></a></h4>
+
+<p>The <code>Rails::Server</code> class is defined in this file by inheriting from
+<code>Rack::Server</code>. When <code>Rails::Server.new</code> is called, this calls the <code>initialize</code>
+method in <code>rails/commands/server/server_command.rb</code>:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">module</span> <span class="nn">Rails</span>
+  <span class="k">class</span> <span class="nc">Server</span> <span class="o">&lt;</span> <span class="o">::</span><span class="no">Rack</span><span class="o">::</span><span class="no">Server</span>
+    <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="n">options</span> <span class="o">=</span> <span class="kp">nil</span><span class="p">)</span>
+      <span class="vi">@default_options</span> <span class="o">=</span> <span class="n">options</span> <span class="o">||</span> <span class="p">{}</span>
+      <span class="k">super</span><span class="p">(</span><span class="vi">@default_options</span><span class="p">)</span>
+      <span class="n">set_environment</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="module Rails
+  class Server &lt; ::Rack::Server
+    def initialize(options = nil)
+      @default_options = options || {}
+      super(@default_options)
+      set_environment
+    end
+  end
+end
+">Copy</button>
+</div>
+<p>Firstly, <code>super</code> is called which calls the <code>initialize</code> method on <code>Rack::Server</code>.</p>
+
+<h4 id="launch-bang-rack-lib-rack-server-rb"><a class="anchorlink" href="#launch-bang-rack-lib-rack-server-rb">1.7 Rack: <code>lib/rack/server.rb</code></a></h4>
+
+<p><code>Rack::Server</code> is responsible for providing a common server interface for all Rack-based applications, which Rails is now a part of.</p>
+
+<p>The <code>initialize</code> method in <code>Rack::Server</code> simply sets several variables:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">module</span> <span class="nn">Rack</span>
+  <span class="k">class</span> <span class="nc">Server</span>
+    <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="n">options</span> <span class="o">=</span> <span class="kp">nil</span><span class="p">)</span>
+      <span class="vi">@ignore_options</span> <span class="o">=</span> <span class="p">[]</span>
+
+      <span class="k">if</span> <span class="n">options</span>
+        <span class="vi">@use_default_options</span> <span class="o">=</span> <span class="kp">false</span>
+        <span class="vi">@options</span> <span class="o">=</span> <span class="n">options</span>
+        <span class="vi">@app</span> <span class="o">=</span> <span class="n">options</span><span class="p">[</span><span class="ss">:app</span><span class="p">]</span> <span class="k">if</span> <span class="n">options</span><span class="p">[</span><span class="ss">:app</span><span class="p">]</span>
+      <span class="k">else</span>
+        <span class="n">argv</span> <span class="o">=</span> <span class="k">defined?</span><span class="p">(</span><span class="no">SPEC_ARGV</span><span class="p">)</span> <span class="p">?</span> <span class="no">SPEC_ARGV</span> <span class="p">:</span> <span class="no">ARGV</span>
+        <span class="vi">@use_default_options</span> <span class="o">=</span> <span class="kp">true</span>
+        <span class="vi">@options</span> <span class="o">=</span> <span class="n">parse_options</span><span class="p">(</span><span class="n">argv</span><span class="p">)</span>
+      <span class="k">end</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="module Rack
+  class Server
+    def initialize(options = nil)
+      @ignore_options = []
+
+      if options
+        @use_default_options = false
+        @options = options
+        @app = options[:app] if options[:app]
+      else
+        argv = defined?(SPEC_ARGV) ? SPEC_ARGV : ARGV
+        @use_default_options = true
+        @options = parse_options(argv)
+      end
+    end
+  end
+end
+">Copy</button>
+</div>
+<p>In this case, return value of <code>Rails::Command::ServerCommand#server_options</code> will be assigned to <code>options</code>.
+When lines inside if statement is evaluated, a couple of instance variables will be set.</p>
+
+<p><code>server_options</code> method in <code>Rails::Command::ServerCommand</code> is defined as follows:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">module</span> <span class="nn">Rails</span>
+  <span class="k">module</span> <span class="nn">Command</span>
+    <span class="k">class</span> <span class="nc">ServerCommand</span>
+      <span class="n">no_commands</span> <span class="k">do</span>
+        <span class="k">def</span> <span class="nf">server_options</span>
+          <span class="p">{</span>
+            <span class="ss">user_supplied_options: </span><span class="n">user_supplied_options</span><span class="p">,</span>
+            <span class="ss">server:                </span><span class="n">using</span><span class="p">,</span>
+            <span class="ss">log_stdout:            </span><span class="n">log_to_stdout?</span><span class="p">,</span>
+            <span class="no">Port</span><span class="p">:</span>                  <span class="n">port</span><span class="p">,</span>
+            <span class="no">Host</span><span class="p">:</span>                  <span class="n">host</span><span class="p">,</span>
+            <span class="no">DoNotReverseLookup</span><span class="p">:</span>    <span class="kp">true</span><span class="p">,</span>
+            <span class="ss">config:                </span><span class="n">options</span><span class="p">[</span><span class="ss">:config</span><span class="p">],</span>
+            <span class="ss">environment:           </span><span class="n">environment</span><span class="p">,</span>
+            <span class="ss">daemonize:             </span><span class="n">options</span><span class="p">[</span><span class="ss">:daemon</span><span class="p">],</span>
+            <span class="ss">pid:                   </span><span class="n">pid</span><span class="p">,</span>
+            <span class="ss">caching:               </span><span class="n">options</span><span class="p">[</span><span class="ss">:dev_caching</span><span class="p">],</span>
+            <span class="ss">restart_cmd:           </span><span class="n">restart_command</span><span class="p">,</span>
+            <span class="ss">early_hints:           </span><span class="n">early_hints</span>
+          <span class="p">}</span>
+        <span class="k">end</span>
+      <span class="k">end</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="module Rails
+  module Command
+    class ServerCommand
+      no_commands do
+        def server_options
+          {
+            user_supplied_options: user_supplied_options,
+            server:                using,
+            log_stdout:            log_to_stdout?,
+            Port:                  port,
+            Host:                  host,
+            DoNotReverseLookup:    true,
+            config:                options[:config],
+            environment:           environment,
+            daemonize:             options[:daemon],
+            pid:                   pid,
+            caching:               options[:dev_caching],
+            restart_cmd:           restart_command,
+            early_hints:           early_hints
+          }
+        end
+      end
+    end
+  end
+end
+">Copy</button>
+</div>
+<p>The value will be assigned to instance variable <code>@options</code>.</p>
+
+<p>After <code>super</code> has finished in <code>Rack::Server</code>, we jump back to
+<code>rails/commands/server/server_command.rb</code>. At this point, <code>set_environment</code>
+is called within the context of the <code>Rails::Server</code> object.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">module</span> <span class="nn">Rails</span>
+  <span class="k">module</span> <span class="nn">Server</span>
+    <span class="k">def</span> <span class="nf">set_environment</span>
+      <span class="no">ENV</span><span class="p">[</span><span class="s2">"RAILS_ENV"</span><span class="p">]</span> <span class="o">||=</span> <span class="n">options</span><span class="p">[</span><span class="ss">:environment</span><span class="p">]</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='module Rails
+  module Server
+    def set_environment
+      ENV["RAILS_ENV"] ||= options[:environment]
+    end
+  end
+end
+'>Copy</button>
+</div>
+<p>After <code>initialize</code> has finished, we jump back into the server command
+where <code>APP_PATH</code> (which was set earlier) is required.</p>
+
+<h4 id="config-application"><a class="anchorlink" href="#config-application">1.8 <code>config/application</code></a></h4>
+
+<p>When <code>require APP_PATH</code> is executed, <code>config/application.rb</code> is loaded (recall
+that <code>APP_PATH</code> is defined in <code>bin/rails</code>). This file exists in your application
+and it's free for you to change based on your needs.</p>
+
+<h4 id="rails-server-start"><a class="anchorlink" href="#rails-server-start">1.9 <code>Rails::Server#start</code></a></h4>
+
+<p>After <code>config/application</code> is loaded, <code>server.start</code> is called. This method is
+defined like this:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">module</span> <span class="nn">Rails</span>
+  <span class="k">class</span> <span class="nc">Server</span> <span class="o">&lt;</span> <span class="o">::</span><span class="no">Rack</span><span class="o">::</span><span class="no">Server</span>
+    <span class="k">def</span> <span class="nf">start</span><span class="p">(</span><span class="n">after_stop_callback</span> <span class="o">=</span> <span class="kp">nil</span><span class="p">)</span>
+      <span class="nb">trap</span><span class="p">(</span><span class="ss">:INT</span><span class="p">)</span> <span class="p">{</span> <span class="nb">exit</span> <span class="p">}</span>
+      <span class="n">create_tmp_directories</span>
+      <span class="n">setup_dev_caching</span>
+      <span class="n">log_to_stdout</span> <span class="k">if</span> <span class="n">options</span><span class="p">[</span><span class="ss">:log_stdout</span><span class="p">]</span>
+
+      <span class="k">super</span><span class="p">()</span>
+      <span class="c1"># ...</span>
+    <span class="k">end</span>
+
+    <span class="kp">private</span>
+      <span class="k">def</span> <span class="nf">setup_dev_caching</span>
+        <span class="k">if</span> <span class="n">options</span><span class="p">[</span><span class="ss">:environment</span><span class="p">]</span> <span class="o">==</span> <span class="s2">"development"</span>
+          <span class="no">Rails</span><span class="o">::</span><span class="no">DevCaching</span><span class="p">.</span><span class="nf">enable_by_argument</span><span class="p">(</span><span class="n">options</span><span class="p">[</span><span class="ss">:caching</span><span class="p">])</span>
+        <span class="k">end</span>
+      <span class="k">end</span>
+
+      <span class="k">def</span> <span class="nf">create_tmp_directories</span>
+        <span class="sx">%w(cache pids sockets)</span><span class="p">.</span><span class="nf">each</span> <span class="k">do</span> <span class="o">|</span><span class="n">dir_to_make</span><span class="o">|</span>
+          <span class="no">FileUtils</span><span class="p">.</span><span class="nf">mkdir_p</span><span class="p">(</span><span class="no">File</span><span class="p">.</span><span class="nf">join</span><span class="p">(</span><span class="no">Rails</span><span class="p">.</span><span class="nf">root</span><span class="p">,</span> <span class="s2">"tmp"</span><span class="p">,</span> <span class="n">dir_to_make</span><span class="p">))</span>
+        <span class="k">end</span>
+      <span class="k">end</span>
+
+      <span class="k">def</span> <span class="nf">log_to_stdout</span>
+        <span class="n">wrapped_app</span> <span class="c1"># touch the app so the logger is set up</span>
+
+        <span class="n">console</span> <span class="o">=</span> <span class="no">ActiveSupport</span><span class="o">::</span><span class="no">Logger</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="no">STDOUT</span><span class="p">)</span>
+        <span class="n">console</span><span class="p">.</span><span class="nf">formatter</span> <span class="o">=</span> <span class="no">Rails</span><span class="p">.</span><span class="nf">logger</span><span class="p">.</span><span class="nf">formatter</span>
+        <span class="n">console</span><span class="p">.</span><span class="nf">level</span> <span class="o">=</span> <span class="no">Rails</span><span class="p">.</span><span class="nf">logger</span><span class="p">.</span><span class="nf">level</span>
+
+        <span class="k">unless</span> <span class="no">ActiveSupport</span><span class="o">::</span><span class="no">Logger</span><span class="p">.</span><span class="nf">logger_outputs_to?</span><span class="p">(</span><span class="no">Rails</span><span class="p">.</span><span class="nf">logger</span><span class="p">,</span> <span class="no">STDOUT</span><span class="p">)</span>
+          <span class="no">Rails</span><span class="p">.</span><span class="nf">logger</span><span class="p">.</span><span class="nf">extend</span><span class="p">(</span><span class="no">ActiveSupport</span><span class="o">::</span><span class="no">Logger</span><span class="p">.</span><span class="nf">broadcast</span><span class="p">(</span><span class="n">console</span><span class="p">))</span>
+        <span class="k">end</span>
+      <span class="k">end</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='module Rails
+  class Server &lt; ::Rack::Server
+    def start(after_stop_callback = nil)
+      trap(:INT) { exit }
+      create_tmp_directories
+      setup_dev_caching
+      log_to_stdout if options[:log_stdout]
+
+      super()
+      # ...
+    end
+
+    private
+      def setup_dev_caching
+        if options[:environment] == "development"
+          Rails::DevCaching.enable_by_argument(options[:caching])
+        end
+      end
+
+      def create_tmp_directories
+        %w(cache pids sockets).each do |dir_to_make|
+          FileUtils.mkdir_p(File.join(Rails.root, "tmp", dir_to_make))
+        end
+      end
+
+      def log_to_stdout
+        wrapped_app # touch the app so the logger is set up
+
+        console = ActiveSupport::Logger.new(STDOUT)
+        console.formatter = Rails.logger.formatter
+        console.level = Rails.logger.level
+
+        unless ActiveSupport::Logger.logger_outputs_to?(Rails.logger, STDOUT)
+          Rails.logger.extend(ActiveSupport::Logger.broadcast(console))
+        end
+      end
+  end
+end
+'>Copy</button>
+</div>
+<p>This method creates a trap for <code>INT</code> signals, so if you <code>CTRL-C</code> the server, it will exit the process.
+As we can see from the code here, it will create the <code>tmp/cache</code>,
+<code>tmp/pids</code>, and <code>tmp/sockets</code> directories. It then enables caching in development
+if <code>bin/rails server</code> is called with <code>--dev-caching</code>. Finally, it calls <code>wrapped_app</code> which is
+responsible for creating the Rack app, before creating and assigning an instance
+of <code>ActiveSupport::Logger</code>.</p>
+
+<p>The <code>super</code> method will call <code>Rack::Server.start</code> which begins its definition as follows:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">module</span> <span class="nn">Rack</span>
+  <span class="k">class</span> <span class="nc">Server</span>
+    <span class="k">def</span> <span class="nf">start</span> <span class="o">&amp;</span><span class="n">blk</span>
+      <span class="k">if</span> <span class="n">options</span><span class="p">[</span><span class="ss">:warn</span><span class="p">]</span>
+        <span class="vg">$-w</span> <span class="o">=</span> <span class="kp">true</span>
+      <span class="k">end</span>
+
+      <span class="k">if</span> <span class="n">includes</span> <span class="o">=</span> <span class="n">options</span><span class="p">[</span><span class="ss">:include</span><span class="p">]</span>
+        <span class="vg">$LOAD_PATH</span><span class="p">.</span><span class="nf">unshift</span><span class="p">(</span><span class="o">*</span><span class="n">includes</span><span class="p">)</span>
+      <span class="k">end</span>
+
+      <span class="k">if</span> <span class="n">library</span> <span class="o">=</span> <span class="n">options</span><span class="p">[</span><span class="ss">:require</span><span class="p">]</span>
+        <span class="nb">require</span> <span class="n">library</span>
+      <span class="k">end</span>
+
+      <span class="k">if</span> <span class="n">options</span><span class="p">[</span><span class="ss">:debug</span><span class="p">]</span>
+        <span class="vg">$DEBUG</span> <span class="o">=</span> <span class="kp">true</span>
+        <span class="nb">require</span> <span class="s2">"pp"</span>
+        <span class="nb">p</span> <span class="n">options</span><span class="p">[</span><span class="ss">:server</span><span class="p">]</span>
+        <span class="n">pp</span> <span class="n">wrapped_app</span>
+        <span class="n">pp</span> <span class="n">app</span>
+      <span class="k">end</span>
+
+      <span class="n">check_pid!</span> <span class="k">if</span> <span class="n">options</span><span class="p">[</span><span class="ss">:pid</span><span class="p">]</span>
+
+      <span class="c1"># Touch the wrapped app, so that the config.ru is loaded before</span>
+      <span class="c1"># daemonization (i.e. before chdir, etc).</span>
+      <span class="n">handle_profiling</span><span class="p">(</span><span class="n">options</span><span class="p">[</span><span class="ss">:heapfile</span><span class="p">],</span> <span class="n">options</span><span class="p">[</span><span class="ss">:profile_mode</span><span class="p">],</span> <span class="n">options</span><span class="p">[</span><span class="ss">:profile_file</span><span class="p">])</span> <span class="k">do</span>
+        <span class="n">wrapped_app</span>
+      <span class="k">end</span>
+
+      <span class="n">daemonize_app</span> <span class="k">if</span> <span class="n">options</span><span class="p">[</span><span class="ss">:daemonize</span><span class="p">]</span>
+
+      <span class="n">write_pid</span> <span class="k">if</span> <span class="n">options</span><span class="p">[</span><span class="ss">:pid</span><span class="p">]</span>
+
+      <span class="nb">trap</span><span class="p">(</span><span class="ss">:INT</span><span class="p">)</span> <span class="k">do</span>
+        <span class="k">if</span> <span class="n">server</span><span class="p">.</span><span class="nf">respond_to?</span><span class="p">(</span><span class="ss">:shutdown</span><span class="p">)</span>
+          <span class="n">server</span><span class="p">.</span><span class="nf">shutdown</span>
+        <span class="k">else</span>
+          <span class="nb">exit</span>
+        <span class="k">end</span>
+      <span class="k">end</span>
+
+      <span class="n">server</span><span class="p">.</span><span class="nf">run</span> <span class="n">wrapped_app</span><span class="p">,</span> <span class="n">options</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">blk</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='module Rack
+  class Server
+    def start &amp;blk
+      if options[:warn]
+        $-w = true
+      end
+
+      if includes = options[:include]
+        $LOAD_PATH.unshift(*includes)
+      end
+
+      if library = options[:require]
+        require library
+      end
+
+      if options[:debug]
+        $DEBUG = true
+        require "pp"
+        p options[:server]
+        pp wrapped_app
+        pp app
+      end
+
+      check_pid! if options[:pid]
+
+      # Touch the wrapped app, so that the config.ru is loaded before
+      # daemonization (i.e. before chdir, etc).
+      handle_profiling(options[:heapfile], options[:profile_mode], options[:profile_file]) do
+        wrapped_app
+      end
+
+      daemonize_app if options[:daemonize]
+
+      write_pid if options[:pid]
+
+      trap(:INT) do
+        if server.respond_to?(:shutdown)
+          server.shutdown
+        else
+          exit
+        end
+      end
+
+      server.run wrapped_app, options, &amp;blk
+    end
+  end
+end
+'>Copy</button>
+</div>
+<p>The interesting part for a Rails app is the last line, <code>server.run</code>. Here we encounter the <code>wrapped_app</code> method again, which this time
+we're going to explore more (even though it was executed before, and
+thus memoized by now).</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">module</span> <span class="nn">Rack</span>
+  <span class="k">class</span> <span class="nc">Server</span>
+    <span class="k">def</span> <span class="nf">wrapped_app</span>
+      <span class="vi">@wrapped_app</span> <span class="o">||=</span> <span class="n">build_app</span> <span class="n">app</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="module Rack
+  class Server
+    def wrapped_app
+      @wrapped_app ||= build_app app
+    end
+  end
+end
+">Copy</button>
+</div>
+<p>The <code>app</code> method here is defined like so:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">module</span> <span class="nn">Rack</span>
+  <span class="k">class</span> <span class="nc">Server</span>
+    <span class="k">def</span> <span class="nf">app</span>
+      <span class="vi">@app</span> <span class="o">||=</span> <span class="n">options</span><span class="p">[</span><span class="ss">:builder</span><span class="p">]</span> <span class="p">?</span> <span class="n">build_app_from_string</span> <span class="p">:</span> <span class="n">build_app_and_options_from_config</span>
+    <span class="k">end</span>
+
+    <span class="c1"># ...</span>
+
+    <span class="kp">private</span>
+      <span class="k">def</span> <span class="nf">build_app_and_options_from_config</span>
+        <span class="k">if</span> <span class="o">!::</span><span class="no">File</span><span class="p">.</span><span class="nf">exist?</span> <span class="n">options</span><span class="p">[</span><span class="ss">:config</span><span class="p">]</span>
+          <span class="nb">abort</span> <span class="s2">"configuration </span><span class="si">#{</span><span class="n">options</span><span class="p">[</span><span class="ss">:config</span><span class="p">]</span><span class="si">}</span><span class="s2"> not found"</span>
+        <span class="k">end</span>
+
+        <span class="n">app</span><span class="p">,</span> <span class="n">options</span> <span class="o">=</span> <span class="no">Rack</span><span class="o">::</span><span class="no">Builder</span><span class="p">.</span><span class="nf">parse_file</span><span class="p">(</span><span class="nb">self</span><span class="p">.</span><span class="nf">options</span><span class="p">[</span><span class="ss">:config</span><span class="p">],</span> <span class="n">opt_parser</span><span class="p">)</span>
+        <span class="vi">@options</span><span class="p">.</span><span class="nf">merge!</span><span class="p">(</span><span class="n">options</span><span class="p">)</span> <span class="p">{</span> <span class="o">|</span><span class="n">key</span><span class="p">,</span> <span class="n">old</span><span class="p">,</span> <span class="n">new</span><span class="o">|</span> <span class="n">old</span> <span class="p">}</span>
+        <span class="n">app</span>
+      <span class="k">end</span>
+
+      <span class="k">def</span> <span class="nf">build_app_from_string</span>
+        <span class="no">Rack</span><span class="o">::</span><span class="no">Builder</span><span class="p">.</span><span class="nf">new_from_string</span><span class="p">(</span><span class="nb">self</span><span class="p">.</span><span class="nf">options</span><span class="p">[</span><span class="ss">:builder</span><span class="p">])</span>
+      <span class="k">end</span>
+
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='module Rack
+  class Server
+    def app
+      @app ||= options[:builder] ? build_app_from_string : build_app_and_options_from_config
+    end
+
+    # ...
+
+    private
+      def build_app_and_options_from_config
+        if !::File.exist? options[:config]
+          abort "configuration #{options[:config]} not found"
+        end
+
+        app, options = Rack::Builder.parse_file(self.options[:config], opt_parser)
+        @options.merge!(options) { |key, old, new| old }
+        app
+      end
+
+      def build_app_from_string
+        Rack::Builder.new_from_string(self.options[:builder])
+      end
+
+  end
+end
+'>Copy</button>
+</div>
+<p>The <code>options[:config]</code> value defaults to <code>config.ru</code> which contains this:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="c1"># This file is used by Rack-based servers to start the application.</span>
+
+<span class="nb">require_relative</span> <span class="s2">"config/environment"</span>
+
+<span class="n">run</span> <span class="no">Rails</span><span class="p">.</span><span class="nf">application</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='# This file is used by Rack-based servers to start the application.
+
+require_relative "config/environment"
+
+run Rails.application
+'>Copy</button>
+</div>
+<p>The <code>Rack::Builder.parse_file</code> method here takes the content from this <code>config.ru</code> file and parses it using this code:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">module</span> <span class="nn">Rack</span>
+  <span class="k">class</span> <span class="nc">Builder</span>
+    <span class="k">def</span> <span class="nc">self</span><span class="o">.</span><span class="nf">load_file</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">opts</span> <span class="o">=</span> <span class="no">Server</span><span class="o">::</span><span class="no">Options</span><span class="p">.</span><span class="nf">new</span><span class="p">)</span>
+      <span class="c1"># ...</span>
+      <span class="n">app</span> <span class="o">=</span> <span class="n">new_from_string</span> <span class="n">cfgfile</span><span class="p">,</span> <span class="n">config</span>
+      <span class="c1"># ...</span>
+    <span class="k">end</span>
+
+    <span class="c1"># ...</span>
+
+    <span class="k">def</span> <span class="nc">self</span><span class="o">.</span><span class="nf">new_from_string</span><span class="p">(</span><span class="n">builder_script</span><span class="p">,</span> <span class="n">file</span><span class="o">=</span><span class="s2">"(rackup)"</span><span class="p">)</span>
+      <span class="nb">eval</span> <span class="s2">"Rack::Builder.new {</span><span class="se">\n</span><span class="s2">"</span> <span class="o">+</span> <span class="n">builder_script</span> <span class="o">+</span> <span class="s2">"</span><span class="se">\n</span><span class="s2">}.to_app"</span><span class="p">,</span>
+        <span class="no">TOPLEVEL_BINDING</span><span class="p">,</span> <span class="n">file</span><span class="p">,</span> <span class="mi">0</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='module Rack
+  class Builder
+    def self.load_file(path, opts = Server::Options.new)
+      # ...
+      app = new_from_string cfgfile, config
+      # ...
+    end
+
+    # ...
+
+    def self.new_from_string(builder_script, file="(rackup)")
+      eval "Rack::Builder.new {\n" + builder_script + "\n}.to_app",
+        TOPLEVEL_BINDING, file, 0
+    end
+  end
+end
+'>Copy</button>
+</div>
+<p>The <code>initialize</code> method of <code>Rack::Builder</code> will take the block here and execute it within an instance of <code>Rack::Builder</code>.
+This is where the majority of the initialization process of Rails happens.
+The <code>require</code> line for <code>config/environment.rb</code> in <code>config.ru</code> is the first to run:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="nb">require_relative</span> <span class="s2">"config/environment"</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='require_relative "config/environment"
+'>Copy</button>
+</div>
+<h4 id="config-environment-rb"><a class="anchorlink" href="#config-environment-rb">1.10 <code>config/environment.rb</code></a></h4>
+
+<p>This file is the common file required by <code>config.ru</code> (<code>bin/rails server</code>) and Passenger. This is where these two ways to run the server meet; everything before this point has been Rack and Rails setup.</p>
+
+<p>This file begins with requiring <code>config/application.rb</code>:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="nb">require_relative</span> <span class="s2">"application"</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='require_relative "application"
+'>Copy</button>
+</div>
+<h4 id="config-application-rb"><a class="anchorlink" href="#config-application-rb">1.11 <code>config/application.rb</code></a></h4>
+
+<p>This file requires <code>config/boot.rb</code>:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="nb">require_relative</span> <span class="s2">"boot"</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='require_relative "boot"
+'>Copy</button>
+</div>
+<p>But only if it hasn't been required before, which would be the case in <code>bin/rails server</code>
+but <strong>wouldn't</strong> be the case with Passenger.</p>
+
+<p>Then the fun begins!</p>
+</body>
+</html>

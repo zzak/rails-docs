@@ -1,0 +1,373 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>3 Built-in Helpers</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v6.1.7.3/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="built-in-helpers"><a class="anchorlink" href="#built-in-helpers">3 Built-in Helpers</a></h3>
+<h4 id="remote-elements"><a class="anchorlink" href="#remote-elements">3.1 Remote Elements</a></h4>
+
+<p>Rails provides a bunch of view helper methods written in Ruby to assist you
+in generating HTML. Sometimes, you want to add a little Ajax to those elements,
+and Rails has got your back in those cases.</p>
+
+<p>Because of Unobtrusive JavaScript, the Rails "Ajax helpers" are actually in two
+parts: the JavaScript half and the Ruby half.</p>
+
+<p>Unless you have disabled the Asset Pipeline,
+<a href="https://github.com/rails/rails/tree/main/actionview/app/assets/javascripts">rails-ujs</a>
+provides the JavaScript half, and the regular Ruby view helpers add appropriate
+tags to your DOM.</p>
+
+<p>You can read below about the different events that are fired dealing with
+remote elements inside your application.</p>
+
+<h5 id="form-with"><a class="anchorlink" href="#form-with">3.1.1 form_with</a></h5>
+
+<p><a href="https://api.rubyonrails.org/v6.1.7.3/classes/ActionView/Helpers/FormHelper.html#method-i-form_with"><code>form_with</code></a>
+is a helper that assists with writing forms. To use Ajax for your form you can
+pass the <code>:local</code> option to <code>form_with</code>.</p>
+
+<div class="code_container">
+<pre><code class="highlight erb"><span class="cp">&lt;%=</span> <span class="n">form_with</span><span class="p">(</span><span class="ss">model: </span><span class="vi">@article</span><span class="p">,</span> <span class="ss">id: </span><span class="s2">"new-article"</span><span class="p">,</span> <span class="ss">local: </span><span class="kp">false</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">form</span><span class="o">|</span> <span class="cp">%&gt;</span>
+  ...
+<span class="cp">&lt;%</span> <span class="k">end</span> <span class="cp">%&gt;</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-d8247b291a6711a198038274df7e841f">&lt;%= form_with(model: @article, id: "new-article", local: false) do |form| %&gt;
+  ...
+&lt;% end %&gt;
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-d8247b291a6711a198038274df7e841f">Copy</button>
+</div>
+<p>This will generate the following HTML:</p>
+
+<div class="code_container">
+<pre><code class="highlight html"><span class="nt">&lt;form</span> <span class="na">id=</span><span class="s">"new-article"</span> <span class="na">action=</span><span class="s">"/articles"</span> <span class="na">accept-charset=</span><span class="s">"UTF-8"</span> <span class="na">method=</span><span class="s">"post"</span> <span class="na">data-remote=</span><span class="s">"true"</span><span class="nt">&gt;</span>
+  ...
+<span class="nt">&lt;/form&gt;</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-c8d1079dde370d99f8b28c2fc8142a32">&lt;form id="new-article" action="/articles" accept-charset="UTF-8" method="post" data-remote="true"&gt;
+  ...
+&lt;/form&gt;
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-c8d1079dde370d99f8b28c2fc8142a32">Copy</button>
+</div>
+<p>Note the <code>data-remote="true"</code>. Now, the form will be submitted by Ajax rather
+than by the browser's normal submit mechanism.</p>
+
+<p>You probably don't want to just sit there with a filled out <code>&lt;form&gt;</code>, though.
+You probably want to do something upon a successful submission. To do that,
+bind to the <code>ajax:success</code> event. On failure, use <code>ajax:error</code>. Check it out:</p>
+
+<div class="code_container">
+<pre><code class="highlight js"><span class="nb">window</span><span class="p">.</span><span class="nx">addEventListener</span><span class="p">(</span><span class="dl">"</span><span class="s2">load</span><span class="dl">"</span><span class="p">,</span> <span class="p">()</span> <span class="o">=&gt;</span> <span class="p">{</span>
+  <span class="kd">const</span> <span class="nx">element</span> <span class="o">=</span> <span class="nb">document</span><span class="p">.</span><span class="nx">querySelector</span><span class="p">(</span><span class="dl">"</span><span class="s2">#new-article</span><span class="dl">"</span><span class="p">);</span>
+  <span class="nx">element</span><span class="p">.</span><span class="nx">addEventListener</span><span class="p">(</span><span class="dl">"</span><span class="s2">ajax:success</span><span class="dl">"</span><span class="p">,</span> <span class="p">(</span><span class="nx">event</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span>
+    <span class="kd">const</span> <span class="p">[</span><span class="nx">_data</span><span class="p">,</span> <span class="nx">_status</span><span class="p">,</span> <span class="nx">xhr</span><span class="p">]</span> <span class="o">=</span> <span class="nx">event</span><span class="p">.</span><span class="nx">detail</span><span class="p">;</span>
+    <span class="nx">element</span><span class="p">.</span><span class="nx">insertAdjacentHTML</span><span class="p">(</span><span class="dl">"</span><span class="s2">beforeend</span><span class="dl">"</span><span class="p">,</span> <span class="nx">xhr</span><span class="p">.</span><span class="nx">responseText</span><span class="p">);</span>
+  <span class="p">});</span>
+  <span class="nx">element</span><span class="p">.</span><span class="nx">addEventListener</span><span class="p">(</span><span class="dl">"</span><span class="s2">ajax:error</span><span class="dl">"</span><span class="p">,</span> <span class="p">()</span> <span class="o">=&gt;</span> <span class="p">{</span>
+    <span class="nx">element</span><span class="p">.</span><span class="nx">insertAdjacentHTML</span><span class="p">(</span><span class="dl">"</span><span class="s2">beforeend</span><span class="dl">"</span><span class="p">,</span> <span class="dl">"</span><span class="s2">&lt;p&gt;ERROR&lt;/p&gt;</span><span class="dl">"</span><span class="p">);</span>
+  <span class="p">});</span>
+<span class="p">});</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-2001a66c1282f6d1fbf3e6616ce82c7c">window.addEventListener("load", () =&gt; {
+  const element = document.querySelector("#new-article");
+  element.addEventListener("ajax:success", (event) =&gt; {
+    const [_data, _status, xhr] = event.detail;
+    element.insertAdjacentHTML("beforeend", xhr.responseText);
+  });
+  element.addEventListener("ajax:error", () =&gt; {
+    element.insertAdjacentHTML("beforeend", "&lt;p&gt;ERROR&lt;/p&gt;");
+  });
+});
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-2001a66c1282f6d1fbf3e6616ce82c7c">Copy</button>
+</div>
+<p>Obviously, you'll want to be a bit more sophisticated than that, but it's a
+start.</p>
+
+<h5 id="link-to"><a class="anchorlink" href="#link-to">3.1.2 link_to</a></h5>
+
+<p><a href="https://api.rubyonrails.org/v6.1.7.3/classes/ActionView/Helpers/UrlHelper.html#method-i-link_to"><code>link_to</code></a>
+is a helper that assists with generating links. It has a <code>:remote</code> option you
+can use like this:</p>
+
+<div class="code_container">
+<pre><code class="highlight erb"><span class="cp">&lt;%=</span> <span class="n">link_to</span> <span class="s2">"an article"</span><span class="p">,</span> <span class="vi">@article</span><span class="p">,</span> <span class="ss">remote: </span><span class="kp">true</span> <span class="cp">%&gt;</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-9be74ce39059dd73d17de45b7bf938ad">&lt;%= link_to "an article", @article, remote: true %&gt;
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-9be74ce39059dd73d17de45b7bf938ad">Copy</button>
+</div>
+<p>which generates</p>
+
+<div class="code_container">
+<pre><code class="highlight html"><span class="nt">&lt;a</span> <span class="na">href=</span><span class="s">"/articles/1"</span> <span class="na">data-remote=</span><span class="s">"true"</span><span class="nt">&gt;</span>an article<span class="nt">&lt;/a&gt;</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-374eb58e431429ef89c1b6c13cb6b176">&lt;a href="/articles/1" data-remote="true"&gt;an article&lt;/a&gt;
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-374eb58e431429ef89c1b6c13cb6b176">Copy</button>
+</div>
+<p>You can bind to the same Ajax events as <code>form_with</code>. Here's an example. Let's
+assume that we have a list of articles that can be deleted with just one
+click. We would generate some HTML like this:</p>
+
+<div class="code_container">
+<pre><code class="highlight erb"><span class="cp">&lt;%=</span> <span class="n">link_to</span> <span class="s2">"Delete article"</span><span class="p">,</span> <span class="vi">@article</span><span class="p">,</span> <span class="ss">remote: </span><span class="kp">true</span><span class="p">,</span> <span class="ss">method: :delete</span> <span class="cp">%&gt;</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-d86b9e451babfe16abf21a9f9e8b9fa6">&lt;%= link_to "Delete article", @article, remote: true, method: :delete %&gt;
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-d86b9e451babfe16abf21a9f9e8b9fa6">Copy</button>
+</div>
+<p>and write some JavaScript like this:</p>
+
+<div class="code_container">
+<pre><code class="highlight js"><span class="nb">window</span><span class="p">.</span><span class="nx">addEventListener</span><span class="p">(</span><span class="dl">"</span><span class="s2">load</span><span class="dl">"</span><span class="p">,</span> <span class="p">()</span> <span class="o">=&gt;</span> <span class="p">{</span>
+  <span class="kd">const</span> <span class="nx">links</span> <span class="o">=</span> <span class="nb">document</span><span class="p">.</span><span class="nx">querySelectorAll</span><span class="p">(</span><span class="dl">"</span><span class="s2">a[data-remote]</span><span class="dl">"</span><span class="p">);</span>
+  <span class="nx">links</span><span class="p">.</span><span class="nx">forEach</span><span class="p">((</span><span class="nx">element</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span>
+    <span class="nx">element</span><span class="p">.</span><span class="nx">addEventListener</span><span class="p">(</span><span class="dl">"</span><span class="s2">ajax:success</span><span class="dl">"</span><span class="p">,</span> <span class="p">()</span> <span class="o">=&gt;</span> <span class="p">{</span>
+      <span class="nx">alert</span><span class="p">(</span><span class="dl">"</span><span class="s2">The article was deleted.</span><span class="dl">"</span><span class="p">);</span>
+    <span class="p">});</span>
+  <span class="p">});</span>
+<span class="p">});</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-08aa10f93019613cc8ff050630b16f9b">window.addEventListener("load", () =&gt; {
+  const links = document.querySelectorAll("a[data-remote]");
+  links.forEach((element) =&gt; {
+    element.addEventListener("ajax:success", () =&gt; {
+      alert("The article was deleted.");
+    });
+  });
+});
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-08aa10f93019613cc8ff050630b16f9b">Copy</button>
+</div>
+<h5 id="button-to"><a class="anchorlink" href="#button-to">3.1.3 button_to</a></h5>
+
+<p><a href="https://api.rubyonrails.org/v6.1.7.3/classes/ActionView/Helpers/UrlHelper.html#method-i-button_to"><code>button_to</code></a> is a helper that helps you create buttons. It has a <code>:remote</code> option that you can call like this:</p>
+
+<div class="code_container">
+<pre><code class="highlight erb"><span class="cp">&lt;%=</span> <span class="n">button_to</span> <span class="s2">"An article"</span><span class="p">,</span> <span class="vi">@article</span><span class="p">,</span> <span class="ss">remote: </span><span class="kp">true</span> <span class="cp">%&gt;</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-c9e3cde932d616e4d21e778775e7e355">&lt;%= button_to "An article", @article, remote: true %&gt;
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-c9e3cde932d616e4d21e778775e7e355">Copy</button>
+</div>
+<p>this generates</p>
+
+<div class="code_container">
+<pre><code class="highlight html"><span class="nt">&lt;form</span> <span class="na">action=</span><span class="s">"/articles/1"</span> <span class="na">class=</span><span class="s">"button_to"</span> <span class="na">data-remote=</span><span class="s">"true"</span> <span class="na">method=</span><span class="s">"post"</span><span class="nt">&gt;</span>
+  <span class="nt">&lt;input</span> <span class="na">type=</span><span class="s">"submit"</span> <span class="na">value=</span><span class="s">"An article"</span> <span class="nt">/&gt;</span>
+<span class="nt">&lt;/form&gt;</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-3eb8396db60a80e16be6ea810270ffbd">&lt;form action="/articles/1" class="button_to" data-remote="true" method="post"&gt;
+  &lt;input type="submit" value="An article" /&gt;
+&lt;/form&gt;
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-3eb8396db60a80e16be6ea810270ffbd">Copy</button>
+</div>
+<p>Since it's just a <code>&lt;form&gt;</code>, all of the information on <code>form_with</code> also applies.</p>
+
+<h4 id="customize-remote-elements"><a class="anchorlink" href="#customize-remote-elements">3.2 Customize Remote Elements</a></h4>
+
+<p>It is possible to customize the behavior of elements with a <code>data-remote</code>
+attribute without writing a line of JavaScript. You can specify extra <code>data-</code>
+attributes to accomplish this.</p>
+
+<h5 id="data-method"><a class="anchorlink" href="#data-method">3.2.1 <code>data-method</code></a></h5>
+
+<p>Activating hyperlinks always results in an HTTP GET request. However, if your
+application is <a href="https://en.wikipedia.org/wiki/Representational_State_Transfer">RESTful</a>,
+some links are in fact actions that change data on the server, and must be
+performed with non-GET requests. This attribute allows marking up such links
+with an explicit method such as "post", "put" or "delete".</p>
+
+<p>The way it works is that, when the link is activated, it constructs a hidden form
+in the document with the "action" attribute corresponding to "href" value of the
+link, and the method corresponding to <code>data-method</code> value, and submits that form.</p>
+
+<div class="note"><p>Because submitting forms with HTTP methods other than GET and POST isn't
+widely supported across browsers, all other HTTP methods are actually sent over
+POST with the intended method indicated in the <code>_method</code> parameter. Rails
+automatically detects and compensates for this.</p></div>
+
+<h5 id="data-url-and-data-params"><a class="anchorlink" href="#data-url-and-data-params">3.2.2 <code>data-url</code> and <code>data-params</code></a></h5>
+
+<p>Certain elements of your page aren't actually referring to any URL, but you may want
+them to trigger Ajax calls. Specifying the <code>data-url</code> attribute along with
+the <code>data-remote</code> one will trigger an Ajax call to the given URL. You can also
+specify extra parameters through the <code>data-params</code> attribute.</p>
+
+<p>This can be useful to trigger an action on check-boxes for instance:</p>
+
+<div class="code_container">
+<pre><code class="highlight html"><span class="nt">&lt;input</span> <span class="na">type=</span><span class="s">"checkbox"</span> <span class="na">data-remote=</span><span class="s">"true"</span>
+    <span class="na">data-url=</span><span class="s">"/update"</span> <span class="na">data-params=</span><span class="s">"id=10"</span> <span class="na">data-method=</span><span class="s">"put"</span><span class="nt">&gt;</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-4afd0d82dc3a8f055d773b2097725419">&lt;input type="checkbox" data-remote="true"
+    data-url="/update" data-params="id=10" data-method="put"&gt;
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-4afd0d82dc3a8f055d773b2097725419">Copy</button>
+</div>
+<h5 id="data-type"><a class="anchorlink" href="#data-type">3.2.3 <code>data-type</code></a></h5>
+
+<p>It is also possible to define the Ajax <code>dataType</code> explicitly while performing
+requests for <code>data-remote</code> elements, by way of the <code>data-type</code> attribute.</p>
+
+<h4 id="confirmations"><a class="anchorlink" href="#confirmations">3.3 Confirmations</a></h4>
+
+<p>You can ask for an extra confirmation of the user by adding a <code>data-confirm</code>
+attribute on links and forms. The user will be presented with a JavaScript <code>confirm()</code>
+dialog containing the attribute's text. If the user chooses to cancel, the action
+doesn't take place.</p>
+
+<p>Adding this attribute on links will trigger the dialog on click, and adding it
+on forms will trigger it on submit. For example:</p>
+
+<div class="code_container">
+<pre><code class="highlight erb"><span class="cp">&lt;%=</span> <span class="n">link_to</span> <span class="s2">"Dangerous zone"</span><span class="p">,</span> <span class="n">dangerous_zone_path</span><span class="p">,</span>
+  <span class="ss">data: </span><span class="p">{</span> <span class="ss">confirm: </span><span class="s1">'Are you sure?'</span> <span class="p">}</span> <span class="cp">%&gt;</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-dcdf5ea3e4ae77ea074f22683b483c1d">&lt;%= link_to "Dangerous zone", dangerous_zone_path,
+  data: { confirm: 'Are you sure?' } %&gt;
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-dcdf5ea3e4ae77ea074f22683b483c1d">Copy</button>
+</div>
+<p>This generates:</p>
+
+<div class="code_container">
+<pre><code class="highlight html"><span class="nt">&lt;a</span> <span class="na">href=</span><span class="s">"..."</span> <span class="na">data-confirm=</span><span class="s">"Are you sure?"</span><span class="nt">&gt;</span>Dangerous zone<span class="nt">&lt;/a&gt;</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-c5148e8ed59a39c4c691e269cca2837c">&lt;a href="..." data-confirm="Are you sure?"&gt;Dangerous zone&lt;/a&gt;
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-c5148e8ed59a39c4c691e269cca2837c">Copy</button>
+</div>
+<p>The attribute is also allowed on form submit buttons. This allows you to customize
+the warning message depending on the button which was activated. In this case,
+you should <strong>not</strong> have <code>data-confirm</code> on the form itself.</p>
+
+<p>The default confirmation uses a JavaScript confirm dialog, but you can customize
+this by listening to the <code>confirm</code> event, which is fired just before the confirmation
+window appears to the user. To cancel this default confirmation, have the confirm
+handler return <code>false</code>.</p>
+
+<h4 id="automatic-disabling"><a class="anchorlink" href="#automatic-disabling">3.4 Automatic disabling</a></h4>
+
+<p>It is also possible to automatically disable an input while the form is submitting
+by using the <code>data-disable-with</code> attribute. This is to prevent accidental
+double-clicks from the user, which could result in duplicate HTTP requests that
+the backend may not detect as such. The value of the attribute is the text that will
+become the new value of the button in its disabled state.</p>
+
+<p>This also works for links with <code>data-method</code> attribute.</p>
+
+<p>For example:</p>
+
+<div class="code_container">
+<pre><code class="highlight erb"><span class="cp">&lt;%=</span> <span class="n">form_with</span><span class="p">(</span><span class="ss">model: </span><span class="no">Article</span><span class="p">.</span><span class="nf">new</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">form</span><span class="o">|</span> <span class="cp">%&gt;</span>
+  <span class="cp">&lt;%=</span> <span class="n">form</span><span class="p">.</span><span class="nf">submit</span> <span class="ss">data: </span><span class="p">{</span> <span class="ss">disable_with: </span><span class="s2">"Saving..."</span> <span class="p">}</span> <span class="cp">%&gt;</span>
+<span class="cp">&lt;%</span> <span class="k">end</span> <span class="cp">%&gt;</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-75677059265cc85e6e36ef12510d8be6">&lt;%= form_with(model: Article.new) do |form| %&gt;
+  &lt;%= form.submit data: { disable_with: "Saving..." } %&gt;
+&lt;% end %&gt;
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-75677059265cc85e6e36ef12510d8be6">Copy</button>
+</div>
+<p>This generates a form with:</p>
+
+<div class="code_container">
+<pre><code class="highlight html"><span class="nt">&lt;input</span> <span class="na">data-disable-with=</span><span class="s">"Saving..."</span> <span class="na">type=</span><span class="s">"submit"</span><span class="nt">&gt;</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-60878c61504168b703f720a028ad8d3f">&lt;input data-disable-with="Saving..." type="submit"&gt;
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-60878c61504168b703f720a028ad8d3f">Copy</button>
+</div>
+<h4 id="rails-ujs-event-handlers"><a class="anchorlink" href="#rails-ujs-event-handlers">3.5 Rails-ujs event handlers</a></h4>
+
+<p>Rails 5.1 introduced rails-ujs and dropped jQuery as a dependency.
+As a result the Unobtrusive JavaScript (UJS) driver has been rewritten to operate without jQuery.
+These introductions cause small changes to <code>custom events</code> fired during the request:</p>
+
+<div class="note"><p>Signature of calls to UJS's event handlers has changed.
+Unlike the version with jQuery, all custom events return only one parameter: <code>event</code>.
+In this parameter, there is an additional attribute <code>detail</code> which contains an array of extra parameters.
+For information about the previously used <code>jquery-ujs</code> in Rails 5 and earlier, read the <a href="https://github.com/rails/jquery-ujs/wiki/ajax"><code>jquery-ujs</code> wiki</a>.</p></div>
+<table>
+<thead>
+<tr>
+<th>Event name</th>
+<th>Extra parameters (event.detail)</th>
+<th>Fired</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>ajax:before</code></td>
+<td></td>
+<td>Before the whole ajax business.</td>
+</tr>
+<tr>
+<td><code>ajax:beforeSend</code></td>
+<td>[xhr, options]</td>
+<td>Before the request is sent.</td>
+</tr>
+<tr>
+<td><code>ajax:send</code></td>
+<td>[xhr]</td>
+<td>When the request is sent.</td>
+</tr>
+<tr>
+<td><code>ajax:stopped</code></td>
+<td></td>
+<td>When the request is stopped.</td>
+</tr>
+<tr>
+<td><code>ajax:success</code></td>
+<td>[response, status, xhr]</td>
+<td>After completion, if the response was a success.</td>
+</tr>
+<tr>
+<td><code>ajax:error</code></td>
+<td>[response, status, xhr]</td>
+<td>After completion, if the response was an error.</td>
+</tr>
+<tr>
+<td><code>ajax:complete</code></td>
+<td>[xhr, status]</td>
+<td>After the request has been completed, no matter the outcome.</td>
+</tr>
+</tbody>
+</table>
+<p>Example usage:</p>
+
+<div class="code_container">
+<pre><code class="highlight js"><span class="nb">document</span><span class="p">.</span><span class="nx">body</span><span class="p">.</span><span class="nx">addEventListener</span><span class="p">(</span><span class="dl">"</span><span class="s2">ajax:success</span><span class="dl">"</span><span class="p">,</span> <span class="p">(</span><span class="nx">event</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="p">{</span>
+  <span class="kd">const</span> <span class="p">[</span><span class="nx">data</span><span class="p">,</span> <span class="nx">status</span><span class="p">,</span> <span class="nx">xhr</span><span class="p">]</span> <span class="o">=</span> <span class="nx">event</span><span class="p">.</span><span class="nx">detail</span><span class="p">;</span>
+<span class="p">});</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-2bcebd0d6c3ecd79ec412ff5145bbd1e">document.body.addEventListener("ajax:success", (event) =&gt; {
+  const [data, status, xhr] = event.detail;
+});
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-2bcebd0d6c3ecd79ec412ff5145bbd1e">Copy</button>
+</div>
+<h4 id="stoppable-events"><a class="anchorlink" href="#stoppable-events">3.6 Stoppable events</a></h4>
+
+<p>You can stop execution of the Ajax request by running <code>event.preventDefault()</code>
+from the handlers methods <code>ajax:before</code> or <code>ajax:beforeSend</code>.
+The <code>ajax:before</code> event can manipulate form data before serialization and the
+<code>ajax:beforeSend</code> event is useful for adding custom request headers.</p>
+
+<p>If you stop the <code>ajax:aborted:file</code> event, the default behavior of allowing the
+browser to submit the form via normal means (i.e. non-Ajax submission) will be
+canceled and the form will not be submitted at all. This is useful for
+implementing your own Ajax file upload workaround.</p>
+
+<p>Note, you should use <code>return false</code> to prevent an event for <code>jquery-ujs</code> and
+<code>event.preventDefault()</code> for <code>rails-ujs</code>.</p>
+</body>
+</html>

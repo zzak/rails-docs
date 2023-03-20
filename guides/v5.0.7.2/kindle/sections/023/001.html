@@ -1,0 +1,440 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>2 How to Use the Asset Pipeline</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v5.0.7.2/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="how-to-use-the-asset-pipeline">2 How to Use the Asset Pipeline</h3>
+<p>In previous versions of Rails, all assets were located in subdirectories of
+<code>public</code> such as <code>images</code>, <code>javascripts</code> and <code>stylesheets</code>. With the asset
+pipeline, the preferred location for these assets is now the <code>app/assets</code>
+directory. Files in this directory are served by the Sprockets middleware.</p>
+
+<p>Assets can still be placed in the <code>public</code> hierarchy. Any assets under <code>public</code>
+will be served as static files by the application or web server when
+<code>config.public_file_server.enabled</code> is set to true. You should use <code>app/assets</code> for
+files that must undergo some pre-processing before they are served.</p>
+
+<p>In production, Rails precompiles these files to <code>public/assets</code> by default. The
+precompiled copies are then served as static assets by the web server. The files
+in <code>app/assets</code> are never served directly in production.</p>
+
+<h4 id="controller-specific-assets">2.1 Controller Specific Assets</h4>
+
+<p>When you generate a scaffold or a controller, Rails also generates a JavaScript
+file (or CoffeeScript file if the <code>coffee-rails</code> gem is in the <code>Gemfile</code>) and a
+Cascading Style Sheet file (or SCSS file if <code>sass-rails</code> is in the <code>Gemfile</code>)
+for that controller. Additionally, when generating a scaffold, Rails generates
+the file scaffolds.css (or scaffolds.scss if <code>sass-rails</code> is in the
+<code>Gemfile</code>.)</p>
+
+<p>For example, if you generate a <code>ProjectsController</code>, Rails will also add a new
+file at <code>app/assets/javascripts/projects.coffee</code> and another at
+<code>app/assets/stylesheets/projects.scss</code>. By default these files will be ready
+to use by your application immediately using the <code>require_tree</code> directive. See
+<a href="#manifest-files-and-directives">Manifest Files and Directives</a> for more details
+on require_tree.</p>
+
+<p>You can also opt to include controller specific stylesheets and JavaScript files
+only in their respective controllers using the following:</p>
+
+<p><code>&lt;%= javascript_include_tag params[:controller] %&gt;</code> or <code>&lt;%= stylesheet_link_tag
+params[:controller] %&gt;</code></p>
+
+<p>When doing this, ensure you are not using the <code>require_tree</code> directive, as that
+will result in your assets being included more than once.</p>
+
+<div class="warning"><p>When using asset precompilation, you will need to ensure that your
+controller assets will be precompiled when loading them on a per page basis. By
+default .coffee and .scss files will not be precompiled on their own. See
+<a href="#precompiling-assets">Precompiling Assets</a> for more information on how
+precompiling works.</p></div>
+
+<div class="note"><p>You must have an ExecJS supported runtime in order to use CoffeeScript.
+If you are using Mac OS X or Windows, you have a JavaScript runtime installed in
+your operating system. Check <a href="https://github.com/rails/execjs#readme">ExecJS</a> documentation to know all supported JavaScript runtimes.</p></div>
+
+<p>You can also disable generation of controller specific asset files by adding the
+following to your <code>config/application.rb</code> configuration:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+  config.generators do |g|
+    g.assets false
+  end
+
+</pre>
+</div>
+<h4 id="asset-organization">2.2 Asset Organization</h4>
+
+<p>Pipeline assets can be placed inside an application in one of three locations:
+<code>app/assets</code>, <code>lib/assets</code> or <code>vendor/assets</code>.</p>
+<ul>
+<li>
+<code>app/assets</code> is for assets that are owned by the application, such as custom
+images, JavaScript files or stylesheets.</li>
+<li>
+<code>lib/assets</code> is for your own libraries' code that doesn't really fit into the
+scope of the application or those libraries which are shared across applications.</li>
+<li>
+<code>vendor/assets</code> is for assets that are owned by outside entities, such as
+code for JavaScript plugins and CSS frameworks. Keep in mind that third party
+code with references to other files also processed by the asset Pipeline (images,
+stylesheets, etc.), will need to be rewritten to use helpers like <code>asset_path</code>.</li>
+</ul>
+<div class="warning"><p>If you are upgrading from Rails 3, please take into account that assets
+under <code>lib/assets</code> or <code>vendor/assets</code> are available for inclusion via the
+application manifests but no longer part of the precompile array. See
+<a href="#precompiling-assets">Precompiling Assets</a> for guidance.</p></div>
+
+<h5 id="search-paths">2.2.1 Search Paths</h5>
+
+<p>When a file is referenced from a manifest or a helper, Sprockets searches the
+three default asset locations for it.</p>
+
+<p>The default locations are: the <code>images</code>, <code>javascripts</code> and <code>stylesheets</code>
+directories under the <code>app/assets</code> folder, but these subdirectories
+are not special - any path under <code>assets/*</code> will be searched.</p>
+
+<p>For example, these files:</p>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+app/assets/javascripts/home.js
+lib/assets/javascripts/moovinator.js
+vendor/assets/javascripts/slider.js
+vendor/assets/somepackage/phonebox.js
+
+</pre>
+</div>
+<p>would be referenced in a manifest like this:</p>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+//= require home
+//= require moovinator
+//= require slider
+//= require phonebox
+
+</pre>
+</div>
+<p>Assets inside subdirectories can also be accessed.</p>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+app/assets/javascripts/sub/something.js
+
+</pre>
+</div>
+<p>is referenced as:</p>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+//= require sub/something
+
+</pre>
+</div>
+<p>You can view the search path by inspecting
+<code>Rails.application.config.assets.paths</code> in the Rails console.</p>
+
+<p>Besides the standard <code>assets/*</code> paths, additional (fully qualified) paths can be
+added to the pipeline in <code>config/application.rb</code>. For example:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+config.assets.paths &lt;&lt; Rails.root.join("lib", "videoplayer", "flash")
+
+</pre>
+</div>
+<p>Paths are traversed in the order they occur in the search path. By default,
+this means the files in <code>app/assets</code> take precedence, and will mask
+corresponding paths in <code>lib</code> and <code>vendor</code>.</p>
+
+<p>It is important to note that files you want to reference outside a manifest must
+be added to the precompile array or they will not be available in the production
+environment.</p>
+
+<h5 id="using-index-files">2.2.2 Using Index Files</h5>
+
+<p>Sprockets uses files named <code>index</code> (with the relevant extensions) for a special
+purpose.</p>
+
+<p>For example, if you have a jQuery library with many modules, which is stored in
+<code>lib/assets/javascripts/library_name</code>, the file <code>lib/assets/javascripts/library_name/index.js</code> serves as
+the manifest for all files in this library. This file could include a list of
+all the required files in order, or a simple <code>require_tree</code> directive.</p>
+
+<p>The library as a whole can be accessed in the application manifest like so:</p>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+//= require library_name
+
+</pre>
+</div>
+<p>This simplifies maintenance and keeps things clean by allowing related code to
+be grouped before inclusion elsewhere.</p>
+
+<h4 id="coding-links-to-assets">2.3 Coding Links to Assets</h4>
+
+<p>Sprockets does not add any new methods to access your assets - you still use the
+familiar <code>javascript_include_tag</code> and <code>stylesheet_link_tag</code>:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; html-script: true; gutter: false; toolbar: false">
+&lt;%= stylesheet_link_tag "application", media: "all" %&gt;
+&lt;%= javascript_include_tag "application" %&gt;
+
+</pre>
+</div>
+<p>If using the turbolinks gem, which is included by default in Rails, then
+include the 'data-turbolinks-track' option which causes turbolinks to check if
+an asset has been updated and if so loads it into the page:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; html-script: true; gutter: false; toolbar: false">
+&lt;%= stylesheet_link_tag "application", media: "all", "data-turbolinks-track" =&gt; "reload" %&gt;
+&lt;%= javascript_include_tag "application", "data-turbolinks-track" =&gt; "reload" %&gt;
+
+</pre>
+</div>
+<p>In regular views you can access images in the <code>public/assets/images</code> directory
+like this:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; html-script: true; gutter: false; toolbar: false">
+&lt;%= image_tag "rails.png" %&gt;
+
+</pre>
+</div>
+<p>Provided that the pipeline is enabled within your application (and not disabled
+in the current environment context), this file is served by Sprockets. If a file
+exists at <code>public/assets/rails.png</code> it is served by the web server.</p>
+
+<p>Alternatively, a request for a file with an MD5 hash such as
+<code>public/assets/rails-af27b6a414e6da00003503148be9b409.png</code> is treated the same
+way. How these hashes are generated is covered in the <a href="#in-production">In
+Production</a> section later on in this guide.</p>
+
+<p>Sprockets will also look through the paths specified in <code>config.assets.paths</code>,
+which includes the standard application paths and any paths added by Rails
+engines.</p>
+
+<p>Images can also be organized into subdirectories if required, and then can be
+accessed by specifying the directory's name in the tag:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; html-script: true; gutter: false; toolbar: false">
+&lt;%= image_tag "icons/rails.png" %&gt;
+
+</pre>
+</div>
+<div class="warning"><p>If you're precompiling your assets (see <a href="#in-production">In Production</a>
+below), linking to an asset that does not exist will raise an exception in the
+calling page. This includes linking to a blank string. As such, be careful using
+<code>image_tag</code> and the other helpers with user-supplied data.</p></div>
+
+<h5 id="css-and-erb">2.3.1 CSS and ERB</h5>
+
+<p>The asset pipeline automatically evaluates ERB. This means if you add an
+<code>erb</code> extension to a CSS asset (for example, <code>application.css.erb</code>), then
+helpers like <code>asset_path</code> are available in your CSS rules:</p>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+.class { background-image: url(&lt;%= asset_path 'image.png' %&gt;) }
+
+</pre>
+</div>
+<p>This writes the path to the particular asset being referenced. In this example,
+it would make sense to have an image in one of the asset load paths, such as
+<code>app/assets/images/image.png</code>, which would be referenced here. If this image is
+already available in <code>public/assets</code> as a fingerprinted file, then that path is
+referenced.</p>
+
+<p>If you want to use a <a href="http://en.wikipedia.org/wiki/Data_URI_scheme">data URI</a> -
+a method of embedding the image data directly into the CSS file - you can use
+the <code>asset_data_uri</code> helper.</p>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+#logo { background: url(&lt;%= asset_data_uri 'logo.png' %&gt;) }
+
+</pre>
+</div>
+<p>This inserts a correctly-formatted data URI into the CSS source.</p>
+
+<p>Note that the closing tag cannot be of the style <code>-%&gt;</code>.</p>
+
+<h5 id="css-and-sass">2.3.2 CSS and Sass</h5>
+
+<p>When using the asset pipeline, paths to assets must be re-written and
+<code>sass-rails</code> provides <code>-url</code> and <code>-path</code> helpers (hyphenated in Sass,
+underscored in Ruby) for the following asset classes: image, font, video, audio,
+JavaScript and stylesheet.</p>
+<ul>
+<li>
+<code>image-url("rails.png")</code> returns <code>url(/assets/rails.png)</code>
+</li>
+<li>
+<code>image-path("rails.png")</code> returns <code>"/assets/rails.png"</code>
+</li>
+</ul>
+<p>The more generic form can also be used:</p>
+<ul>
+<li>
+<code>asset-url("rails.png")</code> returns <code>url(/assets/rails.png)</code>
+</li>
+<li>
+<code>asset-path("rails.png")</code> returns <code>"/assets/rails.png"</code>
+</li>
+</ul>
+<h5 id="javascript-coffeescript-and-erb">2.3.3 JavaScript/CoffeeScript and ERB</h5>
+
+<p>If you add an <code>erb</code> extension to a JavaScript asset, making it something such as
+<code>application.js.erb</code>, you can then use the <code>asset_path</code> helper in your
+JavaScript code:</p>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+$('#logo').attr({ src: "&lt;%= asset_path('logo.png') %&gt;" });
+
+</pre>
+</div>
+<p>This writes the path to the particular asset being referenced.</p>
+
+<p>Similarly, you can use the <code>asset_path</code> helper in CoffeeScript files with <code>erb</code>
+extension (e.g., <code>application.coffee.erb</code>):</p>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+$('#logo').attr src: "&lt;%= asset_path('logo.png') %&gt;"
+
+</pre>
+</div>
+<h4 id="manifest-files-and-directives">2.4 Manifest Files and Directives</h4>
+
+<p>Sprockets uses manifest files to determine which assets to include and serve.
+These manifest files contain <em>directives</em> - instructions that tell Sprockets
+which files to require in order to build a single CSS or JavaScript file. With
+these directives, Sprockets loads the files specified, processes them if
+necessary, concatenates them into one single file and then compresses them
+(based on value of <code>Rails.application.config.assets.js_compressor</code>). By serving
+one file rather than many, the load time of pages can be greatly reduced because
+the browser makes fewer requests. Compression also reduces file size, enabling
+the browser to download them faster.</p>
+
+<p>For example, a new Rails application includes a default
+<code>app/assets/javascripts/application.js</code> file containing the following lines:</p>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+// ...
+//= require jquery
+//= require jquery_ujs
+//= require_tree .
+
+</pre>
+</div>
+<p>In JavaScript files, Sprockets directives begin with <code>//=</code>. In the above case,
+the file is using the <code>require</code> and the <code>require_tree</code> directives. The <code>require</code>
+directive is used to tell Sprockets the files you wish to require. Here, you are
+requiring the files <code>jquery.js</code> and <code>jquery_ujs.js</code> that are available somewhere
+in the search path for Sprockets. You need not supply the extensions explicitly.
+Sprockets assumes you are requiring a <code>.js</code> file when done from within a <code>.js</code>
+file.</p>
+
+<p>The <code>require_tree</code> directive tells Sprockets to recursively include <em>all</em>
+JavaScript files in the specified directory into the output. These paths must be
+specified relative to the manifest file. You can also use the
+<code>require_directory</code> directive which includes all JavaScript files only in the
+directory specified, without recursion.</p>
+
+<p>Directives are processed top to bottom, but the order in which files are
+included by <code>require_tree</code> is unspecified. You should not rely on any particular
+order among those. If you need to ensure some particular JavaScript ends up
+above some other in the concatenated file, require the prerequisite file first
+in the manifest. Note that the family of <code>require</code> directives prevents files
+from being included twice in the output.</p>
+
+<p>Rails also creates a default <code>app/assets/stylesheets/application.css</code> file
+which contains these lines:</p>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+/* ...
+*= require_self
+*= require_tree .
+*/
+
+</pre>
+</div>
+<p>Rails creates both <code>app/assets/javascripts/application.js</code> and
+<code>app/assets/stylesheets/application.css</code> regardless of whether the
+--skip-sprockets option is used when creating a new rails application. This is
+so you can easily add asset pipelining later if you like.</p>
+
+<p>The directives that work in JavaScript files also work in stylesheets
+(though obviously including stylesheets rather than JavaScript files). The
+<code>require_tree</code> directive in a CSS manifest works the same way as the JavaScript
+one, requiring all stylesheets from the current directory.</p>
+
+<p>In this example, <code>require_self</code> is used. This puts the CSS contained within the
+file (if any) at the precise location of the <code>require_self</code> call.</p>
+
+<div class="note"><p>If you want to use multiple Sass files, you should generally use the <a href="http://sass-lang.com/docs/yardoc/file.SASS_REFERENCE.html#import">Sass <code>@import</code> rule</a>
+instead of these Sprockets directives. When using Sprockets directives, Sass files exist within
+their own scope, making variables or mixins only available within the document they were defined in.</p></div>
+
+<p>You can do file globbing as well using <code>@import "*"</code>, and <code>@import "**/*"</code> to add the whole tree which is equivalent to how <code>require_tree</code> works. Check the <a href="https://github.com/rails/sass-rails#features">sass-rails documentation</a> for more info and important caveats.</p>
+
+<p>You can have as many manifest files as you need. For example, the <code>admin.css</code>
+and <code>admin.js</code> manifest could contain the JS and CSS files that are used for the
+admin section of an application.</p>
+
+<p>The same remarks about ordering made above apply. In particular, you can specify
+individual files and they are compiled in the order specified. For example, you
+might concatenate three CSS files together this way:</p>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+/* ...
+*= require reset
+*= require layout
+*= require chrome
+*/
+
+</pre>
+</div>
+<h4 id="preprocessing">2.5 Preprocessing</h4>
+
+<p>The file extensions used on an asset determine what preprocessing is applied.
+When a controller or a scaffold is generated with the default Rails gemset, a
+CoffeeScript file and a SCSS file are generated in place of a regular JavaScript
+and CSS file. The example used before was a controller called "projects", which
+generated an <code>app/assets/javascripts/projects.coffee</code> and an
+<code>app/assets/stylesheets/projects.scss</code> file.</p>
+
+<p>In development mode, or if the asset pipeline is disabled, when these files are
+requested they are processed by the processors provided by the <code>coffee-script</code>
+and <code>sass</code> gems and then sent back to the browser as JavaScript and CSS
+respectively. When asset pipelining is enabled, these files are preprocessed and
+placed in the <code>public/assets</code> directory for serving by either the Rails app or
+web server.</p>
+
+<p>Additional layers of preprocessing can be requested by adding other extensions,
+where each extension is processed in a right-to-left manner. These should be
+used in the order the processing should be applied. For example, a stylesheet
+called <code>app/assets/stylesheets/projects.scss.erb</code> is first processed as ERB,
+then SCSS, and finally served as CSS. The same applies to a JavaScript file -
+<code>app/assets/javascripts/projects.coffee.erb</code> is processed as ERB, then
+CoffeeScript, and served as JavaScript.</p>
+
+<p>Keep in mind the order of these preprocessors is important. For example, if
+you called your JavaScript file <code>app/assets/javascripts/projects.erb.coffee</code>
+then it would be processed with the CoffeeScript interpreter first, which
+wouldn't understand ERB and therefore you would run into problems.</p>
+</body>
+</html>

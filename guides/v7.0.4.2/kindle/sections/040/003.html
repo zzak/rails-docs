@@ -1,0 +1,520 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>4 Add an "acts_as" Method to Active Record</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v7.0.4.2/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="add-an-acts-as-method-to-active-record"><a class="anchorlink" href="#add-an-acts-as-method-to-active-record">4 Add an "acts_as" Method to Active Record</a></h3>
+<p>A common pattern in plugins is to add a method called <code>acts_as_something</code> to models. In this case, you
+want to write a method called <code>acts_as_yaffle</code> that adds a <code>squawk</code> method to your Active Record models.</p>
+
+<p>To begin, set up your files so that you have:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="c1"># yaffle/test/acts_as_yaffle_test.rb</span>
+
+<span class="nb">require</span> <span class="s2">"test_helper"</span>
+
+<span class="k">class</span> <span class="nc">ActsAsYaffleTest</span> <span class="o">&lt;</span> <span class="no">ActiveSupport</span><span class="o">::</span><span class="no">TestCase</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='# yaffle/test/acts_as_yaffle_test.rb
+
+require "test_helper"
+
+class ActsAsYaffleTest &lt; ActiveSupport::TestCase
+end
+'>Copy</button>
+</div>
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="c1"># yaffle/lib/yaffle.rb</span>
+
+<span class="nb">require</span> <span class="s2">"yaffle/railtie"</span>
+<span class="nb">require</span> <span class="s2">"yaffle/core_ext"</span>
+<span class="nb">require</span> <span class="s2">"yaffle/acts_as_yaffle"</span>
+
+<span class="k">module</span> <span class="nn">Yaffle</span>
+  <span class="c1"># Your code goes here...</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='# yaffle/lib/yaffle.rb
+
+require "yaffle/railtie"
+require "yaffle/core_ext"
+require "yaffle/acts_as_yaffle"
+
+module Yaffle
+  # Your code goes here...
+end
+'>Copy</button>
+</div>
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="c1"># yaffle/lib/yaffle/acts_as_yaffle.rb</span>
+
+<span class="k">module</span> <span class="nn">Yaffle</span>
+  <span class="k">module</span> <span class="nn">ActsAsYaffle</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="# yaffle/lib/yaffle/acts_as_yaffle.rb
+
+module Yaffle
+  module ActsAsYaffle
+  end
+end
+">Copy</button>
+</div>
+<h4 id="add-a-class-method"><a class="anchorlink" href="#add-a-class-method">4.1 Add a Class Method</a></h4>
+
+<p>This plugin will expect that you've added a method to your model named <code>last_squawk</code>. However, the
+plugin users might have already defined a method on their model named <code>last_squawk</code> that they use
+for something else. This plugin will allow the name to be changed by adding a class method called <code>yaffle_text_field</code>.</p>
+
+<p>To start out, write a failing test that shows the behavior you'd like:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="c1"># yaffle/test/acts_as_yaffle_test.rb</span>
+
+<span class="nb">require</span> <span class="s2">"test_helper"</span>
+
+<span class="k">class</span> <span class="nc">ActsAsYaffleTest</span> <span class="o">&lt;</span> <span class="no">ActiveSupport</span><span class="o">::</span><span class="no">TestCase</span>
+  <span class="k">def</span> <span class="nf">test_a_hickwalls_yaffle_text_field_should_be_last_squawk</span>
+    <span class="n">assert_equal</span> <span class="s2">"last_squawk"</span><span class="p">,</span> <span class="no">Hickwall</span><span class="p">.</span><span class="nf">yaffle_text_field</span>
+  <span class="k">end</span>
+
+  <span class="k">def</span> <span class="nf">test_a_wickwalls_yaffle_text_field_should_be_last_tweet</span>
+    <span class="n">assert_equal</span> <span class="s2">"last_tweet"</span><span class="p">,</span> <span class="no">Wickwall</span><span class="p">.</span><span class="nf">yaffle_text_field</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='# yaffle/test/acts_as_yaffle_test.rb
+
+require "test_helper"
+
+class ActsAsYaffleTest &lt; ActiveSupport::TestCase
+  def test_a_hickwalls_yaffle_text_field_should_be_last_squawk
+    assert_equal "last_squawk", Hickwall.yaffle_text_field
+  end
+
+  def test_a_wickwalls_yaffle_text_field_should_be_last_tweet
+    assert_equal "last_tweet", Wickwall.yaffle_text_field
+  end
+end
+'>Copy</button>
+</div>
+<p>When you run <code>bin/test</code>, you should see the following:</p>
+
+<div class="code_container">
+<pre><code class="highlight plaintext"># Running:
+
+..E
+
+Error:
+ActsAsYaffleTest#test_a_wickwalls_yaffle_text_field_should_be_last_tweet:
+NameError: uninitialized constant ActsAsYaffleTest::Wickwall
+
+
+bin/test /path/to/yaffle/test/acts_as_yaffle_test.rb:8
+
+E
+
+Error:
+ActsAsYaffleTest#test_a_hickwalls_yaffle_text_field_should_be_last_squawk:
+NameError: uninitialized constant ActsAsYaffleTest::Hickwall
+
+
+bin/test /path/to/yaffle/test/acts_as_yaffle_test.rb:4
+
+
+
+Finished in 0.004812s, 831.2949 runs/s, 415.6475 assertions/s.
+
+4 runs, 2 assertions, 0 failures, 2 errors, 0 skips
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="# Running:
+
+..E
+
+Error:
+ActsAsYaffleTest#test_a_wickwalls_yaffle_text_field_should_be_last_tweet:
+NameError: uninitialized constant ActsAsYaffleTest::Wickwall
+
+
+bin/test /path/to/yaffle/test/acts_as_yaffle_test.rb:8
+
+E
+
+Error:
+ActsAsYaffleTest#test_a_hickwalls_yaffle_text_field_should_be_last_squawk:
+NameError: uninitialized constant ActsAsYaffleTest::Hickwall
+
+
+bin/test /path/to/yaffle/test/acts_as_yaffle_test.rb:4
+
+
+
+Finished in 0.004812s, 831.2949 runs/s, 415.6475 assertions/s.
+
+4 runs, 2 assertions, 0 failures, 2 errors, 0 skips
+">Copy</button>
+</div>
+<p>This tells us that we don't have the necessary models (Hickwall and Wickwall) that we are trying to test.
+We can easily generate these models in our "dummy" Rails application by running the following commands from the
+<code>test/dummy</code> directory:</p>
+
+<div class="code_container">
+<pre><code class="highlight console"><span class="gp">$</span><span class="w"> </span><span class="nb">cd test</span>/dummy
+<span class="gp">$</span><span class="w"> </span><span class="nb">bin/rails </span>generate model Hickwall last_squawk:string
+<span class="gp">$</span><span class="w"> </span><span class="nb">bin/rails </span>generate model Wickwall last_squawk:string last_tweet:string
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="cd test/dummy
+bin/rails generate model Hickwall last_squawk:string
+bin/rails generate model Wickwall last_squawk:string last_tweet:string
+">Copy</button>
+</div>
+<p>Now you can create the necessary database tables in your testing database by navigating to your dummy app
+and migrating the database. First, run:</p>
+
+<div class="code_container">
+<pre><code class="highlight console"><span class="gp">$</span><span class="w"> </span><span class="nb">cd test</span>/dummy
+<span class="gp">$</span><span class="w"> </span><span class="nb">bin/rails </span>db:migrate
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="cd test/dummy
+bin/rails db:migrate
+">Copy</button>
+</div>
+<p>While you are here, change the Hickwall and Wickwall models so that they know that they are supposed to act
+like yaffles.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="c1"># test/dummy/app/models/hickwall.rb</span>
+
+<span class="k">class</span> <span class="nc">Hickwall</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="n">acts_as_yaffle</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="# test/dummy/app/models/hickwall.rb
+
+class Hickwall &lt; ApplicationRecord
+  acts_as_yaffle
+end
+">Copy</button>
+</div>
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="c1"># test/dummy/app/models/wickwall.rb</span>
+
+<span class="k">class</span> <span class="nc">Wickwall</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="n">acts_as_yaffle</span> <span class="ss">yaffle_text_field: :last_tweet</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="# test/dummy/app/models/wickwall.rb
+
+class Wickwall &lt; ApplicationRecord
+  acts_as_yaffle yaffle_text_field: :last_tweet
+end
+">Copy</button>
+</div>
+<p>We will also add code to define the <code>acts_as_yaffle</code> method.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="c1"># yaffle/lib/yaffle/acts_as_yaffle.rb</span>
+
+<span class="k">module</span> <span class="nn">Yaffle</span>
+  <span class="k">module</span> <span class="nn">ActsAsYaffle</span>
+    <span class="kp">extend</span> <span class="no">ActiveSupport</span><span class="o">::</span><span class="no">Concern</span>
+
+    <span class="n">class_methods</span> <span class="k">do</span>
+      <span class="k">def</span> <span class="nf">acts_as_yaffle</span><span class="p">(</span><span class="n">options</span> <span class="o">=</span> <span class="p">{})</span>
+      <span class="k">end</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="# yaffle/lib/yaffle/acts_as_yaffle.rb
+
+module Yaffle
+  module ActsAsYaffle
+    extend ActiveSupport::Concern
+
+    class_methods do
+      def acts_as_yaffle(options = {})
+      end
+    end
+  end
+end
+">Copy</button>
+</div>
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="c1"># test/dummy/app/models/application_record.rb</span>
+
+<span class="k">class</span> <span class="nc">ApplicationRecord</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Base</span>
+  <span class="kp">include</span> <span class="no">Yaffle</span><span class="o">::</span><span class="no">ActsAsYaffle</span>
+
+  <span class="nb">self</span><span class="p">.</span><span class="nf">abstract_class</span> <span class="o">=</span> <span class="kp">true</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="# test/dummy/app/models/application_record.rb
+
+class ApplicationRecord &lt; ActiveRecord::Base
+  include Yaffle::ActsAsYaffle
+
+  self.abstract_class = true
+end
+">Copy</button>
+</div>
+<p>You can then return to the root directory (<code>cd ../..</code>) of your plugin and rerun the tests using <code>bin/test</code>.</p>
+
+<div class="code_container">
+<pre><code class="highlight plaintext"># Running:
+
+.E
+
+Error:
+ActsAsYaffleTest#test_a_hickwalls_yaffle_text_field_should_be_last_squawk:
+NoMethodError: undefined method `yaffle_text_field' for #&lt;Class:0x0055974ebbe9d8&gt;
+
+
+bin/test /path/to/yaffle/test/acts_as_yaffle_test.rb:4
+
+E
+
+Error:
+ActsAsYaffleTest#test_a_wickwalls_yaffle_text_field_should_be_last_tweet:
+NoMethodError: undefined method `yaffle_text_field' for #&lt;Class:0x0055974eb8cfc8&gt;
+
+
+bin/test /path/to/yaffle/test/acts_as_yaffle_test.rb:8
+
+.
+
+Finished in 0.008263s, 484.0999 runs/s, 242.0500 assertions/s.
+
+4 runs, 2 assertions, 0 failures, 2 errors, 0 skips
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="# Running:
+
+.E
+
+Error:
+ActsAsYaffleTest#test_a_hickwalls_yaffle_text_field_should_be_last_squawk:
+NoMethodError: undefined method `yaffle_text_field' for #&lt;Class:0x0055974ebbe9d8&gt;
+
+
+bin/test /path/to/yaffle/test/acts_as_yaffle_test.rb:4
+
+E
+
+Error:
+ActsAsYaffleTest#test_a_wickwalls_yaffle_text_field_should_be_last_tweet:
+NoMethodError: undefined method `yaffle_text_field' for #&lt;Class:0x0055974eb8cfc8&gt;
+
+
+bin/test /path/to/yaffle/test/acts_as_yaffle_test.rb:8
+
+.
+
+Finished in 0.008263s, 484.0999 runs/s, 242.0500 assertions/s.
+
+4 runs, 2 assertions, 0 failures, 2 errors, 0 skips
+">Copy</button>
+</div>
+<p>Getting closer... Now we will implement the code of the <code>acts_as_yaffle</code> method to make the tests pass.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="c1"># yaffle/lib/yaffle/acts_as_yaffle.rb</span>
+
+<span class="k">module</span> <span class="nn">Yaffle</span>
+  <span class="k">module</span> <span class="nn">ActsAsYaffle</span>
+    <span class="kp">extend</span> <span class="no">ActiveSupport</span><span class="o">::</span><span class="no">Concern</span>
+
+    <span class="n">class_methods</span> <span class="k">do</span>
+      <span class="k">def</span> <span class="nf">acts_as_yaffle</span><span class="p">(</span><span class="n">options</span> <span class="o">=</span> <span class="p">{})</span>
+        <span class="n">cattr_accessor</span> <span class="ss">:yaffle_text_field</span><span class="p">,</span> <span class="ss">default: </span><span class="p">(</span><span class="n">options</span><span class="p">[</span><span class="ss">:yaffle_text_field</span><span class="p">]</span> <span class="o">||</span> <span class="ss">:last_squawk</span><span class="p">).</span><span class="nf">to_s</span>
+      <span class="k">end</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="# yaffle/lib/yaffle/acts_as_yaffle.rb
+
+module Yaffle
+  module ActsAsYaffle
+    extend ActiveSupport::Concern
+
+    class_methods do
+      def acts_as_yaffle(options = {})
+        cattr_accessor :yaffle_text_field, default: (options[:yaffle_text_field] || :last_squawk).to_s
+      end
+    end
+  end
+end
+">Copy</button>
+</div>
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="c1"># test/dummy/app/models/application_record.rb</span>
+
+<span class="k">class</span> <span class="nc">ApplicationRecord</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Base</span>
+  <span class="kp">include</span> <span class="no">Yaffle</span><span class="o">::</span><span class="no">ActsAsYaffle</span>
+
+  <span class="nb">self</span><span class="p">.</span><span class="nf">abstract_class</span> <span class="o">=</span> <span class="kp">true</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="# test/dummy/app/models/application_record.rb
+
+class ApplicationRecord &lt; ActiveRecord::Base
+  include Yaffle::ActsAsYaffle
+
+  self.abstract_class = true
+end
+">Copy</button>
+</div>
+<p>When you run <code>bin/test</code>, you should see the tests all pass:</p>
+
+<div class="code_container">
+<pre><code class="highlight plaintext">  4 runs, 4 assertions, 0 failures, 0 errors, 0 skips
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="  4 runs, 4 assertions, 0 failures, 0 errors, 0 skips
+">Copy</button>
+</div>
+<h4 id="add-an-instance-method"><a class="anchorlink" href="#add-an-instance-method">4.2 Add an Instance Method</a></h4>
+
+<p>This plugin will add a method named 'squawk' to any Active Record object that calls <code>acts_as_yaffle</code>. The 'squawk'
+method will simply set the value of one of the fields in the database.</p>
+
+<p>To start out, write a failing test that shows the behavior you'd like:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="c1"># yaffle/test/acts_as_yaffle_test.rb</span>
+<span class="nb">require</span> <span class="s2">"test_helper"</span>
+
+<span class="k">class</span> <span class="nc">ActsAsYaffleTest</span> <span class="o">&lt;</span> <span class="no">ActiveSupport</span><span class="o">::</span><span class="no">TestCase</span>
+  <span class="k">def</span> <span class="nf">test_a_hickwalls_yaffle_text_field_should_be_last_squawk</span>
+    <span class="n">assert_equal</span> <span class="s2">"last_squawk"</span><span class="p">,</span> <span class="no">Hickwall</span><span class="p">.</span><span class="nf">yaffle_text_field</span>
+  <span class="k">end</span>
+
+  <span class="k">def</span> <span class="nf">test_a_wickwalls_yaffle_text_field_should_be_last_tweet</span>
+    <span class="n">assert_equal</span> <span class="s2">"last_tweet"</span><span class="p">,</span> <span class="no">Wickwall</span><span class="p">.</span><span class="nf">yaffle_text_field</span>
+  <span class="k">end</span>
+
+  <span class="k">def</span> <span class="nf">test_hickwalls_squawk_should_populate_last_squawk</span>
+    <span class="n">hickwall</span> <span class="o">=</span> <span class="no">Hickwall</span><span class="p">.</span><span class="nf">new</span>
+    <span class="n">hickwall</span><span class="p">.</span><span class="nf">squawk</span><span class="p">(</span><span class="s2">"Hello World"</span><span class="p">)</span>
+    <span class="n">assert_equal</span> <span class="s2">"squawk! Hello World"</span><span class="p">,</span> <span class="n">hickwall</span><span class="p">.</span><span class="nf">last_squawk</span>
+  <span class="k">end</span>
+
+  <span class="k">def</span> <span class="nf">test_wickwalls_squawk_should_populate_last_tweet</span>
+    <span class="n">wickwall</span> <span class="o">=</span> <span class="no">Wickwall</span><span class="p">.</span><span class="nf">new</span>
+    <span class="n">wickwall</span><span class="p">.</span><span class="nf">squawk</span><span class="p">(</span><span class="s2">"Hello World"</span><span class="p">)</span>
+    <span class="n">assert_equal</span> <span class="s2">"squawk! Hello World"</span><span class="p">,</span> <span class="n">wickwall</span><span class="p">.</span><span class="nf">last_tweet</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='# yaffle/test/acts_as_yaffle_test.rb
+require "test_helper"
+
+class ActsAsYaffleTest &lt; ActiveSupport::TestCase
+  def test_a_hickwalls_yaffle_text_field_should_be_last_squawk
+    assert_equal "last_squawk", Hickwall.yaffle_text_field
+  end
+
+  def test_a_wickwalls_yaffle_text_field_should_be_last_tweet
+    assert_equal "last_tweet", Wickwall.yaffle_text_field
+  end
+
+  def test_hickwalls_squawk_should_populate_last_squawk
+    hickwall = Hickwall.new
+    hickwall.squawk("Hello World")
+    assert_equal "squawk! Hello World", hickwall.last_squawk
+  end
+
+  def test_wickwalls_squawk_should_populate_last_tweet
+    wickwall = Wickwall.new
+    wickwall.squawk("Hello World")
+    assert_equal "squawk! Hello World", wickwall.last_tweet
+  end
+end
+'>Copy</button>
+</div>
+<p>Run the test to make sure the last two tests fail with an error that contains "NoMethodError: undefined method `squawk'",
+then update <code>acts_as_yaffle.rb</code> to look like this:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="c1"># yaffle/lib/yaffle/acts_as_yaffle.rb</span>
+
+<span class="k">module</span> <span class="nn">Yaffle</span>
+  <span class="k">module</span> <span class="nn">ActsAsYaffle</span>
+    <span class="kp">extend</span> <span class="no">ActiveSupport</span><span class="o">::</span><span class="no">Concern</span>
+
+    <span class="n">included</span> <span class="k">do</span>
+      <span class="k">def</span> <span class="nf">squawk</span><span class="p">(</span><span class="n">string</span><span class="p">)</span>
+        <span class="n">write_attribute</span><span class="p">(</span><span class="nb">self</span><span class="p">.</span><span class="nf">class</span><span class="p">.</span><span class="nf">yaffle_text_field</span><span class="p">,</span> <span class="n">string</span><span class="p">.</span><span class="nf">to_squawk</span><span class="p">)</span>
+      <span class="k">end</span>
+    <span class="k">end</span>
+
+    <span class="n">class_methods</span> <span class="k">do</span>
+      <span class="k">def</span> <span class="nf">acts_as_yaffle</span><span class="p">(</span><span class="n">options</span> <span class="o">=</span> <span class="p">{})</span>
+        <span class="n">cattr_accessor</span> <span class="ss">:yaffle_text_field</span><span class="p">,</span> <span class="ss">default: </span><span class="p">(</span><span class="n">options</span><span class="p">[</span><span class="ss">:yaffle_text_field</span><span class="p">]</span> <span class="o">||</span> <span class="ss">:last_squawk</span><span class="p">).</span><span class="nf">to_s</span>
+      <span class="k">end</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="# yaffle/lib/yaffle/acts_as_yaffle.rb
+
+module Yaffle
+  module ActsAsYaffle
+    extend ActiveSupport::Concern
+
+    included do
+      def squawk(string)
+        write_attribute(self.class.yaffle_text_field, string.to_squawk)
+      end
+    end
+
+    class_methods do
+      def acts_as_yaffle(options = {})
+        cattr_accessor :yaffle_text_field, default: (options[:yaffle_text_field] || :last_squawk).to_s
+      end
+    end
+  end
+end
+">Copy</button>
+</div>
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="c1"># test/dummy/app/models/application_record.rb</span>
+
+<span class="k">class</span> <span class="nc">ApplicationRecord</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Base</span>
+  <span class="kp">include</span> <span class="no">Yaffle</span><span class="o">::</span><span class="no">ActsAsYaffle</span>
+
+  <span class="nb">self</span><span class="p">.</span><span class="nf">abstract_class</span> <span class="o">=</span> <span class="kp">true</span>
+<span class="k">end</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="# test/dummy/app/models/application_record.rb
+
+class ApplicationRecord &lt; ActiveRecord::Base
+  include Yaffle::ActsAsYaffle
+
+  self.abstract_class = true
+end
+">Copy</button>
+</div>
+<p>Run <code>bin/test</code> one final time, and you should see:</p>
+
+<div class="code_container">
+<pre><code class="highlight plaintext">  6 runs, 6 assertions, 0 failures, 0 errors, 0 skips
+</code></pre>
+<button class="clipboard-button" data-clipboard-text="  6 runs, 6 assertions, 0 failures, 0 errors, 0 skips
+">Copy</button>
+</div>
+<div class="note"><p>The use of <code>write_attribute</code> to write to the field in model is just one example of how a plugin can interact with the model, and will not always be the right method to use. For example, you could also use:</p></div>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="nb">send</span><span class="p">(</span><span class="s2">"</span><span class="si">#{</span><span class="nb">self</span><span class="p">.</span><span class="nf">class</span><span class="p">.</span><span class="nf">yaffle_text_field</span><span class="si">}</span><span class="s2">="</span><span class="p">,</span> <span class="n">string</span><span class="p">.</span><span class="nf">to_squawk</span><span class="p">)</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='send("#{self.class.yaffle_text_field}=", string.to_squawk)
+'>Copy</button>
+</div>
+</body>
+</html>

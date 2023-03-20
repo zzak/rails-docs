@@ -1,0 +1,261 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>2 Setup the Rails Application for Internationalization</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v5.1.7/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="setup-the-rails-application-for-internationalization">2 Setup the Rails Application for Internationalization</h3>
+<p>There are a few steps to get up and running with I18n support for a Rails application.</p>
+
+<h4 id="configure-the-i18n-module">2.1 Configure the I18n Module</h4>
+
+<p>Following the <em>convention over configuration</em> philosophy, Rails I18n provides reasonable default translation strings. When different translation strings are needed, they can be overridden.</p>
+
+<p>Rails adds all <code>.rb</code> and <code>.yml</code> files from the <code>config/locales</code> directory to the <strong>translations load path</strong>, automatically.</p>
+
+<p>The default <code>en.yml</code> locale in this directory contains a sample pair of translation strings:</p>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+en:
+  hello: "Hello world"
+
+</pre>
+</div>
+<p>This means, that in the <code>:en</code> locale, the key <em>hello</em> will map to the <em>Hello world</em> string. Every string inside Rails is internationalized in this way, see for instance Active Model validation messages in the <a href="https://github.com/rails/rails/blob/master/activemodel/lib/active_model/locale/en.yml"><code>activemodel/lib/active_model/locale/en.yml</code></a> file or time and date formats in the <a href="https://github.com/rails/rails/blob/master/activesupport/lib/active_support/locale/en.yml"><code>activesupport/lib/active_support/locale/en.yml</code></a> file. You can use YAML or standard Ruby Hashes to store translations in the default (Simple) backend.</p>
+
+<p>The I18n library will use <strong>English</strong> as a <strong>default locale</strong>, i.e. if a different locale is not set, <code>:en</code> will be used for looking up translations.</p>
+
+<div class="note"><p>The i18n library takes a <strong>pragmatic approach</strong> to locale keys (after <a href="http://groups.google.com/group/rails-i18n/browse_thread/thread/14dede2c7dbe9470/80eec34395f64f3c?hl=en">some discussion</a>), including only the <em>locale</em> ("language") part, like <code>:en</code>, <code>:pl</code>, not the <em>region</em> part, like <code>:en-US</code> or <code>:en-GB</code>, which are traditionally used for separating "languages" and "regional setting" or "dialects". Many international applications use only the "language" element of a locale such as <code>:cs</code>, <code>:th</code> or <code>:es</code> (for Czech, Thai and Spanish). However, there are also regional differences within different language groups that may be important. For instance, in the <code>:en-US</code> locale you would have $ as a currency symbol, while in <code>:en-GB</code>, you would have £. Nothing stops you from separating regional and other settings in this way: you just have to provide full "English - United Kingdom" locale in a <code>:en-GB</code> dictionary. Few gems such as <a href="https://github.com/globalize/globalize">Globalize3</a> may help you implement it.</p></div>
+
+<p>The <strong>translations load path</strong> (<code>I18n.load_path</code>) is an array of paths to files that will be loaded automatically. Configuring this path allows for customization of translations directory structure and file naming scheme.</p>
+
+<div class="note"><p>The backend lazy-loads these translations when a translation is looked up for the first time. This backend can be swapped with something else even after translations have already been announced.</p></div>
+
+<p>You can change the default locale as well as configure the translations load paths in <code>config/application.rb</code> as follows:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+  config.i18n.load_path += Dir[Rails.root.join('my', 'locales', '*.{rb,yml}').to_s]
+  config.i18n.default_locale = :de
+
+</pre>
+</div>
+<p>The load path must be specified before any translations are looked up. To change the default locale from an initializer instead of <code>config/application.rb</code>:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+# config/initializers/locale.rb
+
+# Where the I18n library should search for translation files
+I18n.load_path += Dir[Rails.root.join('lib', 'locale', '*.{rb,yml}')]
+
+# Whitelist locales available for the application
+I18n.available_locales = [:en, :pt]
+
+# Set default locale to something other than :en
+I18n.default_locale = :pt
+
+</pre>
+</div>
+<h4 id="managing-the-locale-across-requests">2.2 Managing the Locale across Requests</h4>
+
+<p>The default locale is used for all translations unless <code>I18n.locale</code> is explicitly set.</p>
+
+<p>A localized application will likely need to provide support for multiple locales. To accomplish this, the locale should be set at the beginning of each request so that all strings are translated using the desired locale during the lifetime of that request.</p>
+
+<p>The locale can be set in a <code>before_action</code> in the <code>ApplicationController</code>:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+before_action :set_locale
+
+def set_locale
+  I18n.locale = params[:locale] || I18n.default_locale
+end
+
+</pre>
+</div>
+<p>This example illustrates this using a URL query parameter to set the locale (e.g. <code>http://example.com/books?locale=pt</code>). With this approach, <code>http://localhost:3000?locale=pt</code> renders the Portuguese localization, while <code>http://localhost:3000?locale=de</code> loads a German localization.</p>
+
+<p>The locale can be set using one of many different approaches.</p>
+
+<h5 id="setting-the-locale-from-the-domain-name">2.2.1 Setting the Locale from the Domain Name</h5>
+
+<p>One option you have is to set the locale from the domain name where your application runs. For example, we want <code>www.example.com</code> to load the English (or default) locale, and <code>www.example.es</code> to load the Spanish locale. Thus the <em>top-level domain name</em> is used for locale setting. This has several advantages:</p>
+<ul>
+<li>The locale is an <em>obvious</em> part of the URL.</li>
+<li>People intuitively grasp in which language the content will be displayed.</li>
+<li>It is very trivial to implement in Rails.</li>
+<li>Search engines seem to like that content in different languages lives at different, inter-linked domains.</li>
+</ul>
+<p>You can implement it like this in your <code>ApplicationController</code>:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+before_action :set_locale
+
+def set_locale
+  I18n.locale = extract_locale_from_tld || I18n.default_locale
+end
+
+# Get locale from top-level domain or return +nil+ if such locale is not available
+# You have to put something like:
+#   127.0.0.1 application.com
+#   127.0.0.1 application.it
+#   127.0.0.1 application.pl
+# in your /etc/hosts file to try this out locally
+def extract_locale_from_tld
+  parsed_locale = request.host.split('.').last
+  I18n.available_locales.map(&amp;:to_s).include?(parsed_locale) ? parsed_locale : nil
+end
+
+</pre>
+</div>
+<p>We can also set the locale from the <em>subdomain</em> in a very similar way:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+# Get locale code from request subdomain (like http://it.application.local:3000)
+# You have to put something like:
+#   127.0.0.1 gr.application.local
+# in your /etc/hosts file to try this out locally
+def extract_locale_from_subdomain
+  parsed_locale = request.subdomains.first
+  I18n.available_locales.map(&amp;:to_s).include?(parsed_locale) ? parsed_locale : nil
+end
+
+</pre>
+</div>
+<p>If your application includes a locale switching menu, you would then have something like this in it:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+link_to("Deutsch", "#{APP_CONFIG[:deutsch_website_url]}#{request.env['PATH_INFO']}")
+
+</pre>
+</div>
+<p>assuming you would set <code>APP_CONFIG[:deutsch_website_url]</code> to some value like <code>http://www.application.de</code>.</p>
+
+<p>This solution has aforementioned advantages, however, you may not be able or may not want to provide different localizations ("language versions") on different domains. The most obvious solution would be to include locale code in the URL params (or request path).</p>
+
+<h5 id="setting-the-locale-from-url-params">2.2.2 Setting the Locale from URL Params</h5>
+
+<p>The most usual way of setting (and passing) the locale would be to include it in URL params, as we did in the <code>I18n.locale = params[:locale]</code> <em>before_action</em> in the first example. We would like to have URLs like <code>www.example.com/books?locale=ja</code> or <code>www.example.com/ja/books</code> in this case.</p>
+
+<p>This approach has almost the same set of advantages as setting the locale from the domain name: namely that it's RESTful and in accord with the rest of the World Wide Web. It does require a little bit more work to implement, though.</p>
+
+<p>Getting the locale from <code>params</code> and setting it accordingly is not hard; including it in every URL and thus <strong>passing it through the requests</strong> is. To include an explicit option in every URL, e.g. <code>link_to(books_url(locale: I18n.locale))</code>, would be tedious and probably impossible, of course.</p>
+
+<p>Rails contains infrastructure for "centralizing dynamic decisions about the URLs" in its <a href="http://api.rubyonrails.org/v5.1.7/classes/ActionDispatch/Routing/Mapper/Base.html#method-i-default_url_options"><code>ApplicationController#default_url_options</code></a>, which is useful precisely in this scenario: it enables us to set "defaults" for <a href="http://api.rubyonrails.org/v5.1.7/classes/ActionDispatch/Routing/UrlFor.html#method-i-url_for"><code>url_for</code></a> and helper methods dependent on it (by implementing/overriding <code>default_url_options</code>).</p>
+
+<p>We can include something like this in our <code>ApplicationController</code> then:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+# app/controllers/application_controller.rb
+def default_url_options
+  { locale: I18n.locale }
+end
+
+</pre>
+</div>
+<p>Every helper method dependent on <code>url_for</code> (e.g. helpers for named routes like <code>root_path</code> or <code>root_url</code>, resource routes like <code>books_path</code> or <code>books_url</code>, etc.) will now <strong>automatically include the locale in the query string</strong>, like this: <code>http://localhost:3001/?locale=ja</code>.</p>
+
+<p>You may be satisfied with this. It does impact the readability of URLs, though, when the locale "hangs" at the end of every URL in your application. Moreover, from the architectural standpoint, locale is usually hierarchically above the other parts of the application domain: and URLs should reflect this.</p>
+
+<p>You probably want URLs to look like this: <code>http://www.example.com/en/books</code> (which loads the English locale) and <code>http://www.example.com/nl/books</code> (which loads the Dutch locale). This is achievable with the "over-riding <code>default_url_options</code>" strategy from above: you just have to set up your routes with <a href="http://api.rubyonrails.org/v5.1.7/classes/ActionDispatch/Routing/Mapper/Scoping.html"><code>scope</code></a>:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+# config/routes.rb
+scope "/:locale" do
+  resources :books
+end
+
+</pre>
+</div>
+<p>Now, when you call the <code>books_path</code> method you should get <code>"/en/books"</code> (for the default locale). A URL like <code>http://localhost:3001/nl/books</code> should load the Dutch locale, then, and following calls to <code>books_path</code> should return <code>"/nl/books"</code> (because the locale changed).</p>
+
+<div class="warning"><p>Since the return value of <code>default_url_options</code> is cached per request, the URLs in a locale selector cannot be generated invoking helpers in a loop that sets the corresponding <code>I18n.locale</code> in each iteration. Instead, leave <code>I18n.locale</code> untouched, and pass an explicit <code>:locale</code> option to the helper, or edit <code>request.original_fullpath</code>.</p></div>
+
+<p>If you don't want to force the use of a locale in your routes you can use an optional path scope (denoted by the parentheses) like so:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+# config/routes.rb
+scope "(:locale)", locale: /en|nl/ do
+  resources :books
+end
+
+</pre>
+</div>
+<p>With this approach you will not get a <code>Routing Error</code> when accessing your resources such as <code>http://localhost:3001/books</code> without a locale. This is useful for when you want to use the default locale when one is not specified.</p>
+
+<p>Of course, you need to take special care of the root URL (usually "homepage" or "dashboard") of your application. A URL like <code>http://localhost:3001/nl</code> will not work automatically, because the <code>root to: "books#index"</code> declaration in your <code>routes.rb</code> doesn't take locale into account. (And rightly so: there's only one "root" URL.)</p>
+
+<p>You would probably need to map URLs like these:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+# config/routes.rb
+get '/:locale' =&gt; 'dashboard#index'
+
+</pre>
+</div>
+<p>Do take special care about the <strong>order of your routes</strong>, so this route declaration does not "eat" other ones. (You may want to add it directly before the <code>root :to</code> declaration.)</p>
+
+<div class="note"><p>Have a look at various gems which simplify working with routes: <a href="https://github.com/svenfuchs/routing-filter/tree/master">routing_filter</a>, <a href="https://github.com/francesc/rails-translate-routes">rails-translate-routes</a>, <a href="https://github.com/enriclluelles/route_translator">route_translator</a>.</p></div>
+
+<h5 id="setting-the-locale-from-user-preferences">2.2.3 Setting the Locale from User Preferences</h5>
+
+<p>An application with authenticated users may allow users to set a locale preference through the application's interface. With this approach, a user's selected locale preference is persisted in the database and used to set the locale for authenticated requests by that user.</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+def set_locale
+  I18n.locale = current_user.try(:locale) || I18n.default_locale
+end
+
+</pre>
+</div>
+<h5 id="choosing-an-implied-locale">2.2.4 Choosing an Implied Locale</h5>
+
+<p>When an explicit locale has not been set for a request (e.g. via one of the above methods), an application should attempt to infer the desired locale.</p>
+
+<h6 id="inferring-locale-from-the-language-header">2.2.4.1 Inferring Locale from the Language Header</h6>
+
+<p>The <code>Accept-Language</code> HTTP header indicates the preferred language for request's response. Browsers <a href="http://www.w3.org/International/questions/qa-lang-priorities">set this header value based on the user's language preference settings</a>, making it a good first choice when inferring a locale.</p>
+
+<p>A trivial implementation of using an <code>Accept-Language</code> header would be:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+def set_locale
+  logger.debug "* Accept-Language: #{request.env['HTTP_ACCEPT_LANGUAGE']}"
+  I18n.locale = extract_locale_from_accept_language_header
+  logger.debug "* Locale set to '#{I18n.locale}'"
+end
+
+private
+  def extract_locale_from_accept_language_header
+    request.env['HTTP_ACCEPT_LANGUAGE'].scan(/^[a-z]{2}/).first
+  end
+
+</pre>
+</div>
+<p>In practice, more robust code is necessary to do this reliably. Iain Hecker's <a href="https://github.com/iain/http_accept_language/tree/master">http_accept_language</a> library or Ryan Tomayko's <a href="https://github.com/rack/rack-contrib/blob/master/lib/rack/contrib/locale.rb">locale</a> Rack middleware provide solutions to this problem.</p>
+
+<h6 id="inferring-the-locale-from-ip-geolocation">2.2.4.2 Inferring the Locale from IP Geolocation</h6>
+
+<p>The IP address of the client making the request can be used to infer the client's region and thus their locale. Services such as <a href="http://www.maxmind.com/app/geolitecountry">GeoIP Lite Country</a> or gems like <a href="https://github.com/alexreisner/geocoder">geocoder</a> can be used to implement this approach.</p>
+
+<p>In general, this approach is far less reliable than using the language header and is not recommended for most web applications.</p>
+
+<h5 id="storing-the-locale-from-the-session-or-cookies">2.2.5 Storing the Locale from the Session or Cookies</h5>
+
+<div class="warning"><p>You may be tempted to store the chosen locale in a <em>session</em> or a <em>cookie</em>. However, <strong>do not do this</strong>. The locale should be transparent and a part of the URL. This way you won't break people's basic assumptions about the web itself: if you send a URL to a friend, they should see the same page and content as you. A fancy word for this would be that you're being <a href="http://en.wikipedia.org/wiki/Representational_State_Transfer"><em>RESTful</em></a>. Read more about the RESTful approach in <a href="http://www.infoq.com/articles/rest-introduction">Stefan Tilkov's articles</a>. Sometimes there are exceptions to this rule and those are discussed below.</p></div>
+</body>
+</html>

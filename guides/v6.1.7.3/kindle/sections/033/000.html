@@ -1,0 +1,413 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>1 Basic Caching</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v6.1.7.3/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="basic-caching"><a class="anchorlink" href="#basic-caching">1 Basic Caching</a></h3>
+<p>This is an introduction to three types of caching techniques: page, action and
+fragment caching. By default Rails provides fragment caching. In order to use
+page and action caching you will need to add <code>actionpack-page_caching</code> and
+<code>actionpack-action_caching</code> to your <code>Gemfile</code>.</p>
+
+<p>By default, caching is only enabled in your production environment. You can play
+around with caching locally by running <code>rails dev:cache</code>, or by setting
+<code>config.action_controller.perform_caching</code> to <code>true</code> in <code>config/environments/development.rb</code>.</p>
+
+<div class="note"><p>Changing the value of <code>config.action_controller.perform_caching</code> will
+only have an effect on the caching provided by Action Controller.
+For instance, it will not impact low-level caching, that we address
+<a href="#low-level-caching">below</a>.</p></div>
+
+<h4 id="page-caching"><a class="anchorlink" href="#page-caching">1.1 Page Caching</a></h4>
+
+<p>Page caching is a Rails mechanism which allows the request for a generated page
+to be fulfilled by the web server (i.e. Apache or NGINX) without having to go
+through the entire Rails stack. While this is super fast it can't be applied to
+every situation (such as pages that need authentication). Also, because the
+web server is serving a file directly from the filesystem you will need to
+implement cache expiration.</p>
+
+<div class="info"><p>Page Caching has been removed from Rails 4. See the <a href="https://github.com/rails/actionpack-page_caching">actionpack-page_caching gem</a>.</p></div>
+
+<h4 id="action-caching"><a class="anchorlink" href="#action-caching">1.2 Action Caching</a></h4>
+
+<p>Page Caching cannot be used for actions that have before filters - for example, pages that require authentication. This is where Action Caching comes in. Action Caching works like Page Caching except the incoming web request hits the Rails stack so that before filters can be run on it before the cache is served. This allows authentication and other restrictions to be run while still serving the result of the output from a cached copy.</p>
+
+<div class="info"><p>Action Caching has been removed from Rails 4. See the <a href="https://github.com/rails/actionpack-action_caching">actionpack-action_caching gem</a>. See <a href="https://signalvnoise.com/posts/3113-how-key-based-cache-expiration-works">DHH's key-based cache expiration overview</a> for the newly-preferred method.</p></div>
+
+<h4 id="fragment-caching"><a class="anchorlink" href="#fragment-caching">1.3 Fragment Caching</a></h4>
+
+<p>Dynamic web applications usually build pages with a variety of components not
+all of which have the same caching characteristics. When different parts of the
+page need to be cached and expired separately you can use Fragment Caching.</p>
+
+<p>Fragment Caching allows a fragment of view logic to be wrapped in a cache block and served out of the cache store when the next request comes in.</p>
+
+<p>For example, if you wanted to cache each product on a page, you could use this
+code:</p>
+
+<div class="code_container">
+<pre><code class="highlight erb"><span class="cp">&lt;%</span> <span class="vi">@products</span><span class="p">.</span><span class="nf">each</span> <span class="k">do</span> <span class="o">|</span><span class="n">product</span><span class="o">|</span> <span class="cp">%&gt;</span>
+  <span class="cp">&lt;%</span> <span class="n">cache</span> <span class="n">product</span> <span class="k">do</span> <span class="cp">%&gt;</span>
+    <span class="cp">&lt;%=</span> <span class="n">render</span> <span class="n">product</span> <span class="cp">%&gt;</span>
+  <span class="cp">&lt;%</span> <span class="k">end</span> <span class="cp">%&gt;</span>
+<span class="cp">&lt;%</span> <span class="k">end</span> <span class="cp">%&gt;</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-b3e88081d1638102b6636a925f30c371">&lt;% @products.each do |product| %&gt;
+  &lt;% cache product do %&gt;
+    &lt;%= render product %&gt;
+  &lt;% end %&gt;
+&lt;% end %&gt;
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-b3e88081d1638102b6636a925f30c371">Copy</button>
+</div>
+<p>When your application receives its first request to this page, Rails will write
+a new cache entry with a unique key. A key looks something like this:</p>
+
+<div class="code_container">
+<pre><code class="highlight plaintext">views/products/index:bea67108094918eeba42cd4a6e786901/products/1
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-202a981c9fa654d609a3d9d25406a7c2">views/products/index:bea67108094918eeba42cd4a6e786901/products/1
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-202a981c9fa654d609a3d9d25406a7c2">Copy</button>
+</div>
+<p>The string of characters in the middle is a template tree digest. It is a hash
+digest computed based on the contents of the view fragment you are caching. If
+you change the view fragment (e.g., the HTML changes), the digest will change,
+expiring the existing file.</p>
+
+<p>A cache version, derived from the product record, is stored in the cache entry.
+When the product is touched, the cache version changes, and any cached fragments
+that contain the previous version are ignored.</p>
+
+<div class="info"><p>Cache stores like Memcached will automatically delete old cache files.</p></div>
+
+<p>If you want to cache a fragment under certain conditions, you can use
+<code>cache_if</code> or <code>cache_unless</code>:</p>
+
+<div class="code_container">
+<pre><code class="highlight erb"><span class="cp">&lt;%</span> <span class="n">cache_if</span> <span class="n">admin?</span><span class="p">,</span> <span class="n">product</span> <span class="k">do</span> <span class="cp">%&gt;</span>
+  <span class="cp">&lt;%=</span> <span class="n">render</span> <span class="n">product</span> <span class="cp">%&gt;</span>
+<span class="cp">&lt;%</span> <span class="k">end</span> <span class="cp">%&gt;</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-aef52e861d2b22ae423e9d4c6bd828c3">&lt;% cache_if admin?, product do %&gt;
+  &lt;%= render product %&gt;
+&lt;% end %&gt;
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-aef52e861d2b22ae423e9d4c6bd828c3">Copy</button>
+</div>
+<h5 id="collection-caching"><a class="anchorlink" href="#collection-caching">1.3.1 Collection caching</a></h5>
+
+<p>The <code>render</code> helper can also cache individual templates rendered for a collection.
+It can even one up the previous example with <code>each</code> by reading all cache
+templates at once instead of one by one. This is done by passing <code>cached: true</code> when rendering the collection:</p>
+
+<div class="code_container">
+<pre><code class="highlight erb"><span class="cp">&lt;%=</span> <span class="n">render</span> <span class="ss">partial: </span><span class="s1">'products/product'</span><span class="p">,</span> <span class="ss">collection: </span><span class="vi">@products</span><span class="p">,</span> <span class="ss">cached: </span><span class="kp">true</span> <span class="cp">%&gt;</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-efe213d25ca6ae1805150f3f40e7cc2e">&lt;%= render partial: 'products/product', collection: @products, cached: true %&gt;
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-efe213d25ca6ae1805150f3f40e7cc2e">Copy</button>
+</div>
+<p>All cached templates from previous renders will be fetched at once with much
+greater speed. Additionally, the templates that haven't yet been cached will be
+written to cache and multi fetched on the next render.</p>
+
+<h4 id="russian-doll-caching"><a class="anchorlink" href="#russian-doll-caching">1.4 Russian Doll Caching</a></h4>
+
+<p>You may want to nest cached fragments inside other cached fragments. This is
+called Russian doll caching.</p>
+
+<p>The advantage of Russian doll caching is that if a single product is updated,
+all the other inner fragments can be reused when regenerating the outer
+fragment.</p>
+
+<p>As explained in the previous section, a cached file will expire if the value of
+<code>updated_at</code> changes for a record on which the cached file directly depends.
+However, this will not expire any cache the fragment is nested within.</p>
+
+<p>For example, take the following view:</p>
+
+<div class="code_container">
+<pre><code class="highlight erb"><span class="cp">&lt;%</span> <span class="n">cache</span> <span class="n">product</span> <span class="k">do</span> <span class="cp">%&gt;</span>
+  <span class="cp">&lt;%=</span> <span class="n">render</span> <span class="n">product</span><span class="p">.</span><span class="nf">games</span> <span class="cp">%&gt;</span>
+<span class="cp">&lt;%</span> <span class="k">end</span> <span class="cp">%&gt;</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-372bbbc6d8d839bbc1f141e768305e59">&lt;% cache product do %&gt;
+  &lt;%= render product.games %&gt;
+&lt;% end %&gt;
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-372bbbc6d8d839bbc1f141e768305e59">Copy</button>
+</div>
+<p>Which in turn renders this view:</p>
+
+<div class="code_container">
+<pre><code class="highlight erb"><span class="cp">&lt;%</span> <span class="n">cache</span> <span class="n">game</span> <span class="k">do</span> <span class="cp">%&gt;</span>
+  <span class="cp">&lt;%=</span> <span class="n">render</span> <span class="n">game</span> <span class="cp">%&gt;</span>
+<span class="cp">&lt;%</span> <span class="k">end</span> <span class="cp">%&gt;</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-04564acca5c0f5e5d2b7cd89af452573">&lt;% cache game do %&gt;
+  &lt;%= render game %&gt;
+&lt;% end %&gt;
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-04564acca5c0f5e5d2b7cd89af452573">Copy</button>
+</div>
+<p>If any attribute of game is changed, the <code>updated_at</code> value will be set to the
+current time, thereby expiring the cache. However, because <code>updated_at</code>
+will not be changed for the product object, that cache will not be expired and
+your app will serve stale data. To fix this, we tie the models together with
+the <code>touch</code> method:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">Product</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="n">has_many</span> <span class="ss">:games</span>
+<span class="k">end</span>
+
+<span class="k">class</span> <span class="nc">Game</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="n">belongs_to</span> <span class="ss">:product</span><span class="p">,</span> <span class="ss">touch: </span><span class="kp">true</span>
+<span class="k">end</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-61ed9187d6f79f24d828d357b4f79c37">class Product &lt; ApplicationRecord
+  has_many :games
+end
+
+class Game &lt; ApplicationRecord
+  belongs_to :product, touch: true
+end
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-61ed9187d6f79f24d828d357b4f79c37">Copy</button>
+</div>
+<p>With <code>touch</code> set to <code>true</code>, any action which changes <code>updated_at</code> for a game
+record will also change it for the associated product, thereby expiring the
+cache.</p>
+
+<h4 id="shared-partial-caching"><a class="anchorlink" href="#shared-partial-caching">1.5 Shared Partial Caching</a></h4>
+
+<p>It is possible to share partials and associated caching between files with different mime types. For example shared partial caching allows template writers to share a partial between HTML and JavaScript files. When templates are collected in the template resolver file paths they only include the template language extension and not the mime type. Because of this templates can be used for multiple mime types. Both HTML and JavaScript requests will respond to the following code:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">render</span><span class="p">(</span><span class="ss">partial: </span><span class="s1">'hotels/hotel'</span><span class="p">,</span> <span class="ss">collection: </span><span class="vi">@hotels</span><span class="p">,</span> <span class="ss">cached: </span><span class="kp">true</span><span class="p">)</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-4b9811ed52ce7262b1ff5ff8ecbee4ea">render(partial: 'hotels/hotel', collection: @hotels, cached: true)
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-4b9811ed52ce7262b1ff5ff8ecbee4ea">Copy</button>
+</div>
+<p>Will load a file named <code>hotels/hotel.erb</code>.</p>
+
+<p>Another option is to include the full filename of the partial to render.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">render</span><span class="p">(</span><span class="ss">partial: </span><span class="s1">'hotels/hotel.html.erb'</span><span class="p">,</span> <span class="ss">collection: </span><span class="vi">@hotels</span><span class="p">,</span> <span class="ss">cached: </span><span class="kp">true</span><span class="p">)</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-d16474f068be03e8bdcbbe72e1d9e3b1">render(partial: 'hotels/hotel.html.erb', collection: @hotels, cached: true)
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-d16474f068be03e8bdcbbe72e1d9e3b1">Copy</button>
+</div>
+<p>Will load a file named <code>hotels/hotel.html.erb</code> in any file mime type, for example you could include this partial in a JavaScript file.</p>
+
+<h4 id="managing-dependencies"><a class="anchorlink" href="#managing-dependencies">1.6 Managing dependencies</a></h4>
+
+<p>In order to correctly invalidate the cache, you need to properly define the
+caching dependencies. Rails is clever enough to handle common cases so you don't
+have to specify anything. However, sometimes, when you're dealing with custom
+helpers for instance, you need to explicitly define them.</p>
+
+<h5 id="implicit-dependencies"><a class="anchorlink" href="#implicit-dependencies">1.6.1 Implicit dependencies</a></h5>
+
+<p>Most template dependencies can be derived from calls to <code>render</code> in the template
+itself. Here are some examples of render calls that <code>ActionView::Digestor</code> knows
+how to decode:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">render</span> <span class="ss">partial: </span><span class="s2">"comments/comment"</span><span class="p">,</span> <span class="ss">collection: </span><span class="n">commentable</span><span class="p">.</span><span class="nf">comments</span>
+<span class="n">render</span> <span class="s2">"comments/comments"</span>
+<span class="n">render</span> <span class="s1">'comments/comments'</span>
+<span class="n">render</span><span class="p">(</span><span class="s1">'comments/comments'</span><span class="p">)</span>
+
+<span class="n">render</span> <span class="s2">"header"</span> <span class="n">translates</span> <span class="n">to</span> <span class="n">render</span><span class="p">(</span><span class="s2">"comments/header"</span><span class="p">)</span>
+
+<span class="n">render</span><span class="p">(</span><span class="vi">@topic</span><span class="p">)</span>         <span class="n">translates</span> <span class="n">to</span> <span class="n">render</span><span class="p">(</span><span class="s2">"topics/topic"</span><span class="p">)</span>
+<span class="n">render</span><span class="p">(</span><span class="n">topics</span><span class="p">)</span>         <span class="n">translates</span> <span class="n">to</span> <span class="n">render</span><span class="p">(</span><span class="s2">"topics/topic"</span><span class="p">)</span>
+<span class="n">render</span><span class="p">(</span><span class="n">message</span><span class="p">.</span><span class="nf">topics</span><span class="p">)</span> <span class="n">translates</span> <span class="n">to</span> <span class="n">render</span><span class="p">(</span><span class="s2">"topics/topic"</span><span class="p">)</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-1ed96e4d5614e2891852ddd4d225a6da">render partial: "comments/comment", collection: commentable.comments
+render "comments/comments"
+render 'comments/comments'
+render('comments/comments')
+
+render "header" translates to render("comments/header")
+
+render(@topic)         translates to render("topics/topic")
+render(topics)         translates to render("topics/topic")
+render(message.topics) translates to render("topics/topic")
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-1ed96e4d5614e2891852ddd4d225a6da">Copy</button>
+</div>
+<p>On the other hand, some calls need to be changed to make caching work properly.
+For instance, if you're passing a custom collection, you'll need to change:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">render</span> <span class="vi">@project</span><span class="p">.</span><span class="nf">documents</span><span class="p">.</span><span class="nf">where</span><span class="p">(</span><span class="ss">published: </span><span class="kp">true</span><span class="p">)</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-42861b9e43915cc84faffa124dbe006b">render @project.documents.where(published: true)
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-42861b9e43915cc84faffa124dbe006b">Copy</button>
+</div>
+<p>to:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="n">render</span> <span class="ss">partial: </span><span class="s2">"documents/document"</span><span class="p">,</span> <span class="ss">collection: </span><span class="vi">@project</span><span class="p">.</span><span class="nf">documents</span><span class="p">.</span><span class="nf">where</span><span class="p">(</span><span class="ss">published: </span><span class="kp">true</span><span class="p">)</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-6095ef17fd15989f26c3e51939d0d320">render partial: "documents/document", collection: @project.documents.where(published: true)
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-6095ef17fd15989f26c3e51939d0d320">Copy</button>
+</div>
+<h5 id="explicit-dependencies"><a class="anchorlink" href="#explicit-dependencies">1.6.2 Explicit dependencies</a></h5>
+
+<p>Sometimes you'll have template dependencies that can't be derived at all. This
+is typically the case when rendering happens in helpers. Here's an example:</p>
+
+<div class="code_container">
+<pre><code class="highlight erb"><span class="cp">&lt;%=</span> <span class="n">render_sortable_todolists</span> <span class="vi">@project</span><span class="p">.</span><span class="nf">todolists</span> <span class="cp">%&gt;</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-c708350a9dc46795792f7a6338709b2b">&lt;%= render_sortable_todolists @project.todolists %&gt;
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-c708350a9dc46795792f7a6338709b2b">Copy</button>
+</div>
+<p>You'll need to use a special comment format to call those out:</p>
+
+<div class="code_container">
+<pre><code class="highlight erb"><span class="c">&lt;%# Template Dependency: todolists/todolist %&gt;</span>
+<span class="cp">&lt;%=</span> <span class="n">render_sortable_todolists</span> <span class="vi">@project</span><span class="p">.</span><span class="nf">todolists</span> <span class="cp">%&gt;</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-d05c20f2d5125619fc0e623d6e534d8c">&lt;%# Template Dependency: todolists/todolist %&gt;
+&lt;%= render_sortable_todolists @project.todolists %&gt;
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-d05c20f2d5125619fc0e623d6e534d8c">Copy</button>
+</div>
+<p>In some cases, like a single table inheritance setup, you might have a bunch of
+explicit dependencies. Instead of writing every template out, you can use a
+wildcard to match any template in a directory:</p>
+
+<div class="code_container">
+<pre><code class="highlight erb"><span class="c">&lt;%# Template Dependency: events/* %&gt;</span>
+<span class="cp">&lt;%=</span> <span class="n">render_categorizable_events</span> <span class="vi">@person</span><span class="p">.</span><span class="nf">events</span> <span class="cp">%&gt;</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-96947417eeaac410ab5042be5728cc0b">&lt;%# Template Dependency: events/* %&gt;
+&lt;%= render_categorizable_events @person.events %&gt;
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-96947417eeaac410ab5042be5728cc0b">Copy</button>
+</div>
+<p>As for collection caching, if the partial template doesn't start with a clean
+cache call, you can still benefit from collection caching by adding a special
+comment format anywhere in the template, like:</p>
+
+<div class="code_container">
+<pre><code class="highlight erb"><span class="c">&lt;%# Template Collection: notification %&gt;</span>
+<span class="cp">&lt;%</span> <span class="n">my_helper_that_calls_cache</span><span class="p">(</span><span class="n">some_arg</span><span class="p">,</span> <span class="n">notification</span><span class="p">)</span> <span class="k">do</span> <span class="cp">%&gt;</span>
+  <span class="cp">&lt;%=</span> <span class="n">notification</span><span class="p">.</span><span class="nf">name</span> <span class="cp">%&gt;</span>
+<span class="cp">&lt;%</span> <span class="k">end</span> <span class="cp">%&gt;</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-b5c9db08b901bb319dbddb17d197a4ef">&lt;%# Template Collection: notification %&gt;
+&lt;% my_helper_that_calls_cache(some_arg, notification) do %&gt;
+  &lt;%= notification.name %&gt;
+&lt;% end %&gt;
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-b5c9db08b901bb319dbddb17d197a4ef">Copy</button>
+</div>
+<h5 id="external-dependencies"><a class="anchorlink" href="#external-dependencies">1.6.3 External dependencies</a></h5>
+
+<p>If you use a helper method, for example, inside a cached block and you then update
+that helper, you'll have to bump the cache as well. It doesn't really matter how
+you do it, but the MD5 of the template file must change. One recommendation is to
+simply be explicit in a comment, like:</p>
+
+<div class="code_container">
+<pre><code class="highlight erb"><span class="c">&lt;%# Helper Dependency Updated: Jul 28, 2015 at 7pm %&gt;</span>
+<span class="cp">&lt;%=</span> <span class="n">some_helper_method</span><span class="p">(</span><span class="n">person</span><span class="p">)</span> <span class="cp">%&gt;</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-0e9ea1731ed86c38f0030ab27e802667">&lt;%# Helper Dependency Updated: Jul 28, 2015 at 7pm %&gt;
+&lt;%= some_helper_method(person) %&gt;
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-0e9ea1731ed86c38f0030ab27e802667">Copy</button>
+</div>
+<h4 id="low-level-caching"><a class="anchorlink" href="#low-level-caching">1.7 Low-Level Caching</a></h4>
+
+<p>Sometimes you need to cache a particular value or query result instead of caching view fragments. Rails' caching mechanism works great for storing <strong>any</strong> kind of information.</p>
+
+<p>The most efficient way to implement low-level caching is using the <code>Rails.cache.fetch</code> method. This method does both reading and writing to the cache. When passed only a single argument, the key is fetched and value from the cache is returned. If a block is passed, that block will be executed in the event of a cache miss. The return value of the block will be written to the cache under the given cache key, and that return value will be returned. In case of cache hit, the cached value will be returned without executing the block.</p>
+
+<p>Consider the following example. An application has a <code>Product</code> model with an instance method that looks up the product's price on a competing website. The data returned by this method would be perfect for low-level caching:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">Product</span> <span class="o">&lt;</span> <span class="no">ApplicationRecord</span>
+  <span class="k">def</span> <span class="nf">competing_price</span>
+    <span class="no">Rails</span><span class="p">.</span><span class="nf">cache</span><span class="p">.</span><span class="nf">fetch</span><span class="p">(</span><span class="s2">"</span><span class="si">#{</span><span class="n">cache_key_with_version</span><span class="si">}</span><span class="s2">/competing_price"</span><span class="p">,</span> <span class="ss">expires_in: </span><span class="mi">12</span><span class="p">.</span><span class="nf">hours</span><span class="p">)</span> <span class="k">do</span>
+      <span class="no">Competitor</span><span class="o">::</span><span class="no">API</span><span class="p">.</span><span class="nf">find_price</span><span class="p">(</span><span class="nb">id</span><span class="p">)</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-3b739149e355650efd382c0ebc381174">class Product &lt; ApplicationRecord
+  def competing_price
+    Rails.cache.fetch("#{cache_key_with_version}/competing_price", expires_in: 12.hours) do
+      Competitor::API.find_price(id)
+    end
+  end
+end
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-3b739149e355650efd382c0ebc381174">Copy</button>
+</div>
+<div class="note"><p>Notice that in this example we used the <code>cache_key_with_version</code> method, so the resulting cache key will be something like <code>products/233-20140225082222765838000/competing_price</code>. <code>cache_key_with_version</code> generates a string based on the model's class name, <code>id</code>, and <code>updated_at</code> attributes. This is a common convention and has the benefit of invalidating the cache whenever the product is updated. In general, when you use low-level caching for instance level information, you need to generate a cache key.</p></div>
+
+<h4 id="sql-caching"><a class="anchorlink" href="#sql-caching">1.8 SQL Caching</a></h4>
+
+<p>Query caching is a Rails feature that caches the result set returned by each
+query. If Rails encounters the same query again for that request, it will use
+the cached result set as opposed to running the query against the database
+again.</p>
+
+<p>For example:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">ProductsController</span> <span class="o">&lt;</span> <span class="no">ApplicationController</span>
+
+  <span class="k">def</span> <span class="nf">index</span>
+    <span class="c1"># Run a find query</span>
+    <span class="vi">@products</span> <span class="o">=</span> <span class="no">Product</span><span class="p">.</span><span class="nf">all</span>
+
+    <span class="c1"># ...</span>
+
+    <span class="c1"># Run the same query again</span>
+    <span class="vi">@products</span> <span class="o">=</span> <span class="no">Product</span><span class="p">.</span><span class="nf">all</span>
+  <span class="k">end</span>
+
+<span class="k">end</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-0455a1f05109d74ee458140b97833f75">class ProductsController &lt; ApplicationController
+
+  def index
+    # Run a find query
+    @products = Product.all
+
+    # ...
+
+    # Run the same query again
+    @products = Product.all
+  end
+
+end
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-0455a1f05109d74ee458140b97833f75">Copy</button>
+</div>
+<p>The second time the same query is run against the database, it's not actually going to hit the database. The first time the result is returned from the query it is stored in the query cache (in memory) and the second time it's pulled from memory.</p>
+
+<p>However, it's important to note that query caches are created at the start of
+an action and destroyed at the end of that action and thus persist only for the
+duration of the action. If you'd like to store query results in a more
+persistent fashion, you can with low level caching.</p>
+</body>
+</html>

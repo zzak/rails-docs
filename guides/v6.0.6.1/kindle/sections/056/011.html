@@ -1,0 +1,42 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>12 Action Mailer</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v6.0.6.1/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="action-mailer"><a class="anchorlink" href="#action-mailer">12 Action Mailer</a></h3>
+<p>Action Mailer has been given a new API with TMail being replaced out with the new <a href="https://github.com/mikel/mail">Mail</a> as the email library. Action Mailer itself has been given an almost complete re-write with pretty much every line of code touched. The result is that Action Mailer now simply inherits from Abstract Controller and wraps the Mail gem in a Rails DSL. This reduces the amount of code and duplication of other libraries in Action Mailer considerably.</p>
+<ul>
+<li>All mailers are now in <code>app/mailers</code> by default.</li>
+<li>Can now send email using new API with three methods: <code>attachments</code>, <code>headers</code> and <code>mail</code>.</li>
+<li>Action Mailer now has native support for inline attachments using the <code>attachments.inline</code> method.</li>
+<li>Action Mailer emailing methods now return <code>Mail::Message</code> objects, which can then be sent the <code>deliver</code> message to send itself.</li>
+<li>All delivery methods are now abstracted out to the Mail gem.</li>
+<li>The mail delivery method can accept a hash of all valid mail header fields with their value pair.</li>
+<li>The <code>mail</code> delivery method acts in a similar way to Action Controller's <code>respond_to</code>, and you can explicitly or implicitly render templates. Action Mailer will turn the email into a multipart email as needed.</li>
+<li>You can pass a proc to the <code>format.mime_type</code> calls within the mail block and explicitly render specific types of text, or add layouts or different templates. The <code>render</code> call inside the proc is from Abstract Controller and supports the same options.</li>
+<li>What were mailer unit tests have been moved to functional tests.</li>
+<li>Action Mailer now delegates all auto encoding of header fields and bodies to Mail Gem</li>
+<li>Action Mailer will auto encode email bodies and headers for you</li>
+</ul>
+<p>Deprecations:</p>
+<ul>
+<li>
+<code>:charset</code>, <code>:content_type</code>, <code>:mime_version</code>, <code>:implicit_parts_order</code> are all deprecated in favor of <code>ActionMailer.default :key =&gt; value</code> style declarations.</li>
+<li>Mailer dynamic <code>create_method_name</code> and <code>deliver_method_name</code> are deprecated, just call <code>method_name</code> which now returns a <code>Mail::Message</code> object.</li>
+<li>
+<code>ActionMailer.deliver(message)</code> is deprecated, just call <code>message.deliver</code>.</li>
+<li>
+<code>template_root</code> is deprecated, pass options to a render call inside a proc from the <code>format.mime_type</code> method inside the <code>mail</code> generation block</li>
+<li>The <code>body</code> method to define instance variables is deprecated (<code>body {:ivar =&gt; value}</code>), just declare instance variables in the method directly and they will be available in the view.</li>
+<li>Mailers being in <code>app/models</code> is deprecated, use <code>app/mailers</code> instead.</li>
+</ul>
+<p>More Information:</p>
+<ul>
+<li><a href="http://lindsaar.net/2010/1/26/new-actionmailer-api-in-rails-3">New Action Mailer API in Rails 3</a></li>
+<li><a href="http://lindsaar.net/2010/1/23/mail-gem-version-2-released">New Mail Gem for Ruby</a></li>
+</ul>
+</body>
+</html>

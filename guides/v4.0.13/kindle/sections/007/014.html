@@ -1,0 +1,14 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>15 Dynamic Finders</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v4.0.13/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="dynamic-finders">15 Dynamic Finders</h3>
+<p>For every field (also known as an attribute) you define in your table, Active Record provides a finder method. If you have a field called <code>first_name</code> on your <code>Client</code> model for example, you get <code>find_by_first_name</code> for free from Active Record. If you have a <code>locked</code> field on the <code>Client</code> model, you also get <code>find_by_locked</code> and methods.</p>
+<p>You can specify an exclamation point (<code>!</code>) on the end of the dynamic finders to get them to raise an <code>ActiveRecord::RecordNotFound</code> error if they do not return any records, like <code>Client.find_by_name!("Ryan")</code></p>
+<p>If you want to find both by name and locked, you can chain these finders together by simply typing "<code>and</code>" between the fields. For example, <code>Client.find_by_first_name_and_locked("Ryan", true)</code>.</p>
+</body>
+</html>

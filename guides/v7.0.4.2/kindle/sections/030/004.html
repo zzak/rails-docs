@@ -1,0 +1,69 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>5 Replacements for Rails/UJS Functionality</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v7.0.4.2/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="replacements-for-rails-ujs-functionality"><a class="anchorlink" href="#replacements-for-rails-ujs-functionality">5 Replacements for Rails/UJS Functionality</a></h3>
+<p>Rails 6 shipped with a tool called UJS that allows developers to override the method of <code>&lt;a&gt;</code> tags
+to perform non-GET requests after a hyperlink click and to add confirmation dialogs before
+executing an action. This was the default before Rails 7, but it is now recommended to use Turbo
+instead.</p>
+
+<h4 id="method"><a class="anchorlink" href="#method">5.1 Method</a></h4>
+
+<p>Clicking links always results in an HTTP GET request. If your application is
+<a href="https://en.wikipedia.org/wiki/Representational_State_Transfer">RESTful</a>, some links are in fact
+actions that change data on the server, and should be performed with non-GET requests. This
+attribute allows marking up such links with an explicit method such as "post", "put", or "delete".</p>
+
+<p>Turbo will scan <code>&lt;a&gt;</code> tags in your application for the <code>turbo-method</code> data attribute and use the
+specified method when present, overriding the default GET action.</p>
+
+<p>For example:</p>
+
+<div class="code_container">
+<pre><code class="highlight erb"><span class="cp">&lt;%=</span> <span class="n">link_to</span> <span class="s2">"Delete post"</span><span class="p">,</span> <span class="n">post_path</span><span class="p">(</span><span class="n">post</span><span class="p">),</span> <span class="ss">data: </span><span class="p">{</span> <span class="ss">turbo_method: </span><span class="s2">"delete"</span> <span class="p">}</span> <span class="cp">%&gt;</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='&lt;%= link_to "Delete post", post_path(post), data: { turbo_method: "delete" } %&gt;
+'>Copy</button>
+</div>
+<p>This generates:</p>
+
+<div class="code_container">
+<pre><code class="highlight html"><span class="nt">&lt;a</span> <span class="na">data-turbo-method=</span><span class="s">"delete"</span> <span class="na">href=</span><span class="s">"..."</span><span class="nt">&gt;</span>Delete post<span class="nt">&lt;/a&gt;</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='&lt;a data-turbo-method="delete" href="..."&gt;Delete post&lt;/a&gt;
+'>Copy</button>
+</div>
+<p>An alternative to changing the method of a link with <code>data-turbo-method</code> is to use Rails
+<code>button_to</code> helper. For accessibility reasons, actual buttons and forms are preferable for any
+non-GET action.</p>
+
+<h4 id="confirmations"><a class="anchorlink" href="#confirmations">5.2 Confirmations</a></h4>
+
+<p>You can ask for an extra confirmation of the user by adding a <code>data-turbo-confirm</code> attribute on
+links and forms. The user will be presented with a JavaScript <code>confirm()</code> dialog containing the
+attribute’s text. If the user chooses to cancel, the action doesn't take place.</p>
+
+<p>Adding this attribute on links will trigger the dialog on click, and adding it on forms will
+trigger it on submit. For example:</p>
+
+<div class="code_container">
+<pre><code class="highlight erb"><span class="cp">&lt;%=</span> <span class="n">link_to</span> <span class="s2">"Delete post"</span><span class="p">,</span> <span class="n">post_path</span><span class="p">(</span><span class="n">post</span><span class="p">),</span> <span class="ss">data: </span><span class="p">{</span> <span class="ss">turbo_method: </span><span class="s2">"delete"</span><span class="p">,</span> <span class="ss">turbo_confirm: </span><span class="s2">"Are you sure?"</span> <span class="p">}</span> <span class="cp">%&gt;</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='&lt;%= link_to "Delete post", post_path(post), data: { turbo_method: "delete", turbo_confirm: "Are you sure?" } %&gt;
+'>Copy</button>
+</div>
+<p>This generates:</p>
+
+<div class="code_container">
+<pre><code class="highlight html"><span class="nt">&lt;a</span> <span class="na">href=</span><span class="s">"..."</span> <span class="na">data-confirm=</span><span class="s">"Are you sure?"</span> <span class="na">data-turbo-method=</span><span class="s">"delete"</span><span class="nt">&gt;</span>Delete post<span class="nt">&lt;/a&gt;</span>
+</code></pre>
+<button class="clipboard-button" data-clipboard-text='&lt;a href="..." data-confirm="Are you sure?" data-turbo-method="delete"&gt;Delete post&lt;/a&gt;
+'>Copy</button>
+</div>
+</body>
+</html>

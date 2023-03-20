@@ -1,0 +1,25 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>9 Old Migrations</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v6.0.6.1/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="old-migrations"><a class="anchorlink" href="#old-migrations">9 Old Migrations</a></h3>
+<p>The <code>db/schema.rb</code> or <code>db/structure.sql</code> is a snapshot of the current state of your
+database and is the authoritative source for rebuilding that database. This
+makes it possible to delete old migration files.</p>
+
+<p>When you delete migration files in the <code>db/migrate/</code> directory, any environment
+where <code>rails db:migrate</code> was run when those files still existed will hold a reference
+to the migration timestamp specific to them inside an internal Rails database
+table named <code>schema_migrations</code>. This table is used to keep track of whether
+migrations have been executed in a specific environment.</p>
+
+<p>If you run the <code>rails db:migrate:status</code> command, which displays the status
+(up or down) of each migration, you should see <code>********** NO FILE **********</code>
+displayed next to any deleted migration file which was once executed on a
+specific environment but can no longer be found in the <code>db/migrate/</code> directory.</p>
+</body>
+</html>

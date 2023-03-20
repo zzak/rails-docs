@@ -1,0 +1,830 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>5 Getting Up and Running</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v4.0.13/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="getting-up-and-running">5 Getting Up and Running</h3>
+<p>Now that you've seen how to create a controller, an action and a view, let's create something with a bit more substance.</p>
+<p>In the Blog application, you will now create a new <em>resource</em>. A resource is the term used for a collection of similar objects, such as posts, people or animals. You can create, read, update and destroy items for a resource and these operations are referred to as <em>CRUD</em> operations.</p>
+<p>Rails provides a <code>resources</code> method which can be used to declare a
+standard REST resource. Here's how <code>config/routes.rb</code> will look like.</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+Blog::Application.routes.draw do
+
+  resources :posts
+
+  root to: "welcome#index"
+end
+
+</pre>
+</div>
+<p>If you run <code>rake routes</code>, you'll see that all the routes for the
+standard RESTful actions.</p>
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+$ rake routes
+    posts GET    /posts(.:format)          posts#index
+          POST   /posts(.:format)          posts#create
+ new_post GET    /posts/new(.:format)      posts#new
+edit_post GET    /posts/:id/edit(.:format) posts#edit
+     post GET    /posts/:id(.:format)      posts#show
+          PATCH  /posts/:id(.:format)      posts#update
+          PUT    /posts/:id(.:format)      posts#update
+          DELETE /posts/:id(.:format)      posts#destroy
+     root        /                         welcome#index
+
+</pre>
+</div>
+<p>In the next section, you will add the ability to create new posts in your application and be able to view them. This is the "C" and the "R" from CRUD: creation and reading. The form for doing this will look like this:</p>
+<p><img src="/home/rails/v4.0.13/guides/output/kindle/images/getting_started/new_post.png" alt="The new post form"></p>
+<p>It will look a little basic for now, but that's ok. We'll look at improving the styling for it afterwards.</p>
+<h4 id="laying-down-the-ground-work">5.1 Laying down the ground work</h4>
+<p>The first thing that you are going to need to create a new post within the application is a place to do that. A great place for that would be at <code>/posts/new</code>.  With the route already defined, requests can now be made to <code>/posts/new</code> in the application. Navigate to <a href="http://localhost:3000/posts/new">http://localhost:3000/posts/new</a> and you'll see a routing error:</p>
+<p><img src="/home/rails/v4.0.13/guides/output/kindle/images/getting_started/routing_error_no_controller.png" alt="Another routing error, uninitialized constant PostsController"></p>
+<p>This error occurs because the route needs to have a controller defined in order to serve the request. The solution to this particular problem is simple: create a controller called <code>PostsController</code>. You can do this by running this command:</p>
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+$ rails g controller posts
+
+</pre>
+</div>
+<p>If you open up the newly generated <code>app/controllers/posts_controller.rb</code> you'll see a fairly empty controller:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class PostsController &lt; ApplicationController
+end
+
+</pre>
+</div>
+<p>A controller is simply a class that is defined to inherit from <code>ApplicationController</code>. It's inside this class that you'll define methods that will become the actions for this controller. These actions will perform CRUD operations on the posts within our system.</p>
+<div class="note"><p>There are <code>public</code>, <code>private</code> and <code>protected</code> methods in <code>Ruby</code>
+(for more details you can check on <a href="http://www.ruby-doc.org/docs/ProgrammingRuby/">Programming Ruby</a>).
+But only <code>public</code> methods can be actions for controllers.</p></div>
+<p>If you refresh <a href="http://localhost:3000/posts/new">http://localhost:3000/posts/new</a> now, you'll get a new error:</p>
+<p><img src="/home/rails/v4.0.13/guides/output/kindle/images/getting_started/unknown_action_new_for_posts.png" alt="Unknown action new for PostsController!"></p>
+<p>This error indicates that Rails cannot find the <code>new</code> action inside the <code>PostsController</code> that you just generated. This is because when controllers are generated in Rails they are empty by default, unless you tell it you wanted actions during the generation process.</p>
+<p>To manually define an action inside a controller, all you need to do is to define a new method inside the controller. Open <code>app/controllers/posts_controller.rb</code> and inside the <code>PostsController</code> class, define a <code>new</code> method like this:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+def new
+end
+
+</pre>
+</div>
+<p>With the <code>new</code> method defined in <code>PostsController</code>, if you refresh <a href="http://localhost:3000/posts/new">http://localhost:3000/posts/new</a> you'll see another error:</p>
+<p><img src="/home/rails/v4.0.13/guides/output/kindle/images/getting_started/template_is_missing_posts_new.png" alt="Template is missing for posts/new"></p>
+<p>You're getting this error now because Rails expects plain actions like this one to have views associated with them to display their information. With no view available, Rails errors out.</p>
+<p>In the above image, the bottom line has been truncated. Let's see what the full thing looks like:</p>
+<blockquote>
+Missing template posts/new, application/new with {locale:[:en], formats:[:html], handlers:[:erb, :builder, :coffee]}. Searched in: * "/path/to/blog/app/views"
+</blockquote>
+<p>That's quite a lot of text! Let's quickly go through and understand what each part of it does.</p>
+<p>The first part identifies what template is missing. In this case, it's the <code>posts/new</code> template. Rails will first look for this template. If not found, then it will attempt to load a template called <code>application/new</code>. It looks for one here because the <code>PostsController</code> inherits from <code>ApplicationController</code>.</p>
+<p>The next part of the message contains a hash. The <code>:locale</code> key in this hash simply indicates what spoken language template should be retrieved. By default, this is the English — or "en" — template. The next key, <code>:formats</code> specifies the format of template to be served in response. The default format is <code>:html</code>, and so Rails is looking for an HTML template. The final key, <code>:handlers</code>, is telling us what <em>template handlers</em> could be used to render our template. <code>:erb</code> is most commonly used for HTML templates, <code>:builder</code> is used for XML templates, and <code>:coffee</code> uses CoffeeScript to build JavaScript templates.</p>
+<p>The final part of this message tells us where Rails has looked for the templates. Templates within a basic Rails application like this are kept in a single location, but in more complex applications it could be many different paths.</p>
+<p>The simplest template that would work in this case would be one located at <code>app/views/posts/new.html.erb</code>. The extension of this file name is key: the first extension is the <em>format</em> of the template, and the second extension is the <em>handler</em> that will be used. Rails is attempting to find a template called <code>posts/new</code> within <code>app/views</code> for the application. The format for this template can only be <code>html</code> and the handler must be one of <code>erb</code>, <code>builder</code> or <code>coffee</code>. Because you want to create a new HTML form, you will be using the <code>ERB</code> language. Therefore the file should be called <code>posts/new.html.erb</code> and needs to be located inside the <code>app/views</code> directory of the application.</p>
+<p>Go ahead now and create a new file at <code>app/views/posts/new.html.erb</code> and write this content in it:</p>
+<div class="code_container">
+<pre class="brush: xml; gutter: false; toolbar: false">
+&lt;h1&gt;New Post&lt;/h1&gt;
+
+</pre>
+</div>
+<p>When you refresh <a href="http://localhost:3000/posts/new">http://localhost:3000/posts/new</a> you'll now see that the page has a title. The route, controller, action and view are now working harmoniously! It's time to create the form for a new post.</p>
+<h4 id="the-first-form">5.2 The first form</h4>
+<p>To create a form within this template, you will use a <em>form
+builder</em>. The primary form builder for Rails is provided by a helper
+method called <code>form_for</code>. To use this method, add this code into <code>app/views/posts/new.html.erb</code>:</p>
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+&lt;%= form_for :post do |f| %&gt;
+  &lt;p&gt;
+    &lt;%= f.label :title %&gt;&lt;br&gt;
+    &lt;%= f.text_field :title %&gt;
+  &lt;/p&gt;
+
+  &lt;p&gt;
+    &lt;%= f.label :text %&gt;&lt;br&gt;
+    &lt;%= f.text_area :text %&gt;
+  &lt;/p&gt;
+
+  &lt;p&gt;
+    &lt;%= f.submit %&gt;
+  &lt;/p&gt;
+&lt;% end %&gt;
+
+</pre>
+</div>
+<p>If you refresh the page now, you'll see the exact same form as in the example. Building forms in Rails is really just that easy!</p>
+<p>When you call <code>form_for</code>, you pass it an identifying object for this
+form. In this case, it's the symbol <code>:post</code>. This tells the <code>form_for</code>
+helper what this form is for. Inside the block for this method, the
+<code>FormBuilder</code> object — represented by <code>f</code> — is used to build two labels and two text fields, one each for the title and text of a post. Finally, a call to <code>submit</code> on the <code>f</code> object will create a submit button for the form.</p>
+<p>There's one problem with this form though. If you inspect the HTML that is generated, by viewing the source of the page, you will see that the <code>action</code> attribute for the form is pointing at <code>/posts/new</code>. This is a problem because this route goes to the very page that you're on right at the moment, and that route should only be used to display the form for a new post.</p>
+<p>The form needs to use a different URL in order to go somewhere else.
+This can be done quite simply with the <code>:url</code> option of <code>form_for</code>.
+Typically in Rails, the action that is used for new form submissions
+like this is called "create", and so the form should be pointed to that action.</p>
+<p>Edit the <code>form_for</code> line inside <code>app/views/posts/new.html.erb</code> to look like this:</p>
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+&lt;%= form_for :post, url: posts_path do |f| %&gt;
+
+</pre>
+</div>
+<p>In this example, the <code>posts_path</code> helper is passed to the <code>:url</code> option. What Rails will do with this is that it will point the form to the <code>create</code> action of the current controller, the <code>PostsController</code>, and will send a <code>POST</code> request to that route.</p>
+<p>By using the <code>post</code> method rather than the <code>get</code> method, Rails will define a route that will only respond to POST methods. The POST method is the typical method used by forms all over the web.</p>
+<p>With the form and its associated route defined, you will be able to fill in the form and then click the submit button to begin the process of creating a new post, so go ahead and do that. When you submit the form, you should see a familiar error:</p>
+<p><img src="/home/rails/v4.0.13/guides/output/kindle/images/getting_started/unknown_action_create_for_posts.png" alt="Unknown action create for PostsController"></p>
+<p>You now need to create the <code>create</code> action within the <code>PostsController</code> for this to work.</p>
+<h4 id="creating-posts">5.3 Creating posts</h4>
+<p>To make the "Unknown action" go away, you can define a <code>create</code> action within the <code>PostsController</code> class in <code>app/controllers/posts_controller.rb</code>, underneath the <code>new</code> action:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class PostsController &lt; ApplicationController
+  def new
+  end
+
+  def create
+  end
+end
+
+</pre>
+</div>
+<p>If you re-submit the form now, you'll see another familiar error: a template is missing. That's ok, we can ignore that for now. What the <code>create</code> action should be doing is saving our new post to a database.</p>
+<p>When a form is submitted, the fields of the form are sent to Rails as <em>parameters</em>. These parameters can then be referenced inside the controller actions, typically to perform a particular task. To see what these parameters look like, change the <code>create</code> action to this:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+def create
+  render text: params[:post].inspect
+end
+
+</pre>
+</div>
+<p>The <code>render</code> method here is taking a very simple hash with a key of <code>text</code> and value of <code>params[:post].inspect</code>. The <code>params</code> method is the object which represents the parameters (or fields) coming in from the form. The <code>params</code> method returns an <code>ActiveSupport::HashWithIndifferentAccess</code> object, which allows you to access the keys of the hash using either strings or symbols. In this situation, the only parameters that matter are the ones from the form.</p>
+<p>If you re-submit the form one more time you'll now no longer get the missing template error. Instead, you'll see something that looks like the following:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+{"title"=&gt;"First post!", "text"=&gt;"This is my first post."}
+
+</pre>
+</div>
+<p>This action is now displaying the parameters for the post that are coming in from the form. However, this isn't really all that helpful. Yes, you can see the parameters but nothing in particular is being done with them.</p>
+<h4 id="creating-the-post-model">5.4 Creating the Post model</h4>
+<p>Models in Rails use a singular name, and their corresponding database tables use
+a plural name. Rails provides a generator for creating models, which
+most Rails developers tend to use when creating new models.
+To create the new model, run this command in your terminal:</p>
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+$ rails generate model Post title:string text:text
+
+</pre>
+</div>
+<p>With that command we told Rails that we want a <code>Post</code> model, together
+with a <em>title</em> attribute of type string, and a <em>text</em> attribute
+of type text. Those attributes are automatically added to the <code>posts</code>
+table in the database and mapped to the <code>Post</code> model.</p>
+<p>Rails responded by creating a bunch of files. For
+now, we're only interested in <code>app/models/post.rb</code> and
+<code>db/migrate/20120419084633_create_posts.rb</code> (your name could be a bit
+different). The latter is responsible
+for creating the database structure, which is what we'll look at next.</p>
+<div class="info"><p>Active Record is smart enough to automatically map column names to
+model attributes, which means you don't have to declare attributes
+inside Rails models, as that will be done automatically by Active
+Record.</p></div>
+<h4 id="running-a-migration">5.5 Running a Migration</h4>
+<p>As we've just seen, <code>rails generate model</code> created a <em>database
+migration</em> file inside the <code>db/migrate</code> directory.
+Migrations are Ruby classes that are designed to make it simple to
+create and modify database tables. Rails uses rake commands to run migrations,
+and it's possible to undo a migration after it's been applied to your database.
+Migration filenames include a timestamp to ensure that they're processed in the
+order that they were created.</p>
+<p>If you look in the <code>db/migrate/20120419084633_create_posts.rb</code> file (remember,
+yours will have a slightly different name), here's what you'll find:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class CreatePosts &lt; ActiveRecord::Migration
+  def change
+    create_table :posts do |t|
+      t.string :title
+      t.text :text
+
+      t.timestamps
+    end
+  end
+end
+
+</pre>
+</div>
+<p>The above migration creates a method named <code>change</code> which will be called when you
+run this migration. The action defined in this method is also reversible, which
+means Rails knows how to reverse the change made by this migration, in case you
+want to reverse it later. When you run this migration it will create a
+<code>posts</code> table with one string column and a text column. It also creates two
+timestamp fields to allow Rails to track post creation and update times.</p>
+<div class="info"><p>For more information about migrations, refer to <a href="migrations.html">Rails Database
+Migrations</a>.</p></div>
+<p>At this point, you can use a rake command to run the migration:</p>
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+$ rake db:migrate
+
+</pre>
+</div>
+<p>Rails will execute this migration command and tell you it created the Posts
+table.</p>
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+==  CreatePosts: migrating ====================================================
+-- create_table(:posts)
+   -&gt; 0.0019s
+==  CreatePosts: migrated (0.0020s) ===========================================
+
+</pre>
+</div>
+<div class="note"><p>Because you're working in the development environment by default, this
+command will apply to the database defined in the <code>development</code> section of your
+<code>config/database.yml</code> file. If you would like to execute migrations in another
+environment, for instance in production, you must explicitly pass it when
+invoking the command: <code>rake db:migrate RAILS_ENV=production</code>.</p></div>
+<h4 id="saving-data-in-the-controller">5.6 Saving data in the controller</h4>
+<p>Back in <code>posts_controller</code>, we need to change the <code>create</code> action
+to use the new <code>Post</code> model to save the data in the database. Open <code>app/controllers/posts_controller.rb</code>
+and change the <code>create</code> action to look like this:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+def create
+  @post = Post.new(params[:post])
+  @post.save
+  redirect_to @post
+end
+
+</pre>
+</div>
+<p>Here's what's going on: every Rails model can be initialized with its
+respective attributes, which are automatically mapped to the respective
+database columns. In the first line we do just that (remember that
+<code>params[:post]</code> contains the attributes we're interested in). Then,
+<code>@post.save</code> is responsible for saving the model in the database.
+Finally, we redirect the user to the <code>show</code> action,
+which we'll define later.</p>
+<div class="info"><p>As we'll see later, <code>@post.save</code> returns a boolean indicating
+whether the model was saved or not.</p></div>
+<p>If you now go to
+<a href="http://localhost:3000/posts/new">http://localhost:3000/posts/new</a> you'll <em>almost</em> be able to create a post. Try
+it! You should get an error that looks like this:</p>
+<p><img src="/home/rails/v4.0.13/guides/output/kindle/images/getting_started/forbidden_attributes_for_new_post.png" alt="Forbidden attributes for new post"></p>
+<p>Rails has several security features that help you write secure applications,
+and you're running into one of them now. This one is called
+<code>strong_parameters</code>, which requires us to tell Rails exactly which parameters
+we want to accept in our controllers. In this case, we want to allow the
+<code>title</code> and <code>text</code> parameters, so change your <code>create</code> controller action to
+look like this:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+def create
+  @post = Post.new(post_params)
+
+  @post.save
+  redirect_to @post
+end
+
+private
+  def post_params
+    params.require(:post).permit(:title, :text)
+  end
+
+</pre>
+</div>
+<p>See the <code>permit</code>? It allows us to accept both <code>title</code> and <code>text</code> in this
+action.</p>
+<div class="info"><p>Note that <code>def post_params</code> is private. This new approach prevents an attacker from
+setting the model's attributes by manipulating the hash passed to the model.
+For more information, refer to
+<a href="http://weblog.rubyonrails.org/2012/3/21/strong-parameters/">this blog post about Strong Parameters</a>.</p></div>
+<h4 id="showing-posts">5.7 Showing Posts</h4>
+<p>If you submit the form again now, Rails will complain about not finding
+the <code>show</code> action. That's not very useful though, so let's add the
+<code>show</code> action before proceeding.</p>
+<p>As we have seen in the output of <code>rake routes</code>, the route for <code>show</code> action is
+as follows:</p>
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+post GET    /posts/:id(.:format)      posts#show
+
+</pre>
+</div>
+<p>The special syntax <code>:id</code> tells rails that this route expects an <code>:id</code>
+parameter, which in our case will be the id of the post.</p>
+<p>As we did before, we need to add the <code>show</code> action in
+<code>app/controllers/posts_controller.rb</code> and its respective view.</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+def show
+  @post = Post.find(params[:id])
+end
+
+</pre>
+</div>
+<p>A couple of things to note. We use <code>Post.find</code> to find the post we're
+interested in. We also use an instance variable (prefixed by <code>@</code>) to
+hold a reference to the post object. We do this because Rails will pass all instance
+variables to the view.</p>
+<p>Now, create a new file <code>app/views/posts/show.html.erb</code> with the following
+content:</p>
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+&lt;p&gt;
+  &lt;strong&gt;Title:&lt;/strong&gt;
+  &lt;%= @post.title %&gt;
+&lt;/p&gt;
+
+&lt;p&gt;
+  &lt;strong&gt;Text:&lt;/strong&gt;
+  &lt;%= @post.text %&gt;
+&lt;/p&gt;
+
+</pre>
+</div>
+<p>With this change, you should finally be able to create new posts.
+Visit <a href="http://localhost:3000/posts/new">http://localhost:3000/posts/new</a> and give it a try!</p>
+<p><img src="/home/rails/v4.0.13/guides/output/kindle/images/getting_started/show_action_for_posts.png" alt="Show action for posts"></p>
+<h4 id="listing-all-posts">5.8 Listing all posts</h4>
+<p>We still need a way to list all our posts, so let's do that.
+We'll use a specific route from <code>config/routes.rb</code>:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+posts GET    /posts(.:format)          posts#index
+
+</pre>
+</div>
+<p>And an action for that route inside the <code>PostsController</code> in the <code>app/controllers/posts_controller.rb</code> file:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+def index
+  @posts = Post.all
+end
+
+</pre>
+</div>
+<p>And then finally a view for this action, located at <code>app/views/posts/index.html.erb</code>:</p>
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+&lt;h1&gt;Listing posts&lt;/h1&gt;
+
+&lt;table&gt;
+  &lt;tr&gt;
+    &lt;th&gt;Title&lt;/th&gt;
+    &lt;th&gt;Text&lt;/th&gt;
+  &lt;/tr&gt;
+
+  &lt;% @posts.each do |post| %&gt;
+    &lt;tr&gt;
+      &lt;td&gt;&lt;%= post.title %&gt;&lt;/td&gt;
+      &lt;td&gt;&lt;%= post.text %&gt;&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;% end %&gt;
+&lt;/table&gt;
+
+</pre>
+</div>
+<p>Now if you go to <code>http://localhost:3000/posts</code> you will see a list of all the posts that you have created.</p>
+<h4 id="adding-links">5.9 Adding links</h4>
+<p>You can now create, show, and list posts. Now let's add some links to
+navigate through pages.</p>
+<p>Open <code>app/views/welcome/index.html.erb</code> and modify it as follows:</p>
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+&lt;h1&gt;Hello, Rails!&lt;/h1&gt;
+&lt;%= link_to "My Blog", controller: "posts" %&gt;
+
+</pre>
+</div>
+<p>The <code>link_to</code> method is one of Rails' built-in view helpers. It creates a
+hyperlink based on text to display and where to go - in this case, to the path
+for posts.</p>
+<p>Let's add links to the other views as well, starting with adding this "New Post" link to <code>app/views/posts/index.html.erb</code>, placing it above the <code>&lt;table&gt;</code> tag:</p>
+<div class="code_container">
+<pre class="brush: ruby; html-script: true; gutter: false; toolbar: false">
+&lt;%= link_to 'New post', new_post_path %&gt;
+
+</pre>
+</div>
+<p>This link will allow you to bring up the form that lets you create a new post. You should also add a link to this template — <code>app/views/posts/new.html.erb</code> — to go back to the <code>index</code> action. Do this by adding this underneath the form in this template:</p>
+<div class="code_container">
+<pre class="brush: ruby; html-script: true; gutter: false; toolbar: false">
+&lt;%= form_for :post do |f| %&gt;
+  ...
+&lt;% end %&gt;
+
+&lt;%= link_to 'Back', posts_path %&gt;
+
+</pre>
+</div>
+<p>Finally, add another link to the <code>app/views/posts/show.html.erb</code> template to go back to the <code>index</code> action as well, so that people who are viewing a single post can go back and view the whole list again:</p>
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+&lt;p&gt;
+  &lt;strong&gt;Title:&lt;/strong&gt;
+  &lt;%= @post.title %&gt;
+&lt;/p&gt;
+
+&lt;p&gt;
+  &lt;strong&gt;Text:&lt;/strong&gt;
+  &lt;%= @post.text %&gt;
+&lt;/p&gt;
+
+&lt;%= link_to 'Back', posts_path %&gt;
+
+</pre>
+</div>
+<div class="info"><p>If you want to link to an action in the same controller, you don't
+need to specify the <code>:controller</code> option, as Rails will use the current
+controller by default.</p></div>
+<div class="info"><p>In development mode (which is what you're working in by default), Rails
+reloads your application with every browser request, so there's no need to stop
+and restart the web server when a change is made.</p></div>
+<h4 id="allowing-the-update-of-fields">5.10 Allowing the update of fields</h4>
+<p>The model file, <code>app/models/post.rb</code> is about as simple as it can get:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class Post &lt; ActiveRecord::Base
+end
+
+</pre>
+</div>
+<p>There isn't much to this file - but note that the <code>Post</code> class inherits from
+<code>ActiveRecord::Base</code>. Active Record supplies a great deal of functionality to
+your Rails models for free, including basic database CRUD (Create, Read, Update,
+Destroy) operations, data validation, as well as sophisticated search support
+and the ability to relate multiple models to one another.</p>
+<h4 id="adding-some-validation">5.11 Adding Some Validation</h4>
+<p>Rails includes methods to help you validate the data that you send to models.
+Open the <code>app/models/post.rb</code> file and edit it:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class Post &lt; ActiveRecord::Base
+  validates :title, presence: true,
+                    length: { minimum: 5 }
+end
+
+</pre>
+</div>
+<p>These changes will ensure that all posts have a title that is at least five
+characters long.  Rails can validate a variety of conditions in a model,
+including the presence or uniqueness of columns, their format, and the
+existence of associated objects. Validations are covered in detail in <a href="active_record_validations.html">Active
+Record Validations</a></p>
+<p>With the validation now in place, when you call <code>@post.save</code> on an invalid
+post, it will return <code>false</code>. If you open <code>app/controllers/posts_controller.rb</code>
+again, you'll notice that we don't check the result of calling <code>@post.save</code>
+inside the <code>create</code> action. If <code>@post.save</code> fails in this situation, we need to
+show the form back to the user. To do this, change the <code>new</code> and <code>create</code>
+actions inside <code>app/controllers/posts_controller.rb</code> to these:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+def new
+  @post = Post.new
+end
+
+def create
+  @post = Post.new(params[:post].permit(:title, :text))
+
+  if @post.save
+    redirect_to @post
+  else
+    render 'new'
+  end
+end
+
+</pre>
+</div>
+<p>The <code>new</code> action is now creating a new instance variable called <code>@post</code>, and
+you'll see why that is in just a few moments.</p>
+<p>Notice that inside the <code>create</code> action we use <code>render</code> instead of <code>redirect_to</code> when <code>save</code>
+returns <code>false</code>. The <code>render</code> method is used so that the <code>@post</code> object is passed back to the <code>new</code> template when it is rendered. This rendering is done within the same request as the form submission, whereas the <code>redirect_to</code> will tell the browser to issue another request.</p>
+<p>If you reload
+<a href="http://localhost:3000/posts/new">http://localhost:3000/posts/new</a> and
+try to save a post without a title, Rails will send you back to the
+form, but that's not very useful. You need to tell the user that
+something went wrong. To do that, you'll modify
+<code>app/views/posts/new.html.erb</code> to check for error messages:</p>
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+&lt;%= form_for :post, url: posts_path do |f| %&gt;
+  &lt;% if @post.errors.any? %&gt;
+  &lt;div id="error_explanation"&gt;
+    &lt;h2&gt;&lt;%= pluralize(@post.errors.count, "error") %&gt; prohibited
+      this post from being saved:&lt;/h2&gt;
+    &lt;ul&gt;
+    &lt;% @post.errors.full_messages.each do |msg| %&gt;
+      &lt;li&gt;&lt;%= msg %&gt;&lt;/li&gt;
+    &lt;% end %&gt;
+    &lt;/ul&gt;
+  &lt;/div&gt;
+  &lt;% end %&gt;
+  &lt;p&gt;
+    &lt;%= f.label :title %&gt;&lt;br&gt;
+    &lt;%= f.text_field :title %&gt;
+  &lt;/p&gt;
+
+  &lt;p&gt;
+    &lt;%= f.label :text %&gt;&lt;br&gt;
+    &lt;%= f.text_area :text %&gt;
+  &lt;/p&gt;
+
+  &lt;p&gt;
+    &lt;%= f.submit %&gt;
+  &lt;/p&gt;
+&lt;% end %&gt;
+
+&lt;%= link_to 'Back', posts_path %&gt;
+
+</pre>
+</div>
+<p>A few things are going on. We check if there are any errors with
+<code>@post.errors.any?</code>, and in that case we show a list of all
+errors with <code>@post.errors.full_messages</code>.</p>
+<p><code>pluralize</code> is a rails helper that takes a number and a string as its
+arguments. If the number is greater than one, the string will be automatically pluralized.</p>
+<p>The reason why we added <code>@post = Post.new</code> in <code>posts_controller</code> is that
+otherwise <code>@post</code> would be <code>nil</code> in our view, and calling
+<code>@post.errors.any?</code> would throw an error.</p>
+<div class="info"><p>Rails automatically wraps fields that contain an error with a div
+with class <code>field_with_errors</code>. You can define a css rule to make them
+standout.</p></div>
+<p>Now you'll get a nice error message when saving a post without title when you
+attempt to do just that on the new post form <a href="http://localhost:3000/posts/new">(http://localhost:3000/posts/new)</a>.</p>
+<p><img src="/home/rails/v4.0.13/guides/output/kindle/images/getting_started/form_with_errors.png" alt="Form With Errors"></p>
+<h4 id="updating-posts">5.12 Updating Posts</h4>
+<p>We've covered the "CR" part of CRUD. Now let's focus on the "U" part, updating posts.</p>
+<p>The first step we'll take is adding an <code>edit</code> action to <code>posts_controller</code>.</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+def edit
+  @post = Post.find(params[:id])
+end
+
+</pre>
+</div>
+<p>The view will contain a form similar to the one we used when creating
+new posts. Create a file called <code>app/views/posts/edit.html.erb</code> and make
+it look as follows:</p>
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+&lt;h1&gt;Editing post&lt;/h1&gt;
+
+&lt;%= form_for :post, url: post_path(@post), method: :patch do |f| %&gt;
+  &lt;% if @post.errors.any? %&gt;
+  &lt;div id="error_explanation"&gt;
+    &lt;h2&gt;&lt;%= pluralize(@post.errors.count, "error") %&gt; prohibited
+      this post from being saved:&lt;/h2&gt;
+    &lt;ul&gt;
+    &lt;% @post.errors.full_messages.each do |msg| %&gt;
+      &lt;li&gt;&lt;%= msg %&gt;&lt;/li&gt;
+    &lt;% end %&gt;
+    &lt;/ul&gt;
+  &lt;/div&gt;
+  &lt;% end %&gt;
+  &lt;p&gt;
+    &lt;%= f.label :title %&gt;&lt;br&gt;
+    &lt;%= f.text_field :title %&gt;
+  &lt;/p&gt;
+
+  &lt;p&gt;
+    &lt;%= f.label :text %&gt;&lt;br&gt;
+    &lt;%= f.text_area :text %&gt;
+  &lt;/p&gt;
+
+  &lt;p&gt;
+    &lt;%= f.submit %&gt;
+  &lt;/p&gt;
+&lt;% end %&gt;
+
+&lt;%= link_to 'Back', posts_path %&gt;
+
+</pre>
+</div>
+<p>This time we point the form to the <code>update</code> action, which is not defined yet
+but will be very soon.</p>
+<p>The <code>method: :patch</code> option tells Rails that we want this form to be submitted
+via the <code>PATCH</code> HTTP method which is the HTTP method you're expected to use to
+<strong>update</strong> resources according to the REST protocol.</p>
+<div class="info"><p>By default forms built with the <em>form_for</em> helper are sent via <code>POST</code>.</p></div>
+<p>Next we need to create the <code>update</code> action in <code>app/controllers/posts_controller.rb</code>:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+def update
+  @post = Post.find(params[:id])
+
+  if @post.update(params[:post].permit(:title, :text))
+    redirect_to @post
+  else
+    render 'edit'
+  end
+end
+
+</pre>
+</div>
+<p>The new method, <code>update</code>, is used when you want to update a record
+that already exists, and it accepts a hash containing the attributes
+that you want to update. As before, if there was an error updating the
+post we want to show the form back to the user.</p>
+<div class="info"><p>You don't need to pass all attributes to <code>update</code>. For
+example, if you'd call <code>@post.update(title: 'A new title')</code>
+Rails would only update the <code>title</code> attribute, leaving all other
+attributes untouched.</p></div>
+<p>Finally, we want to show a link to the <code>edit</code> action in the list of all the
+posts, so let's add that now to <code>app/views/posts/index.html.erb</code> to make it
+appear next to the "Show" link:</p>
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+&lt;table&gt;
+  &lt;tr&gt;
+    &lt;th&gt;Title&lt;/th&gt;
+    &lt;th&gt;Text&lt;/th&gt;
+    &lt;th&gt;&lt;/th&gt;
+    &lt;th&gt;&lt;/th&gt;
+  &lt;/tr&gt;
+
+&lt;% @posts.each do |post| %&gt;
+  &lt;tr&gt;
+    &lt;td&gt;&lt;%= post.title %&gt;&lt;/td&gt;
+    &lt;td&gt;&lt;%= post.text %&gt;&lt;/td&gt;
+    &lt;td&gt;&lt;%= link_to 'Show', post %&gt;&lt;/td&gt;
+    &lt;td&gt;&lt;%= link_to 'Edit', edit_post_path(post) %&gt;&lt;/td&gt;
+  &lt;/tr&gt;
+&lt;% end %&gt;
+&lt;/table&gt;
+
+</pre>
+</div>
+<p>And we'll also add one to the <code>app/views/posts/show.html.erb</code> template as well,
+so that there's also an "Edit" link on a post's page. Add this at the bottom of
+the template:</p>
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+...
+
+&lt;%= link_to 'Back', posts_path %&gt;
+| &lt;%= link_to 'Edit', edit_post_path(@post) %&gt;
+
+</pre>
+</div>
+<p>And here's how our app looks so far:</p>
+<p><img src="/home/rails/v4.0.13/guides/output/kindle/images/getting_started/index_action_with_edit_link.png" alt="Index action with edit link"></p>
+<h4 id="using-partials-to-clean-up-duplication-in-views">5.13 Using partials to clean up duplication in views</h4>
+<p>Our <code>edit</code> page looks very similar to the <code>new</code> page, in fact they
+both share the same code for displaying the form. Let's remove some duplication
+by using a view partial. By convention, partial files are prefixed by an
+underscore.</p>
+<div class="info"><p>You can read more about partials in the
+<a href="layouts_and_rendering.html">Layouts and Rendering in Rails</a> guide.</p></div>
+<p>Create a new file <code>app/views/posts/_form.html.erb</code> with the following
+content:</p>
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+&lt;%= form_for @post do |f| %&gt;
+  &lt;% if @post.errors.any? %&gt;
+  &lt;div id="error_explanation"&gt;
+    &lt;h2&gt;&lt;%= pluralize(@post.errors.count, "error") %&gt; prohibited
+      this post from being saved:&lt;/h2&gt;
+    &lt;ul&gt;
+    &lt;% @post.errors.full_messages.each do |msg| %&gt;
+      &lt;li&gt;&lt;%= msg %&gt;&lt;/li&gt;
+    &lt;% end %&gt;
+    &lt;/ul&gt;
+  &lt;/div&gt;
+  &lt;% end %&gt;
+  &lt;p&gt;
+    &lt;%= f.label :title %&gt;&lt;br&gt;
+    &lt;%= f.text_field :title %&gt;
+  &lt;/p&gt;
+
+  &lt;p&gt;
+    &lt;%= f.label :text %&gt;&lt;br&gt;
+    &lt;%= f.text_area :text %&gt;
+  &lt;/p&gt;
+
+  &lt;p&gt;
+    &lt;%= f.submit %&gt;
+  &lt;/p&gt;
+&lt;% end %&gt;
+
+</pre>
+</div>
+<p>Everything except for the <code>form_for</code> declaration remained the same.
+How <code>form_for</code> can figure out the right <code>action</code> and <code>method</code> attributes
+when building the form will be explained in just a moment. For now, let's update the
+<code>app/views/posts/new.html.erb</code> view to use this new partial, rewriting it
+completely:</p>
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+&lt;h1&gt;New post&lt;/h1&gt;
+
+&lt;%= render 'form' %&gt;
+
+&lt;%= link_to 'Back', posts_path %&gt;
+
+</pre>
+</div>
+<p>Then do the same for the <code>app/views/posts/edit.html.erb</code> view:</p>
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+&lt;h1&gt;Edit post&lt;/h1&gt;
+
+&lt;%= render 'form' %&gt;
+
+&lt;%= link_to 'Back', posts_path %&gt;
+
+</pre>
+</div>
+<h4 id="deleting-posts">5.14 Deleting Posts</h4>
+<p>We're now ready to cover the "D" part of CRUD, deleting posts from the
+database. Following the REST convention, the route for
+deleting posts in the <code>config/routes.rb</code> is:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+DELETE /posts/:id(.:format)      posts#destroy
+
+</pre>
+</div>
+<p>The <code>delete</code> routing method should be used for routes that destroy
+resources. If this was left as a typical <code>get</code> route, it could be possible for
+people to craft malicious URLs like this:</p>
+<div class="code_container">
+<pre class="brush: xml; gutter: false; toolbar: false">
+&lt;a href='http://example.com/posts/1/destroy'&gt;look at this cat!&lt;/a&gt;
+
+</pre>
+</div>
+<p>We use the <code>delete</code> method for destroying resources, and this route is mapped to
+the <code>destroy</code> action inside <code>app/controllers/posts_controller.rb</code>, which doesn't exist yet, but is
+provided below:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+def destroy
+  @post = Post.find(params[:id])
+  @post.destroy
+
+  redirect_to posts_path
+end
+
+</pre>
+</div>
+<p>You can call <code>destroy</code> on Active Record objects when you want to delete
+them from the database. Note that we don't need to add a view for this
+action since we're redirecting to the <code>index</code> action.</p>
+<p>Finally, add a 'destroy' link to your <code>index</code> action template
+(<code>app/views/posts/index.html.erb</code>) to wrap everything
+together.</p>
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+&lt;h1&gt;Listing Posts&lt;/h1&gt;
+&lt;%= link_to 'New post', new_post_path %&gt;
+&lt;table&gt;
+  &lt;tr&gt;
+    &lt;th&gt;Title&lt;/th&gt;
+    &lt;th&gt;Text&lt;/th&gt;
+    &lt;th&gt;&lt;/th&gt;
+    &lt;th&gt;&lt;/th&gt;
+    &lt;th&gt;&lt;/th&gt;
+  &lt;/tr&gt;
+
+&lt;% @posts.each do |post| %&gt;
+  &lt;tr&gt;
+    &lt;td&gt;&lt;%= post.title %&gt;&lt;/td&gt;
+    &lt;td&gt;&lt;%= post.text %&gt;&lt;/td&gt;
+    &lt;td&gt;&lt;%= link_to 'Show', post_path(post) %&gt;&lt;/td&gt;
+    &lt;td&gt;&lt;%= link_to 'Edit', edit_post_path(post) %&gt;&lt;/td&gt;
+    &lt;td&gt;&lt;%= link_to 'Destroy', post_path(post),
+                    method: :delete, data: { confirm: 'Are you sure?' } %&gt;&lt;/td&gt;
+  &lt;/tr&gt;
+&lt;% end %&gt;
+&lt;/table&gt;
+
+</pre>
+</div>
+<p>Here we're using <code>link_to</code> in a different way. We pass the named route as the first argument,
+and then the final two keys as another argument. The <code>:method</code> and <code>:'data-confirm'</code>
+options are used as HTML5 attributes so that when the link is clicked,
+Rails will first show a confirm dialog to the user, and then submit the link with method <code>delete</code>.
+This is done via the JavaScript file <code>jquery_ujs</code> which is automatically included
+into your application's layout (<code>app/views/layouts/application.html.erb</code>) when you
+generated the application. Without this file, the confirmation dialog box wouldn't appear.</p>
+<p><img src="/home/rails/v4.0.13/guides/output/kindle/images/getting_started/confirm_dialog.png" alt="Confirm Dialog"></p>
+<p>Congratulations, you can now create, show, list, update and destroy
+posts.</p>
+<div class="info"><p>In general, Rails encourages the use of resources objects in place
+of declaring routes manually.
+For more information about routing, see
+<a href="routing.html">Rails Routing from the Outside In</a>.</p></div>
+</body>
+</html>

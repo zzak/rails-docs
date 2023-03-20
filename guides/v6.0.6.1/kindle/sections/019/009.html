@@ -1,0 +1,379 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>10 Direct Uploads</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v6.0.6.1/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="direct-uploads"><a class="anchorlink" href="#direct-uploads">10 Direct Uploads</a></h3>
+<p>Active Storage, with its included JavaScript library, supports uploading
+directly from the client to the cloud.</p>
+
+<h4 id="usage"><a class="anchorlink" href="#usage">10.1 Usage</a></h4>
+<ol>
+<li>
+Include <code>activestorage.js</code> in your application's JavaScript bundle.
+Using the asset pipeline:
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+//= require activestorage
+
+
+</pre>
+</div>
+Using the npm package:
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+require("@rails/activestorage").start()
+
+</pre>
+</div>
+</li>
+<li>
+Annotate file inputs with the direct upload URL.
+<div class="code_container">
+<pre class="brush: ruby; html-script: true; gutter: false; toolbar: false">
+&lt;%= form.file_field :attachments, multiple: true, direct_upload: true %&gt;
+
+</pre>
+</div>
+</li>
+<li>Configure CORS on third-party storage services to allow direct upload requests.</li>
+<li>That's it! Uploads begin upon form submission.</li>
+</ol>
+<h4 id="cross-origin-resource-sharing-cors-configuration"><a class="anchorlink" href="#cross-origin-resource-sharing-cors-configuration">10.2 Cross-Origin Resource Sharing (CORS) configuration</a></h4>
+
+<p>To make direct uploads to a third-party service work, you’ll need to configure the service to allow cross-origin requests from your app. Consult the CORS documentation for your service:</p>
+<ul>
+<li><a href="https://docs.aws.amazon.com/AmazonS3/latest/dev/cors.html#how-do-i-enable-cors">S3</a></li>
+<li><a href="https://cloud.google.com/storage/docs/configuring-cors">Google Cloud Storage</a></li>
+<li><a href="https://docs.microsoft.com/en-us/rest/api/storageservices/cross-origin-resource-sharing--cors--support-for-the-azure-storage-services">Azure Storage</a></li>
+</ul>
+<p>Take care to allow:</p>
+<ul>
+<li>All origins from which your app is accessed</li>
+<li>The <code>PUT</code> request method</li>
+<li>The following headers:
+
+<ul>
+<li><code>Origin</code></li>
+<li><code>Content-Type</code></li>
+<li><code>Content-MD5</code></li>
+<li>
+<code>Content-Disposition</code> (except for Azure Storage)</li>
+<li>
+<code>x-ms-blob-content-disposition</code> (for Azure Storage only)</li>
+<li>
+<code>x-ms-blob-type</code> (for Azure Storage only)</li>
+</ul>
+</li>
+</ul>
+<p>No CORS configuration is required for the Disk service since it shares your app’s origin.</p>
+
+<h5 id="example-s3-cors-configuration"><a class="anchorlink" href="#example-s3-cors-configuration">10.2.1 Example: S3 CORS configuration</a></h5>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;CORSConfiguration xmlns="http://s3.amazonaws.com/doc/2006-03-01/"&gt;
+&lt;CORSRule&gt;
+    &lt;AllowedOrigin&gt;https://www.example.com&lt;/AllowedOrigin&gt;
+    &lt;AllowedMethod&gt;PUT&lt;/AllowedMethod&gt;
+    &lt;AllowedHeader&gt;Origin&lt;/AllowedHeader&gt;
+    &lt;AllowedHeader&gt;Content-Type&lt;/AllowedHeader&gt;
+    &lt;AllowedHeader&gt;Content-MD5&lt;/AllowedHeader&gt;
+    &lt;AllowedHeader&gt;Content-Disposition&lt;/AllowedHeader&gt;
+    &lt;MaxAgeSeconds&gt;3600&lt;/MaxAgeSeconds&gt;
+&lt;/CORSRule&gt;
+&lt;/CORSConfiguration&gt;
+
+</pre>
+</div>
+<h5 id="example-google-cloud-storage-cors-configuration"><a class="anchorlink" href="#example-google-cloud-storage-cors-configuration">10.2.2 Example: Google Cloud Storage CORS configuration</a></h5>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+[
+  {
+    "origin": ["https://www.example.com"],
+    "method": ["PUT"],
+    "responseHeader": ["Origin", "Content-Type", "Content-MD5", "Content-Disposition"],
+    "maxAgeSeconds": 3600
+  }
+]
+
+</pre>
+</div>
+<h5 id="example-azure-storage-cors-configuration"><a class="anchorlink" href="#example-azure-storage-cors-configuration">10.2.3 Example: Azure Storage CORS configuration</a></h5>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+&lt;Cors&gt;
+  &lt;CorsRule&gt;
+    &lt;AllowedOrigins&gt;https://www.example.com&lt;/AllowedOrigins&gt;
+    &lt;AllowedMethods&gt;PUT&lt;/AllowedMethods&gt;
+    &lt;AllowedHeaders&gt;Origin, Content-Type, Content-MD5, x-ms-blob-content-disposition, x-ms-blob-type&lt;/AllowedHeaders&gt;
+    &lt;MaxAgeInSeconds&gt;3600&lt;/MaxAgeInSeconds&gt;
+  &lt;/CorsRule&gt;
+&lt;Cors&gt;
+
+</pre>
+</div>
+<h4 id="direct-upload-javascript-events"><a class="anchorlink" href="#direct-upload-javascript-events">10.3 Direct upload JavaScript events</a></h4>
+<table>
+<thead>
+<tr>
+<th>Event name</th>
+<th>Event target</th>
+<th>Event data (<code>event.detail</code>)</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>direct-uploads:start</code></td>
+<td><code>&lt;form&gt;</code></td>
+<td>None</td>
+<td>A form containing files for direct upload fields was submitted.</td>
+</tr>
+<tr>
+<td><code>direct-upload:initialize</code></td>
+<td><code>&lt;input&gt;</code></td>
+<td><code>{id, file}</code></td>
+<td>Dispatched for every file after form submission.</td>
+</tr>
+<tr>
+<td><code>direct-upload:start</code></td>
+<td><code>&lt;input&gt;</code></td>
+<td><code>{id, file}</code></td>
+<td>A direct upload is starting.</td>
+</tr>
+<tr>
+<td><code>direct-upload:before-blob-request</code></td>
+<td><code>&lt;input&gt;</code></td>
+<td><code>{id, file, xhr}</code></td>
+<td>Before making a request to your application for direct upload metadata.</td>
+</tr>
+<tr>
+<td><code>direct-upload:before-storage-request</code></td>
+<td><code>&lt;input&gt;</code></td>
+<td><code>{id, file, xhr}</code></td>
+<td>Before making a request to store a file.</td>
+</tr>
+<tr>
+<td><code>direct-upload:progress</code></td>
+<td><code>&lt;input&gt;</code></td>
+<td><code>{id, file, progress}</code></td>
+<td>As requests to store files progress.</td>
+</tr>
+<tr>
+<td><code>direct-upload:error</code></td>
+<td><code>&lt;input&gt;</code></td>
+<td><code>{id, file, error}</code></td>
+<td>An error occurred. An <code>alert</code> will display unless this event is canceled.</td>
+</tr>
+<tr>
+<td><code>direct-upload:end</code></td>
+<td><code>&lt;input&gt;</code></td>
+<td><code>{id, file}</code></td>
+<td>A direct upload has ended.</td>
+</tr>
+<tr>
+<td><code>direct-uploads:end</code></td>
+<td><code>&lt;form&gt;</code></td>
+<td>None</td>
+<td>All direct uploads have ended.</td>
+</tr>
+</tbody>
+</table>
+<h4 id="example"><a class="anchorlink" href="#example">10.4 Example</a></h4>
+
+<p>You can use these events to show the progress of an upload.</p>
+
+<p><img src="/home/rails/v6.0.6.1/guides/output/kindle/https://user-images.githubusercontent.com/5355/28694528-16e69d0c-72f8-11e7-91a7-c0b8cfc90391.gif" alt="direct-uploads"></p>
+
+<p>To show the uploaded files in a form:</p>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+// direct_uploads.js
+
+addEventListener("direct-upload:initialize", event =&gt; {
+  const { target, detail } = event
+  const { id, file } = detail
+  target.insertAdjacentHTML("beforebegin", `
+    &lt;div id="direct-upload-${id}" class="direct-upload direct-upload--pending"&gt;
+      &lt;div id="direct-upload-progress-${id}" class="direct-upload__progress" style="width: 0%"&gt;&lt;/div&gt;
+      &lt;span class="direct-upload__filename"&gt;&lt;/span&gt;
+    &lt;/div&gt;
+  `)
+  target.previousElementSibling.querySelector(`.direct-upload__filename`).textContent = file.name
+})
+
+addEventListener("direct-upload:start", event =&gt; {
+  const { id } = event.detail
+  const element = document.getElementById(`direct-upload-${id}`)
+  element.classList.remove("direct-upload--pending")
+})
+
+addEventListener("direct-upload:progress", event =&gt; {
+  const { id, progress } = event.detail
+  const progressElement = document.getElementById(`direct-upload-progress-${id}`)
+  progressElement.style.width = `${progress}%`
+})
+
+addEventListener("direct-upload:error", event =&gt; {
+  event.preventDefault()
+  const { id, error } = event.detail
+  const element = document.getElementById(`direct-upload-${id}`)
+  element.classList.add("direct-upload--error")
+  element.setAttribute("title", error)
+})
+
+addEventListener("direct-upload:end", event =&gt; {
+  const { id } = event.detail
+  const element = document.getElementById(`direct-upload-${id}`)
+  element.classList.add("direct-upload--complete")
+})
+
+</pre>
+</div>
+<p>Add styles:</p>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+/* direct_uploads.css */
+
+.direct-upload {
+  display: inline-block;
+  position: relative;
+  padding: 2px 4px;
+  margin: 0 3px 3px 0;
+  border: 1px solid rgba(0, 0, 0, 0.3);
+  border-radius: 3px;
+  font-size: 11px;
+  line-height: 13px;
+}
+
+.direct-upload--pending {
+  opacity: 0.6;
+}
+
+.direct-upload__progress {
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  opacity: 0.2;
+  background: #0076ff;
+  transition: width 120ms ease-out, opacity 60ms 60ms ease-in;
+  transform: translate3d(0, 0, 0);
+}
+
+.direct-upload--complete .direct-upload__progress {
+  opacity: 0.4;
+}
+
+.direct-upload--error {
+  border-color: red;
+}
+
+input[type=file][data-direct-upload-url][disabled] {
+  display: none;
+}
+
+</pre>
+</div>
+<h4 id="integrating-with-libraries-or-frameworks"><a class="anchorlink" href="#integrating-with-libraries-or-frameworks">10.5 Integrating with Libraries or Frameworks</a></h4>
+
+<p>If you want to use the Direct Upload feature from a JavaScript framework, or
+you want to integrate custom drag and drop solutions, you can use the
+<code>DirectUpload</code> class for this purpose. Upon receiving a file from your library
+of choice, instantiate a DirectUpload and call its create method. Create takes
+a callback to invoke when the upload completes.</p>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+import { DirectUpload } from "@rails/activestorage"
+
+const input = document.querySelector('input[type=file]')
+
+// Bind to file drop - use the ondrop on a parent element or use a
+//  library like Dropzone
+const onDrop = (event) =&gt; {
+  event.preventDefault()
+  const files = event.dataTransfer.files;
+  Array.from(files).forEach(file =&gt; uploadFile(file))
+}
+
+// Bind to normal file selection
+input.addEventListener('change', (event) =&gt; {
+  Array.from(input.files).forEach(file =&gt; uploadFile(file))
+  // you might clear the selected files from the input
+  input.value = null
+})
+
+const uploadFile = (file) =&gt; {
+  // your form needs the file_field direct_upload: true, which
+  //  provides data-direct-upload-url
+  const url = input.dataset.directUploadUrl
+  const upload = new DirectUpload(file, url)
+
+  upload.create((error, blob) =&gt; {
+    if (error) {
+      // Handle the error
+    } else {
+      // Add an appropriately-named hidden input to the form with a
+      //  value of blob.signed_id so that the blob ids will be
+      //  transmitted in the normal upload flow
+      const hiddenField = document.createElement('input')
+      hiddenField.setAttribute("type", "hidden");
+      hiddenField.setAttribute("value", blob.signed_id);
+      hiddenField.name = input.name
+      document.querySelector('form').appendChild(hiddenField)
+    }
+  })
+}
+
+</pre>
+</div>
+<p>If you need to track the progress of the file upload, you can pass a third
+parameter to the <code>DirectUpload</code> constructor. During the upload, DirectUpload
+will call the object's <code>directUploadWillStoreFileWithXHR</code> method. You can then
+bind your own progress handler on the XHR.</p>
+
+<div class="code_container">
+<pre class="brush: plain; gutter: false; toolbar: false">
+import { DirectUpload } from "@rails/activestorage"
+
+class Uploader {
+  constructor(file, url) {
+    this.upload = new DirectUpload(this.file, this.url, this)
+  }
+
+  upload(file) {
+    this.upload.create((error, blob) =&gt; {
+      if (error) {
+        // Handle the error
+      } else {
+        // Add an appropriately-named hidden input to the form
+        // with a value of blob.signed_id
+      }
+    })
+  }
+
+  directUploadWillStoreFileWithXHR(request) {
+    request.upload.addEventListener("progress",
+      event =&gt; this.directUploadDidProgress(event))
+  }
+
+  directUploadDidProgress(event) {
+    // Use event.loaded and event.total to update the progress bar
+  }
+}
+
+</pre>
+</div>
+</body>
+</html>

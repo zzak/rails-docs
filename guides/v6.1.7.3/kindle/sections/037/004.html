@@ -1,0 +1,116 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>5 Horizontal sharding</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v6.1.7.3/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="horizontal-sharding"><a class="anchorlink" href="#horizontal-sharding">5 Horizontal sharding</a></h3>
+<p>Horizontal sharding is when you split up your database to reduce the number of rows on each
+database server, but maintain the same schema across "shards". This is commonly called "multi-tenant"
+sharding.</p>
+
+<p>The API for supporting horizontal sharding in Rails is similar to the multiple database / vertical
+sharding API that's existed since Rails 6.0.</p>
+
+<p>Shards are declared in the three-tier config like this:</p>
+
+<div class="code_container">
+<pre><code class="highlight yaml"><span class="na">production</span><span class="pi">:</span>
+  <span class="na">primary</span><span class="pi">:</span>
+    <span class="na">database</span><span class="pi">:</span> <span class="s">my_primary_database</span>
+    <span class="na">adapter</span><span class="pi">:</span> <span class="s">mysql2</span>
+  <span class="na">primary_replica</span><span class="pi">:</span>
+    <span class="na">database</span><span class="pi">:</span> <span class="s">my_primary_database</span>
+    <span class="na">adapter</span><span class="pi">:</span> <span class="s">mysql2</span>
+    <span class="na">replica</span><span class="pi">:</span> <span class="no">true</span>
+  <span class="na">primary_shard_one</span><span class="pi">:</span>
+    <span class="na">database</span><span class="pi">:</span> <span class="s">my_primary_shard_one</span>
+    <span class="na">adapter</span><span class="pi">:</span> <span class="s">mysql2</span>
+  <span class="na">primary_shard_one_replica</span><span class="pi">:</span>
+    <span class="na">database</span><span class="pi">:</span> <span class="s">my_primary_shard_one</span>
+    <span class="na">adapter</span><span class="pi">:</span> <span class="s">mysql2</span>
+    <span class="na">replica</span><span class="pi">:</span> <span class="no">true</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-1f0b65ffece0a4033759e1cab2ef94ec">production:
+  primary:
+    database: my_primary_database
+    adapter: mysql2
+  primary_replica:
+    database: my_primary_database
+    adapter: mysql2
+    replica: true
+  primary_shard_one:
+    database: my_primary_shard_one
+    adapter: mysql2
+  primary_shard_one_replica:
+    database: my_primary_shard_one
+    adapter: mysql2
+    replica: true
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-1f0b65ffece0a4033759e1cab2ef94ec">Copy</button>
+</div>
+<p>Models are then connected with the <code>connects_to</code> API via the <code>shards</code> key:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">ApplicationRecord</span> <span class="o">&lt;</span> <span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Base</span>
+  <span class="nb">self</span><span class="p">.</span><span class="nf">abstract_class</span> <span class="o">=</span> <span class="kp">true</span>
+
+  <span class="n">connects_to</span> <span class="ss">shards: </span><span class="p">{</span>
+    <span class="ss">default: </span><span class="p">{</span> <span class="ss">writing: :primary</span><span class="p">,</span> <span class="ss">reading: :primary_replica</span> <span class="p">},</span>
+    <span class="ss">shard_one: </span><span class="p">{</span> <span class="ss">writing: :primary_shard_one</span><span class="p">,</span> <span class="ss">reading: :primary_shard_one_replica</span> <span class="p">}</span>
+  <span class="p">}</span>
+<span class="k">end</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-1e00827ea5d4db579c4192b73781b51d">class ApplicationRecord &lt; ActiveRecord::Base
+  self.abstract_class = true
+
+  connects_to shards: {
+    default: { writing: :primary, reading: :primary_replica },
+    shard_one: { writing: :primary_shard_one, reading: :primary_shard_one_replica }
+  }
+end
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-1e00827ea5d4db579c4192b73781b51d">Copy</button>
+</div>
+<p>Then models can swap connections manually via the <code>connected_to</code> API. If
+using sharding both a <code>role</code> and <code>shard</code> must be passed:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Base</span><span class="p">.</span><span class="nf">connected_to</span><span class="p">(</span><span class="ss">role: :writing</span><span class="p">,</span> <span class="ss">shard: :default</span><span class="p">)</span> <span class="k">do</span>
+  <span class="vi">@id</span> <span class="o">=</span> <span class="no">Person</span><span class="p">.</span><span class="nf">create!</span> <span class="c1"># Creates a record in shard default</span>
+<span class="k">end</span>
+
+<span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Base</span><span class="p">.</span><span class="nf">connected_to</span><span class="p">(</span><span class="ss">role: :writing</span><span class="p">,</span> <span class="ss">shard: :shard_one</span><span class="p">)</span> <span class="k">do</span>
+  <span class="no">Person</span><span class="p">.</span><span class="nf">find</span><span class="p">(</span><span class="vi">@id</span><span class="p">)</span> <span class="c1"># Can't find record, doesn't exist because it was created</span>
+                   <span class="c1"># in the default shard</span>
+<span class="k">end</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-d9039ecf02b234beb84beb89de237a86">ActiveRecord::Base.connected_to(role: :writing, shard: :default) do
+  @id = Person.create! # Creates a record in shard default
+end
+
+ActiveRecord::Base.connected_to(role: :writing, shard: :shard_one) do
+  Person.find(@id) # Can't find record, doesn't exist because it was created
+                   # in the default shard
+end
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-d9039ecf02b234beb84beb89de237a86">Copy</button>
+</div>
+<p>The horizontal sharding API also supports read replicas. You can swap the
+role and the shard with the <code>connected_to</code> API.</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="no">ActiveRecord</span><span class="o">::</span><span class="no">Base</span><span class="p">.</span><span class="nf">connected_to</span><span class="p">(</span><span class="ss">role: :reading</span><span class="p">,</span> <span class="ss">shard: :shard_one</span><span class="p">)</span> <span class="k">do</span>
+  <span class="no">Person</span><span class="p">.</span><span class="nf">first</span> <span class="c1"># Lookup record from read replica of shard one</span>
+<span class="k">end</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-913d431ddab5674c4418a9ace010e58f">ActiveRecord::Base.connected_to(role: :reading, shard: :shard_one) do
+  Person.first # Lookup record from read replica of shard one
+end
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-913d431ddab5674c4418a9ace010e58f">Copy</button>
+</div>
+</body>
+</html>

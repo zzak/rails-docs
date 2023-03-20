@@ -1,0 +1,78 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>7 Schema Dumping and You</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v4.0.13/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="schema-dumping-and-you">7 Schema Dumping and You</h3>
+<h4 id="what-are-schema-files-for-questionmark">7.1 What are Schema Files for?</h4>
+<p>Migrations, mighty as they may be, are not the authoritative source for your
+database schema. That role falls to either <code>db/schema.rb</code> or an SQL file which
+Active Record generates by examining the database. They are not designed to be
+edited, they just represent the current state of the database.</p>
+<p>There is no need (and it is error prone) to deploy a new instance of an app by
+replaying the entire migration history. It is much simpler and faster to just
+load into the database a description of the current schema.</p>
+<p>For example, this is how the test database is created: the current development
+database is dumped (either to <code>db/schema.rb</code> or <code>db/structure.sql</code>) and then
+loaded into the test database.</p>
+<p>Schema files are also useful if you want a quick look at what attributes an
+Active Record object has. This information is not in the model's code and is
+frequently spread across several migrations, but the information is nicely
+summed up in the schema file. The
+<a href="https://github.com/ctran/annotate_models">annotate_models</a> gem automatically
+adds and updates comments at the top of each model summarizing the schema if
+you desire that functionality.</p>
+<h4 id="types-of-schema-dumps">7.2 Types of Schema Dumps</h4>
+<p>There are two ways to dump the schema. This is set in <code>config/application.rb</code>
+by the <code>config.active_record.schema_format</code> setting, which may be either <code>:sql</code>
+or <code>:ruby</code>.</p>
+<p>If <code>:ruby</code> is selected then the schema is stored in <code>db/schema.rb</code>. If you look
+at this file you'll find that it looks an awful lot like one very big
+migration:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+ActiveRecord::Schema.define(version: 20080906171750) do
+  create_table "authors", force: true do |t|
+    t.string   "name"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
+
+  create_table "products", force: true do |t|
+    t.string   "name"
+    t.text "description"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+    t.string "part_number"
+  end
+end
+
+</pre>
+</div>
+<p>In many ways this is exactly what it is. This file is created by inspecting the
+database and expressing its structure using <code>create_table</code>, <code>add_index</code>, and so
+on. Because this is database-independent, it could be loaded into any database
+that Active Record supports. This could be very useful if you were to
+distribute an application that is able to run against multiple databases.</p>
+<p>There is however a trade-off: <code>db/schema.rb</code> cannot express database specific
+items such as foreign key constraints, triggers, or stored procedures. While in
+a migration you can execute custom SQL statements, the schema dumper cannot
+reconstitute those statements from the database. If you are using features like
+this, then you should set the schema format to <code>:sql</code>.</p>
+<p>Instead of using Active Record's schema dumper, the database's structure will
+be dumped using a tool specific to the database (via the <code>db:structure:dump</code>
+Rake task) into <code>db/structure.sql</code>. For example, for PostgreSQL, the <code>pg_dump</code>
+utility is used. For MySQL, this file will contain the output of <code>SHOW CREATE
+TABLE</code> for the various tables.</p>
+<p>Loading these schemas is simply a question of executing the SQL statements they
+contain. By definition, this will create a perfect copy of the database's
+structure. Using the <code>:sql</code> schema format will, however, prevent loading the
+schema into a RDBMS other than the one used to create it.</p>
+<h4 id="schema-dumps-and-source-control">7.3 Schema Dumps and Source Control</h4>
+<p>Because schema dumps are the authoritative source for your database schema, it
+is strongly recommended that you check them into source control.</p>
+</body>
+</html>

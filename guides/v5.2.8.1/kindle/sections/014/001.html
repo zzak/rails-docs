@@ -1,0 +1,520 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>2 Extensions to All Objects</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v5.2.8.1/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="extensions-to-all-objects"><a class="anchorlink" href="#extensions-to-all-objects">2 Extensions to All Objects</a></h3>
+<h4 id="blank-questionmark-and-present-questionmark"><a class="anchorlink" href="#blank-questionmark-and-present-questionmark">2.1 <code>blank?</code> and <code>present?</code></a></h4>
+
+<p>The following values are considered to be blank in a Rails application:</p>
+<ul>
+<li>
+<code>nil</code> and <code>false</code>,</li>
+<li>strings composed only of whitespace (see note below),</li>
+<li>empty arrays and hashes, and</li>
+<li>any other object that responds to <code>empty?</code> and is empty.</li>
+</ul>
+<div class="info"><p>The predicate for strings uses the Unicode-aware character class <code>[:space:]</code>, so for example U+2029 (paragraph separator) is considered to be whitespace.</p></div>
+
+<div class="warning"><p>Note that numbers are not mentioned. In particular, 0 and 0.0 are <strong>not</strong> blank.</p></div>
+
+<p>For example, this method from <code>ActionController::HttpAuthentication::Token::ControllerMethods</code> uses <code>blank?</code> for checking whether a token is present:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+def authenticate(controller, &amp;login_procedure)
+  token, options = token_and_options(controller.request)
+  unless token.blank?
+    login_procedure.call(token, options)
+  end
+end
+
+</pre>
+</div>
+<p>The method <code>present?</code> is equivalent to <code>!blank?</code>. This example is taken from <code>ActionDispatch::Http::Cache::Response</code>:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+def set_conditional_cache_control!
+  return if self["Cache-Control"].present?
+  ...
+end
+
+</pre>
+</div>
+<div class="note"><p>Defined in <code><a href="https://github.com/rails/rails/tree/v5.2.8.1/activesupport/lib/active_support/core_ext/object/blank.rb">active_support/core_ext/object/blank.rb</a></code>.</p></div>
+
+<h4 id="presence"><a class="anchorlink" href="#presence">2.2 <code>presence</code></a></h4>
+
+<p>The <code>presence</code> method returns its receiver if <code>present?</code>, and <code>nil</code> otherwise. It is useful for idioms like this:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+host = config[:host].presence || 'localhost'
+
+</pre>
+</div>
+<div class="note"><p>Defined in <code><a href="https://github.com/rails/rails/tree/v5.2.8.1/activesupport/lib/active_support/core_ext/object/blank.rb">active_support/core_ext/object/blank.rb</a></code>.</p></div>
+
+<h4 id="duplicable-questionmark"><a class="anchorlink" href="#duplicable-questionmark">2.3 <code>duplicable?</code></a></h4>
+
+<p>In Ruby 2.4 most objects can be duplicated via <code>dup</code> or <code>clone</code> except
+methods and certain numbers. Though Ruby 2.2 and 2.3 can't duplicate <code>nil</code>,
+<code>false</code>, <code>true</code>, and  symbols as well as instances <code>Float</code>, <code>Fixnum</code>,
+and <code>Bignum</code> instances.</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+"foo".dup           # =&gt; "foo"
+"".dup              # =&gt; ""
+1.method(:+).dup    # =&gt; TypeError: allocator undefined for Method
+Complex(0).dup      # =&gt; TypeError: can't copy Complex
+
+</pre>
+</div>
+<p>Active Support provides <code>duplicable?</code> to query an object about this:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+"foo".duplicable?           # =&gt; true
+"".duplicable?              # =&gt; true
+Rational(1).duplicable?     # =&gt; false
+Complex(1).duplicable?      # =&gt; false
+1.method(:+).duplicable?    # =&gt; false
+
+</pre>
+</div>
+<p><code>duplicable?</code> matches Ruby's <code>dup</code> according to the Ruby version.</p>
+
+<p>So in 2.4:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+nil.dup                 # =&gt; nil
+:my_symbol.dup          # =&gt; :my_symbol
+1.dup                   # =&gt; 1
+
+nil.duplicable?         # =&gt; true
+:my_symbol.duplicable?  # =&gt; true
+1.duplicable?           # =&gt; true
+
+</pre>
+</div>
+<p>Whereas in 2.2 and 2.3:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+nil.dup                 # =&gt; TypeError: can't dup NilClass
+:my_symbol.dup          # =&gt; TypeError: can't dup Symbol
+1.dup                   # =&gt; TypeError: can't dup Fixnum
+
+nil.duplicable?         # =&gt; false
+:my_symbol.duplicable?  # =&gt; false
+1.duplicable?           # =&gt; false
+
+</pre>
+</div>
+<div class="warning"><p>Any class can disallow duplication by removing <code>dup</code> and <code>clone</code> or raising exceptions from them. Thus only <code>rescue</code> can tell whether a given arbitrary object is duplicable. <code>duplicable?</code> depends on the hard-coded list above, but it is much faster than <code>rescue</code>. Use it only if you know the hard-coded list is enough in your use case.</p></div>
+
+<div class="note"><p>Defined in <code><a href="https://github.com/rails/rails/tree/v5.2.8.1/activesupport/lib/active_support/core_ext/object/duplicable.rb">active_support/core_ext/object/duplicable.rb</a></code>.</p></div>
+
+<h4 id="deep-dup"><a class="anchorlink" href="#deep-dup">2.4 <code>deep_dup</code></a></h4>
+
+<p>The <code>deep_dup</code> method returns a deep copy of a given object. Normally, when you <code>dup</code> an object that contains other objects, Ruby does not <code>dup</code> them, so it creates a shallow copy of the object. If you have an array with a string, for example, it will look like this:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+array     = ['string']
+duplicate = array.dup
+
+duplicate.push 'another-string'
+
+# the object was duplicated, so the element was added only to the duplicate
+array     # =&gt; ['string']
+duplicate # =&gt; ['string', 'another-string']
+
+duplicate.first.gsub!('string', 'foo')
+
+# first element was not duplicated, it will be changed in both arrays
+array     # =&gt; ['foo']
+duplicate # =&gt; ['foo', 'another-string']
+
+</pre>
+</div>
+<p>As you can see, after duplicating the <code>Array</code> instance, we got another object, therefore we can modify it and the original object will stay unchanged. This is not true for array's elements, however. Since <code>dup</code> does not make deep copy, the string inside the array is still the same object.</p>
+
+<p>If you need a deep copy of an object, you should use <code>deep_dup</code>. Here is an example:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+array     = ['string']
+duplicate = array.deep_dup
+
+duplicate.first.gsub!('string', 'foo')
+
+array     # =&gt; ['string']
+duplicate # =&gt; ['foo']
+
+</pre>
+</div>
+<p>If the object is not duplicable, <code>deep_dup</code> will just return it:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+number = 1
+duplicate = number.deep_dup
+number.object_id == duplicate.object_id   # =&gt; true
+
+</pre>
+</div>
+<div class="note"><p>Defined in <code><a href="https://github.com/rails/rails/tree/v5.2.8.1/activesupport/lib/active_support/core_ext/object/deep_dup.rb">active_support/core_ext/object/deep_dup.rb</a></code>.</p></div>
+
+<h4 id="try"><a class="anchorlink" href="#try">2.5 <code>try</code></a></h4>
+
+<p>When you want to call a method on an object only if it is not <code>nil</code>, the simplest way to achieve it is with conditional statements, adding unnecessary clutter. The alternative is to use <code>try</code>. <code>try</code> is like <code>Object#send</code> except that it returns <code>nil</code> if sent to <code>nil</code>.</p>
+
+<p>Here is an example:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+# without try
+unless @number.nil?
+  @number.next
+end
+
+# with try
+@number.try(:next)
+
+</pre>
+</div>
+<p>Another example is this code from <code>ActiveRecord::ConnectionAdapters::AbstractAdapter</code> where <code>@logger</code> could be <code>nil</code>. You can see that the code uses <code>try</code> and avoids an unnecessary check.</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+def log_info(sql, name, ms)
+  if @logger.try(:debug?)
+    name = '%s (%.1fms)' % [name || 'SQL', ms]
+    @logger.debug(format_log_entry(name, sql.squeeze(' ')))
+  end
+end
+
+</pre>
+</div>
+<p><code>try</code> can also be called without arguments but a block, which will only be executed if the object is not nil:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+@person.try { |p| "#{p.first_name} #{p.last_name}" }
+
+</pre>
+</div>
+<p>Note that <code>try</code> will swallow no-method errors, returning nil instead. If you want to protect against typos, use <code>try!</code> instead:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+@number.try(:nest)  # =&gt; nil
+@number.try!(:nest) # NoMethodError: undefined method `nest' for 1:Integer
+
+</pre>
+</div>
+<div class="note"><p>Defined in <code><a href="https://github.com/rails/rails/tree/v5.2.8.1/activesupport/lib/active_support/core_ext/object/try.rb">active_support/core_ext/object/try.rb</a></code>.</p></div>
+
+<h4 id="class-eval-args-block"><a class="anchorlink" href="#class-eval-args-block">2.6 <code>class_eval(*args, &amp;block)</code></a></h4>
+
+<p>You can evaluate code in the context of any object's singleton class using <code>class_eval</code>:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class Proc
+  def bind(object)
+    block, time = self, Time.current
+    object.class_eval do
+      method_name = "__bind_#{time.to_i}_#{time.usec}"
+      define_method(method_name, &amp;block)
+      method = instance_method(method_name)
+      remove_method(method_name)
+      method
+    end.bind(object)
+  end
+end
+
+</pre>
+</div>
+<div class="note"><p>Defined in <code><a href="https://github.com/rails/rails/tree/v5.2.8.1/activesupport/lib/active_support/core_ext/kernel/singleton_class.rb">active_support/core_ext/kernel/singleton_class.rb</a></code>.</p></div>
+
+<h4 id="acts-like-questionmark-duck"><a class="anchorlink" href="#acts-like-questionmark-duck">2.7 <code>acts_like?(duck)</code></a></h4>
+
+<p>The method <code>acts_like?</code> provides a way to check whether some class acts like some other class based on a simple convention: a class that provides the same interface as <code>String</code> defines</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+def acts_like_string?
+end
+
+</pre>
+</div>
+<p>which is only a marker, its body or return value are irrelevant. Then, client code can query for duck-type-safeness this way:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+some_klass.acts_like?(:string)
+
+</pre>
+</div>
+<p>Rails has classes that act like <code>Date</code> or <code>Time</code> and follow this contract.</p>
+
+<div class="note"><p>Defined in <code><a href="https://github.com/rails/rails/tree/v5.2.8.1/activesupport/lib/active_support/core_ext/object/acts_like.rb">active_support/core_ext/object/acts_like.rb</a></code>.</p></div>
+
+<h4 id="to-param"><a class="anchorlink" href="#to-param">2.8 <code>to_param</code></a></h4>
+
+<p>All objects in Rails respond to the method <code>to_param</code>, which is meant to return something that represents them as values in a query string, or as URL fragments.</p>
+
+<p>By default <code>to_param</code> just calls <code>to_s</code>:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+7.to_param # =&gt; "7"
+
+</pre>
+</div>
+<p>The return value of <code>to_param</code> should <strong>not</strong> be escaped:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+"Tom &amp; Jerry".to_param # =&gt; "Tom &amp; Jerry"
+
+</pre>
+</div>
+<p>Several classes in Rails overwrite this method.</p>
+
+<p>For example <code>nil</code>, <code>true</code>, and <code>false</code> return themselves. <code>Array#to_param</code> calls <code>to_param</code> on the elements and joins the result with "/":</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+[0, true, String].to_param # =&gt; "0/true/String"
+
+</pre>
+</div>
+<p>Notably, the Rails routing system calls <code>to_param</code> on models to get a value for the <code>:id</code> placeholder. <code>ActiveRecord::Base#to_param</code> returns the <code>id</code> of a model, but you can redefine that method in your models. For example, given</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class User
+  def to_param
+    "#{id}-#{name.parameterize}"
+  end
+end
+
+</pre>
+</div>
+<p>we get:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+user_path(@user) # =&gt; "/users/357-john-smith"
+
+</pre>
+</div>
+<div class="warning"><p>Controllers need to be aware of any redefinition of <code>to_param</code> because when a request like that comes in "357-john-smith" is the value of <code>params[:id]</code>.</p></div>
+
+<div class="note"><p>Defined in <code><a href="https://github.com/rails/rails/tree/v5.2.8.1/activesupport/lib/active_support/core_ext/object/to_param.rb">active_support/core_ext/object/to_param.rb</a></code>.</p></div>
+
+<h4 id="to-query"><a class="anchorlink" href="#to-query">2.9 <code>to_query</code></a></h4>
+
+<p>Except for hashes, given an unescaped <code>key</code> this method constructs the part of a query string that would map such key to what <code>to_param</code> returns. For example, given</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class User
+  def to_param
+    "#{id}-#{name.parameterize}"
+  end
+end
+
+</pre>
+</div>
+<p>we get:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+current_user.to_query('user') # =&gt; "user=357-john-smith"
+
+</pre>
+</div>
+<p>This method escapes whatever is needed, both for the key and the value:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+account.to_query('company[name]')
+# =&gt; "company%5Bname%5D=Johnson+%26+Johnson"
+
+</pre>
+</div>
+<p>so its output is ready to be used in a query string.</p>
+
+<p>Arrays return the result of applying <code>to_query</code> to each element with <code>key[]</code> as key, and join the result with "&amp;":</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+[3.4, -45.6].to_query('sample')
+# =&gt; "sample%5B%5D=3.4&amp;sample%5B%5D=-45.6"
+
+</pre>
+</div>
+<p>Hashes also respond to <code>to_query</code> but with a different signature. If no argument is passed a call generates a sorted series of key/value assignments calling <code>to_query(key)</code> on its values. Then it joins the result with "&amp;":</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+{c: 3, b: 2, a: 1}.to_query # =&gt; "a=1&amp;b=2&amp;c=3"
+
+</pre>
+</div>
+<p>The method <code>Hash#to_query</code> accepts an optional namespace for the keys:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+{id: 89, name: "John Smith"}.to_query('user')
+# =&gt; "user%5Bid%5D=89&amp;user%5Bname%5D=John+Smith"
+
+</pre>
+</div>
+<div class="note"><p>Defined in <code><a href="https://github.com/rails/rails/tree/v5.2.8.1/activesupport/lib/active_support/core_ext/object/to_query.rb">active_support/core_ext/object/to_query.rb</a></code>.</p></div>
+
+<h4 id="with-options"><a class="anchorlink" href="#with-options">2.10 <code>with_options</code></a></h4>
+
+<p>The method <code>with_options</code> provides a way to factor out common options in a series of method calls.</p>
+
+<p>Given a default options hash, <code>with_options</code> yields a proxy object to a block. Within the block, methods called on the proxy are forwarded to the receiver with their options merged. For example, you get rid of the duplication in:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class Account &lt; ApplicationRecord
+  has_many :customers, dependent: :destroy
+  has_many :products,  dependent: :destroy
+  has_many :invoices,  dependent: :destroy
+  has_many :expenses,  dependent: :destroy
+end
+
+</pre>
+</div>
+<p>this way:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class Account &lt; ApplicationRecord
+  with_options dependent: :destroy do |assoc|
+    assoc.has_many :customers
+    assoc.has_many :products
+    assoc.has_many :invoices
+    assoc.has_many :expenses
+  end
+end
+
+</pre>
+</div>
+<p>That idiom may convey <em>grouping</em> to the reader as well. For example, say you want to send a newsletter whose language depends on the user. Somewhere in the mailer you could group locale-dependent bits like this:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+I18n.with_options locale: user.locale, scope: "newsletter" do |i18n|
+  subject i18n.t :subject
+  body    i18n.t :body, user_name: user.name
+end
+
+</pre>
+</div>
+<div class="info"><p>Since <code>with_options</code> forwards calls to its receiver they can be nested. Each nesting level will merge inherited defaults in addition to their own.</p></div>
+
+<div class="note"><p>Defined in <code><a href="https://github.com/rails/rails/tree/v5.2.8.1/activesupport/lib/active_support/core_ext/object/with_options.rb">active_support/core_ext/object/with_options.rb</a></code>.</p></div>
+
+<h4 id="json-support"><a class="anchorlink" href="#json-support">2.11 JSON support</a></h4>
+
+<p>Active Support provides a better implementation of <code>to_json</code> than the <code>json</code> gem ordinarily provides for Ruby objects. This is because some classes, like <code>Hash</code>, <code>OrderedHash</code> and <code>Process::Status</code> need special handling in order to provide a proper JSON representation.</p>
+
+<div class="note"><p>Defined in <code><a href="https://github.com/rails/rails/tree/v5.2.8.1/activesupport/lib/active_support/core_ext/object/json.rb">active_support/core_ext/object/json.rb</a></code>.</p></div>
+
+<h4 id="instance-variables"><a class="anchorlink" href="#instance-variables">2.12 Instance Variables</a></h4>
+
+<p>Active Support provides several methods to ease access to instance variables.</p>
+
+<h5 id="instance-values"><a class="anchorlink" href="#instance-values">2.12.1 <code>instance_values</code></a></h5>
+
+<p>The method <code>instance_values</code> returns a hash that maps instance variable names without "@" to their
+corresponding values. Keys are strings:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class C
+  def initialize(x, y)
+    @x, @y = x, y
+  end
+end
+
+C.new(0, 1).instance_values # =&gt; {"x" =&gt; 0, "y" =&gt; 1}
+
+</pre>
+</div>
+<div class="note"><p>Defined in <code><a href="https://github.com/rails/rails/tree/v5.2.8.1/activesupport/lib/active_support/core_ext/object/instance_variables.rb">active_support/core_ext/object/instance_variables.rb</a></code>.</p></div>
+
+<h5 id="instance-variable-names"><a class="anchorlink" href="#instance-variable-names">2.12.2 <code>instance_variable_names</code></a></h5>
+
+<p>The method <code>instance_variable_names</code> returns an array. Each name includes the "@" sign.</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class C
+  def initialize(x, y)
+    @x, @y = x, y
+  end
+end
+
+C.new(0, 1).instance_variable_names # =&gt; ["@x", "@y"]
+
+</pre>
+</div>
+<div class="note"><p>Defined in <code><a href="https://github.com/rails/rails/tree/v5.2.8.1/activesupport/lib/active_support/core_ext/object/instance_variables.rb">active_support/core_ext/object/instance_variables.rb</a></code>.</p></div>
+
+<h4 id="silencing-warnings-and-exceptions"><a class="anchorlink" href="#silencing-warnings-and-exceptions">2.13 Silencing Warnings and Exceptions</a></h4>
+
+<p>The methods <code>silence_warnings</code> and <code>enable_warnings</code> change the value of <code>$VERBOSE</code> accordingly for the duration of their block, and reset it afterwards:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+silence_warnings { Object.const_set "RAILS_DEFAULT_LOGGER", logger }
+
+</pre>
+</div>
+<p>Silencing exceptions is also possible with <code>suppress</code>. This method receives an arbitrary number of exception classes. If an exception is raised during the execution of the block and is <code>kind_of?</code> any of the arguments, <code>suppress</code> captures it and returns silently. Otherwise the exception is not captured:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+# If the user is locked, the increment is lost, no big deal.
+suppress(ActiveRecord::StaleObjectError) do
+  current_user.increment! :visits
+end
+
+</pre>
+</div>
+<div class="note"><p>Defined in <code><a href="https://github.com/rails/rails/tree/v5.2.8.1/activesupport/lib/active_support/core_ext/kernel/reporting.rb">active_support/core_ext/kernel/reporting.rb</a></code>.</p></div>
+
+<h4 id="in-questionmark"><a class="anchorlink" href="#in-questionmark">2.14 <code>in?</code></a></h4>
+
+<p>The predicate <code>in?</code> tests if an object is included in another object. An <code>ArgumentError</code> exception will be raised if the argument passed does not respond to <code>include?</code>.</p>
+
+<p>Examples of <code>in?</code>:</p>
+
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+1.in?([1,2])        # =&gt; true
+"lo".in?("hello")   # =&gt; true
+25.in?(30..50)      # =&gt; false
+1.in?(1)            # =&gt; ArgumentError
+
+</pre>
+</div>
+<div class="note"><p>Defined in <code><a href="https://github.com/rails/rails/tree/v5.2.8.1/activesupport/lib/active_support/core_ext/object/inclusion.rb">active_support/core_ext/object/inclusion.rb</a></code>.</p></div>
+</body>
+</html>

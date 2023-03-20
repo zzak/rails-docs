@@ -1,0 +1,194 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>4 Hello, Rails!</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v6.1.7.3/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="hello-rails-bang"><a class="anchorlink" href="#hello-rails-bang">4 Hello, Rails!</a></h3>
+<p>To begin with, let's get some text up on screen quickly. To do this, you need to
+get your Rails application server running.</p>
+
+<h4 id="starting-up-the-web-server"><a class="anchorlink" href="#starting-up-the-web-server">4.1 Starting up the Web Server</a></h4>
+
+<p>You actually have a functional Rails application already. To see it, you need to
+start a web server on your development machine. You can do this by running the
+following command in the <code>blog</code> directory:</p>
+
+<div class="code_container">
+<pre><code class="highlight console"><span class="gp">$</span><span class="w"> </span><span class="nb">bin/rails </span>server
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-760f581f318867134d94fb5f5bf91b21">bin/rails server
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-760f581f318867134d94fb5f5bf91b21">Copy</button>
+</div>
+<div class="info"><p>If you are using Windows, you have to pass the scripts under the <code>bin</code>
+folder directly to the Ruby interpreter e.g. <code>ruby bin\rails server</code>.</p></div>
+
+<div class="info"><p>JavaScript asset compression requires you
+have a JavaScript runtime available on your system, in the absence
+of a runtime you will see an <code>execjs</code> error during asset compression.
+Usually macOS and Windows come with a JavaScript runtime installed.
+<code>therubyrhino</code> is the recommended runtime for JRuby users and is added by
+default to the <code>Gemfile</code> in apps generated under JRuby. You can investigate
+all the supported runtimes at <a href="https://github.com/rails/execjs#readme">ExecJS</a>.</p></div>
+
+<p>This will start up Puma, a web server distributed with Rails by default. To see
+your application in action, open a browser window and navigate to
+<a href="http://localhost:3000">http://localhost:3000</a>. You should see the Rails default information page:</p>
+
+<p><img src="/home/rails/v6.1.7.3/guides/output/kindle/images/getting_started/rails_welcome.png" alt="Yay! You're on Rails! screenshot"></p>
+
+<p>When you want to stop the web server, hit Ctrl+C in the terminal window where
+it's running. In the development environment, Rails does not generally
+require you to restart the server; changes you make in files will be
+automatically picked up by the server.</p>
+
+<p>The "Yay! You're on Rails!" page is the <em>smoke test</em> for a new Rails
+application: it makes sure that you have your software configured correctly
+enough to serve a page.</p>
+
+<h4 id="say-hello-rails"><a class="anchorlink" href="#say-hello-rails">4.2 Say "Hello", Rails</a></h4>
+
+<p>To get Rails saying "Hello", you need to create at minimum a <em>route</em>, a
+<em>controller</em> with an <em>action</em>, and a <em>view</em>. A route maps a request to a
+controller action. A controller action performs the necessary work to handle the
+request, and prepares any data for the view. A view displays data in a desired
+format.</p>
+
+<p>In terms of implementation: Routes are rules written in a Ruby <a href="https://en.wikipedia.org/wiki/Domain-specific_language">DSL
+(Domain-Specific Language)</a>.
+Controllers are Ruby classes, and their public methods are actions. And views
+are templates, usually written in a mixture of HTML and Ruby.</p>
+
+<p>Let's start by adding a route to our routes file, <code>config/routes.rb</code>, at the
+top of the <code>Rails.application.routes.draw</code> block:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="no">Rails</span><span class="p">.</span><span class="nf">application</span><span class="p">.</span><span class="nf">routes</span><span class="p">.</span><span class="nf">draw</span> <span class="k">do</span>
+  <span class="n">get</span> <span class="s2">"/articles"</span><span class="p">,</span> <span class="ss">to: </span><span class="s2">"articles#index"</span>
+
+  <span class="c1"># For details on the DSL available within this file, see https://guides.rubyonrails.org/routing.html</span>
+<span class="k">end</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-2bc4e21121ebe8aeecf22fb3adea1cdc">Rails.application.routes.draw do
+  get "/articles", to: "articles#index"
+
+  # For details on the DSL available within this file, see https://guides.rubyonrails.org/routing.html
+end
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-2bc4e21121ebe8aeecf22fb3adea1cdc">Copy</button>
+</div>
+<p>The route above declares that <code>GET /articles</code> requests are mapped to the <code>index</code>
+action of <code>ArticlesController</code>.</p>
+
+<p>To create <code>ArticlesController</code> and its <code>index</code> action, we'll run the controller
+generator (with the <code>--skip-routes</code> option because we already have an
+appropriate route):</p>
+
+<div class="code_container">
+<pre><code class="highlight console"><span class="gp">$</span><span class="w"> </span><span class="nb">bin/rails </span>generate controller Articles index <span class="nt">--skip-routes</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-cf2133f11f31c1d5b9a73dfcac14fac5">bin/rails generate controller Articles index --skip-routes
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-cf2133f11f31c1d5b9a73dfcac14fac5">Copy</button>
+</div>
+<p>Rails will create several files for you:</p>
+
+<div class="code_container">
+<pre><code class="highlight plaintext">create  app/controllers/articles_controller.rb
+invoke  erb
+create    app/views/articles
+create    app/views/articles/index.html.erb
+invoke  test_unit
+create    test/controllers/articles_controller_test.rb
+invoke  helper
+create    app/helpers/articles_helper.rb
+invoke    test_unit
+invoke  assets
+invoke    scss
+create      app/assets/stylesheets/articles.scss
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-4815ede6f0a0e248cd96beb83f215afe">create  app/controllers/articles_controller.rb
+invoke  erb
+create    app/views/articles
+create    app/views/articles/index.html.erb
+invoke  test_unit
+create    test/controllers/articles_controller_test.rb
+invoke  helper
+create    app/helpers/articles_helper.rb
+invoke    test_unit
+invoke  assets
+invoke    scss
+create      app/assets/stylesheets/articles.scss
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-4815ede6f0a0e248cd96beb83f215afe">Copy</button>
+</div>
+<p>The most important of these is the controller file,
+<code>app/controllers/articles_controller.rb</code>. Let's take a look at it:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">ArticlesController</span> <span class="o">&lt;</span> <span class="no">ApplicationController</span>
+  <span class="k">def</span> <span class="nf">index</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-38815e299703cf4353a470a43af0c548">class ArticlesController &lt; ApplicationController
+  def index
+  end
+end
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-38815e299703cf4353a470a43af0c548">Copy</button>
+</div>
+<p>The <code>index</code> action is empty. When an action does not explicitly render a view
+(or otherwise trigger an HTTP response), Rails will automatically render a view
+that matches the name of the controller and action. Convention Over
+Configuration! Views are located in the <code>app/views</code> directory. So the <code>index</code>
+action will render <code>app/views/articles/index.html.erb</code> by default.</p>
+
+<p>Let's open <code>app/views/articles/index.html.erb</code>, and replace its contents with:</p>
+
+<div class="code_container">
+<pre><code class="highlight html"><span class="nt">&lt;h1&gt;</span>Hello, Rails!<span class="nt">&lt;/h1&gt;</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-d718939fbf2042510fed83c41e50a484">&lt;h1&gt;Hello, Rails!&lt;/h1&gt;
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-d718939fbf2042510fed83c41e50a484">Copy</button>
+</div>
+<p>If you previously stopped the web server to run the controller generator,
+restart it with <code>bin/rails server</code>. Now visit <a href="http://localhost:3000/articles">http://localhost:3000/articles</a>,
+and see our text displayed!</p>
+
+<h4 id="setting-the-application-home-page"><a class="anchorlink" href="#setting-the-application-home-page">4.3 Setting the Application Home Page</a></h4>
+
+<p>At the moment, <a href="http://localhost:3000">http://localhost:3000</a> still displays "Yay! You're on Rails!".
+Let's display our "Hello, Rails!" text at <a href="http://localhost:3000">http://localhost:3000</a> as well. To do
+so, we will add a route that maps the <em>root path</em> of our application to the
+appropriate controller and action.</p>
+
+<p>Let's open <code>config/routes.rb</code>, and add the following <code>root</code> route to the top of
+the <code>Rails.application.routes.draw</code> block:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="no">Rails</span><span class="p">.</span><span class="nf">application</span><span class="p">.</span><span class="nf">routes</span><span class="p">.</span><span class="nf">draw</span> <span class="k">do</span>
+  <span class="n">root</span> <span class="s2">"articles#index"</span>
+
+  <span class="n">get</span> <span class="s2">"/articles"</span><span class="p">,</span> <span class="ss">to: </span><span class="s2">"articles#index"</span>
+<span class="k">end</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-953cdf49113b8fc90fa062854d29b44a">Rails.application.routes.draw do
+  root "articles#index"
+
+  get "/articles", to: "articles#index"
+end
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-953cdf49113b8fc90fa062854d29b44a">Copy</button>
+</div>
+<p>Now we can see our "Hello, Rails!" text when we visit <a href="http://localhost:3000">http://localhost:3000</a>,
+confirming that the <code>root</code> route is also mapped to the <code>index</code> action of
+<code>ArticlesController</code>.</p>
+
+<div class="info"><p>To learn more about routing, see <a href="routing.html">Rails Routing from the Outside In</a>.</p></div>
+</body>
+</html>

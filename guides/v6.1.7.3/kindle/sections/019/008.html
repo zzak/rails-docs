@@ -1,0 +1,130 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>9 Supported types for arguments</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v6.1.7.3/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="supported-types-for-arguments"><a class="anchorlink" href="#supported-types-for-arguments">9 Supported types for arguments</a></h3>
+<p>ActiveJob supports the following types of arguments by default:</p>
+<ul>
+<li>Basic types (<code>NilClass</code>, <code>String</code>, <code>Integer</code>, <code>Float</code>, <code>BigDecimal</code>, <code>TrueClass</code>, <code>FalseClass</code>)</li>
+<li><code>Symbol</code></li>
+<li><code>Date</code></li>
+<li><code>Time</code></li>
+<li><code>DateTime</code></li>
+<li><code>ActiveSupport::TimeWithZone</code></li>
+<li><code>ActiveSupport::Duration</code></li>
+<li>
+<code>Hash</code> (Keys should be of <code>String</code> or <code>Symbol</code> type)</li>
+<li><code>ActiveSupport::HashWithIndifferentAccess</code></li>
+<li><code>Array</code></li>
+<li><code>Module</code></li>
+<li><code>Class</code></li>
+</ul>
+<h4 id="globalid"><a class="anchorlink" href="#globalid">9.1 GlobalID</a></h4>
+
+<p>Active Job supports <a href="https://github.com/rails/globalid/blob/master/README.md">GlobalID</a> for parameters. This makes it possible to pass live
+Active Record objects to your job instead of class/id pairs, which you then have
+to manually deserialize. Before, jobs would look like this:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">TrashableCleanupJob</span> <span class="o">&lt;</span> <span class="no">ApplicationJob</span>
+  <span class="k">def</span> <span class="nf">perform</span><span class="p">(</span><span class="n">trashable_class</span><span class="p">,</span> <span class="n">trashable_id</span><span class="p">,</span> <span class="n">depth</span><span class="p">)</span>
+    <span class="n">trashable</span> <span class="o">=</span> <span class="n">trashable_class</span><span class="p">.</span><span class="nf">constantize</span><span class="p">.</span><span class="nf">find</span><span class="p">(</span><span class="n">trashable_id</span><span class="p">)</span>
+    <span class="n">trashable</span><span class="p">.</span><span class="nf">cleanup</span><span class="p">(</span><span class="n">depth</span><span class="p">)</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-477b5b06c47acd3687df26bfcfc07584">class TrashableCleanupJob &lt; ApplicationJob
+  def perform(trashable_class, trashable_id, depth)
+    trashable = trashable_class.constantize.find(trashable_id)
+    trashable.cleanup(depth)
+  end
+end
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-477b5b06c47acd3687df26bfcfc07584">Copy</button>
+</div>
+<p>Now you can simply do:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">TrashableCleanupJob</span> <span class="o">&lt;</span> <span class="no">ApplicationJob</span>
+  <span class="k">def</span> <span class="nf">perform</span><span class="p">(</span><span class="n">trashable</span><span class="p">,</span> <span class="n">depth</span><span class="p">)</span>
+    <span class="n">trashable</span><span class="p">.</span><span class="nf">cleanup</span><span class="p">(</span><span class="n">depth</span><span class="p">)</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-4df2f2014ac0a7f6483908e3816d9944">class TrashableCleanupJob &lt; ApplicationJob
+  def perform(trashable, depth)
+    trashable.cleanup(depth)
+  end
+end
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-4df2f2014ac0a7f6483908e3816d9944">Copy</button>
+</div>
+<p>This works with any class that mixes in <code>GlobalID::Identification</code>, which
+by default has been mixed into Active Record classes.</p>
+
+<h4 id="serializers"><a class="anchorlink" href="#serializers">9.2 Serializers</a></h4>
+
+<p>You can extend the list of supported argument types. You just need to define your own serializer:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="k">class</span> <span class="nc">MoneySerializer</span> <span class="o">&lt;</span> <span class="no">ActiveJob</span><span class="o">::</span><span class="no">Serializers</span><span class="o">::</span><span class="no">ObjectSerializer</span>
+  <span class="c1"># Checks if an argument should be serialized by this serializer.</span>
+  <span class="k">def</span> <span class="nf">serialize?</span><span class="p">(</span><span class="n">argument</span><span class="p">)</span>
+    <span class="n">argument</span><span class="p">.</span><span class="nf">is_a?</span> <span class="no">Money</span>
+  <span class="k">end</span>
+
+  <span class="c1"># Converts an object to a simpler representative using supported object types.</span>
+  <span class="c1"># The recommended representative is a Hash with a specific key. Keys can be of basic types only.</span>
+  <span class="c1"># You should call `super` to add the custom serializer type to the hash.</span>
+  <span class="k">def</span> <span class="nf">serialize</span><span class="p">(</span><span class="n">money</span><span class="p">)</span>
+    <span class="k">super</span><span class="p">(</span>
+      <span class="s2">"amount"</span> <span class="o">=&gt;</span> <span class="n">money</span><span class="p">.</span><span class="nf">amount</span><span class="p">,</span>
+      <span class="s2">"currency"</span> <span class="o">=&gt;</span> <span class="n">money</span><span class="p">.</span><span class="nf">currency</span>
+    <span class="p">)</span>
+  <span class="k">end</span>
+
+  <span class="c1"># Converts serialized value into a proper object.</span>
+  <span class="k">def</span> <span class="nf">deserialize</span><span class="p">(</span><span class="nb">hash</span><span class="p">)</span>
+    <span class="no">Money</span><span class="p">.</span><span class="nf">new</span><span class="p">(</span><span class="nb">hash</span><span class="p">[</span><span class="s2">"amount"</span><span class="p">],</span> <span class="nb">hash</span><span class="p">[</span><span class="s2">"currency"</span><span class="p">])</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-c6267427521e42d9d7e84fa21334ba43">class MoneySerializer &lt; ActiveJob::Serializers::ObjectSerializer
+  # Checks if an argument should be serialized by this serializer.
+  def serialize?(argument)
+    argument.is_a? Money
+  end
+
+  # Converts an object to a simpler representative using supported object types.
+  # The recommended representative is a Hash with a specific key. Keys can be of basic types only.
+  # You should call `super` to add the custom serializer type to the hash.
+  def serialize(money)
+    super(
+      "amount" =&gt; money.amount,
+      "currency" =&gt; money.currency
+    )
+  end
+
+  # Converts serialized value into a proper object.
+  def deserialize(hash)
+    Money.new(hash["amount"], hash["currency"])
+  end
+end
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-c6267427521e42d9d7e84fa21334ba43">Copy</button>
+</div>
+<p>and add this serializer to the list:</p>
+
+<div class="code_container">
+<pre><code class="highlight ruby"><span class="no">Rails</span><span class="p">.</span><span class="nf">application</span><span class="p">.</span><span class="nf">config</span><span class="p">.</span><span class="nf">active_job</span><span class="p">.</span><span class="nf">custom_serializers</span> <span class="o">&lt;&lt;</span> <span class="no">MoneySerializer</span>
+</code></pre>
+<textarea class="clipboard-content" id="clipboard-c15a3d61d11e285768fd07d5b1ea41f1">Rails.application.config.active_job.custom_serializers &lt;&lt; MoneySerializer
+</textarea>
+<button class="clipboard-button" data-clipboard-target="#clipboard-c15a3d61d11e285768fd07d5b1ea41f1">Copy</button>
+</div>
+</body>
+</html>

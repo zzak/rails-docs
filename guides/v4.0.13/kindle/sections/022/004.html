@@ -1,0 +1,73 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>5 Customizing the Pipeline</title>
+<link rel="stylesheet" type="text/css" href="/home/rails/v4.0.13/guides/output/kindle/stylesheets/kindle.css">
+</head>
+<body>
+<h3 id="customizing-the-pipeline">5 Customizing the Pipeline</h3>
+<h4 id="css-compression">5.1 CSS Compression</h4>
+<p>There is currently one option for compressing CSS, YUI. The <a href="http://developer.yahoo.com/yui/compressor/css.html">YUI CSS compressor</a> provides minification.</p>
+<p>The following line enables YUI compression, and requires the <code>yui-compressor</code> gem.</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+config.assets.css_compressor = :yui
+
+</pre>
+</div>
+<p>The <code>config.assets.compress</code> must be set to <code>true</code> to enable CSS compression.</p>
+<h4 id="javascript-compression">5.2 JavaScript Compression</h4>
+<p>Possible options for JavaScript compression are <code>:closure</code>, <code>:uglifier</code> and <code>:yui</code>. These require the use of the <code>closure-compiler</code>, <code>uglifier</code> or <code>yui-compressor</code> gems, respectively.</p>
+<p>The default Gemfile includes <a href="https://github.com/lautis/uglifier">uglifier</a>. This gem wraps <a href="https://github.com/mishoo/UglifyJS">UglifierJS</a> (written for NodeJS) in Ruby. It compresses your code by removing white space. It also includes other optimizations such as changing your <code>if</code> and <code>else</code> statements to ternary operators where possible.</p>
+<p>The following line invokes <code>uglifier</code> for JavaScript compression.</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+config.assets.js_compressor = :uglifier
+
+</pre>
+</div>
+<p>Note that <code>config.assets.compress</code> must be set to <code>true</code> to enable JavaScript compression</p>
+<div class="note"><p>You will need an <a href="https://github.com/sstephenson/execjs#readme">ExecJS</a> supported runtime in order to use <code>uglifier</code>. If you are using Mac OS X or Windows you have a JavaScript runtime installed in your operating system. Check the <a href="https://github.com/sstephenson/execjs#readme">ExecJS</a> documentation for information on all of the supported JavaScript runtimes.</p></div>
+<h4 id="using-your-own-compressor">5.3 Using Your Own Compressor</h4>
+<p>The compressor config settings for CSS and JavaScript also take any object. This object must have a <code>compress</code> method that takes a string as the sole argument and it must return a string.</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+class Transformer
+  def compress(string)
+    do_something_returning_a_string(string)
+  end
+end
+
+</pre>
+</div>
+<p>To enable this, pass a new object to the config option in <code>application.rb</code>:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+config.assets.css_compressor = Transformer.new
+
+</pre>
+</div>
+<h4 id="changing-the-assets-path">5.4 Changing the <em>assets</em> Path</h4>
+<p>The public path that Sprockets uses by default is <code>/assets</code>.</p>
+<p>This can be changed to something else:</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+config.assets.prefix = "/some_other_path"
+
+</pre>
+</div>
+<p>This is a handy option if you are updating an older project that didn't use the asset pipeline and that already uses this path or you wish to use this path for a new resource.</p>
+<h4 id="x-sendfile-headers">5.5 X-Sendfile Headers</h4>
+<p>The X-Sendfile header is a directive to the web server to ignore the response from the application, and instead serve a specified file from disk. This option is off by default, but can be enabled if your server supports it. When enabled, this passes responsibility for serving the file to the web server, which is faster.</p>
+<p>Apache and nginx support this option, which can be enabled in <code>config/environments/production.rb</code>.</p>
+<div class="code_container">
+<pre class="brush: ruby; gutter: false; toolbar: false">
+# config.action_dispatch.x_sendfile_header = "X-Sendfile" # for apache
+# config.action_dispatch.x_sendfile_header = 'X-Accel-Redirect' # for nginx
+
+</pre>
+</div>
+<div class="warning"><p>If you are upgrading an existing application and intend to use this option, take care to paste this configuration option only into <code>production.rb</code> and any other environments you define with production behavior (not <code>application.rb</code>).</p></div>
+</body>
+</html>
